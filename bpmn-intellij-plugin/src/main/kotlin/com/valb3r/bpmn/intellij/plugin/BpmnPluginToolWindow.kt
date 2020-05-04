@@ -12,9 +12,12 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.textCompletion.TextCompletionUtil
 import java.io.File
 import javax.swing.JPanel
+import javax.swing.JSplitPane
 
 
 class BpmnPluginToolWindow {
+
+    private lateinit var canvasAndProperties: JSplitPane
     private lateinit var propertiesPanel: JPanel
     private lateinit var mainToolWindowForm: JPanel
     private lateinit var canvasPanel: JPanel
@@ -29,12 +32,12 @@ class BpmnPluginToolWindow {
         this.canvas.addMouseMotionListener(mouseEventHandler)
         this.canvas.addMouseWheelListener(mouseEventHandler)
         this.canvasPanel.add(this.canvas)
+        canvasAndProperties.dividerLocation = (canvasAndProperties.height * 0.8f).toInt()
     }
 
     fun getContent() = this.mainToolWindowForm
 
     fun run(bpmnFile: File, context: BpmnActionContext) {
-
         val myInput = createEditor(context.project, "")
         val model = FirstColumnReadOnlyModel()
         model.addColumn("")
@@ -45,15 +48,7 @@ class BpmnPluginToolWindow {
         val scrollPane = JBScrollPane(table)
         propertiesPanel.removeAll()
         propertiesPanel.add(scrollPane)
-
-
-        /*val dm = DefaultTableModel()
-        dm.setDataVector(arrayOf(arrayOf<Any>("button 1", "foo"), arrayOf<Any>("button 2", "bar")), arrayOf<Any>("Button", "String"))
-        propertiesTable.model = dm
-        propertiesTable.getColumn("Button").cellRenderer = ButtonRenderer()
-        propertiesTable.getColumn("Button").cellEditor = ButtonEditor(myInput)
-
-        propertiesTable.add(myInput)*/
+        canvasAndProperties.dividerLocation = (canvasAndProperties.height * 0.8f).toInt()
 
         setupUiBeforeRun()
         this@BpmnPluginToolWindow.canvasBuilder.build(canvas, bpmnFile)
