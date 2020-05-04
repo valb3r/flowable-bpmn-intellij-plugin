@@ -6,6 +6,7 @@ dep.tree
 
 .idea/
 .idea
+.gradle
 target/
 build/
 

@@ -1,18 +1,28 @@
 package com.valb3r.bpmn.intellij.plugin
 
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.fileTypes.StdFileTypes
+import com.intellij.openapi.project.Project
+import com.intellij.structuralsearch.StructuralSearchProfile
+import com.intellij.structuralsearch.StructuralSearchUtil
+import com.intellij.structuralsearch.plugin.ui.StructuralSearchDialog.STRUCTURAL_SEARCH
+import com.intellij.ui.EditorTextField
+import com.intellij.ui.components.JBScrollPane
+import com.intellij.util.textCompletion.TextCompletionUtil
 import java.awt.Dimension
 import java.io.File
-import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.JScrollPane
+import javax.swing.JTree
+
 
 class BpmnPluginToolWindow {
-
+    private lateinit var newElementPanel: JPanel
+    private lateinit var propertiesPanel: JPanel
     private lateinit var mainToolWindowForm: JPanel
-    private lateinit var elementPropertiesPanel: JPanel
-    private lateinit var actionsPanel: JPanel
+    private lateinit var newElementTree: JTree
     private lateinit var canvasPanel: JPanel
-    private lateinit var actionsTitleLabel: JLabel
-    private lateinit var propertiesLabel: JLabel
 
     private val canvasBuilder = CanvasBuilder()
     private val canvas: Canvas = Canvas(this)
@@ -29,10 +39,51 @@ class BpmnPluginToolWindow {
     fun getContent() = this.mainToolWindowForm
     fun getCanvasSize(): Dimension = this.canvasPanel.size
 
-    fun run(bpmnFile: File) {
+    fun run(bpmnFile: File, context: BpmnActionContext) {
+
+        val myInput = createEditor(context.project, "")
+        val model = FirstColumnReadOnlyModel()
+        model.addColumn("")
+        model.addColumn("")
+        model.addRow(arrayOf("EditableProperty", myInput))
+        val table = MultiEditJTable(model)
+        table.rowHeight = 20
+        val scrollPane = JBScrollPane(table)
+        propertiesPanel.removeAll()
+        propertiesPanel.add(scrollPane)
+
+
+        /*val dm = DefaultTableModel()
+        dm.setDataVector(arrayOf(arrayOf<Any>("button 1", "foo"), arrayOf<Any>("button 2", "bar")), arrayOf<Any>("Button", "String"))
+        propertiesTable.model = dm
+        propertiesTable.getColumn("Button").cellRenderer = ButtonRenderer()
+        propertiesTable.getColumn("Button").cellEditor = ButtonEditor(myInput)
+
+        propertiesTable.add(myInput)*/
+
         setupUiBeforeRun()
         this@BpmnPluginToolWindow.canvasBuilder.build(canvas, bpmnFile)
         setupUiAfterRun()
+    }
+
+    protected fun createEditor(project: Project, text: String?): EditorTextField {
+        val type = StdFileTypes.JAVA
+        val profile: StructuralSearchProfile = StructuralSearchUtil.getProfileByFileType(type)!!
+        val document: Document = profile.createDocument(project, type, null, text)
+        /**document.addDocumentListener(object : DocumentListener() {
+            fun documentChanged(event: DocumentEvent?) {
+                initiateValidation()
+            }
+        })**/
+        val textField: EditorTextField = object : EditorTextField(document, project, type) {
+            override fun createEditor(): EditorEx {
+                val editorEx: EditorEx = super.createEditor()
+                TextCompletionUtil.installCompletionHint(editorEx)
+                editorEx.putUserData(STRUCTURAL_SEARCH, null)
+                return editorEx
+            }
+        }
+        return textField
     }
 
     private fun setupUiBeforeRun() {
