@@ -78,14 +78,14 @@ class Canvas(private val pluginToolWindow: BpmnPluginToolWindow): JPanel() {
 
     // to handle 0-area shapes
     private fun cursorRect(location: Point): Rectangle2D {
-        val inCameraLeft = camera.toCameraView(Point2D.Float(location.x.toFloat() - cursorSize, location.y.toFloat() - cursorSize))
-        val inCameraRight = camera.toCameraView(Point2D.Float(location.x.toFloat() + cursorSize, location.y.toFloat() + cursorSize))
+        val left = Point2D.Float(location.x.toFloat() - cursorSize, location.y.toFloat() - cursorSize)
+        val right = Point2D.Float(location.x.toFloat() + cursorSize, location.y.toFloat() + cursorSize)
 
         return Rectangle2D.Float(
-                inCameraLeft.x,
-                inCameraLeft.y,
-                inCameraRight.x - inCameraLeft.x,
-                inCameraRight.y - inCameraLeft.y
+                left.x,
+                left.y,
+                right.x - left.x,
+                right.y - left.y
         )
     }
 }
