@@ -1,0 +1,51 @@
+buildscript {
+    ext.kotlin_version = '1.3.72'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+group 'com.valb3r.bpmn.intellij.plugin'
+
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'idea'
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-kapt'
+
+dependencies {
+    api project(":xml-parser-api")
+
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.1"
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.10.1'
+
+    api 'com.github.pozo:mapstruct-kotlin:1.3.1.2'
+    kapt 'com.github.pozo:mapstruct-kotlin-processor:1.3.1.2'
+    api 'org.mapstruct:mapstruct:1.3.1.Final'
+    kapt 'org.mapstruct:mapstruct-processor:1.3.1.Final'
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
