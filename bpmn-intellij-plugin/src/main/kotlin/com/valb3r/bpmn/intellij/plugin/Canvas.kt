@@ -12,7 +12,8 @@ import javax.swing.JPanel
 
 class Canvas(private val pluginToolWindow: BpmnPluginToolWindow): JPanel() {
 
-    private val cursorSize = 3;
+    private val zoomFactor = 1.2f
+    private val cursorSize = 3
     private val defaultCameraOrigin = Point2D.Float(0f, 0f)
     private val defaultZoomRatio = 1f
 
@@ -37,13 +38,28 @@ class Canvas(private val pluginToolWindow: BpmnPluginToolWindow): JPanel() {
         this.camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
     }
 
-    fun mouseClick(location: Point) {
+    fun click(location: Point) {
         this.selectedElements.clear()
         val cursor = cursorRect(location)
         areaByElement
                 ?.filter { it.value.intersects(cursor) }
                 ?.forEach { this.selectedElements.add(it.key) }
 
+        repaint()
+    }
+
+    fun drag(start: Point2D.Float, current: Point2D.Float) {
+        val newCameraOrigin = Point2D.Float(
+                camera.origin.x - current.x + start.x,
+                camera.origin.y - current.y + start.y
+        )
+        camera = Camera(newCameraOrigin, Point2D.Float(camera.zoom.x, camera.zoom.y))
+        repaint()
+    }
+
+    fun zoom(factor: Int) {
+        val scale = Math.pow(zoomFactor.toDouble(), factor.toDouble()).toFloat()
+        camera = Camera(camera.toCameraView(anchor), Point2D.Float(camera.zoom.x * scale, camera.zoom.y * scale))
         repaint()
     }
 

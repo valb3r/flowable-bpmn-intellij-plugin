@@ -8,58 +8,35 @@
     <properties/>
     <border type="none"/>
     <children>
-      <splitpane id="b15e">
+      <splitpane id="a98f">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
-            <preferred-size width="200" height="200"/>
-          </grid>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <continuousLayout value="true"/>
-          <dividerLocation value="100"/>
+          <dividerLocation value="300"/>
           <dividerSize value="3"/>
-          <enabled value="true"/>
-          <orientation value="1"/>
+          <oneTouchExpandable value="false"/>
+          <orientation value="0"/>
         </properties>
         <border type="none"/>
         <children>
-          <component id="ce253" class="javax.swing.JTree" binding="newElementTree">
+          <grid id="bfe40" binding="propertiesPanel" layout-manager="CardLayout" hgap="0" vgap="0">
+            <constraints>
+              <splitpane position="right"/>
+            </constraints>
+            <properties/>
+            <border type="etched"/>
+            <children/>
+          </grid>
+          <grid id="2d138" binding="canvasPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
               <splitpane position="left"/>
             </constraints>
             <properties/>
-          </component>
-          <splitpane id="a98f">
-            <constraints>
-              <splitpane position="right"/>
-            </constraints>
-            <properties>
-              <continuousLayout value="true"/>
-              <dividerLocation value="400"/>
-              <dividerSize value="3"/>
-              <oneTouchExpandable value="false"/>
-              <orientation value="0"/>
-            </properties>
-            <border type="none"/>
-            <children>
-              <grid id="bfe40" binding="propertiesPanel" layout-manager="CardLayout" hgap="0" vgap="0">
-                <constraints>
-                  <splitpane position="right"/>
-                </constraints>
-                <properties/>
-                <border type="etched"/>
-                <children/>
-              </grid>
-              <grid id="2d138" binding="canvasPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
-                <constraints>
-                  <splitpane position="left"/>
-                </constraints>
-                <properties/>
-                <border type="etched"/>
-                <children/>
-              </grid>
-            </children>
-          </splitpane>
+            <border type="etched"/>
+            <children/>
+          </grid>
         </children>
       </splitpane>
     </children>

@@ -10,18 +10,13 @@ import com.intellij.structuralsearch.plugin.ui.StructuralSearchDialog.STRUCTURAL
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.textCompletion.TextCompletionUtil
-import java.awt.Dimension
 import java.io.File
 import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JTree
 
 
 class BpmnPluginToolWindow {
-    private lateinit var newElementPanel: JPanel
     private lateinit var propertiesPanel: JPanel
     private lateinit var mainToolWindowForm: JPanel
-    private lateinit var newElementTree: JTree
     private lateinit var canvasPanel: JPanel
 
     private val canvasBuilder = CanvasBuilder()
@@ -37,7 +32,6 @@ class BpmnPluginToolWindow {
     }
 
     fun getContent() = this.mainToolWindowForm
-    fun getCanvasSize(): Dimension = this.canvasPanel.size
 
     fun run(bpmnFile: File, context: BpmnActionContext) {
 
