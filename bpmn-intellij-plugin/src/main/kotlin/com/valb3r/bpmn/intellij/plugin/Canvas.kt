@@ -57,9 +57,16 @@ class Canvas(private val pluginToolWindow: BpmnPluginToolWindow): JPanel() {
         repaint()
     }
 
-    fun zoom(factor: Int) {
+    fun zoom(anchor: Point2D.Float, factor: Int) {
         val scale = Math.pow(zoomFactor.toDouble(), factor.toDouble()).toFloat()
-        camera = Camera(camera.origin, Point2D.Float(camera.zoom.x * scale, camera.zoom.y * scale))
+        val scenePoint = camera.fromCameraView(anchor)
+        camera = Camera(
+                Point2D.Float(
+                        camera.origin.x + scenePoint.x * camera.zoom.x * (scale - 1.0f),
+                        camera.origin.y + scenePoint.y * camera.zoom.y * (scale - 1.0f)
+                ),
+                Point2D.Float(camera.zoom.x * scale, camera.zoom.y * scale)
+        )
         repaint()
     }
 

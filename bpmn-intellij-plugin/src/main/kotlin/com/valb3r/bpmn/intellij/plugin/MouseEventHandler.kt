@@ -45,6 +45,6 @@ class MouseEventHandler(private val canvas: Canvas): MouseListener, MouseMotionL
 
     override fun mouseWheelMoved(event: MouseWheelEvent) {
         this.lastMousePosition = Point2D.Float(event.x.toFloat(), event.y.toFloat())
-        this.canvas.zoom(event.wheelRotation)
+        this.canvas.zoom(this.lastMousePosition!!, event.wheelRotation)
     }
 }
