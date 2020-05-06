@@ -7,11 +7,16 @@ import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.Polygon
+import java.awt.font.FontRenderContext
+import java.awt.font.LineBreakMeasurer
 import java.awt.geom.AffineTransform.getTranslateInstance
 import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.geom.RoundRectangle2D
+import java.text.AttributedCharacterIterator
+import java.text.AttributedString
+
 
 class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
 
@@ -63,10 +68,12 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
         return arrow
     }
 
-    fun drawGraphicsRoundedRect(shape: ShapeElement, color: Colors): Area {
+    fun drawGraphicsRoundedRect(shape: ShapeElement, name: String?, color: Colors): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
 
+        graphics2D.color = Color.BLACK
+        name?.apply { drawWrappedText(shape, this) }
         graphics2D.color = color.color
         val drawShape = RoundRectangle2D.Float(
                 leftTop.x,
@@ -80,5 +87,13 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
         graphics2D.color = Color.GRAY
         graphics2D.draw(drawShape)
         return Area(drawShape)
+    }
+
+    fun drawWrappedText(shape: ShapeElement, text: String): Area {
+        val paragraph: AttributedCharacterIterator = AttributedString(text).iterator
+        val paragraphStart = paragraph.beginIndex
+        val paragraphEnd = paragraph.endIndex
+        val frc: FontRenderContext = graphics2D.getFontRenderContext()
+        val lineMeasurer = LineBreakMeasurer(paragraph, frc)
     }
 }

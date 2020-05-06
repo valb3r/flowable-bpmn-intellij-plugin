@@ -394,7 +394,7 @@
         <sequenceFlow id="sid-10D0BCC7-4028-478F-83DE-ECCA8E6200DC" sourceRef="decisionTaskId" targetRef="shellTaskId"></sequenceFlow>
         <sequenceFlow id="sid-D34632D6-0992-4819-998F-A72A5A083F08" sourceRef="shellTaskId" targetRef="subProcessId"></sequenceFlow>
         <sequenceFlow id="sid-241DD1A7-FBEB-4E8D-B58F-C57F31B79F21" sourceRef="subProcessId" targetRef="collapsedSubProcess"></sequenceFlow>
-        <callActivity id="callActivityId" name="Call activity name" flowable:async="true" isForCompensation="true" flowable:calledElementType="key" flowable:processInstanceName="PROCESS_INSTANCE" flowable:businessKey="BUSINESS_KEY" flowable:inheritBusinessKey="true" flowable:useLocalScopeForOutParameters="true" flowable:inheritVariables="true" flowable:sameDeployment="true" flowable:completeAsync="true" flowable:fallbackToDefaultTenant="true">
+        <callActivity id="callActivityId" name="Call activity name" flowable:async="true" isForCompensation="true" calledElement="Called process name or expression" flowable:calledElementType="key" flowable:processInstanceName="PROCESS_INSTANCE" flowable:businessKey="BUSINESS_KEY" flowable:inheritBusinessKey="true" flowable:useLocalScopeForOutParameters="true" flowable:inheritVariables="true" flowable:sameDeployment="true" flowable:completeAsync="true" flowable:fallbackToDefaultTenant="true">
             <documentation>Call activity documentation</documentation>
             <extensionElements>
                 <flowable:in source="INPARAM" target="TARGETVAL"></flowable:in>
