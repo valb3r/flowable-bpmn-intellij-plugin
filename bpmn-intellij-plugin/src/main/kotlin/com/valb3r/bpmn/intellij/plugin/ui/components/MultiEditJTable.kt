@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin
+package com.valb3r.bpmn.intellij.plugin.ui.components
 
 import com.intellij.ui.EditorTextField
 import com.intellij.util.ui.AbstractTableCellEditor
@@ -12,8 +12,8 @@ import javax.swing.table.TableCellRenderer
 import javax.swing.table.TableModel
 
 class MultiEditJTable(tableModel: TableModel): JTable(tableModel) {
+    val intraCellSpacingWidth = 10
 
-    //  Determine editor to be used by row
     override fun getCellEditor(row: Int, column: Int): TableCellEditor {
         val value = modelValue(row, column)
 
@@ -31,6 +31,18 @@ class MultiEditJTable(tableModel: TableModel): JTable(tableModel) {
             is String -> LabelTextFieldCellRenderer(value)
             else -> super.getCellRenderer(row, column)
         }
+    }
+
+    // Auto-resize
+    override fun prepareRenderer(renderer: TableCellRenderer?, row: Int, column: Int): Component? {
+        val component = super.prepareRenderer(renderer, row, column)
+        val rendererWidth = component.preferredSize.width
+        val tableColumn = getColumnModel().getColumn(column)
+        tableColumn.preferredWidth = Math.max(
+                rendererWidth + intercellSpacing.width + intraCellSpacingWidth,
+                tableColumn.preferredWidth
+        )
+        return component
     }
 
     private fun modelValue(row: Int, column: Int): Any? {

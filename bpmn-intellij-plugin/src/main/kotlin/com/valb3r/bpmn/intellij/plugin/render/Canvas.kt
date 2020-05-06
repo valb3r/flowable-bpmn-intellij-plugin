@@ -1,5 +1,6 @@
-package com.valb3r.bpmn.intellij.plugin
+package com.valb3r.bpmn.intellij.plugin.render
 
+import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -10,7 +11,7 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.JPanel
 
-class Canvas(private val pluginToolWindow: BpmnPluginToolWindow): JPanel() {
+class Canvas: JPanel() {
 
     private val zoomFactor = 1.2f
     private val cursorSize = 3
@@ -83,7 +84,7 @@ class Canvas(private val pluginToolWindow: BpmnPluginToolWindow): JPanel() {
         return graphics2D
     }
 
-    // to handle 0-area shapes
+    // to handle small area shapes
     private fun cursorRect(location: Point): Rectangle2D {
         val left = Point2D.Float(location.x.toFloat() - cursorSize, location.y.toFloat() - cursorSize)
         val right = Point2D.Float(location.x.toFloat() + cursorSize, location.y.toFloat() + cursorSize)

@@ -1,12 +1,12 @@
-package com.valb3r.bpmn.intellij.plugin
+package com.valb3r.bpmn.intellij.plugin.render
 
+import com.intellij.psi.PsiFile
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
-import java.io.File
 
 class CanvasBuilder {
 
-    fun build(canvas: Canvas, file: File) {
-        file.inputStream().use {
+    fun build(canvas: Canvas, bpmnFile: PsiFile) {
+        bpmnFile.virtualFile.inputStream.use {
             val process = FlowableParser().parse(it)
             canvas.reset(process.toView(), BpmnProcessRenderer())
         }

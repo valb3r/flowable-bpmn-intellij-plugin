@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin
 
+import com.valb3r.bpmn.intellij.plugin.render.Canvas
 import java.awt.event.*
 import java.awt.geom.Point2D
 import javax.swing.SwingUtilities

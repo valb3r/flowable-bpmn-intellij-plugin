@@ -1,5 +1,6 @@
-package com.valb3r.bpmn.intellij.plugin
+package com.valb3r.bpmn.intellij.plugin.render
 
+import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
@@ -17,19 +18,25 @@ class BpmnProcessRenderer {
         val areaByElement: MutableMap<String, Area> = HashMap()
         val renderMeta = RenderMetadata(selectedIds, diagram.elementById)
 
-        diagram
-                .diagram
-                .bpmnPlane
-                .bpmnShape
-                ?.forEach { mergeArea(it.bpmnElement, areaByElement, drawShapeElement(canvas, it, renderMeta)) }
+        dramBpmnElements(diagram, areaByElement, canvas, renderMeta)
+        drawBpmnEdges(diagram, areaByElement, canvas, renderMeta)
+        return areaByElement
+    }
 
+    private fun drawBpmnEdges(diagram: BpmnProcessObjectView, areaByElement: MutableMap<String, Area>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
         diagram
                 .diagram
                 .bpmnPlane
                 .bpmnEdge
                 ?.forEach { mergeArea(it.bpmnElement ?: it.id, areaByElement, drawEdgeElement(canvas, it, renderMeta)) }
+    }
 
-        return areaByElement
+    private fun dramBpmnElements(diagram: BpmnProcessObjectView, areaByElement: MutableMap<String, Area>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
+        diagram
+                .diagram
+                .bpmnPlane
+                .bpmnShape
+                ?.forEach { mergeArea(it.bpmnElement, areaByElement, drawShapeElement(canvas, it, renderMeta)) }
     }
 
     private fun mergeArea(id: String, areas: MutableMap<String, Area>, area: Area) {

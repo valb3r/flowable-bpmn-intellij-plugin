@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin
+package com.valb3r.bpmn.intellij.plugin.render
 
 import java.awt.geom.Point2D
 

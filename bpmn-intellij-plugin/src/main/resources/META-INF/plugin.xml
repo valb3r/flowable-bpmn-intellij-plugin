@@ -162,6 +162,11 @@
         <projectService serviceImplementation="com.valb3r.bpmn.intellij.plugin.BpmnPluginToolWindowProjectService"/>
     </extensions>
 
+    <!-- Inject SpEL for highlighting -->
+    <extensions defaultExtensionNs="com.intellij">
+        <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.langinjection.FlowableDelegateExpressionUiInjector"/>
+    </extensions>
+
     <!-- <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable groupId="editor" instance="com.maddyhome.idea.vim.ui.VimEmulationConfigurable"/>
     </extensions> -->
