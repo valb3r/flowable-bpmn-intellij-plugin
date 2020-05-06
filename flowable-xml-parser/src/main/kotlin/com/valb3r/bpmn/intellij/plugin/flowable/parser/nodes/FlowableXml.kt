@@ -10,16 +10,32 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.*
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
+// For mixed lists in XML we need to have JsonSetter/JsonMerge on field
+// https://github.com/FasterXML/jackson-dataformat-xml/issues/363
+// unfortunately this has failed with Kotlin 'data' classes
+class BpmnFile(
+        @JacksonXmlProperty(localName = "message")
+        @JsonMerge
+        @JacksonXmlElementWrapper(useWrapping = false)
+        var messages: List<MessageNode>? = null,
 
-data class Definitions(
-        val process: ProcessNode,
-        @JacksonXmlProperty(localName = "BPMNDiagram") val bpmnDiagram: DiagramNode
+        @JacksonXmlProperty(localName = "process")
+        @JsonMerge
+        @JacksonXmlElementWrapper(useWrapping = false)
+        var processes: List<ProcessNode>,
+
+        @JacksonXmlProperty(localName = "BPMNDiagram")
+        @JsonMerge
+        @JacksonXmlElementWrapper(useWrapping = false)
+        var diagrams: List<DiagramNode>? = null
 )
+
+data class MessageNode(val id: String, var name: String?)
 
 // For mixed lists in XML we need to have JsonSetter/JsonMerge on field
 // https://github.com/FasterXML/jackson-dataformat-xml/issues/363
 // unfortunately this has failed with Kotlin 'data' classes
-class ProcessNode(): BpmnMappable<BpmnProcess> {
+class ProcessNode: BpmnMappable<BpmnProcess> {
 
     @JacksonXmlProperty(isAttribute = true) var id: String? = null // it is false - it is non-null
     @JacksonXmlProperty(isAttribute = true) var name: String? = null // it is false - it is non-null

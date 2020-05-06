@@ -35,5 +35,5 @@ class ViewBpmnDiagramAction: AnAction() {
     }
 
     private fun psiElement(anActionEvent: AnActionEvent) =
-            anActionEvent.getData(CommonDataKeys.PSI_ELEMENT)
+            anActionEvent.getData(CommonDataKeys.PSI_FILE)
 }

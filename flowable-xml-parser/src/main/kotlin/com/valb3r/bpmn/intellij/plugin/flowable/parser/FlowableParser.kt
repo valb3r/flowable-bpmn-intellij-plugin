@@ -10,7 +10,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.Definitions
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnFile
 import java.io.InputStream
 
 const val CDATA_FIELD = "CDATA"
@@ -19,11 +19,23 @@ class FlowableParser : BpmnParser {
 
     private val mapper: XmlMapper = mapper()
 
+    override fun parse(input: String): BpmnProcessObject {
+        val dto = mapper.readValue<BpmnFile>(input)
+        return toProcessObject(dto)
+    }
+
     override fun parse(input: InputStream): BpmnProcessObject {
-        val dto = mapper.readValue<Definitions>(input)
-        val process = dto.process.toElement()
-        val diagram = dto.bpmnDiagram.toElement()
-        return BpmnProcessObject(process, diagram)
+        val dto = mapper.readValue<BpmnFile>(input)
+        return toProcessObject(dto)
+    }
+
+    private fun toProcessObject(dto: BpmnFile): BpmnProcessObject {
+        // TODO - Multi process support
+        val process = dto.processes[0].toElement()
+        // TODO - Multi diagram support
+        val diagram = dto.diagrams!![0].toElement()
+
+        return BpmnProcessObject(process, listOf(diagram))
     }
 
     private fun mapper(): XmlMapper {

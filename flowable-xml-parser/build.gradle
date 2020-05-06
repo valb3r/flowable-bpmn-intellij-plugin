@@ -19,6 +19,7 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 apply plugin: 'idea'
@@ -37,6 +38,12 @@ dependencies {
     kapt 'org.mapstruct:mapstruct-processor:1.3.1.Final'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    // Tests
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
+    testImplementation 'org.junit.platform:junit-platform-runner:1.6.2'
+    testImplementation 'org.amshove.kluent:kluent:1.61'
 }
 
 compileKotlin {
@@ -48,4 +55,8 @@ compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+}
+
+test {
+    useJUnitPlatform()
 }

@@ -5,4 +5,5 @@ import java.io.InputStream
 interface BpmnParser {
 
     fun parse(input: InputStream): BpmnProcessObject
+    fun parse(input: String): BpmnProcessObject
 }

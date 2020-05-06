@@ -49,7 +49,7 @@ class BpmnPluginToolWindow {
         model.addRow(arrayOf("Delegate expression", myInput))
         val table = MultiEditJTable(model)
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF)
-        table.columnModel.getColumn(1).preferredWidth = 400
+        table.columnModel.getColumn(1).preferredWidth = 500
         table.rowHeight = 20
 
         val scrollPane = JBScrollPane(table)

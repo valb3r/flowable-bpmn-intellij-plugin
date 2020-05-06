@@ -5,7 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 
-data class BpmnProcessObject(val process: BpmnProcess, val diagram: DiagramElement) {
+data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<DiagramElement>) {
 
     fun toView() : BpmnProcessObjectView {
         val elementById = mutableMapOf<String, WithId>()
@@ -60,5 +60,5 @@ data class BpmnProcessObjectView(
         val process: BpmnProcess,
         val elementById: Map<String, WithId>,
         val propertiesById: Map<String, Property>,
-        val diagram: DiagramElement
+        val diagram: List<DiagramElement>
 )
