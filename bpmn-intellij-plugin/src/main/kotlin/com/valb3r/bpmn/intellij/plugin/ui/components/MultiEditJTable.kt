@@ -1,6 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.ui.components
 
 import com.intellij.ui.EditorTextField
+import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.AbstractTableCellEditor
 import java.awt.Component
 import java.awt.Font
@@ -19,6 +21,8 @@ class MultiEditJTable(tableModel: TableModel): JTable(tableModel) {
 
         return when (value) {
             is EditorTextField -> EditorTextFieldCellEditor(value)
+            is JBTextField -> JBTextFieldCellEditor(value)
+            is JBCheckBox -> JBCheckBoxCellEditor(value)
             else -> super.getCellEditor(row, column)
         }
     }
@@ -28,6 +32,8 @@ class MultiEditJTable(tableModel: TableModel): JTable(tableModel) {
 
         return when (value) {
             is EditorTextField -> EditorTextFieldCellRenderer(value)
+            is JBTextField -> JBTextFieldCellRenderer(value)
+            is JBCheckBox -> JBCheckBoxCellRenderer(value)
             is String -> LabelTextFieldCellRenderer(value)
             else -> super.getCellRenderer(row, column)
         }
@@ -63,7 +69,45 @@ class EditorTextFieldCellEditor(val field: EditorTextField): AbstractTableCellEd
     }
 }
 
+class JBTextFieldCellEditor(val field: JBTextField): AbstractTableCellEditor() {
+
+    override fun getTableCellEditorComponent(table: JTable?, value: Any?, isSelected: Boolean, row: Int, column: Int): Component {
+        return field
+    }
+
+    override fun getCellEditorValue(): Any {
+        return field
+    }
+}
+
+class JBCheckBoxCellEditor(val field: JBCheckBox): AbstractTableCellEditor() {
+
+    override fun getTableCellEditorComponent(table: JTable?, value: Any?, isSelected: Boolean, row: Int, column: Int): Component {
+        return field
+    }
+
+    override fun getCellEditorValue(): Any {
+        return field
+    }
+}
+
 class EditorTextFieldCellRenderer(val field: EditorTextField): TableCellRenderer {
+
+    override fun getTableCellRendererComponent(
+            table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
+        return field
+    }
+}
+
+class JBTextFieldCellRenderer(val field: JBTextField): TableCellRenderer {
+
+    override fun getTableCellRendererComponent(
+            table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
+        return field
+    }
+}
+
+class JBCheckBoxCellRenderer(val field: JBCheckBox): TableCellRenderer {
 
     override fun getTableCellRendererComponent(
             table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {

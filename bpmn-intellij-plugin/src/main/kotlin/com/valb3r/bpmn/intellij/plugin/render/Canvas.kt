@@ -1,7 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin.render
 
+import com.intellij.ui.EditorTextField
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
+import com.valb3r.bpmn.intellij.plugin.properties.PropertiesVisualizer
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Point
@@ -10,6 +12,7 @@ import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.JPanel
+import javax.swing.JTable
 
 class Canvas: JPanel() {
 
@@ -19,12 +22,11 @@ class Canvas: JPanel() {
     private val defaultZoomRatio = 1f
 
     private var selectedElements: MutableSet<String> = mutableSetOf()
-
     private var camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
     private var processObject: BpmnProcessObjectView? = null
     private var renderer: BpmnProcessRenderer? = null
-
     private var areaByElement: Map<String, Area>? = null
+    private var propertiesVisualizer: PropertiesVisualizer? = null
 
     override fun paintComponent(graphics: Graphics) {
         super.paintComponent(graphics)
@@ -33,10 +35,11 @@ class Canvas: JPanel() {
         areaByElement = renderer?.render(CanvasPainter(graphics2D, camera.copy()), selectedElements, processObject)
     }
 
-    fun reset(processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
+    fun reset(properties: JTable, editorFactory: (value: String) -> EditorTextField, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
         this.processObject = processObject
         this.renderer = renderer
         this.camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
+        this.propertiesVisualizer = PropertiesVisualizer(properties, editorFactory)
     }
 
     fun click(location: Point) {
@@ -47,6 +50,9 @@ class Canvas: JPanel() {
                 ?.forEach { this.selectedElements.add(it.key) }
 
         repaint()
+
+        processObject?.elemPropertiesByElementId?.get(this.selectedElements.firstOrNull())
+                ?.apply { propertiesVisualizer?.visualize(this) }
     }
 
     fun drag(start: Point2D.Float, current: Point2D.Float) {

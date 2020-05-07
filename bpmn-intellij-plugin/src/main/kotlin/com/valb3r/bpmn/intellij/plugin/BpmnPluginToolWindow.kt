@@ -42,11 +42,9 @@ class BpmnPluginToolWindow {
     fun getContent() = this.mainToolWindowForm
 
     fun run(bpmnFile: PsiFile, context: BpmnActionContext) {
-        val myInput = createEditor(context.project, bpmnFile, "")
         val model = FirstColumnReadOnlyModel()
         model.addColumn("")
         model.addColumn("")
-        model.addRow(arrayOf("Delegate expression", myInput))
         val table = MultiEditJTable(model)
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF)
         table.columnModel.getColumn(1).preferredWidth = 500
@@ -58,7 +56,12 @@ class BpmnPluginToolWindow {
         canvasAndProperties.dividerLocation = (canvasAndProperties.height * 0.8f).toInt()
 
         setupUiBeforeRun()
-        this.canvasBuilder.build(canvas, bpmnFile)
+        this.canvasBuilder.build(
+                table,
+                { createEditor(context.project, bpmnFile, it) },
+                canvas,
+                bpmnFile
+        )
         setupUiAfterRun()
     }
 
