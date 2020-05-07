@@ -61,8 +61,8 @@ class BpmnProcessRenderer {
         val area = Area()
         shape.waypoint?.forEachIndexed { index, it ->
             when {
-                index == shape.waypoint!!.size - 1 -> area.add(canvas.drawGraphicsLineWithArrow(shape.waypoint!![index - 1], it, color(active, Colors.ARROW_COLOR)))
-                index > 0 -> area.add(canvas.drawGraphicsLine(shape.waypoint!![index - 1], it, color(active, Colors.ARROW_COLOR)))
+                index == shape.waypoint!!.size - 1 -> area.add(canvas.drawLineWithArrow(shape.waypoint!![index - 1], it, color(active, Colors.ARROW_COLOR)))
+                index > 0 -> area.add(canvas.drawLine(shape.waypoint!![index - 1], it, color(active, Colors.ARROW_COLOR)))
             }
         }
 
@@ -76,12 +76,12 @@ class BpmnProcessRenderer {
         val active = isActive(elem?.id, meta)
 
         when (elem) {
-            null -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
-            is BpmnStartEvent -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.GREEN), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
-            is BpmnServiceTask -> return canvas.drawGraphicsRoundedRectWithIcon(shape, GEAR, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
-            is BpmnCallActivity -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.CALL_ACTIVITY_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+            null -> return canvas.drawRoundedRect(shape, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+            is BpmnStartEvent -> return canvas.drawCircle(shape, name, color(active, Colors.GREEN), Colors.ELEMENT_BORDER_COLOR.color)
+            is BpmnServiceTask -> return canvas.drawRoundedRectWithIcon(shape, GEAR, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+            is BpmnCallActivity -> return canvas.drawRoundedRect(shape, name, color(active, Colors.CALL_ACTIVITY_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
             is BpmnExclusiveGateway -> return canvas.drawWrappedIcon(shape, EXCLUSIVE_GATEWAY, active, Color.GREEN)
-            is BpmnEndEvent -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.RED), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+            is BpmnEndEvent -> return canvas.drawCircle(shape, name, color(active, Colors.RED), Colors.ELEMENT_BORDER_COLOR.color)
         }
 
         return Area()

@@ -14,11 +14,8 @@ import java.awt.*
 import java.awt.font.FontRenderContext
 import java.awt.font.LineBreakMeasurer
 import java.awt.font.TextAttribute
+import java.awt.geom.*
 import java.awt.geom.AffineTransform.getTranslateInstance
-import java.awt.geom.Area
-import java.awt.geom.Point2D
-import java.awt.geom.Rectangle2D
-import java.awt.geom.RoundRectangle2D
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets.UTF_8
@@ -42,11 +39,11 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
     private val solidLineStroke = BasicStroke(regularLineWidth)
 
     private val cachedIcons = CacheBuilder.newBuilder()
-            .expireAfterWrite(1L, TimeUnit.SECONDS)
+            .expireAfterAccess(1L, TimeUnit.SECONDS)
             .maximumSize(100)
             .build<String, BufferedImage>()
 
-    fun drawGraphicsLine(start: WaypointElement, end: WaypointElement, color: Color): Area {
+    fun drawLine(start: WaypointElement, end: WaypointElement, color: Color): Area {
         val st = camera.toCameraView(Point2D.Float(start.x, start.y))
         val en = camera.toCameraView(Point2D.Float(end.x, end.y))
 
@@ -65,7 +62,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
         return line
     }
 
-    fun drawGraphicsLineWithArrow(start: WaypointElement, end: WaypointElement, color: Color): Area {
+    fun drawLineWithArrow(start: WaypointElement, end: WaypointElement, color: Color): Area {
         val st = camera.toCameraView(Point2D.Float(start.x, start.y))
         val en = camera.toCameraView(Point2D.Float(end.x, end.y))
 
@@ -86,7 +83,26 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
         return arrow
     }
 
-    fun drawGraphicsRoundedRect(shape: ShapeElement, name: String?, background: Color, border: Color, textColor: Color): Area {
+    fun drawCircle(shape: ShapeElement, name: String?, background: Color, border: Color): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
+
+        graphics2D.color = background
+        val drawShape = Ellipse2D.Float(
+                leftTop.x,
+                leftTop.y,
+                rightBottom.x - leftTop.x,
+                rightBottom.y - leftTop.y
+        )
+
+        graphics2D.fill(drawShape)
+        graphics2D.color = border
+        graphics2D.draw(drawShape)
+
+        return Area(drawShape)
+    }
+
+    fun drawRoundedRect(shape: ShapeElement, name: String?, background: Color, border: Color, textColor: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
 
@@ -107,7 +123,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
         return Area(drawShape)
     }
 
-    fun drawGraphicsRoundedRectWithIcon(shape: ShapeElement, icon: Icon, name: String?, background: Color, border: Color, textColor: Color): Area {
+    fun drawRoundedRectWithIcon(shape: ShapeElement, icon: Icon, name: String?, background: Color, border: Color, textColor: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
 
@@ -143,7 +159,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
         val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat())
         graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
 
-        val shape = Rectangle2D.Float(
+        val highlightedShape = Rectangle2D.Float(
                 leftTop.x,
                 leftTop.y,
                 (rightBottom.x - leftTop.x),
@@ -152,10 +168,10 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
 
         if (selected) {
             graphics2D.color = selectedColor
-            graphics2D.draw(shape)
+            graphics2D.draw(highlightedShape)
         }
 
-        return Area(shape)
+        return Area(highlightedShape)
     }
 
     fun drawWrappedText(shape: ShapeElement, text: String) {
@@ -229,7 +245,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
     }
 
     fun rasterizeSvg(svgFile: String, width: Float, height: Float): BufferedImage {
-        return cachedIcons.get(Hashing.crc32().hashString(svgFile, UTF_8).toString()) {
+        return cachedIcons.get(Hashing.md5().hashString(svgFile, UTF_8).toString()) {
             val imageTranscoder = BufferedImageTranscoder()
             imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, width)
             imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, height)

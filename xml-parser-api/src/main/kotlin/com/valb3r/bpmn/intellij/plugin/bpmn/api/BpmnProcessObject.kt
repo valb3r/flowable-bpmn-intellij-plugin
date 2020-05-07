@@ -18,9 +18,8 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         val elementById = mutableMapOf<String, WithId>()
         val propertiesById = mutableMapOf<String, MutableMap<PropertyType, Property>>()
 
-        elementById[process.startEvent.id] = process.startEvent
-        elementById[process.endEvent.id] = process.endEvent
-
+        fillForStartEvent(process.startEvent, elementById, propertiesById)
+        fillForEndEvent(process.endEvent, elementById, propertiesById)
         process.callActivity?.forEach { fillForCallActivity(it, elementById, propertiesById) }
         process.serviceTask?.forEach { fillForServiceTask(it, elementById, propertiesById) }
         process.sequenceFlow?.forEach { fillForSequenceFlow(it, elementById, propertiesById) }
@@ -32,6 +31,22 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
                 propertiesById,
                 diagram
         )
+    }
+
+    private fun fillForStartEvent(
+            activity: BpmnStartEvent,
+            elementById: MutableMap<String, WithId>,
+            propertiesByElemType: MutableMap<String, MutableMap<PropertyType, Property>>) {
+        elementById[activity.id] = activity
+        propertiesByElemType[activity.id] = processDtoToPropertyMap(activity)
+    }
+
+    private fun fillForEndEvent(
+            activity: BpmnEndEvent,
+            elementById: MutableMap<String, WithId>,
+            propertiesByElemType: MutableMap<String, MutableMap<PropertyType, Property>>) {
+        elementById[activity.id] = activity
+        propertiesByElemType[activity.id] = processDtoToPropertyMap(activity)
     }
 
     private fun fillForCallActivity(
