@@ -45,7 +45,7 @@ class BpmnPluginToolWindow {
     fun run(bpmnFile: PsiFile, context: BpmnActionContext) {
         val table = MultiEditJTable(DefaultTableModel())
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF)
-        table.rowHeight = 20
+        table.rowHeight = 24
 
         val scrollPane = JBScrollPane(table)
         propertiesPanel.removeAll()

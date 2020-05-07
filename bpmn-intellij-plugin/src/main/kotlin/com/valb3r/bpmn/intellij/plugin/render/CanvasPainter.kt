@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.render
 
 import com.valb3r.bpmn.intellij.plugin.Colors
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
 import java.awt.*
@@ -14,10 +15,12 @@ import java.awt.geom.Rectangle2D
 import java.awt.geom.RoundRectangle2D
 import java.text.AttributedCharacterIterator
 import java.text.AttributedString
+import javax.swing.Icon
 
 
 class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
 
+    private val iconMargin = 5.0f
     private val textMargin = 5.0f
     private val font = Font("Courier", Font.PLAIN, 12)
     private val arrowWidth = 10;
@@ -89,7 +92,33 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
         return Area(drawShape)
     }
 
+    fun drawGraphicsRoundedRectWithIcon(shape: ShapeElement, icon: Icon, name: String?, color: Colors): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
+
+        graphics2D.color = color.color
+        val drawShape = RoundRectangle2D.Float(
+                leftTop.x,
+                leftTop.y,
+                (rightBottom.x - leftTop.x),
+                (rightBottom.y - leftTop.y),
+                (nodeRadius * this.camera.zoom.x),
+                (nodeRadius * this.camera.zoom.y)
+        )
+        graphics2D.fill(drawShape)
+        graphics2D.color = Color.GRAY
+        graphics2D.draw(drawShape)
+        val cropTo = drawIconAndWrapShape(shape, icon)
+        graphics2D.color = Color.BLACK
+        name?.apply { drawWrappedText(cropTo, this) }
+        return Area(drawShape)
+    }
+
     fun drawWrappedText(shape: ShapeElement, text: String) {
+        if ("" == text) {
+            return
+        }
+
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
 
@@ -111,18 +140,47 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
             return
         }
 
+        if (height - textMargin < font.size) {
+            return
+        }
+
         while (lineMeasurer.position < paragraphEnd) {
             val layout = lineMeasurer.nextLayout(breakWidth)
             val drawPosX = leftTop.x + textMargin
             drawPosY += layout.ascent
-            layout.draw(graphics2D, drawPosX, drawPosY)
-            drawPosY += layout.descent + layout.leading
-
             // Crop extra height and draw ellipsis
-            if (drawPosY - leftTop.y + 2 * (layout.ascent + layout.descent + layout.leading) > height) {
-                graphics2D.drawString("...", drawPosX, drawPosY + layout.ascent)
+            if (drawPosY - leftTop.y + (layout.ascent + layout.descent + layout.leading) > height) {
+                graphics2D.drawString("...", drawPosX, drawPosY)
                 break
             }
+            layout.draw(graphics2D, drawPosX, drawPosY)
+            drawPosY += layout.descent + layout.leading
         }
+    }
+
+    fun drawIconAndWrapShape(shape: ShapeElement, icon: Icon): ShapeElement {
+        val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
+        if (rightBottom.x - leftTop.x < (iconMargin + icon.iconWidth)) {
+            return shape
+        }
+
+        if (rightBottom.y - leftTop.y < (iconMargin + icon.iconHeight)) {
+            return shape
+        }
+
+        icon.paintIcon(null, graphics2D, (leftTop.x + iconMargin).toInt(), (leftTop.y + iconMargin).toInt())
+
+        val iconTop = camera.fromCameraView(Point2D.Float(leftTop.x, leftTop.y + iconMargin + icon.iconHeight))
+        val iconBottom = camera.fromCameraView(Point2D.Float(rightBottom.x, rightBottom.y))
+
+        return shape.copy(
+                bounds = BoundsElement(
+                        iconTop.x,
+                        iconTop.y,
+                        iconBottom.x - iconTop.x,
+                        iconBottom.y - iconTop.y
+                )
+        )
     }
 }

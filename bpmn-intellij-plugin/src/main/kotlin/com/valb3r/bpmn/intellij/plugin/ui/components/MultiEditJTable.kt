@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.ui.components
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.AbstractTableCellEditor
 import java.awt.Component
 import java.awt.Font
@@ -12,8 +13,9 @@ import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableCellEditor
 import javax.swing.table.TableCellRenderer
 import javax.swing.table.TableModel
+import kotlin.math.max
 
-class MultiEditJTable(tableModel: TableModel): JTable(tableModel) {
+class MultiEditJTable(tableModel: TableModel): JBTable(tableModel) {
     val intraCellSpacingWidth = 10
 
     override fun getCellEditor(row: Int, column: Int): TableCellEditor {
@@ -40,11 +42,11 @@ class MultiEditJTable(tableModel: TableModel): JTable(tableModel) {
     }
 
     // Auto-resize
-    override fun prepareRenderer(renderer: TableCellRenderer?, row: Int, column: Int): Component? {
+    override fun prepareRenderer(renderer: TableCellRenderer, row: Int, column: Int): Component {
         val component = super.prepareRenderer(renderer, row, column)
         val rendererWidth = component.preferredSize.width
         val tableColumn = getColumnModel().getColumn(column)
-        tableColumn.preferredWidth = Math.max(
+        tableColumn.preferredWidth = max(
                 rendererWidth + intercellSpacing.width + intraCellSpacingWidth,
                 tableColumn.preferredWidth
         )

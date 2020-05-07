@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.render
 
+import com.intellij.openapi.util.IconLoader
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
@@ -11,6 +12,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.NAME
 import java.awt.geom.Area
 
 class BpmnProcessRenderer {
+
+    val GEAR = IconLoader.getIcon("/icons/gear.png")
 
     fun render(canvas: CanvasPainter, selectedIds: Set<String>, diagram: BpmnProcessObjectView?): Map<String, Area> {
         if (null == diagram) {
@@ -72,7 +75,7 @@ class BpmnProcessRenderer {
         when (elem) {
             null -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.NEUTRAL_COLOR))
             is BpmnStartEvent -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.GREEN))
-            is BpmnServiceTask -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.UN_HIGHLIGHTED_COLOR))
+            is BpmnServiceTask -> return canvas.drawGraphicsRoundedRectWithIcon(shape, GEAR, name, color(active, Colors.UN_HIGHLIGHTED_COLOR))
             is BpmnCallActivity -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.DOWNSTREAM_COLOR))
             is BpmnExclusiveGateway -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.YELLOW))
             is BpmnEndEvent -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.RED))

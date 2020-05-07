@@ -21,10 +21,10 @@
       <p>0.0.1:</p>
       <ul>
         <li>
-          Initial release.
+          Alpha version release.
         </li>
         <li>
-          Support <code>Java</code>.
+          Support navigating from BPMN diagram to <code>Spring beans</code>.
         </li>
         <li>
           Suppport drawing BPMN diagrams from Flowable XML format.
@@ -34,7 +34,7 @@
 
     <!-- The vendor of the plugin. The optional "url" attribute specifies the URL of the vendor homepage.
          The optional "email" attribute specifies the e-mail address of the vendor.-->
-    <vendor url="https://example.com" email="foo@bar.com">Valentyn Berezin</vendor>
+    <vendor url="https://github.com/valb3r/flowable-bpmn-intellij-plugin" email="vbe@adorsys.com">Valentyn Berezin</vendor>
 
     <!-- The unique identifiers of the plugins on which this plugin depends. -->
     <depends>com.intellij.modules.lang</depends>
@@ -51,7 +51,7 @@
     <!-- <helpset file="myhelp.jar" path="/Help.hs" /> -->
 
     <!-- Minimum and maximum build of IDE compatible with the plugin -->
-    <idea-version since-build="183"/>
+    <idea-version since-build="181"/>
 
     <!-- Resource bundle (/messages/MyPluginBundle.properties) to be used with `key` attributes in extension points
          and implicit keys like `action.[pluginID].[ActionID].text` -->
@@ -105,7 +105,7 @@
         <group id="BpmnDiagramActionGroup"
                text="Flowable BPMN Diagram"
                description="Actions of Flowable BPMN diagram plugin"
-               icon="/icons/icon.svg"
+               icon="/icons/icon.png"
                popup="false">
             <!-- The <action> element defines an action to register.
                  - "id" (required) specifies an unique identifier for the action.
@@ -118,7 +118,7 @@
                     class="com.valb3r.bpmn.intellij.plugin.ViewBpmnDiagramAction"
                     text="View BPMN Diagram"
                     description="View BPMN Diagram"
-                    icon="/icons/icon.svg">
+                    icon="/icons/icon.png">
             </action>
             <!-- The <add-to-group> node specifies that the action should be added to an existing group.
                  An action can be added to several groups.
@@ -129,6 +129,7 @@
                  - "relative-to-action" (required if the anchor is set to "before" and "after") specifies the action
                    before or after which the current action is inserted. -->
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <!-- The <separator> element defines a separator between actions. -->
             <!-- <separator/> -->
             <!-- <group id="AnotherNestedGroup"/> -->
@@ -155,7 +156,7 @@
         <toolWindow
                 id="BPMN-Flowable-Diagram"
                 secondary="true"
-                icon="/icons/icon.svg"
+                icon="/icons/icon.png"
                 anchor="right"
                 factoryClass="com.valb3r.bpmn.intellij.plugin.BpmnPluginToolWindowFactory"/>
         <!-- Project service holds a reference to the tool window, which is accessible by an action (editor menu) -->
