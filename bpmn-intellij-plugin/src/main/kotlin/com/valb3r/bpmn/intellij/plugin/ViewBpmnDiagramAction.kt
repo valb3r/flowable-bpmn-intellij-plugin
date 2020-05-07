@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.wm.ToolWindowManager
 
-class ViewBpmnDiagramAction: AnAction() {
+class ViewBpmnDiagramAction : AnAction() {
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project ?: return
@@ -15,16 +15,16 @@ class ViewBpmnDiagramAction: AnAction() {
             return
         }
 
-        ToolWindowManager.getInstance(project)
-                .getToolWindow("BPMN-Flowable-Diagram")
-                .activate {
-                    ServiceManager.getService(project, BpmnPluginToolWindowProjectService::class.java)
-                            .bpmnToolWindow
-                            .run(
-                                    file,
-                                    BpmnActionContext(project)
-                            )
-                }
+        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("BPMN-Flowable-Diagram")
+        toolWindow.title = file.name
+        toolWindow.activate {
+            ServiceManager.getService(project, BpmnPluginToolWindowProjectService::class.java)
+                    .bpmnToolWindow
+                    .run(
+                            file,
+                            BpmnActionContext(project)
+                    )
+        }
     }
 
     override fun update(anActionEvent: AnActionEvent) {

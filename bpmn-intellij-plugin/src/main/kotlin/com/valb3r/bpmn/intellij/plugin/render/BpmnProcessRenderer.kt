@@ -101,5 +101,5 @@ class BpmnProcessRenderer {
             val elemPropertiesByElementId: Map<String, Map<PropertyType, Property>>
     )
 
-    fun String.asResource(): String? = object {}::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
+    fun String.asResource(): String? = BpmnProcessRenderer::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
 }
