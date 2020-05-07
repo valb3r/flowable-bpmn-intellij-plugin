@@ -9,7 +9,7 @@ import org.mapstruct.factory.Mappers
 data class ExclusiveGateway(
         @JacksonXmlProperty(isAttribute = true) val id: String,
         @JacksonXmlProperty(isAttribute = true) val name: String?,
-        @JacksonXmlProperty(isAttribute = true) val default: String?,
+        @JacksonXmlProperty(isAttribute = true, localName = "default") val defaultElement: String?,
         val documentation: String?
 ): BpmnMappable<BpmnExclusiveGateway> {
 

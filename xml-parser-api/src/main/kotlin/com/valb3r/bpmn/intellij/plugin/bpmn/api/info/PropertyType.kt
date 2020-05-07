@@ -19,5 +19,5 @@ enum class PropertyType(val id: String, val caption: String, val valueType: Prop
     TARGET_REF("targetRef", "Target reference", STRING),
     CONDITION_EXPR_VALUE("conditionExpression.text", "Condition expression", EXPRESSION),
     CONDITION_EXPR_TYPE("conditionExpression.type", "Condition expression type", STRING),
-    DEFAULT_FLOW("default", "Default flow element", STRING)
+    DEFAULT_FLOW("defaultElement", "Default flow element", STRING)
 }

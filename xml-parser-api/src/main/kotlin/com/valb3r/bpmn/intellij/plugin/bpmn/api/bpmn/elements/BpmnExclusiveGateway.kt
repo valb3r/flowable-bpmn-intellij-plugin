@@ -6,6 +6,6 @@ import com.github.pozo.KotlinBuilder
 data class BpmnExclusiveGateway(
         override val id: String,
         val name: String?,
-        val default: String?,
+        val defaultElement: String?,
         val documentation: String?
 ): WithId

@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 
+// TODO - move to some implementation module
 data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<DiagramElement>) {
 
     private val mapper = ObjectMapper()
