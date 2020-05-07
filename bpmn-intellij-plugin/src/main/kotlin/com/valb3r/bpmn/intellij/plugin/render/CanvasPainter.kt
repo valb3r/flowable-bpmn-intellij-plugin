@@ -39,7 +39,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
     private val solidLineStroke = BasicStroke(regularLineWidth)
 
     private val cachedIcons = CacheBuilder.newBuilder()
-            .expireAfterAccess(1L, TimeUnit.SECONDS)
+            .expireAfterAccess(10L, TimeUnit.SECONDS)
             .maximumSize(100)
             .build<String, BufferedImage>()
 
@@ -245,7 +245,8 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
     }
 
     fun rasterizeSvg(svgFile: String, width: Float, height: Float): BufferedImage {
-        return cachedIcons.get(Hashing.md5().hashString(svgFile, UTF_8).toString()) {
+        val cacheKey = Hashing.md5().hashString(svgFile + ":" + width.toInt() + "@" + height.toInt(), UTF_8).toString()
+        return cachedIcons.get(cacheKey) {
             val imageTranscoder = BufferedImageTranscoder()
             imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, width)
             imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, height)

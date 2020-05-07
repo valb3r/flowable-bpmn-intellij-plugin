@@ -13,6 +13,8 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.JPanel
 import javax.swing.JTable
+import kotlin.math.max
+import kotlin.math.min
 
 class Canvas: JPanel() {
 
@@ -66,6 +68,11 @@ class Canvas: JPanel() {
 
     fun zoom(anchor: Point2D.Float, factor: Int) {
         val scale = Math.pow(zoomFactor.toDouble(), factor.toDouble()).toFloat()
+
+        if (min(camera.zoom.x, camera.zoom.y) * scale < 0.3f || max(camera.zoom.x, camera.zoom.y) * scale > 2.0f) {
+            return
+        }
+
         val scenePoint = camera.fromCameraView(anchor)
         camera = Camera(
                 Point2D.Float(
