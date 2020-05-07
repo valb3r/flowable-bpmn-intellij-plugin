@@ -3,12 +3,10 @@ package com.valb3r.bpmn.intellij.plugin.render
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
-import java.awt.BasicStroke
-import java.awt.Color
-import java.awt.Graphics2D
-import java.awt.Polygon
+import java.awt.*
 import java.awt.font.FontRenderContext
 import java.awt.font.LineBreakMeasurer
+import java.awt.font.TextAttribute
 import java.awt.geom.AffineTransform.getTranslateInstance
 import java.awt.geom.Area
 import java.awt.geom.Point2D
@@ -20,6 +18,8 @@ import java.text.AttributedString
 
 class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
 
+    private val textMargin = 5.0f
+    private val font = Font("Courier", Font.PLAIN, 12)
     private val arrowWidth = 10;
     private val arrowStyle = Polygon(intArrayOf(0, -arrowWidth, -arrowWidth), intArrayOf(0, 5, -5), 3)
     private val arrowOpenAngle = Math.toRadians(15.0)
@@ -72,8 +72,6 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
 
-        graphics2D.color = Color.BLACK
-        name?.apply { drawWrappedText(shape, this) }
         graphics2D.color = color.color
         val drawShape = RoundRectangle2D.Float(
                 leftTop.x,
@@ -86,14 +84,45 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
         graphics2D.fill(drawShape)
         graphics2D.color = Color.GRAY
         graphics2D.draw(drawShape)
+        graphics2D.color = Color.BLACK
+        name?.apply { drawWrappedText(shape, this) }
         return Area(drawShape)
     }
 
-    fun drawWrappedText(shape: ShapeElement, text: String): Area {
-        val paragraph: AttributedCharacterIterator = AttributedString(text).iterator
+    fun drawWrappedText(shape: ShapeElement, text: String) {
+        val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
+
+        graphics2D.font = font // for ellipsis
+        val attributedString = AttributedString(text, mutableMapOf(TextAttribute.FONT to font))
+        val paragraph: AttributedCharacterIterator = attributedString.iterator
         val paragraphStart = paragraph.beginIndex
         val paragraphEnd = paragraph.endIndex
         val frc: FontRenderContext = graphics2D.getFontRenderContext()
         val lineMeasurer = LineBreakMeasurer(paragraph, frc)
+
+        val height = rightBottom.y - leftTop.y
+        val breakWidth = rightBottom.x - leftTop.x - 2.0f * textMargin
+        var drawPosY = leftTop.y + textMargin
+        lineMeasurer.position = paragraphStart
+
+        // avoid non-fitting values:
+        if (breakWidth < font.size * 2) {
+            return
+        }
+
+        while (lineMeasurer.position < paragraphEnd) {
+            val layout = lineMeasurer.nextLayout(breakWidth)
+            val drawPosX = leftTop.x + textMargin
+            drawPosY += layout.ascent
+            layout.draw(graphics2D, drawPosX, drawPosY)
+            drawPosY += layout.descent + layout.leading
+
+            // Crop extra height and draw ellipsis
+            if (drawPosY - leftTop.y + 2 * (layout.ascent + layout.descent + layout.leading) > height) {
+                graphics2D.drawString("...", drawPosX, drawPosY + layout.ascent)
+                break
+            }
+        }
     }
 }

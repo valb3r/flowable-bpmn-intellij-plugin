@@ -66,7 +66,7 @@ class BpmnProcessRenderer {
     private fun drawShapeElement(canvas: CanvasPainter, shape: ShapeElement, meta: RenderMetadata): Area {
         val elem = meta.elementById[shape.bpmnElement]
         val props = meta.elemPropertiesByElementId[shape.bpmnElement]
-        val name = props?.get(NAME)?.value as String
+        val name = props?.get(NAME)?.value as String?
         val active = isActive(elem?.id, meta)
 
         when (elem) {
