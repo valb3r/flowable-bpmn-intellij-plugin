@@ -1,9 +1,15 @@
 package com.valb3r.bpmn.intellij.plugin.render
 
-import com.valb3r.bpmn.intellij.plugin.Colors
+import com.google.common.cache.CacheBuilder
+import com.google.common.hash.Hashing
+import com.intellij.util.ui.UIUtil
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
+import org.apache.batik.transcoder.TranscoderInput
+import org.apache.batik.transcoder.TranscoderOutput
+import org.apache.batik.transcoder.image.ImageTranscoder
+import org.apache.batik.transcoder.image.PNGTranscoder
 import java.awt.*
 import java.awt.font.FontRenderContext
 import java.awt.font.LineBreakMeasurer
@@ -13,8 +19,12 @@ import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.geom.RoundRectangle2D
+import java.awt.image.BufferedImage
+import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets.UTF_8
 import java.text.AttributedCharacterIterator
 import java.text.AttributedString
+import java.util.concurrent.TimeUnit
 import javax.swing.Icon
 
 
@@ -22,7 +32,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
 
     private val iconMargin = 5.0f
     private val textMargin = 5.0f
-    private val font = Font("Courier", Font.PLAIN, 12)
+    private val font = Font("Courier", Font.PLAIN, 10)
     private val arrowWidth = 10;
     private val arrowStyle = Polygon(intArrayOf(0, -arrowWidth, -arrowWidth), intArrayOf(0, 5, -5), 3)
     private val arrowOpenAngle = Math.toRadians(15.0)
@@ -31,11 +41,16 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
     private val nodeRadius = 25f
     private val solidLineStroke = BasicStroke(regularLineWidth)
 
-    fun drawGraphicsLine(start: WaypointElement, end: WaypointElement, color: Colors): Area {
+    private val cachedIcons = CacheBuilder.newBuilder()
+            .expireAfterWrite(1L, TimeUnit.SECONDS)
+            .maximumSize(100)
+            .build<String, BufferedImage>()
+
+    fun drawGraphicsLine(start: WaypointElement, end: WaypointElement, color: Color): Area {
         val st = camera.toCameraView(Point2D.Float(start.x, start.y))
         val en = camera.toCameraView(Point2D.Float(end.x, end.y))
 
-        graphics2D.color = color.color
+        graphics2D.color = color
         val transform = getTranslateInstance(en.x.toDouble(), en.y.toDouble())
         transform.rotate(en.x.toDouble() - st.x.toDouble(), en.y.toDouble() - st.y.toDouble())
         val lineLen = en.distance(st).toFloat()
@@ -50,11 +65,11 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
         return line
     }
 
-    fun drawGraphicsLineWithArrow(start: WaypointElement, end: WaypointElement, color: Colors): Area {
+    fun drawGraphicsLineWithArrow(start: WaypointElement, end: WaypointElement, color: Color): Area {
         val st = camera.toCameraView(Point2D.Float(start.x, start.y))
         val en = camera.toCameraView(Point2D.Float(end.x, end.y))
 
-        graphics2D.color = color.color
+        graphics2D.color = color
         val transform = getTranslateInstance(en.x.toDouble(), en.y.toDouble())
         transform.rotate(en.x.toDouble() - st.x.toDouble(), en.y.toDouble() - st.y.toDouble())
         val arrow = Area(arrowStyle)
@@ -71,11 +86,11 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
         return arrow
     }
 
-    fun drawGraphicsRoundedRect(shape: ShapeElement, name: String?, color: Colors): Area {
+    fun drawGraphicsRoundedRect(shape: ShapeElement, name: String?, background: Color, border: Color, textColor: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
 
-        graphics2D.color = color.color
+        graphics2D.color = background
         val drawShape = RoundRectangle2D.Float(
                 leftTop.x,
                 leftTop.y,
@@ -85,18 +100,18 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
                 (nodeRadius * this.camera.zoom.y)
         )
         graphics2D.fill(drawShape)
-        graphics2D.color = Color.GRAY
+        graphics2D.color = border
         graphics2D.draw(drawShape)
-        graphics2D.color = Color.BLACK
+        graphics2D.color = textColor
         name?.apply { drawWrappedText(shape, this) }
         return Area(drawShape)
     }
 
-    fun drawGraphicsRoundedRectWithIcon(shape: ShapeElement, icon: Icon, name: String?, color: Colors): Area {
+    fun drawGraphicsRoundedRectWithIcon(shape: ShapeElement, icon: Icon, name: String?, background: Color, border: Color, textColor: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
 
-        graphics2D.color = color.color
+        graphics2D.color = background
         val drawShape = RoundRectangle2D.Float(
                 leftTop.x,
                 leftTop.y,
@@ -106,12 +121,41 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
                 (nodeRadius * this.camera.zoom.y)
         )
         graphics2D.fill(drawShape)
-        graphics2D.color = Color.GRAY
+        graphics2D.color = border
         graphics2D.draw(drawShape)
         val cropTo = drawIconAndWrapShape(shape, icon)
-        graphics2D.color = Color.BLACK
+        graphics2D.color = textColor
         name?.apply { drawWrappedText(cropTo, this) }
         return Area(drawShape)
+    }
+
+    fun drawWrappedIcon(shape: ShapeElement, svgIcon: String, selected: Boolean, selectedColor: Color): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
+
+        val width = (rightBottom.x - leftTop.x).toInt()
+        val height = (rightBottom.y - leftTop.y).toInt()
+
+        if (0 == width || 0 == height) {
+            return Area()
+        }
+
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat())
+        graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
+
+        val shape = Rectangle2D.Float(
+                leftTop.x,
+                leftTop.y,
+                (rightBottom.x - leftTop.x),
+                (rightBottom.y - leftTop.y)
+        )
+
+        if (selected) {
+            graphics2D.color = selectedColor
+            graphics2D.draw(shape)
+        }
+
+        return Area(shape)
     }
 
     fun drawWrappedText(shape: ShapeElement, text: String) {
@@ -182,5 +226,30 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
                         iconBottom.y - iconTop.y
                 )
         )
+    }
+
+    fun rasterizeSvg(svgFile: String, width: Float, height: Float): BufferedImage {
+        return cachedIcons.get(Hashing.crc32().hashString(svgFile, UTF_8).toString()) {
+            val imageTranscoder = BufferedImageTranscoder()
+            imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, width)
+            imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, height)
+
+            val input = TranscoderInput(ByteArrayInputStream(svgFile.toByteArray(UTF_8)))
+            imageTranscoder.transcode(input, null)
+            return@get imageTranscoder.bufferedImage!!
+        }
+    }
+
+    internal class BufferedImageTranscoder : ImageTranscoder() {
+        override fun createImage(w: Int, h: Int): BufferedImage {
+            return UIUtil.createImage(w, h, BufferedImage.TYPE_INT_ARGB)
+        }
+
+        override fun writeImage(img: BufferedImage, output: TranscoderOutput?) {
+            bufferedImage = img
+        }
+
+        var bufferedImage: BufferedImage? = null
+            private set
     }
 }

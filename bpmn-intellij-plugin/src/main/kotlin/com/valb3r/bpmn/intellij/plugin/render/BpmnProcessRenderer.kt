@@ -9,11 +9,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.NAME
+import java.awt.Color
 import java.awt.geom.Area
+import java.nio.charset.StandardCharsets
 
 class BpmnProcessRenderer {
 
     val GEAR = IconLoader.getIcon("/icons/gear.png")
+    val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
 
     fun render(canvas: CanvasPainter, selectedIds: Set<String>, diagram: BpmnProcessObjectView?): Map<String, Area> {
         if (null == diagram) {
@@ -58,8 +61,8 @@ class BpmnProcessRenderer {
         val area = Area()
         shape.waypoint?.forEachIndexed { index, it ->
             when {
-                index == shape.waypoint!!.size - 1 -> area.add(canvas.drawGraphicsLineWithArrow(shape.waypoint!![index - 1], it, color(active, Colors.UN_HIGHLIGHTED_COLOR)))
-                index > 0 -> area.add(canvas.drawGraphicsLine(shape.waypoint!![index - 1], it, color(active, Colors.UN_HIGHLIGHTED_COLOR)))
+                index == shape.waypoint!!.size - 1 -> area.add(canvas.drawGraphicsLineWithArrow(shape.waypoint!![index - 1], it, color(active, Colors.ARROW_COLOR)))
+                index > 0 -> area.add(canvas.drawGraphicsLine(shape.waypoint!![index - 1], it, color(active, Colors.ARROW_COLOR)))
             }
         }
 
@@ -73,19 +76,19 @@ class BpmnProcessRenderer {
         val active = isActive(elem?.id, meta)
 
         when (elem) {
-            null -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.NEUTRAL_COLOR))
-            is BpmnStartEvent -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.GREEN))
-            is BpmnServiceTask -> return canvas.drawGraphicsRoundedRectWithIcon(shape, GEAR, name, color(active, Colors.UN_HIGHLIGHTED_COLOR))
-            is BpmnCallActivity -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.DOWNSTREAM_COLOR))
-            is BpmnExclusiveGateway -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.YELLOW))
-            is BpmnEndEvent -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.RED))
+            null -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+            is BpmnStartEvent -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.GREEN), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+            is BpmnServiceTask -> return canvas.drawGraphicsRoundedRectWithIcon(shape, GEAR, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+            is BpmnCallActivity -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.CALL_ACTIVITY_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+            is BpmnExclusiveGateway -> return canvas.drawWrappedIcon(shape, EXCLUSIVE_GATEWAY, active, Color.GREEN)
+            is BpmnEndEvent -> return canvas.drawGraphicsRoundedRect(shape, name, color(active, Colors.RED), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
         }
 
         return Area()
     }
 
-    private fun color(active: Boolean, color: Colors): Colors {
-        return if (active) Colors.GREEN else color
+    private fun color(active: Boolean, color: Colors): Color {
+        return if (active) Colors.GREEN.color else color.color
     }
 
     private fun isActive(elemId: String?, meta: RenderMetadata): Boolean {
@@ -97,4 +100,6 @@ class BpmnProcessRenderer {
             val elementById: Map<String, WithId>,
             val elemPropertiesByElementId: Map<String, Map<PropertyType, Property>>
     )
+
+    fun String.asResource(): String? = object {}::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
 }

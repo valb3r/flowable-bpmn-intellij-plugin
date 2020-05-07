@@ -4,6 +4,11 @@ import com.intellij.ui.JBColor
 import java.awt.Color
 
 enum class Colors(val color: JBColor) {
+    SERVICE_TASK_COLOR(JBColor(Color(0xF9F9F9), Color(0xF9F9F9))),
+    CALL_ACTIVITY_COLOR(JBColor(Color(0xF9F9F9), Color(0xF9F9F9))),
+    ELEMENT_BORDER_COLOR(JBColor(Color(0xC9C9C9), Color(0xC9C9C9))),
+    TEXT_COLOR(JBColor(Color(0x292B2D), Color(0xFDFEFF))),
+    ARROW_COLOR(JBColor(Color(0x292B2D), Color(0xFDFEFF))),
     BACKGROUND_COLOR(JBColor(Color(0xFDFEFF), Color(0x292B2D))),
     UN_HIGHLIGHTED_COLOR(JBColor(Color(0xC6C8CA), Color(0x585A5C))),
     NEUTRAL_COLOR(JBColor(Color(0x626466), Color(0x949698))),
