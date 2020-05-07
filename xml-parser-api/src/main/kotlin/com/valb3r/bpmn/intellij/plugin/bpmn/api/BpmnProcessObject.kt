@@ -103,7 +103,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
 
     private fun JsonNode.parseValue(result: MutableMap<PropertyType, Property>, type: PropertyType) {
         result[type] = when (type.valueType) {
-            STRING, CLASS, EXPRESSION -> Property(this.asText())
+            STRING, CLASS, EXPRESSION -> if (this.isNull) Property(null) else Property(this.asText())
             BOOLEAN -> Property(this.asBoolean())
         }
     }
