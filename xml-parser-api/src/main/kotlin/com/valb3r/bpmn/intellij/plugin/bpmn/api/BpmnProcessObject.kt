@@ -97,7 +97,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
                 tryParseNestedValue(type, this, result)
             }
 
-            parseValue(result, type)
+            this[split[1]]?.parseValue(result, type)
         }
     }
 
