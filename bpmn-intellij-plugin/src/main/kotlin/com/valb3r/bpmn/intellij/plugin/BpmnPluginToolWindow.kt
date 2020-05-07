@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin
 
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileTypes.StdFileTypes
 import com.intellij.openapi.project.Project
@@ -12,11 +13,11 @@ import com.intellij.ui.JavaReferenceEditorUtil
 import com.intellij.ui.components.JBScrollPane
 import com.valb3r.bpmn.intellij.plugin.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.render.CanvasBuilder
-import com.valb3r.bpmn.intellij.plugin.ui.components.FirstColumnReadOnlyModel
 import com.valb3r.bpmn.intellij.plugin.ui.components.MultiEditJTable
 import javax.swing.JPanel
 import javax.swing.JSplitPane
 import javax.swing.JTable
+import javax.swing.table.DefaultTableModel
 
 
 class BpmnPluginToolWindow {
@@ -42,12 +43,8 @@ class BpmnPluginToolWindow {
     fun getContent() = this.mainToolWindowForm
 
     fun run(bpmnFile: PsiFile, context: BpmnActionContext) {
-        val model = FirstColumnReadOnlyModel()
-        model.addColumn("")
-        model.addColumn("")
-        val table = MultiEditJTable(model)
+        val table = MultiEditJTable(DefaultTableModel())
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF)
-        table.columnModel.getColumn(1).preferredWidth = 500
         table.rowHeight = 20
 
         val scrollPane = JBScrollPane(table)
@@ -67,16 +64,12 @@ class BpmnPluginToolWindow {
 
     protected fun createEditor(project: Project, bpmnFile: PsiFile, text: String): EditorTextField {
         val factory = JavaCodeFragmentFactory.getInstance(project)
-        val fragment: JavaCodeFragment = factory.createCodeBlockCodeFragment(text!!, bpmnFile, true)
+        val fragment: JavaCodeFragment = factory.createCodeBlockCodeFragment(text, bpmnFile, true)
         fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
-        val document = PsiDocumentManager.getInstance(project).getDocument(fragment)
+        val document = PsiDocumentManager.getInstance(project).getDocument(fragment)!!
 
-        val textField: EditorTextField = object : EditorTextField(document, project, StdFileTypes.JAVA) {
-            override fun createEditor(): EditorEx {
-                val editorEx: EditorEx = super.createEditor()
-                return editorEx
-            }
-        }
+        val textField: EditorTextField = JavaEditorTextField(document, project)
+        textField.setOneLineMode(true)
         return textField
     }
 
@@ -105,5 +98,12 @@ class BpmnPluginToolWindow {
         this.canvas.isVisible = true
         this.canvasPanel.updateUI()
         this.canvasPanel.isEnabled = true
+    }
+
+    class JavaEditorTextField(document: Document, project: Project): EditorTextField(document, project, StdFileTypes.JAVA) {
+        override fun createEditor(): EditorEx {
+            val editorEx: EditorEx = super.createEditor()
+            return editorEx
+        }
     }
 }
