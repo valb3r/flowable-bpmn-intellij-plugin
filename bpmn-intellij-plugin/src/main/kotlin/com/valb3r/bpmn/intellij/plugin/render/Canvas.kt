@@ -6,7 +6,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.properties.PropertiesVisualizer
 import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.Point
 import java.awt.RenderingHints
 import java.awt.geom.Area
 import java.awt.geom.Point2D
@@ -25,6 +24,7 @@ class Canvas: JPanel() {
 
     private var selectedElements: MutableSet<String> = mutableSetOf()
     private var camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
+    private var dragCtx: ElementDragContext = ElementDragContext(mutableSetOf(), Point2D.Float(), Point2D.Float())
     private var processObject: BpmnProcessObjectView? = null
     private var renderer: BpmnProcessRenderer? = null
     private var areaByElement: Map<String, Area>? = null
@@ -34,7 +34,14 @@ class Canvas: JPanel() {
         super.paintComponent(graphics)
 
         val graphics2D = setupGraphics(graphics)
-        areaByElement = renderer?.render(CanvasPainter(graphics2D, camera.copy()), selectedElements, processObject)
+        areaByElement = renderer?.render(
+                RenderContext(
+                        CanvasPainter(graphics2D, camera.copy()),
+                        selectedElements.toSet(),
+                        dragCtx.copy(),
+                        processObject
+                )
+        )
     }
 
     fun reset(properties: JTable, editorFactory: (value: String) -> EditorTextField, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
@@ -44,8 +51,10 @@ class Canvas: JPanel() {
         this.propertiesVisualizer = PropertiesVisualizer(properties, editorFactory)
     }
 
-    fun click(location: Point) {
+    fun click(location: Point2D.Float) {
         this.selectedElements.clear()
+        dragCtx = ElementDragContext(mutableSetOf(), Point2D.Float(), Point2D.Float())
+
         val cursor = cursorRect(location)
         areaByElement
                 ?.filter { it.value.intersects(cursor) }
@@ -59,12 +68,42 @@ class Canvas: JPanel() {
                 ?.let { props -> selectedElementId?.let { propertiesVisualizer?.visualize(selectedElementId, props) }}
     }
 
-    fun drag(start: Point2D.Float, current: Point2D.Float) {
+    fun dragCanvas(start: Point2D.Float, current: Point2D.Float) {
         val newCameraOrigin = Point2D.Float(
                 camera.origin.x - current.x + start.x,
                 camera.origin.y - current.y + start.y
         )
         camera = Camera(newCameraOrigin, Point2D.Float(camera.zoom.x, camera.zoom.y))
+        repaint()
+    }
+
+    fun startDragWithButton(current: Point2D.Float) {
+        val cursor = cursorRect(current)
+        val elemsUnderCursor = areaByElement?.filter { it.value.intersects(cursor) }?.map { it.key }
+        if (selectedElements.intersect(elemsUnderCursor ?: emptyList()).isEmpty()) {
+            dragCtx = ElementDragContext(emptySet(), camera.fromCameraView(current), camera.fromCameraView(current))
+            return
+        }
+
+        dragCtx = ElementDragContext(selectedElements.toSet(), camera.fromCameraView(current), camera.fromCameraView(current))
+    }
+
+    fun dragWithWheel(previous: Point2D.Float, current: Point2D.Float) {
+        dragCanvas(previous, current)
+    }
+
+    fun dragWithLeftButton(previous: Point2D.Float, current: Point2D.Float) {
+        if (selectedElements.isEmpty() || dragCtx.draggedIds.isEmpty()) {
+            dragCanvas(previous, current)
+            return
+        }
+
+        dragCtx = dragCtx.copy(current = camera.fromCameraView(current))
+        repaint()
+    }
+
+    fun stopDrag() {
+        dragCtx = dragCtx.copy(draggedIds = emptySet())
         repaint()
     }
 
@@ -100,9 +139,9 @@ class Canvas: JPanel() {
     }
 
     // to handle small area shapes
-    private fun cursorRect(location: Point): Rectangle2D {
-        val left = Point2D.Float(location.x.toFloat() - cursorSize, location.y.toFloat() - cursorSize)
-        val right = Point2D.Float(location.x.toFloat() + cursorSize, location.y.toFloat() + cursorSize)
+    private fun cursorRect(location: Point2D.Float): Rectangle2D {
+        val left = Point2D.Float(location.x - cursorSize, location.y - cursorSize)
+        val right = Point2D.Float(location.x + cursorSize, location.y + cursorSize)
 
         return Rectangle2D.Float(
                 left.x,

@@ -7,7 +7,12 @@ data class ShapeElement(
         val id: String,
         val bpmnElement: String,
         val bounds: BoundsElement
-)
+): Translatable<ShapeElement> {
+
+    override fun copyAndTranslate(dx: Float, dy: Float): ShapeElement {
+        return this.copy(bounds = BoundsElement(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height))
+    }
+}
 
 @KotlinBuilder
 data class BoundsElement(

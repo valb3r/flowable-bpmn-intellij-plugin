@@ -10,7 +10,10 @@ import org.apache.batik.transcoder.TranscoderInput
 import org.apache.batik.transcoder.TranscoderOutput
 import org.apache.batik.transcoder.image.ImageTranscoder
 import org.apache.batik.transcoder.image.PNGTranscoder
-import java.awt.*
+import java.awt.Color
+import java.awt.Font
+import java.awt.Graphics2D
+import java.awt.Polygon
 import java.awt.font.FontRenderContext
 import java.awt.font.LineBreakMeasurer
 import java.awt.font.TextAttribute
@@ -32,11 +35,8 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
     private val font = Font("Courier", Font.PLAIN, 10)
     private val arrowWidth = 10;
     private val arrowStyle = Polygon(intArrayOf(0, -arrowWidth, -arrowWidth), intArrayOf(0, 5, -5), 3)
-    private val arrowOpenAngle = Math.toRadians(15.0)
     private val regularLineWidth = 2f
-
     private val nodeRadius = 25f
-    private val solidLineStroke = BasicStroke(regularLineWidth)
 
     private val cachedIcons = CacheBuilder.newBuilder()
             .expireAfterAccess(10L, TimeUnit.SECONDS)
@@ -156,9 +156,6 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
             return Area()
         }
 
-        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat())
-        graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
-
         val highlightedShape = Rectangle2D.Float(
                 leftTop.x,
                 leftTop.y,
@@ -168,8 +165,11 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
 
         if (selected) {
             graphics2D.color = selectedColor
-            graphics2D.draw(highlightedShape)
+            graphics2D.fill(highlightedShape)
         }
+
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat())
+        graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
 
         return Area(highlightedShape)
     }
