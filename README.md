@@ -28,4 +28,72 @@ MVP workflow demo:
 1. To move diagram up/down/left/right - click mouse wheel and start moving your mouse - diagram will follow 
 (like dragging with mouse wheel)
 1. Zoom in/out - mouse wheel rotation
-1. To select elment click on it with mouse
+1. To select element click on it with mouse
+
+
+# Flowable XML subset support
+
+<details><summary>View summary table</summary>
+
+
+|            XML element           | Supported |
+|:--------------------------------:|:---------:|
+|          adHocSubProcess         |           |
+|            association           |           |
+|           boundaryEvent          |           |
+|        bpmndi:BPMNDiagram        |     Y     |
+|          bpmndi:BPMNEdge         |     Y     |
+|         bpmndi:BPMNPlane         |     Y     |
+|         bpmndi:BPMNShape         |     Y     |
+|         businessRuleTask         |           |
+|           callActivity           |     Y     |
+|       cancelEventDefinition      |           |
+|     compensateEventDefinition    |           |
+|        completionCondition       |           |
+|             condition            |           |
+|    conditionalEventDefinition    |           |
+|        conditionExpression       |           |
+|            dataObject            |           |
+|            definitions           |           |
+|           documentation          |           |
+|             endEvent             |     Y     |
+|       errorEventDefinition       |           |
+|     escalationEventDefinition    |           |
+|         eventBasedGateway        |           |
+|         exclusiveGateway         |     Y     |
+|         extensionElements        |           |
+|      flowable:eventListener      |           |
+|    flowable:executionListener    |           |
+|          flowable:field          |           |
+|            flowable:in           |           |
+|           flowable:out           |           |
+|          flowable:string         |           |
+|          flowable:value          |           |
+|         inclusiveGateway         |           |
+|      intermediateCatchEvent      |           |
+|      intermediateThrowEvent      |           |
+|          loopCardinality         |           |
+|              message             |           |
+|      messageEventDefinition      |           |
+| multiInstanceLoopCharacteristics |           |
+|           omgdc:Bounds           |     Y     |
+|          omgdi:waypoint          |     Y     |
+|          parallelGateway         |           |
+|              process             |           |
+|            receiveTask           |           |
+|              script              |           |
+|            scriptTask            |           |
+|           sequenceFlow           |     Y     |
+|            serviceTask           |     Y     |
+|       signalEventDefinition      |           |
+|            startEvent            |     Y     |
+|            subProcess            |           |
+|     terminateEventDefinition     |           |
+|               text               |           |
+|          textAnnotation          |           |
+|             timeDate             |           |
+|       timerEventDefinition       |           |
+|            transaction           |           |
+|             userTask             |           |
+
+</details>
