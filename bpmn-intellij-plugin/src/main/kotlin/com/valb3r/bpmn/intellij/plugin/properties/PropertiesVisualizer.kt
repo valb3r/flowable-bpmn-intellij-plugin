@@ -20,6 +20,11 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
 
     @Synchronized
     fun visualize(bpmnElementId: String, properties: Map<PropertyType, Property>) {
+        // fire de-focus to move changes to memory
+        table.components.forEach {
+            it.focusListeners?.filter { it is FocusEventListener }?.forEach { it.focusLost(null) }
+        }
+        // drop and re-create table model
         val model = FirstColumnReadOnlyModel()
         model.addColumn("")
         model.addColumn("")
@@ -38,7 +43,8 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
     }
 
     private fun buildTextField(bpmnElementId: String, type: PropertyType, value: Property): JBTextField {
-        val field = JBTextField(value.value as String? ?: "")
+        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
+        val field = JBTextField(fieldValue)
         val initialValue = field.text
         field.addFocusListener(
                 FocusEventListener {
@@ -53,7 +59,8 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
     }
 
     private fun buildCheckboxField(bpmnElementId: String, type: PropertyType, value: Property): JBCheckBox {
-        val field = JBCheckBox(null, value.value as Boolean? ?: false)
+        val fieldValue =  lastBooleanValueFromRegistry(bpmnElementId, type) ?: (value.value as Boolean? ?: false)
+        val field = JBCheckBox(null, fieldValue)
         val initialValue = field.isSelected
         field.addFocusListener(
                 FocusEventListener {
@@ -68,13 +75,15 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
     }
 
     private fun buildClassField(bpmnElementId: String, type: PropertyType, value: Property): EditorTextField {
-        val field = editorFactory( "\"${value.value?.toString() ?: ""}\"")
+        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
+        val field = editorFactory( "\"${fieldValue}\"")
         addEditorTextListener(field, bpmnElementId, type)
         return field
     }
 
     private fun buildExpressionField(bpmnElementId: String, type: PropertyType, value: Property): EditorTextField {
-        val field = editorFactory( "\"${value.value?.toString() ?: ""}\"")
+        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
+        val field = editorFactory( "\"${fieldValue}\"")
         addEditorTextListener(field, bpmnElementId, type)
         return field
     }
@@ -93,7 +102,23 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
     }
 
     private fun removeQuotes(value: String): String {
-        return value.replace("$\"", "").replace("\"^", "")
+        return value.replace("^\"".toRegex(), "").replace("\"$".toRegex(), "")
+    }
+
+    private fun lastStringValueFromRegistry(bpmnElementId: String, type: PropertyType): String? {
+        return (updateRegistry
+                .elementIdAndUpdates[bpmnElementId]
+                ?.filter { it.property.id == type.id }
+                ?.lastOrNull { it is StringValueUpdatedEvent } as StringValueUpdatedEvent?)
+                ?.newValue
+    }
+
+    private fun lastBooleanValueFromRegistry(bpmnElementId: String, type: PropertyType): Boolean? {
+        return (updateRegistry
+                .elementIdAndUpdates[bpmnElementId]
+                ?.filter { it.property.id == type.id }
+                ?.lastOrNull { it is BooleanValueUpdatedEvent } as BooleanValueUpdatedEvent?)
+                ?.newValue
     }
 
     private class FocusEventListener(val onFocusGained: ((e: FocusEvent?) -> Unit)): FocusListener {
