@@ -53,8 +53,10 @@ class Canvas: JPanel() {
 
         repaint()
 
-        processObject?.elemPropertiesByElementId?.get(this.selectedElements.firstOrNull())
-                ?.apply { propertiesVisualizer?.visualize(this) }
+        val selectedElementId = selectedElements.firstOrNull()
+        processObject?.elemPropertiesByElementId
+                ?.get(selectedElementId)
+                ?.let { props -> selectedElementId?.let { propertiesVisualizer?.visualize(selectedElementId, props) }}
     }
 
     fun drag(start: Point2D.Float, current: Point2D.Float) {
