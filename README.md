@@ -33,7 +33,7 @@ MVP workflow demo:
 
 # Flowable XML subset support
 
-<details><summary>View summary table</summary>
+<details><summary>**View summary table**</summary>
 
 
 |            XML element           | Supported |
@@ -52,10 +52,10 @@ MVP workflow demo:
 |        completionCondition       |           |
 |             condition            |           |
 |    conditionalEventDefinition    |           |
-|        conditionExpression       |           |
+|        conditionExpression       |     Y     |
 |            dataObject            |           |
 |            definitions           |           |
-|           documentation          |           |
+|           documentation          |     Y     |
 |             endEvent             |     Y     |
 |       errorEventDefinition       |           |
 |     escalationEventDefinition    |           |
