@@ -33,7 +33,7 @@ MVP workflow demo:
 
 # Flowable XML subset support
 
-<details><summary>**View summary table**</summary>
+<details><summary><b>View summary table</b></summary>
 
 
 |            XML element           | Supported |
