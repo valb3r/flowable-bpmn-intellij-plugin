@@ -17,9 +17,9 @@ fun updateEventsRegistry(): ProcessModelUpdateEvents {
 }
 
 // Global singleton
-class ProcessModelUpdateEvents(val elementIdAndUpdates: MutableMap<String, MutableList<UpdateWithId>>) {
+class ProcessModelUpdateEvents(private val elementIdAndUpdates: MutableMap<String, MutableList<UpdateWithId>>) {
 
-    val fileCommitListeners: MutableList<Any> = ArrayList()
+    private val fileCommitListeners: MutableList<Any> = ArrayList()
 
     fun commitToFile() {
     }

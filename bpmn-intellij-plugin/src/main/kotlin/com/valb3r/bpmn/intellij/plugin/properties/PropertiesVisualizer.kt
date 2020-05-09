@@ -17,13 +17,14 @@ import javax.swing.JTable
 class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String) -> EditorTextField) {
 
     private val updateRegistry = updateEventsRegistry()
+    private var listenersForCurrentView: MutableList<(() -> Unit)> = mutableListOf()
 
     @Synchronized
     fun visualize(bpmnElementId: String, properties: Map<PropertyType, Property>) {
-        // fire de-focus to move changes to memory
-        table.components.forEach {
-            it.focusListeners?.filter { it is FocusEventListener }?.forEach { it.focusLost(null) }
-        }
+        // fire de-focus to move changes to memory, component listeners doesn't seem to work with EditorTextField
+        listenersForCurrentView.forEach { it() }
+        listenersForCurrentView.clear()
+
         // drop and re-create table model
         val model = FirstColumnReadOnlyModel()
         model.addColumn("")
@@ -46,15 +47,12 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
         val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
         val field = JBTextField(fieldValue)
         val initialValue = field.text
-        field.addFocusListener(
-                FocusEventListener {
-                    if (initialValue == field.text) {
-                        return@FocusEventListener
-                    }
 
-                    updateRegistry.addEvent(StringValueUpdatedEvent(bpmnElementId, type, field.text))
-                }
-        )
+        listenersForCurrentView.add {
+            if (initialValue != field.text) {
+                updateRegistry.addEvent(StringValueUpdatedEvent(bpmnElementId, type, field.text))
+            }
+        }
         return field
     }
 
@@ -62,15 +60,12 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
         val fieldValue =  lastBooleanValueFromRegistry(bpmnElementId, type) ?: (value.value as Boolean? ?: false)
         val field = JBCheckBox(null, fieldValue)
         val initialValue = field.isSelected
-        field.addFocusListener(
-                FocusEventListener {
-                    if (initialValue == field.isSelected) {
-                        return@FocusEventListener
-                    }
 
-                    updateRegistry.addEvent(BooleanValueUpdatedEvent(bpmnElementId, type, field.isSelected))
-                }
-        )
+        listenersForCurrentView.add {
+            if (initialValue != field.isSelected) {
+                updateRegistry.addEvent(StringValueUpdatedEvent(bpmnElementId, type, field.text))
+            }
+        }
         return field
     }
 
@@ -90,15 +85,11 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
 
     private fun addEditorTextListener(field: EditorTextField, bpmnElementId: String, type: PropertyType) {
         val initialValue = field.text
-        field.addFocusListener(
-                FocusEventListener {
-                    if (initialValue == field.text) {
-                        return@FocusEventListener
-                    }
-
-                    updateRegistry.addEvent(StringValueUpdatedEvent(bpmnElementId, type, removeQuotes(field.text)))
-                }
-        )
+        listenersForCurrentView.add {
+            if (initialValue != field.text) {
+                updateRegistry.addEvent(StringValueUpdatedEvent(bpmnElementId, type, removeQuotes(field.text)))
+            }
+        }
     }
 
     private fun removeQuotes(value: String): String {
@@ -106,25 +97,23 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
     }
 
     private fun lastStringValueFromRegistry(bpmnElementId: String, type: PropertyType): String? {
-        return (updateRegistry
-                .elementIdAndUpdates[bpmnElementId]
-                ?.filter { it.property.id == type.id }
-                ?.lastOrNull { it is StringValueUpdatedEvent } as StringValueUpdatedEvent?)
+        return (updateRegistry.currentEventList(bpmnElementId)
+                .filter { it.property.id == type.id }
+                .lastOrNull { it is StringValueUpdatedEvent } as StringValueUpdatedEvent?)
                 ?.newValue
     }
 
     private fun lastBooleanValueFromRegistry(bpmnElementId: String, type: PropertyType): Boolean? {
-        return (updateRegistry
-                .elementIdAndUpdates[bpmnElementId]
-                ?.filter { it.property.id == type.id }
-                ?.lastOrNull { it is BooleanValueUpdatedEvent } as BooleanValueUpdatedEvent?)
+        return (updateRegistry.currentEventList(bpmnElementId)
+                .filter { it.property.id == type.id }
+                .lastOrNull { it is BooleanValueUpdatedEvent } as BooleanValueUpdatedEvent?)
                 ?.newValue
     }
 
-    private class FocusEventListener(val onFocusGained: ((e: FocusEvent?) -> Unit)): FocusListener {
+    private class FocusEventListener(val onFocusLost: ((e: FocusEvent?) -> Unit)): FocusListener {
 
         override fun focusLost(e: FocusEvent?) {
-            onFocusGained(e)
+            onFocusLost(e)
         }
 
         override fun focusGained(e: FocusEvent?) {

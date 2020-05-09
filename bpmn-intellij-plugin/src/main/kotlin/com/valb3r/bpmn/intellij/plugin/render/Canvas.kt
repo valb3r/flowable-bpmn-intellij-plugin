@@ -4,6 +4,7 @@ import com.intellij.ui.EditorTextField
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.properties.PropertiesVisualizer
+import com.valb3r.bpmn.intellij.plugin.state.currentStateProvider
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
@@ -21,6 +22,7 @@ class Canvas: JPanel() {
     private val cursorSize = 3
     private val defaultCameraOrigin = Point2D.Float(0f, 0f)
     private val defaultZoomRatio = 1f
+    private val stateProvider = currentStateProvider()
 
     private var selectedElements: MutableSet<String> = mutableSetOf()
     private var camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
@@ -39,7 +41,7 @@ class Canvas: JPanel() {
                         CanvasPainter(graphics2D, camera.copy()),
                         selectedElements.toSet(),
                         dragCtx.copy(),
-                        processObject
+                        stateProvider
                 )
         )
     }
@@ -49,6 +51,7 @@ class Canvas: JPanel() {
         this.renderer = renderer
         this.camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
         this.propertiesVisualizer = PropertiesVisualizer(properties, editorFactory)
+        this.stateProvider.resetStateTo(processObject)
     }
 
     fun click(location: Point2D.Float) {

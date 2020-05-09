@@ -2,7 +2,6 @@ package com.valb3r.bpmn.intellij.plugin.render
 
 import com.intellij.openapi.util.IconLoader
 import com.valb3r.bpmn.intellij.plugin.Colors
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
@@ -20,34 +19,23 @@ class BpmnProcessRenderer {
     val DRAG = "/icons/drag.svg".asResource()!!
 
     fun render(ctx: RenderContext): Map<String, Area> {
-        if (null == ctx.diagram) {
-            return emptyMap()
-        }
-
+        val state = ctx.stateProvider.currentState()
         val areaByElement: MutableMap<String, Area> = HashMap()
-        val renderMeta = RenderMetadata(ctx.dragContext, ctx.selectedIds, ctx.diagram.elementById, ctx.diagram.elemPropertiesByElementId)
+        val renderMeta = RenderMetadata(ctx.dragContext, ctx.selectedIds, state.elementByStaticId, state.elemPropertiesByStaticElementId)
 
-        dramBpmnElements(ctx.diagram, areaByElement, ctx.canvas, renderMeta)
-        drawBpmnEdges(ctx.diagram, areaByElement, ctx.canvas, renderMeta)
+        dramBpmnElements(state.shapes, areaByElement, ctx.canvas, renderMeta)
+        drawBpmnEdges(state.edges, areaByElement, ctx.canvas, renderMeta)
         return areaByElement
     }
 
-    private fun drawBpmnEdges(diagram: BpmnProcessObjectView, areaByElement: MutableMap<String, Area>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
+    private fun drawBpmnEdges(shapes: List<EdgeElement>, areaByElement: MutableMap<String, Area>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
         // TODO multi-diagram handling
-        diagram
-                .diagram[0]
-                .bpmnPlane
-                .bpmnEdge
-                ?.forEach { mergeArea(it.bpmnElement ?: it.id, areaByElement, drawEdgeElement(canvas, it, renderMeta)) }
+        shapes.forEach { mergeArea(it.bpmnElement ?: it.id, areaByElement, drawEdgeElement(canvas, it, renderMeta)) }
     }
 
-    private fun dramBpmnElements(diagram: BpmnProcessObjectView, areaByElement: MutableMap<String, Area>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
+    private fun dramBpmnElements(shapes: List<ShapeElement>, areaByElement: MutableMap<String, Area>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
         // TODO multi-diagram handling
-        diagram
-                .diagram[0]
-                .bpmnPlane
-                .bpmnShape
-                ?.forEach { mergeArea(it.bpmnElement, areaByElement, drawShapeElement(canvas, it, renderMeta)) }
+        shapes.forEach { mergeArea(it.bpmnElement, areaByElement, drawShapeElement(canvas, it, renderMeta)) }
     }
 
     private fun mergeArea(id: String, areas: MutableMap<String, Area>, area: Area) {
