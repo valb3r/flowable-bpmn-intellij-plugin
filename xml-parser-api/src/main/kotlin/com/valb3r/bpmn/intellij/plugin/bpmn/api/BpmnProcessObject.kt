@@ -2,9 +2,11 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
@@ -15,19 +17,32 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
     private val mapper = ObjectMapper()
 
     fun toView() : BpmnProcessObjectView {
-        val elementById = mutableMapOf<String, WithId>()
-        val propertiesById = mutableMapOf<String, MutableMap<PropertyType, Property>>()
+        val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
+        val elementByStaticId = mutableMapOf<BpmnElementId, WithId>()
+        val propertiesById = mutableMapOf<BpmnElementId, MutableMap<PropertyType, Property>>()
 
-        fillForStartEvent(process.startEvent, elementById, propertiesById)
-        fillForEndEvent(process.endEvent, elementById, propertiesById)
-        process.callActivity?.forEach { fillForCallActivity(it, elementById, propertiesById) }
-        process.serviceTask?.forEach { fillForServiceTask(it, elementById, propertiesById) }
-        process.sequenceFlow?.forEach { fillForSequenceFlow(it, elementById, propertiesById) }
-        process.exclusiveGateway?.forEach { fillForExclusiveGateway(it, elementById, propertiesById) }
+        fillForStartEvent(process.startEvent, elementByStaticId, propertiesById)
+        fillForEndEvent(process.endEvent, elementByStaticId, propertiesById)
+        process.callActivity?.forEach { fillForCallActivity(it, elementByStaticId, propertiesById) }
+        process.serviceTask?.forEach { fillForServiceTask(it, elementByStaticId, propertiesById) }
+        process.sequenceFlow?.forEach { fillForSequenceFlow(it, elementByStaticId, propertiesById) }
+        process.exclusiveGateway?.forEach { fillForExclusiveGateway(it, elementByStaticId, propertiesById) }
+
+        diagram.firstOrNull()
+                ?.bpmnPlane
+                ?.bpmnEdge
+                ?.filter { null != it.bpmnElement }
+                ?.forEach { elementByDiagramId[it.id] = it.bpmnElement!! }
+
+        diagram.firstOrNull()
+                ?.bpmnPlane
+                ?.bpmnShape
+                ?.forEach { elementByDiagramId[it.id] = it.bpmnElement }
 
         return BpmnProcessObjectView(
                 process,
-                elementById,
+                elementByDiagramId,
+                elementByStaticId,
                 propertiesById,
                 diagram
         )
@@ -35,24 +50,24 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
 
     private fun fillForStartEvent(
             activity: BpmnStartEvent,
-            elementById: MutableMap<String, WithId>,
-            propertiesByElemType: MutableMap<String, MutableMap<PropertyType, Property>>) {
+            elementById: MutableMap<BpmnElementId, WithId>,
+            propertiesByElemType: MutableMap<BpmnElementId, MutableMap<PropertyType, Property>>) {
         elementById[activity.id] = activity
         propertiesByElemType[activity.id] = processDtoToPropertyMap(activity)
     }
 
     private fun fillForEndEvent(
             activity: BpmnEndEvent,
-            elementById: MutableMap<String, WithId>,
-            propertiesByElemType: MutableMap<String, MutableMap<PropertyType, Property>>) {
+            elementById: MutableMap<BpmnElementId, WithId>,
+            propertiesByElemType: MutableMap<BpmnElementId, MutableMap<PropertyType, Property>>) {
         elementById[activity.id] = activity
         propertiesByElemType[activity.id] = processDtoToPropertyMap(activity)
     }
 
     private fun fillForCallActivity(
             activity: BpmnCallActivity,
-            elementById: MutableMap<String, WithId>,
-            propertiesByElemType: MutableMap<String, MutableMap<PropertyType, Property>>) {
+            elementById: MutableMap<BpmnElementId, WithId>,
+            propertiesByElemType: MutableMap<BpmnElementId, MutableMap<PropertyType, Property>>) {
         elementById[activity.id] = activity
         val properties = processDtoToPropertyMap(activity)
         // TODO: handle extension elements
@@ -61,16 +76,16 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
 
     private fun fillForServiceTask(
             activity: BpmnServiceTask,
-            elementById: MutableMap<String, WithId>,
-            propertiesByElemType: MutableMap<String, MutableMap<PropertyType, Property>>) {
+            elementById: MutableMap<BpmnElementId, WithId>,
+            propertiesByElemType: MutableMap<BpmnElementId, MutableMap<PropertyType, Property>>) {
         elementById[activity.id] = activity
         propertiesByElemType[activity.id] = processDtoToPropertyMap(activity)
     }
 
     private fun fillForSequenceFlow(
             activity: BpmnSequenceFlow,
-            elementById: MutableMap<String, WithId>,
-            propertiesByElemType: MutableMap<String, MutableMap<PropertyType, Property>>) {
+            elementById: MutableMap<BpmnElementId, WithId>,
+            propertiesByElemType: MutableMap<BpmnElementId, MutableMap<PropertyType, Property>>) {
         elementById[activity.id] = activity
         if (null != activity.conditionExpression && activity.conditionExpression.type != "tFormalExpression") {
             throw IllegalArgumentException("Unknown type: ${activity.conditionExpression.type}")
@@ -81,8 +96,8 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
 
     private fun fillForExclusiveGateway(
             activity: BpmnExclusiveGateway,
-            elementById: MutableMap<String, WithId>,
-            propertiesByElemType: MutableMap<String, MutableMap<PropertyType, Property>>) {
+            elementById: MutableMap<BpmnElementId, WithId>,
+            propertiesByElemType: MutableMap<BpmnElementId, MutableMap<PropertyType, Property>>) {
         elementById[activity.id] = activity
         propertiesByElemType[activity.id] = processDtoToPropertyMap(activity)
     }
@@ -127,7 +142,8 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
 
 data class BpmnProcessObjectView(
         val process: BpmnProcess,
-        val elementById: Map<String, WithId>,
-        val elemPropertiesByElementId: Map<String, Map<PropertyType, Property>>,
+        val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
+        val elementByStaticId: Map<BpmnElementId, WithId>,
+        val elemPropertiesByElementId: Map<BpmnElementId, Map<PropertyType, Property>>,
         val diagram: List<DiagramElement>
 )

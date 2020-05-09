@@ -2,7 +2,9 @@ package com.valb3r.bpmn.intellij.plugin.render
 
 import com.intellij.openapi.util.IconLoader
 import com.valb3r.bpmn.intellij.plugin.Colors
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
@@ -18,35 +20,38 @@ class BpmnProcessRenderer {
     val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
     val DRAG = "/icons/drag.svg".asResource()!!
 
-    fun render(ctx: RenderContext): Map<String, Area> {
+    fun render(ctx: RenderContext): Map<DiagramElementId, Area> {
         val state = ctx.stateProvider.currentState()
-        val areaByElement: MutableMap<String, Area> = HashMap()
-        val renderMeta = RenderMetadata(ctx.dragContext, ctx.selectedIds, state.elementByStaticId, state.elemPropertiesByStaticElementId)
+        val areaByElement: MutableMap<DiagramElementId, Area> = HashMap()
+        val renderMeta = RenderMetadata(
+                ctx.dragContext,
+                ctx.selectedIds,
+                state.elementByDiagramId,
+                state.elementByStaticId,
+                state.elemPropertiesByStaticElementId
+        )
 
         dramBpmnElements(state.shapes, areaByElement, ctx.canvas, renderMeta)
         drawBpmnEdges(state.edges, areaByElement, ctx.canvas, renderMeta)
         return areaByElement
     }
 
-    private fun drawBpmnEdges(shapes: List<EdgeElement>, areaByElement: MutableMap<String, Area>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
-        // TODO multi-diagram handling
-        shapes.forEach { mergeArea(it.bpmnElement ?: it.id, areaByElement, drawEdgeElement(canvas, it, renderMeta)) }
+    private fun drawBpmnEdges(shapes: List<EdgeElement>, areaByElement: MutableMap<DiagramElementId, Area>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
+        shapes.forEach { mergeArea(it.id, areaByElement, drawEdgeElement(canvas, it, renderMeta)) }
     }
 
-    private fun dramBpmnElements(shapes: List<ShapeElement>, areaByElement: MutableMap<String, Area>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
-        // TODO multi-diagram handling
-        shapes.forEach { mergeArea(it.bpmnElement, areaByElement, drawShapeElement(canvas, it, renderMeta)) }
+    private fun dramBpmnElements(shapes: List<ShapeElement>, areaByElement: MutableMap<DiagramElementId, Area>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
+        shapes.forEach { mergeArea(it.id, areaByElement, drawShapeElement(canvas, it, renderMeta)) }
     }
 
-    private fun mergeArea(id: String, areas: MutableMap<String, Area>, area: Area) {
+    private fun mergeArea(id: DiagramElementId, areas: MutableMap<DiagramElementId, Area>, area: Area) {
         val target = areas[id] ?: Area()
         target.add(area)
         areas[id] = target
     }
 
     private fun drawEdgeElement(canvas: CanvasPainter, shape: EdgeElement, meta: RenderMetadata): Area {
-        val elem = meta.elementById[shape.bpmnElement]
-        val active = isActive(elem?.id, meta)
+        val active = isActive(shape.id, meta)
         val area = Area()
         shape.waypoint?.forEachIndexed { index, it ->
             when {
@@ -62,9 +67,9 @@ class BpmnProcessRenderer {
         val elem = meta.elementById[bpmnShape.bpmnElement]
         val props = meta.elemPropertiesByElementId[bpmnShape.bpmnElement]
         val name = props?.get(NAME)?.value as String?
-        val active = isActive(elem?.id, meta)
+        val active = isActive(bpmnShape.id, meta)
 
-        val shape = if (meta.dragContext.draggedIds.contains(elem?.id)) {
+        val shape = if (meta.dragContext.draggedIds.contains(bpmnShape.id)) {
             bpmnShape.copyAndTranslate(
                     meta.dragContext.current.x - meta.dragContext.start.x,
                     meta.dragContext.current.y - meta.dragContext.start.y
@@ -108,15 +113,16 @@ class BpmnProcessRenderer {
         return if (active) Colors.GREEN.color else color.color
     }
 
-    private fun isActive(elemId: String?, meta: RenderMetadata): Boolean {
+    private fun isActive(elemId: DiagramElementId, meta: RenderMetadata): Boolean {
         return elemId.let { meta.selectedIds.contains(it) }
     }
 
     private data class RenderMetadata(
             val dragContext: ElementDragContext,
-            val selectedIds: Set<String>,
-            val elementById: Map<String, WithId>,
-            val elemPropertiesByElementId: Map<String, Map<PropertyType, Property>>
+            val selectedIds: Set<DiagramElementId>,
+            val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
+            val elementById: Map<BpmnElementId, WithId>,
+            val elemPropertiesByElementId: Map<BpmnElementId, Map<PropertyType, Property>>
     )
 
     fun String.asResource(): String? = BpmnProcessRenderer::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)

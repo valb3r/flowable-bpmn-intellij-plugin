@@ -4,6 +4,9 @@ import com.google.common.cache.CacheBuilder
 import com.intellij.ui.EditorTextField
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
+import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.properties.PropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.state.currentStateProvider
 import java.awt.Graphics
@@ -21,18 +24,20 @@ import kotlin.math.min
 
 class Canvas: JPanel() {
 
+    private val epsilon = 0.1f
     private val zoomFactor = 1.2f
     private val cursorSize = 3
     private val defaultCameraOrigin = Point2D.Float(0f, 0f)
     private val defaultZoomRatio = 1f
     private val stateProvider = currentStateProvider()
+    private val updateEvents = updateEventsRegistry()
 
-    private var selectedElements: MutableSet<String> = mutableSetOf()
+    private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
     private var dragCtx: ElementDragContext = ElementDragContext(mutableSetOf(), Point2D.Float(), Point2D.Float())
     private var processObject: BpmnProcessObjectView? = null
     private var renderer: BpmnProcessRenderer? = null
-    private var areaByElement: Map<String, Area>? = null
+    private var areaByElement: Map<DiagramElementId, Area>? = null
     private var propertiesVisualizer: PropertiesVisualizer? = null
 
     private val cachedIcons = CacheBuilder.newBuilder()
@@ -74,9 +79,11 @@ class Canvas: JPanel() {
         repaint()
 
         val selectedElementId = selectedElements.firstOrNull()
-        processObject?.elemPropertiesByElementId
+        processObject?.elementByDiagramId
                 ?.get(selectedElementId)
-                ?.let { props -> selectedElementId?.let { propertiesVisualizer?.visualize(selectedElementId, props) }}
+                ?.let { elemId ->
+                    processObject?.elemPropertiesByElementId?.get(elemId)?.let { propertiesVisualizer?.visualize(elemId, it) }
+                }
     }
 
     fun dragCanvas(start: Point2D.Float, current: Point2D.Float) {
@@ -114,6 +121,17 @@ class Canvas: JPanel() {
     }
 
     fun stopDrag() {
+        if (dragCtx.draggedIds.isNotEmpty() && (dragCtx.current.distance(dragCtx.start) > epsilon)) {
+            dragCtx.draggedIds
+                    .forEach { updateEvents.addLocationUpdateEvent(
+                            DraggedToEvent(
+                                    it,
+                                    dragCtx.current.x - dragCtx.start.x,
+                                    dragCtx.current.y - dragCtx.start.y
+                            )
+                    ) }
+        }
+
         dragCtx = dragCtx.copy(draggedIds = emptySet())
         repaint()
     }

@@ -5,7 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 
 @KotlinBuilder
 data class BpmnProcess(
-        val id: String,
+        val id: BpmnElementId,
         val name: String,
         val documentation: String?,
         val isExecutable: Boolean?,
