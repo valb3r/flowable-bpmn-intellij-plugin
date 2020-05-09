@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.render
 
+import com.google.common.cache.CacheBuilder
 import com.intellij.ui.EditorTextField
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
@@ -11,6 +12,8 @@ import java.awt.RenderingHints
 import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
+import java.awt.image.BufferedImage
+import java.util.concurrent.TimeUnit
 import javax.swing.JPanel
 import javax.swing.JTable
 import kotlin.math.max
@@ -32,13 +35,18 @@ class Canvas: JPanel() {
     private var areaByElement: Map<String, Area>? = null
     private var propertiesVisualizer: PropertiesVisualizer? = null
 
+    private val cachedIcons = CacheBuilder.newBuilder()
+            .expireAfterAccess(10L, TimeUnit.SECONDS)
+            .maximumSize(100)
+            .build<String, BufferedImage>()
+
     override fun paintComponent(graphics: Graphics) {
         super.paintComponent(graphics)
 
         val graphics2D = setupGraphics(graphics)
         areaByElement = renderer?.render(
                 RenderContext(
-                        CanvasPainter(graphics2D, camera.copy()),
+                        CanvasPainter(graphics2D, camera.copy(), cachedIcons),
                         selectedElements.toSet(),
                         dragCtx.copy(),
                         stateProvider

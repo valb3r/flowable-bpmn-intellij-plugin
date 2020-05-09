@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.render
 
-import com.google.common.cache.CacheBuilder
+import com.google.common.cache.Cache
 import com.google.common.hash.Hashing
 import com.intellij.util.ui.UIUtil
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
@@ -24,11 +24,10 @@ import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets.UTF_8
 import java.text.AttributedCharacterIterator
 import java.text.AttributedString
-import java.util.concurrent.TimeUnit
 import javax.swing.Icon
 
 
-class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
+class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCachedIcons: Cache<String, BufferedImage>) {
 
     private val iconMargin = 5.0f
     private val textMargin = 5.0f
@@ -37,11 +36,6 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
     private val arrowStyle = Polygon(intArrayOf(0, -arrowWidth, -arrowWidth), intArrayOf(0, 5, -5), 3)
     private val regularLineWidth = 2f
     private val nodeRadius = 25f
-
-    private val cachedIcons = CacheBuilder.newBuilder()
-            .expireAfterAccess(10L, TimeUnit.SECONDS)
-            .maximumSize(100)
-            .build<String, BufferedImage>()
 
     fun drawLine(start: WaypointElement, end: WaypointElement, color: Color): Area {
         val st = camera.toCameraView(Point2D.Float(start.x, start.y))
@@ -246,7 +240,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
 
     fun rasterizeSvg(svgFile: String, width: Float, height: Float): BufferedImage {
         val cacheKey = Hashing.md5().hashString(svgFile + ":" + width.toInt() + "@" + height.toInt(), UTF_8).toString()
-        return cachedIcons.get(cacheKey) {
+        return svgCachedIcons.get(cacheKey) {
             val imageTranscoder = BufferedImageTranscoder()
             imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, width)
             imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, height)
