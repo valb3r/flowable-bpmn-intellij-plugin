@@ -25,6 +25,11 @@ class ProcessModelUpdateEvents(private val updates: MutableList<Event>) {
     private val locationUpdatesByStaticId: MutableMap<DiagramElementId, MutableList<Event>> = ConcurrentHashMap()
     private val propertyUpdatesByStaticId: MutableMap<BpmnElementId, MutableList<Event>> = ConcurrentHashMap()
 
+    fun reset() {
+        locationUpdatesByStaticId.clear()
+        propertyUpdatesByStaticId.clear()
+    }
+
     fun commitToFile() {
     }
 
