@@ -58,17 +58,17 @@ class CurrentStateProvider {
 
     private fun updateLocation(elem: ShapeElement): ShapeElement {
         val updates = updateEvents.currentLocationUpdateEventList(elem.id)
-        return updates
-                .lastOrNull()
-                ?.let { return elem.copyAndTranslate(it.dx, it.dx) }
-                ?: elem
+        var dx = 0.0f
+        var dy = 0.0f
+        updates.forEach { dx += it.dx; dy += it.dy }
+        return elem.copyAndTranslate(dx, dy)
     }
 
     private fun updateLocation(elem: EdgeElement): EdgeElement {
         val updates = updateEvents.currentLocationUpdateEventList(elem.id)
-        return updates
-                .lastOrNull()
-                ?.let { update -> return elem.copy(waypoint = elem.waypoint?.map { it.copyAndTranslate(update.dx, update.dy) }) }
-                ?: elem
+        var dx = 0.0f
+        var dy = 0.0f
+        updates.forEach { dx += it.dx; dy += it.dy }
+        return elem.copy(waypoint = elem.waypoint?.map { it.copyAndTranslate(dx, dy) })
     }
 }

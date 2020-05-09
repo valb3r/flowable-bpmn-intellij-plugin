@@ -22,33 +22,31 @@ fun updateEventsRegistry(): ProcessModelUpdateEvents {
 class ProcessModelUpdateEvents(private val updates: MutableList<Event>) {
 
     private val fileCommitListeners: MutableList<Any> = ArrayList()
-    private val updatesByStaticElemId: MutableMap<String, MutableList<Event>> = ConcurrentHashMap()
+    private val locationUpdatesByStaticId: MutableMap<DiagramElementId, MutableList<Event>> = ConcurrentHashMap()
+    private val propertyUpdatesByStaticId: MutableMap<BpmnElementId, MutableList<Event>> = ConcurrentHashMap()
 
     fun commitToFile() {
     }
 
     fun addPropertyUpdateEvent(event: PropertyUpdateWithId) {
-        addEvent(event.bpmnElementId.id, event)
+        updates.add(event)
+        propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += event
     }
 
     fun addLocationUpdateEvent(event: LocationUpdateWithId) {
-        addEvent(event.diagramElementId.id, event)
+        updates.add(event)
+        locationUpdatesByStaticId.computeIfAbsent(event.diagramElementId) { CopyOnWriteArrayList() } += event
     }
 
     fun currentPropertyUpdateEventList(elementId: BpmnElementId): List<PropertyUpdateWithId> {
-        return updatesByStaticElemId
-                .getOrDefault(elementId.id, emptyList<PropertyUpdateWithId>())
+        return propertyUpdatesByStaticId
+                .getOrDefault(elementId, emptyList<PropertyUpdateWithId>())
                 .filterIsInstance<PropertyUpdateWithId>()
     }
 
     fun currentLocationUpdateEventList(elementId: DiagramElementId): List<LocationUpdateWithId> {
-        return updatesByStaticElemId
-                .getOrDefault(elementId.id, emptyList<LocationUpdateWithId>())
+        return locationUpdatesByStaticId
+                .getOrDefault(elementId, emptyList<LocationUpdateWithId>())
                 .filterIsInstance<LocationUpdateWithId>()
-    }
-
-    private fun addEvent(staticElemId: String, event: Event) {
-        updates.add(event)
-        updatesByStaticElemId.computeIfAbsent(staticElemId) { CopyOnWriteArrayList() } += event
     }
 }
