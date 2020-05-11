@@ -58,11 +58,11 @@ data class WaypointElementState (
     constructor(id: String, x: Float, y: Float): this(DiagramElementId(id), x, y, x, y, false)
 
     override fun copyAndTranslate(dx: Float, dy: Float): WaypointElementState {
-        return WaypointElementState(id, origX + dx, origY + dy, origX, origY, physical)
+        return WaypointElementState(id, x + dx, y + dy, origX, origY, physical)
     }
 
     fun moveTo(dx: Float, dy: Float): WaypointElementState {
-        return WaypointElementState(id, origX + dx, origY + dy, origX + dx, origY + dy, physical)
+        return WaypointElementState(id, x + dx, y + dy, x + dx, y + dy, physical)
     }
 
     fun asPhysical(): WaypointElementState {

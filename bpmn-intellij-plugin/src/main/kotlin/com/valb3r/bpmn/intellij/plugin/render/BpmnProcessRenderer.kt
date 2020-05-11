@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.Translatable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
@@ -22,10 +23,13 @@ import kotlin.math.min
 class BpmnProcessRenderer {
 
     private val nodeRadius = 3f
+    private val recycleBinSize = 20f
+    private val recycleBinMargin = 10f
 
     val GEAR = IconLoader.getIcon("/icons/gear.png")
     val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
     val DRAG = "/icons/drag.svg".asResource()!!
+    val RECYCLE_BIN = "/icons/recycle-bin.svg".asResource()!!
 
     fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val state = ctx.stateProvider.currentState()
@@ -102,9 +106,6 @@ class BpmnProcessRenderer {
 
     private fun drawWaypointAnchors(canvas: CanvasPainter, begin: WaypointElementState, end: WaypointElementState, parent: EdgeElementState, meta: RenderMetadata, isLast: Boolean): Map<DiagramElementId, AreaWithZindex> {
         val result = HashMap<DiagramElementId, AreaWithZindex>()
-        val translatedBegin = translateElement(meta, begin)
-        val translatedEnd = translateElement(meta, end)
-        val nodeColor: (WaypointElementState) -> Color = { elem -> color(isActive(elem.id, meta), if (elem.physical) Colors.WAYPOINT_COLOR else Colors.MID_WAYPOINT_COLOR) }
 
         val dragCallback = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents, elem: WaypointElementState ->
             if (elem.physical) {
@@ -114,21 +115,30 @@ class BpmnProcessRenderer {
                         parent.id,
                         parent.waypoint
                                 .filter { it.physical || it.id == elem.id }
-                                .map { if (it.id == elem.id) it.moveTo(dx, dy).asPhysical() else it }
+                                .map { if (it.id == elem.id && !it.physical) it.moveTo(dx, dy).asPhysical() else it }
                                 .toList()
                 ))
             }
         }
 
+        val drawNode = { node: WaypointElementState ->
+            val translatedNode = translateElement(meta, node)
+            val active = isActive(node.id, meta)
+            val color = color(active, if (node.physical) Colors.WAYPOINT_COLOR else Colors.MID_WAYPOINT_COLOR)
+            result[node.id] = AreaWithZindex(canvas.drawCircle(translatedNode.asWaypointElement(), nodeRadius, color), ANCHOR_Z_INDEX, parent.id)
+            meta.dragContext.dragEndCallbacks[node.id] = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, node)}
+            if (active) {
+                canvas.drawIcon(BoundsElement(translatedNode.x + recycleBinMargin, translatedNode.y + recycleBinMargin, recycleBinSize, recycleBinSize), RECYCLE_BIN)
+            }
+        }
+
         if (isLast) {
-            result[begin.id] = AreaWithZindex(canvas.drawCircle(translatedBegin.asWaypointElement(), nodeRadius, nodeColor(begin)), ANCHOR_Z_INDEX, parent.id)
-            meta.dragContext.dragEndCallbacks[begin.id] = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, begin)}
-            result[end.id] = AreaWithZindex(canvas.drawCircle(translatedEnd.asWaypointElement(), nodeRadius, nodeColor(end)), ANCHOR_Z_INDEX, parent.id)
-            meta.dragContext.dragEndCallbacks[end.id] = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, end)}
+            drawNode(begin)
+            drawNode(end)
             return result
         }
 
-        result[begin.id] = AreaWithZindex(canvas.drawCircle(translatedBegin.asWaypointElement(), nodeRadius, nodeColor(begin)), ANCHOR_Z_INDEX, parent.id)
+        drawNode(begin)
         meta.dragContext.dragEndCallbacks[begin.id] = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, begin)}
         return result
     }
