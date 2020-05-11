@@ -8,8 +8,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
-import com.valb3r.bpmn.intellij.plugin.render.dto.EdgeElementState
-import com.valb3r.bpmn.intellij.plugin.render.dto.WaypointElementState
+import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
+import com.valb3r.bpmn.intellij.plugin.render.WaypointElementState
 import java.util.concurrent.atomic.AtomicReference
 
 private val currentStateProvider = AtomicReference<CurrentStateProvider>()

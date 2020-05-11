@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin.render.dto
+package com.valb3r.bpmn.intellij.plugin.render
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId

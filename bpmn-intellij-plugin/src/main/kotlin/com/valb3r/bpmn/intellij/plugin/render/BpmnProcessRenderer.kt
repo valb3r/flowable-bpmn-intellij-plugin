@@ -11,8 +11,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.NAME
-import com.valb3r.bpmn.intellij.plugin.render.dto.EdgeElementState
-import com.valb3r.bpmn.intellij.plugin.render.dto.WaypointElementState
 import java.awt.Color
 import java.awt.geom.Area
 import java.nio.charset.StandardCharsets
