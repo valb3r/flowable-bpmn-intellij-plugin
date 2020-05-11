@@ -115,7 +115,7 @@ class BpmnProcessRenderer {
                         parent.id,
                         parent.waypoint
                                 .filter { it.physical || it.id == elem.id }
-                                .map { if (it.id == elem.id && !it.physical) it.moveTo(dx, dy).asPhysical() else it }
+                                .map { if (it.id == elem.id && !it.physical) it.moveTo(dx, dy).asPhysical() else it.originalLocation() }
                                 .toList()
                 ))
             }

@@ -69,6 +69,10 @@ data class WaypointElementState (
         return WaypointElementState(id, x, y, origX, origY, true)
     }
 
+    fun originalLocation(): WaypointElementState {
+        return WaypointElementState(id, origX, origY, origX, origY, true)
+    }
+
     fun asWaypointElement(): WaypointElement {
         return WaypointElement(x, y)
     }
