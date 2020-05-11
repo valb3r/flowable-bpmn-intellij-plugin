@@ -12,6 +12,12 @@ interface LocationUpdateWithId: Event {
     val dy: Float
 }
 
+interface NewChildElementWithId: Event {
+    val parentElementId: DiagramElementId
+    val x: Float
+    val y: Float
+}
+
 interface PropertyUpdateWithId: Event {
     val bpmnElementId: BpmnElementId
     val property: PropertyType

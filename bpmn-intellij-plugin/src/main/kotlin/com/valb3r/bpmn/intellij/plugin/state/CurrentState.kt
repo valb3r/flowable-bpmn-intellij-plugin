@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.render.dto.EdgeElementState
+import com.valb3r.bpmn.intellij.plugin.render.dto.WaypointElementState
 import java.util.concurrent.atomic.AtomicReference
 
 private val currentStateProvider = AtomicReference<CurrentStateProvider>()
@@ -51,12 +52,12 @@ class CurrentStateProvider {
 
     fun currentState(): CurrentState {
         return fileState.copy(
-                shapes = fileState.shapes.map { updateLocation(it) },
-                edges = fileState.edges.map { updateLocation(it) }
+                shapes = fileState.shapes.map { updateLocationAndInnerTopology(it) },
+                edges = fileState.edges.map { updateLocationAndInnerTopology(it) }
         )
     }
 
-    private fun updateLocation(elem: ShapeElement): ShapeElement {
+    private fun updateLocationAndInnerTopology(elem: ShapeElement): ShapeElement {
         val updates = updateEvents.currentLocationUpdateEventList(elem.id)
         var dx = 0.0f
         var dy = 0.0f
@@ -64,11 +65,23 @@ class CurrentStateProvider {
         return elem.copyAndTranslate(dx, dy)
     }
 
-    private fun updateLocation(elem: EdgeElementState): EdgeElementState {
-        val updates = updateEvents.currentLocationUpdateEventList(elem.id)
+    private fun updateLocationAndInnerTopology(elem: EdgeElementState): EdgeElementState {
+        val hasNoCommittedAnchorUpdates = elem.waypoint.firstOrNull { updateEvents.currentLocationUpdateEventList(it.id).isNotEmpty() }
+        val hasNoNewAnchors = elem.waypoint.firstOrNull { updateEvents.newElementCreateFromParentEventList(it.id).isNotEmpty() }
+        if (null == hasNoCommittedAnchorUpdates && null == hasNoNewAnchors) {
+            return elem
+        }
+
+        val updatedLocations = elem.waypoint.filter { it.physical }.map { updateWaypointLocation(it) }
+        return EdgeElementState(elem, updatedLocations)
+    }
+
+    private fun updateWaypointLocation(waypoint: WaypointElementState): WaypointElementState {
+        val updates = updateEvents.currentLocationUpdateEventList(waypoint.id)
         var dx = 0.0f
         var dy = 0.0f
         updates.forEach { dx += it.dx; dy += it.dy }
-        return elem.copy(waypoint = ArrayList(elem.waypoint.map { it.copyAndTranslate(dx, dy) }))
+
+        return waypoint.copyAndTranslate(dx, dy)
     }
 }

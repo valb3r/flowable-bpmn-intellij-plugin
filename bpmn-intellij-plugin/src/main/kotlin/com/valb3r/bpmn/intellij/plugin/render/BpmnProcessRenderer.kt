@@ -82,7 +82,7 @@ class BpmnProcessRenderer {
     private fun drawWaypointElements(canvas: CanvasPainter, shape: EdgeElementState, meta: RenderMetadata): Map<DiagramElementId, AreaWithZindex> {
         val area = HashMap<DiagramElementId, AreaWithZindex>()
         val trueWaypoints = calculateTrueWaypoints(shape, meta)
-        // draw all endpoints only if none virtual is dragged
+        // draw all endpoints only if none virtual is dragged and not physical
         val isVirtualDragged = meta.dragContext.draggedIds.intersect(shape.waypoint.filter { !it.physical }.map { it.id }).isNotEmpty()
         val isPhysicalDragged = meta.dragContext.draggedIds.intersect(shape.waypoint.filter { it.physical }.map { it.id }).isNotEmpty()
         val waypoints = if (isVirtualDragged || isPhysicalDragged) trueWaypoints else shape.waypoint
@@ -100,7 +100,6 @@ class BpmnProcessRenderer {
         val result = HashMap<DiagramElementId, AreaWithZindex>()
         val translatedBegin = translateElement(meta, begin)
         val translatedEnd = translateElement(meta, end)
-        color(isActive(begin.id, meta), Colors.WAYPOINT_COLOR)
         val nodeColor: (WaypointElementState) -> Color = { elem -> color(isActive(elem.id, meta), if (elem.physical) Colors.WAYPOINT_COLOR else Colors.MID_WAYPOINT_COLOR) }
         if (isLast) {
             result[begin.id] = AreaWithZindex(canvas.drawCircle(translatedBegin.asWaypointElement(), nodeRadius, nodeColor(begin)), ANCHOR_Z_INDEX, parent)

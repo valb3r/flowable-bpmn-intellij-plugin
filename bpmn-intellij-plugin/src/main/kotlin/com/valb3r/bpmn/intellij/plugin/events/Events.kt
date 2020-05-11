@@ -10,4 +10,6 @@ data class BooleanValueUpdatedEvent(override val bpmnElementId: BpmnElementId, o
 
 data class DraggedToEvent(override val diagramElementId: DiagramElementId, override val dx: Float, override val dy: Float): LocationUpdateWithId
 
+data class NewChildElement(override val parentElementId: DiagramElementId, override val x: Float, override val y: Float): NewChildElementWithId
+
 data class CommittedToFile(val eventCount: Int): Event

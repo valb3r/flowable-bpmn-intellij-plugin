@@ -22,12 +22,14 @@ fun updateEventsRegistry(): ProcessModelUpdateEvents {
 class ProcessModelUpdateEvents(private val updates: MutableList<Event>) {
 
     private val fileCommitListeners: MutableList<Any> = ArrayList()
+    private val parentCreatesByStaticId: MutableMap<DiagramElementId, MutableList<Event>> = ConcurrentHashMap()
     private val locationUpdatesByStaticId: MutableMap<DiagramElementId, MutableList<Event>> = ConcurrentHashMap()
     private val propertyUpdatesByStaticId: MutableMap<BpmnElementId, MutableList<Event>> = ConcurrentHashMap()
 
     fun reset() {
         locationUpdatesByStaticId.clear()
         propertyUpdatesByStaticId.clear()
+        parentCreatesByStaticId.clear()
     }
 
     fun commitToFile() {
@@ -43,6 +45,11 @@ class ProcessModelUpdateEvents(private val updates: MutableList<Event>) {
         locationUpdatesByStaticId.computeIfAbsent(event.diagramElementId) { CopyOnWriteArrayList() } += event
     }
 
+    fun addChildCreated(event: NewChildElementWithId) {
+        updates.add(event)
+        parentCreatesByStaticId.computeIfAbsent(event.parentElementId) { CopyOnWriteArrayList() } += event
+    }
+
     fun currentPropertyUpdateEventList(elementId: BpmnElementId): List<PropertyUpdateWithId> {
         return propertyUpdatesByStaticId
                 .getOrDefault(elementId, emptyList<PropertyUpdateWithId>())
@@ -53,5 +60,11 @@ class ProcessModelUpdateEvents(private val updates: MutableList<Event>) {
         return locationUpdatesByStaticId
                 .getOrDefault(elementId, emptyList<LocationUpdateWithId>())
                 .filterIsInstance<LocationUpdateWithId>()
+    }
+
+    fun newElementCreateFromParentEventList(parentElementId: DiagramElementId): List<NewChildElementWithId> {
+        return parentCreatesByStaticId
+                .getOrDefault(parentElementId, emptyList<NewChildElementWithId>())
+                .filterIsInstance<NewChildElementWithId>()
     }
 }
