@@ -77,7 +77,26 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return arrow
     }
 
-    fun drawCircle(shape: ShapeElement, name: String?, background: Color, border: Color): Area {
+    fun drawCircle(center: WaypointElement, radius: Float, background: Color, border: Color): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(center.x - radius, center.y - radius))
+        val rightBottom = camera.toCameraView(Point2D.Float(center.x + radius, center.y + radius))
+
+        graphics2D.color = background
+        val drawShape = Ellipse2D.Float(
+                leftTop.x,
+                leftTop.y,
+                rightBottom.x - leftTop.x,
+                rightBottom.y - leftTop.y
+        )
+
+        graphics2D.fill(drawShape)
+        graphics2D.color = border
+        graphics2D.draw(drawShape)
+
+        return Area(drawShape)
+    }
+
+    fun drawCircle(shape: ShapeElement, background: Color, border: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
 

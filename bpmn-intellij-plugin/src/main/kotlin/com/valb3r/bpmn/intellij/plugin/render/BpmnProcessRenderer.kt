@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.NAME
@@ -15,6 +16,8 @@ import java.awt.geom.Area
 import java.nio.charset.StandardCharsets
 
 class BpmnProcessRenderer {
+
+    val nodeRadius = 2f
 
     val GEAR = IconLoader.getIcon("/icons/gear.png")
     val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
@@ -53,14 +56,49 @@ class BpmnProcessRenderer {
     private fun drawEdgeElement(canvas: CanvasPainter, shape: EdgeElement, meta: RenderMetadata): Area {
         val active = isActive(shape.id, meta)
         val area = Area()
+        if (null == shape.waypoint) {
+            return area
+        }
+
+        val color = color(active, Colors.ARROW_COLOR)
+        val drawFunction = if (active) {
+            begin: WaypointElement, end: WaypointElement, isLast: Boolean -> drawEdgeWithAnchors(canvas, begin, end, color, isLast)
+        } else {
+            begin: WaypointElement, end: WaypointElement, isLast: Boolean -> drawEdgeWithoutAnchors(canvas, begin, end, color, isLast)
+        }
+
         shape.waypoint?.forEachIndexed { index, it ->
             when {
-                index == shape.waypoint!!.size - 1 -> area.add(canvas.drawLineWithArrow(shape.waypoint!![index - 1], it, color(active, Colors.ARROW_COLOR)))
-                index > 0 -> area.add(canvas.drawLine(shape.waypoint!![index - 1], it, color(active, Colors.ARROW_COLOR)))
+                index == shape.waypoint!!.size - 1 -> area.add(drawFunction(shape.waypoint!![index - 1], it, true))
+                index > 0 -> area.add(drawFunction(shape.waypoint!![index - 1], it, false))
             }
         }
 
         return area
+    }
+
+    private fun drawEdgeWithAnchors(canvas: CanvasPainter, begin: WaypointElement, end: WaypointElement, color: Color, isLast: Boolean): Area {
+        val anchorColor = Color.RED
+        val result = Area()
+        if (isLast) {
+            result.add(canvas.drawLineWithArrow(begin, end, color))
+            result.add(canvas.drawCircle(begin, nodeRadius, anchorColor, anchorColor))
+            result.add(canvas.drawCircle(end, nodeRadius, anchorColor, anchorColor))
+            return result
+        }
+
+        result.add(canvas.drawLine(begin, end, color))
+        result.add(canvas.drawCircle(begin, nodeRadius, anchorColor, anchorColor))
+        result.add(canvas.drawCircle(end, nodeRadius, anchorColor, anchorColor))
+        return result
+    }
+
+    private fun drawEdgeWithoutAnchors(canvas: CanvasPainter, begin: WaypointElement, end: WaypointElement, color: Color, isLast: Boolean): Area {
+        if (isLast) {
+            return canvas.drawLineWithArrow(begin, end, color)
+        }
+
+        return canvas.drawLine(begin, end, color)
     }
 
     private fun drawShapeElement(canvas: CanvasPainter, bpmnShape: ShapeElement, meta: RenderMetadata): Area {
@@ -91,7 +129,7 @@ class BpmnProcessRenderer {
     }
 
     private fun drawEndEvent(canvas: CanvasPainter, shape: ShapeElement, name: String?, active: Boolean) =
-            canvas.drawCircle(shape, name, color(active, Colors.RED), Colors.ELEMENT_BORDER_COLOR.color)
+            canvas.drawCircle(shape, color(active, Colors.RED), Colors.ELEMENT_BORDER_COLOR.color)
 
     private fun drawExclusiveGateway(canvas: CanvasPainter, shape: ShapeElement, active: Boolean) =
             canvas.drawWrappedIcon(shape, EXCLUSIVE_GATEWAY, active, Color.GREEN)
@@ -103,7 +141,7 @@ class BpmnProcessRenderer {
             canvas.drawRoundedRectWithIcon(shape, GEAR, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
 
     private fun drawStartEvent(canvas: CanvasPainter, shape: ShapeElement, name: String?, active: Boolean) =
-            canvas.drawCircle(shape, name, color(active, Colors.GREEN), Colors.ELEMENT_BORDER_COLOR.color)
+            canvas.drawCircle(shape, color(active, Colors.GREEN), Colors.ELEMENT_BORDER_COLOR.color)
 
     private fun defaultElementRender(canvas: CanvasPainter, shape: ShapeElement, name: String?, active: Boolean): Area {
         return canvas.drawRoundedRect(shape, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)

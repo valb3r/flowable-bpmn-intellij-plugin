@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder
 import com.intellij.ui.EditorTextField
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
@@ -123,6 +124,7 @@ class Canvas: JPanel() {
     fun stopDrag() {
         if (dragCtx.draggedIds.isNotEmpty() && (dragCtx.current.distance(dragCtx.start) > epsilon)) {
             dragCtx.draggedIds
+                    .filter { isDraggable(it) }
                     .forEach { updateEvents.addLocationUpdateEvent(
                             DraggedToEvent(
                                     it,
@@ -152,6 +154,11 @@ class Canvas: JPanel() {
                 Point2D.Float(camera.zoom.x * scale, camera.zoom.y * scale)
         )
         repaint()
+    }
+
+    private fun isDraggable(elemId: DiagramElementId): Boolean {
+        val bpmnId = processObject?.elementByDiagramId?.get(elemId) ?: return false
+        return processObject?.elementByStaticId?.get(bpmnId) is BpmnServiceTask
     }
 
     private fun setupGraphics(graphics: Graphics): Graphics2D {
