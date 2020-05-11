@@ -10,10 +10,7 @@ import org.apache.batik.transcoder.TranscoderInput
 import org.apache.batik.transcoder.TranscoderOutput
 import org.apache.batik.transcoder.image.ImageTranscoder
 import org.apache.batik.transcoder.image.PNGTranscoder
-import java.awt.Color
-import java.awt.Font
-import java.awt.Graphics2D
-import java.awt.Polygon
+import java.awt.*
 import java.awt.font.FontRenderContext
 import java.awt.font.LineBreakMeasurer
 import java.awt.font.TextAttribute
@@ -36,6 +33,20 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
     private val arrowStyle = Polygon(intArrayOf(0, -arrowWidth, -arrowWidth), intArrayOf(0, 5, -5), 3)
     private val regularLineWidth = 2f
     private val nodeRadius = 25f
+
+    fun drawZeroAreaLine(start: Point2D.Float, end: Point2D.Float, stroke: Stroke, color: Color): Area {
+        val st = camera.toCameraView(Point2D.Float(start.x, start.y))
+        val en = camera.toCameraView(Point2D.Float(end.x, end.y))
+
+        val oldColor = graphics2D.color
+        val oldStroke = graphics2D.stroke
+        graphics2D.stroke = stroke
+        graphics2D.color = color
+        graphics2D.drawLine(st.x.toInt(), st.y.toInt(), en.x.toInt(), en.y.toInt())
+        graphics2D.color = oldColor
+        graphics2D.stroke = oldStroke
+        return Area()
+    }
 
     fun drawLine(start: WaypointElement, end: WaypointElement, color: Color): Area {
         val st = camera.toCameraView(Point2D.Float(start.x, start.y))

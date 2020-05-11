@@ -17,12 +17,14 @@ import java.awt.image.BufferedImage
 import java.util.concurrent.TimeUnit
 import javax.swing.JPanel
 import javax.swing.JTable
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
 class Canvas: JPanel() {
 
     private val epsilon = 0.1f
+    private val anchorAttractionThreshold = 10.0f
     private val zoomFactor = 1.2f
     private val cursorSize = 3
     private val defaultCameraOrigin = Point2D.Float(0f, 0f)
@@ -32,7 +34,7 @@ class Canvas: JPanel() {
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
-    private var interactionCtx: ElementInteractionContext = ElementInteractionContext(mutableSetOf(), mutableMapOf(), mutableMapOf(), Point2D.Float(), Point2D.Float())
+    private var interactionCtx: ElementInteractionContext = ElementInteractionContext(mutableSetOf(), mutableMapOf(), mutableMapOf(), emptySet(), Point2D.Float(), Point2D.Float())
     private var processObject: BpmnProcessObjectView? = null
     private var renderer: BpmnProcessRenderer? = null
     private var areaByElement: Map<DiagramElementId, AreaWithZindex>? = null
@@ -70,7 +72,7 @@ class Canvas: JPanel() {
         clickedElements.forEach { interactionCtx.clickCallbacks.get(it)?.invoke(updateEvents) }
 
         this.selectedElements.clear()
-        interactionCtx = ElementInteractionContext(mutableSetOf(), mutableMapOf(), mutableMapOf(), Point2D.Float(), Point2D.Float())
+        interactionCtx = ElementInteractionContext(mutableSetOf(), mutableMapOf(), mutableMapOf(), emptySet(), Point2D.Float(), Point2D.Float())
         this.selectedElements.addAll(clickedElements)
 
         repaint()
@@ -95,7 +97,7 @@ class Canvas: JPanel() {
     fun startDragWithButton(current: Point2D.Float) {
         val elemsUnderCursor = elemsUnderCursor(current)
         if (selectedElements.intersect(elemsUnderCursor).isEmpty()) {
-            interactionCtx = ElementInteractionContext(emptySet(), mutableMapOf(), mutableMapOf(), camera.fromCameraView(current), camera.fromCameraView(current))
+            interactionCtx = ElementInteractionContext(emptySet(), mutableMapOf(), mutableMapOf(), emptySet(), camera.fromCameraView(current), camera.fromCameraView(current))
             return
         }
 
@@ -103,6 +105,41 @@ class Canvas: JPanel() {
                 draggedIds = selectedElements.toMutableSet(),
                 start = camera.fromCameraView(current),
                 current = camera.fromCameraView(current)
+        )
+    }
+
+    fun attractToAnchors(ctx: ElementInteractionContext): ElementInteractionContext {
+        val anchors: MutableSet<Triple<Point2D.Float, Point2D.Float, Point2D.Float>> = mutableSetOf()
+        val elementsWithAnchors = mutableSetOf<DiagramElementId>()
+
+        for (dragged in ctx.draggedIds) {
+            val draggedAnchors = areaByElement?.get(dragged)?.anchors.orEmpty()
+            val anchorsToSearchIn = areaByElement?.filter { !ctx.draggedIds.contains(it.key) }?.filter { !elementsWithAnchors.contains(it.key) }
+            for ((elemId, searchIn) in anchorsToSearchIn.orEmpty()) {
+                for (draggedAnchor in draggedAnchors) {
+                    for (anchor in searchIn.anchors) {
+                        if (abs(draggedAnchor.x - anchor.x) < anchorAttractionThreshold) {
+                            anchors += Triple(Point2D.Float(anchor.x, anchor.y), Point2D.Float(anchor.x, draggedAnchor.y), Point2D.Float(anchor.x - draggedAnchor.x, 0.0f))
+                            elementsWithAnchors += elemId
+                        } else if (abs(draggedAnchor.y - anchor.y) < anchorAttractionThreshold) {
+                            anchors += Triple(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, anchor.y), Point2D.Float(0.0f, anchor.y - draggedAnchor.y))
+                            elementsWithAnchors += elemId
+                        }
+                    }
+                }
+            }
+        }
+
+        val anchorX = anchors.filter { it.third.y == 0.0f }.minBy { it.first.distance(it.second) }
+        val anchorY = anchors.filter { it.third.x == 0.0f }.minBy { it.first.distance(it.second) }
+        val dx = anchorX?.third?.x ?: 0.0f
+        val dy = anchorY?.third?.y ?: 0.0f
+        val selectedAnchors: MutableSet<Pair<Point2D.Float, Point2D.Float>> = mutableSetOf()
+        anchorX?.apply { selectedAnchors += Pair(first, second)}
+        anchorY?.apply { selectedAnchors += Pair(first, second)}
+        return ctx.copy(
+                current = Point2D.Float(ctx.current.x + dx, ctx.current.y + dy),
+                anchorsHit = selectedAnchors
         )
     }
 
@@ -117,6 +154,7 @@ class Canvas: JPanel() {
         }
 
         interactionCtx = interactionCtx.copy(current = camera.fromCameraView(current))
+        interactionCtx = attractToAnchors(interactionCtx)
         repaint()
     }
 

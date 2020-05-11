@@ -15,8 +15,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.NAME
 import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
 import com.valb3r.bpmn.intellij.plugin.events.NewWaypointsEvent
 import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
+import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.geom.Area
+import java.awt.geom.Point2D
 import java.nio.charset.StandardCharsets
 import kotlin.math.min
 
@@ -26,10 +28,11 @@ class BpmnProcessRenderer {
     private val recycleBinSize = 20f
     private val recycleBinMargin = 10f
 
-    val GEAR = IconLoader.getIcon("/icons/gear.png")
-    val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
-    val DRAG = "/icons/drag.svg".asResource()!!
-    val RECYCLE_BIN = "/icons/recycle-bin.svg".asResource()!!
+    private val GEAR = IconLoader.getIcon("/icons/gear.png")
+    private val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
+    private val RECYCLE_BIN = "/icons/recycle-bin.svg".asResource()!!
+
+    private val ANCHOR_STROKE = BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(9.0f), 0.0f)
 
     fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val state = ctx.stateProvider.currentState()
@@ -42,8 +45,10 @@ class BpmnProcessRenderer {
                 state.elemPropertiesByStaticElementId
         )
 
+        drawAnchorsHit(ctx.canvas, ctx.interactionContext.anchorsHit)
         dramBpmnElements(state.shapes, areaByElement, ctx.canvas, renderMeta)
         drawBpmnEdges(state.edges, areaByElement, ctx.canvas, renderMeta)
+
         return areaByElement
     }
 
@@ -65,10 +70,17 @@ class BpmnProcessRenderer {
         }
     }
 
+    private fun drawAnchorsHit(canvas: CanvasPainter, anchors: Set<Pair<Point2D.Float, Point2D.Float>>) {
+        anchors.forEach {
+            canvas.drawZeroAreaLine(it.first, it.second, ANCHOR_STROKE, Colors.ANCHOR_COLOR.color)
+        }
+    }
+
     private fun mergeArea(id: DiagramElementId, areas: MutableMap<DiagramElementId, AreaWithZindex>, area: AreaWithZindex) {
         val target = areas[id] ?: AreaWithZindex(Area())
         target.area.add(area.area)
-        areas[id] = AreaWithZindex(target.area, min(target.index, area.index), target.parentToSelect ?: area.parentToSelect)
+        target.anchors += area.anchors
+        areas[id] = AreaWithZindex(target.area, target.anchors, min(target.index, area.index), target.parentToSelect ?: area.parentToSelect)
     }
 
     private fun drawEdgeElement(canvas: CanvasPainter, shape: EdgeElementState, meta: RenderMetadata): AreaWithZindex {
@@ -104,7 +116,7 @@ class BpmnProcessRenderer {
         return area
     }
 
-    private fun drawWaypointAnchors(canvas: CanvasPainter, begin: WaypointElementState, end: WaypointElementState, parent: EdgeElementState, meta: RenderMetadata, isLast: Boolean, segmentIndex: Int): Map<DiagramElementId, AreaWithZindex> {
+    private fun drawWaypointAnchors(canvas: CanvasPainter, begin: WaypointElementState, end: WaypointElementState, parent: EdgeElementState, meta: RenderMetadata, isLast: Boolean, endWaypointIndex: Int): Map<DiagramElementId, AreaWithZindex> {
         val result = HashMap<DiagramElementId, AreaWithZindex>()
 
         val dragCallback = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents, elem: WaypointElementState ->
@@ -125,9 +137,9 @@ class BpmnProcessRenderer {
             val translatedNode = translateElement(meta, node)
             val active = isActive(node.id, meta)
             val color = color(active, if (node.physical) Colors.WAYPOINT_COLOR else Colors.MID_WAYPOINT_COLOR)
-            result[node.id] = AreaWithZindex(canvas.drawCircle(translatedNode.asWaypointElement(), nodeRadius, color), ANCHOR_Z_INDEX, parent.id)
+            result[node.id] = AreaWithZindex(canvas.drawCircle(translatedNode.asWaypointElement(), nodeRadius, color), mutableSetOf(), ANCHOR_Z_INDEX, parent.id)
             meta.interactionContext.dragEndCallbacks[node.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, node)}
-            if (active && index > 0 && (index < parent.waypoint.size - 1)) {
+            if (active && node.physical && index > 0 && (index < parent.waypoint.size - 1)) {
                 val delId = DiagramElementId("DEL:" + node.id)
                 val deleteIconArea = canvas.drawIcon(BoundsElement(translatedNode.x + recycleBinMargin, translatedNode.y + recycleBinMargin, recycleBinSize, recycleBinSize), RECYCLE_BIN)
                 meta.interactionContext.clickCallbacks[delId] = { dest: ProcessModelUpdateEvents -> dest.addWaypointStructureUpdate(NewWaypointsEvent(
@@ -138,17 +150,17 @@ class BpmnProcessRenderer {
                                 .map { it.originalLocation() }
                                 .toList()
                 ))}
-                result[delId] = AreaWithZindex(deleteIconArea, ANCHOR_Z_INDEX, parent.id)
+                result[delId] = AreaWithZindex(deleteIconArea, mutableSetOf(), ANCHOR_Z_INDEX, parent.id)
             }
         }
 
         if (isLast) {
-            drawNode(begin, segmentIndex - 1)
-            drawNode(end, segmentIndex)
+            drawNode(begin, endWaypointIndex - 1)
+            drawNode(end, endWaypointIndex)
             return result
         }
 
-        drawNode(begin, segmentIndex - 1)
+        drawNode(begin, endWaypointIndex - 1)
         meta.interactionContext.dragEndCallbacks[begin.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, begin)}
         return result
     }
@@ -175,17 +187,15 @@ class BpmnProcessRenderer {
 
         val shape = translateElement(meta, bpmnShape)
 
-        val resultArea = when (elem) {
+        return when (elem) {
             null -> defaultElementRender(canvas, shape, name, active)
-            is BpmnStartEvent -> drawStartEvent(canvas, shape, name, active)
+            is BpmnStartEvent -> drawStartEvent(canvas, shape, active)
             is BpmnServiceTask -> drawServiceTask(canvas, shape, name, active)
             is BpmnCallActivity -> drawCallActivity(canvas, shape, name, active)
             is BpmnExclusiveGateway -> drawExclusiveGateway(canvas, shape, active)
-            is BpmnEndEvent -> drawEndEvent(canvas, shape, name, active)
-            else -> Area()
+            is BpmnEndEvent -> drawEndEvent(canvas, shape, active)
+            else -> AreaWithZindex(Area())
         }
-
-        return AreaWithZindex(resultArea)
     }
 
     private fun <T> translateElement(meta: RenderMetadata, elem: T): T where T : Translatable<T>, T: WithDiagramId {
@@ -199,23 +209,76 @@ class BpmnProcessRenderer {
         }
     }
 
-    private fun drawEndEvent(canvas: CanvasPainter, shape: ShapeElement, name: String?, active: Boolean) =
-            canvas.drawCircle(shape, color(active, Colors.RED), Colors.ELEMENT_BORDER_COLOR.color)
+    private fun drawEndEvent(canvas: CanvasPainter, shape: ShapeElement, active: Boolean): AreaWithZindex {
+        val area = canvas.drawCircle(shape, color(active, Colors.RED), Colors.ELEMENT_BORDER_COLOR.color)
+        return AreaWithZindex(area, ellipseOrDiamondAnchors(shape))
+    }
 
-    private fun drawExclusiveGateway(canvas: CanvasPainter, shape: ShapeElement, active: Boolean) =
-            canvas.drawWrappedIcon(shape, EXCLUSIVE_GATEWAY, active, Color.GREEN)
+    private fun drawExclusiveGateway(canvas: CanvasPainter, shape: ShapeElement, active: Boolean): AreaWithZindex {
+        val area = canvas.drawWrappedIcon(shape, EXCLUSIVE_GATEWAY, active, Color.GREEN)
+        return AreaWithZindex(area, ellipseOrDiamondAnchors(shape))
+    }
 
-    private fun drawCallActivity(canvas: CanvasPainter, shape: ShapeElement, name: String?, active: Boolean) =
-            canvas.drawRoundedRect(shape, name, color(active, Colors.CALL_ACTIVITY_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+    private fun drawCallActivity(canvas: CanvasPainter, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+        val area = canvas.drawRoundedRect(shape, name, color(active, Colors.CALL_ACTIVITY_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+        return AreaWithZindex(area, rectangleAnchors(shape))
+    }
 
-    private fun drawServiceTask(canvas: CanvasPainter, shape: ShapeElement, name: String?, active: Boolean) =
-            canvas.drawRoundedRectWithIcon(shape, GEAR, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+    private fun drawServiceTask(canvas: CanvasPainter, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+        val area = canvas.drawRoundedRectWithIcon(shape, GEAR, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+        return AreaWithZindex(area, rectangleAnchors(shape))
+    }
 
-    private fun drawStartEvent(canvas: CanvasPainter, shape: ShapeElement, name: String?, active: Boolean) =
-            canvas.drawCircle(shape, color(active, Colors.GREEN), Colors.ELEMENT_BORDER_COLOR.color)
+    private fun drawStartEvent(canvas: CanvasPainter, shape: ShapeElement, active: Boolean): AreaWithZindex {
+        val area = canvas.drawCircle(shape, color(active, Colors.GREEN), Colors.ELEMENT_BORDER_COLOR.color)
+        return AreaWithZindex(area, ellipseOrDiamondAnchors(shape))
+    }
 
-    private fun defaultElementRender(canvas: CanvasPainter, shape: ShapeElement, name: String?, active: Boolean): Area {
-        return canvas.drawRoundedRect(shape, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+    private fun defaultElementRender(canvas: CanvasPainter, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+        val area = canvas.drawRoundedRect(shape, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.TEXT_COLOR.color)
+        return AreaWithZindex(area, rectangleAnchors(shape))
+    }
+
+    private fun ellipseOrDiamondAnchors(shape: ShapeElement): MutableSet<Point2D.Float> {
+        val halfWidth = shape.bounds.width / 2.0f
+        val halfHeight = shape.bounds.height / 2.0f
+
+        val cx = shape.bounds.x + shape.bounds.width / 2.0f
+        val cy = shape.bounds.y + shape.bounds.height / 2.0f
+        return mutableSetOf(
+                Point2D.Float(cx, cy),
+
+                Point2D.Float(cx - halfWidth, cy),
+                Point2D.Float(cx + halfWidth, cy),
+                Point2D.Float(cx, cy - halfHeight),
+                Point2D.Float(cx, cy + halfHeight)
+        )
+    }
+
+    private fun rectangleAnchors(shape: ShapeElement): MutableSet<Point2D.Float> {
+        val halfWidth = shape.bounds.width / 2.0f
+        val halfHeight = shape.bounds.height / 2.0f
+
+        val cx = shape.bounds.x + shape.bounds.width / 2.0f
+        val cy = shape.bounds.y + shape.bounds.height / 2.0f
+        return mutableSetOf(
+                Point2D.Float(cx, cy),
+
+                Point2D.Float(cx - halfWidth, cy),
+                Point2D.Float(cx + halfWidth, cy),
+                Point2D.Float(cx, cy - halfHeight),
+                Point2D.Float(cx, cy + halfHeight),
+
+                Point2D.Float(cx - halfWidth / 2.0f, cy - halfHeight),
+                Point2D.Float(cx + halfWidth / 2.0f, cy - halfHeight),
+                Point2D.Float(cx - halfWidth / 2.0f, cy + halfHeight),
+                Point2D.Float(cx + halfWidth / 2.0f, cy + halfHeight),
+
+                Point2D.Float(cx - halfWidth, cy - halfHeight / 2.0f),
+                Point2D.Float(cx - halfWidth, cy + halfHeight / 2.0f),
+                Point2D.Float(cx + halfWidth, cy - halfHeight / 2.0f),
+                Point2D.Float(cx + halfWidth, cy + halfHeight / 2.0f)
+        )
     }
 
     private fun color(active: Boolean, color: Colors): Color {
