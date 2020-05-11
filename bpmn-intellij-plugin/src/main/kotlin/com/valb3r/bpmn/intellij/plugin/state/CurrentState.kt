@@ -69,6 +69,6 @@ class CurrentStateProvider {
         var dx = 0.0f
         var dy = 0.0f
         updates.forEach { dx += it.dx; dy += it.dy }
-        return elem.copy(waypoint = elem.waypoint?.map { it.copyAndTranslate(dx, dy) })
+        return elem.copy(waypoint = ArrayList(elem.waypoint.map { it.copyAndTranslate(dx, dy) }))
     }
 }

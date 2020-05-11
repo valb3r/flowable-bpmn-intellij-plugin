@@ -68,10 +68,11 @@ class BpmnProcessRenderer {
         val area = Area()
 
         val color = color(active, Colors.ARROW_COLOR)
-        shape.waypoint.forEachIndexed { index, it ->
+        val trueWaypoints = calculateTrueWaypoints(shape, meta)
+        trueWaypoints.forEachIndexed { index, it ->
             when {
-                index == shape.waypoint.size - 1 -> area.add(drawEdge(canvas, shape.waypoint[index - 1], it, meta, color, true))
-                index > 0 -> area.add(drawEdge(canvas, shape.waypoint[index - 1], it, meta, color, false))
+                index == trueWaypoints.size - 1 -> area.add(drawEdge(canvas, trueWaypoints[index - 1], it, meta, color, true))
+                index > 0 -> area.add(drawEdge(canvas, trueWaypoints[index - 1], it, meta, color, false))
             }
         }
 
@@ -80,10 +81,15 @@ class BpmnProcessRenderer {
 
     private fun drawWaypointElements(canvas: CanvasPainter, shape: EdgeElementState, meta: RenderMetadata): Map<DiagramElementId, AreaWithZindex> {
         val area = HashMap<DiagramElementId, AreaWithZindex>()
-        shape.waypoint.forEachIndexed { index, it ->
+        val trueWaypoints = calculateTrueWaypoints(shape, meta)
+        // draw all endpoints only if none virtual is dragged
+        val isVirtualDragged = meta.dragContext.draggedIds.intersect(shape.waypoint.filter { !it.physical }.map { it.id }).isNotEmpty()
+        val isPhysicalDragged = meta.dragContext.draggedIds.intersect(shape.waypoint.filter { it.physical }.map { it.id }).isNotEmpty()
+        val waypoints = if (isVirtualDragged || isPhysicalDragged) trueWaypoints else shape.waypoint
+        waypoints.forEachIndexed { index, it ->
             when {
-                index == shape.waypoint.size - 1 -> area.putAll(drawWaypointAnchors(canvas, shape.waypoint[index - 1], it, shape.id, meta, true))
-                index > 0 -> area.putAll(drawWaypointAnchors(canvas, shape.waypoint[index - 1], it, shape.id, meta, false))
+                index == waypoints.size - 1 -> area.putAll(drawWaypointAnchors(canvas, waypoints[index - 1], it, shape.id, meta, true))
+                index > 0 -> area.putAll(drawWaypointAnchors(canvas, waypoints[index - 1], it, shape.id, meta, false))
             }
         }
 
@@ -94,14 +100,20 @@ class BpmnProcessRenderer {
         val result = HashMap<DiagramElementId, AreaWithZindex>()
         val translatedBegin = translateElement(meta, begin)
         val translatedEnd = translateElement(meta, end)
+        color(isActive(begin.id, meta), Colors.WAYPOINT_COLOR)
+        val nodeColor: (WaypointElementState) -> Color = { elem -> color(isActive(elem.id, meta), if (elem.physical) Colors.WAYPOINT_COLOR else Colors.MID_WAYPOINT_COLOR) }
         if (isLast) {
-            result[begin.id] = AreaWithZindex(canvas.drawCircle(translatedBegin.asWaypointElement(), nodeRadius, color(isActive(begin.id, meta), Colors.WAYPOINT_COLOR)), ANCHOR_Z_INDEX, parent)
-            result[end.id] = AreaWithZindex(canvas.drawCircle(translatedEnd.asWaypointElement(), nodeRadius, color(isActive(end.id, meta), Colors.WAYPOINT_COLOR)), ANCHOR_Z_INDEX, parent)
+            result[begin.id] = AreaWithZindex(canvas.drawCircle(translatedBegin.asWaypointElement(), nodeRadius, nodeColor(begin)), ANCHOR_Z_INDEX, parent)
+            result[end.id] = AreaWithZindex(canvas.drawCircle(translatedEnd.asWaypointElement(), nodeRadius, nodeColor(end)), ANCHOR_Z_INDEX, parent)
             return result
         }
 
-        result[begin.id] = AreaWithZindex(canvas.drawCircle(translatedBegin.asWaypointElement(), nodeRadius, color(isActive(begin.id, meta), Colors.WAYPOINT_COLOR)), ANCHOR_Z_INDEX, parent)
+        result[begin.id] = AreaWithZindex(canvas.drawCircle(translatedBegin.asWaypointElement(), nodeRadius, nodeColor(begin)), ANCHOR_Z_INDEX, parent)
         return result
+    }
+
+    private fun calculateTrueWaypoints(shape: EdgeElementState, meta: RenderMetadata): List<WaypointElementState> {
+        return shape.waypoint.filter { it.physical || isActive(it.id, meta) }
     }
 
     private fun drawEdge(canvas: CanvasPainter, begin: WaypointElementState, end: WaypointElementState, meta: RenderMetadata, color: Color, isLast: Boolean): Area {

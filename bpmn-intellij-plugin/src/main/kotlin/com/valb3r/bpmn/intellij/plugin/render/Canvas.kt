@@ -155,7 +155,7 @@ class Canvas: JPanel() {
     private fun elemsUnderCursor(cursorPoint: Point2D.Float): List<DiagramElementId> {
         val cursor = cursorRect(cursorPoint)
         val intersection = areaByElement?.filter { it.value.area.intersects(cursor) }
-        val minZindex = areaByElement?.minBy { it.value.index }
+        val minZindex = intersection?.minBy { it.value.index }
         val result = mutableListOf<DiagramElementId>()
         // Force elements of only one dominating Z-Index and their parents
         intersection
