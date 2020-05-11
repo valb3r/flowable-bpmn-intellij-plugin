@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.events
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.render.WaypointElementState
 
 interface Event
 
@@ -12,10 +13,9 @@ interface LocationUpdateWithId: Event {
     val dy: Float
 }
 
-interface NewChildElementWithId: Event {
-    val parentElementId: DiagramElementId
-    val x: Float
-    val y: Float
+interface NewWaypoints: Event {
+    val edgeElementId: DiagramElementId
+    val waypoints: List<WaypointElementState>
 }
 
 interface PropertyUpdateWithId: Event {

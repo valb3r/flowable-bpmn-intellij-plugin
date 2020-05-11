@@ -49,14 +49,24 @@ data class WaypointElementState (
         override val id: DiagramElementId,
         val x: Float,
         val y: Float,
+        val origX: Float,
+        val origY: Float,
         val physical: Boolean
 ): Translatable<WaypointElementState>, WithDiagramId {
 
-    constructor(elem: WaypointElement): this(DiagramElementId(UUID.randomUUID().toString()), elem.x, elem.y, true)
-    constructor(id: String, x: Float, y: Float): this(DiagramElementId(id), x, y, false)
+    constructor(elem: WaypointElement): this(DiagramElementId(UUID.randomUUID().toString()), elem.x, elem.y, elem.x, elem.y, true)
+    constructor(id: String, x: Float, y: Float): this(DiagramElementId(id), x, y, x, y, false)
 
     override fun copyAndTranslate(dx: Float, dy: Float): WaypointElementState {
-        return WaypointElementState(id, x + dx, y + dy, physical)
+        return WaypointElementState(id, origX + dx, origY + dy, origX, origY, physical)
+    }
+
+    fun moveTo(dx: Float, dy: Float): WaypointElementState {
+        return WaypointElementState(id, origX + dx, origY + dy, origX + dx, origY + dy, physical)
+    }
+
+    fun asPhysical(): WaypointElementState {
+        return WaypointElementState(id, x, y, origX, origY, true)
     }
 
     fun asWaypointElement(): WaypointElement {

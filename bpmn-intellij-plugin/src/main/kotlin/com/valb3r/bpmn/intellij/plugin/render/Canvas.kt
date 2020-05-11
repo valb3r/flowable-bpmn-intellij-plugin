@@ -5,7 +5,6 @@ import com.intellij.ui.EditorTextField
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
-import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.properties.PropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.state.currentStateProvider
@@ -33,7 +32,7 @@ class Canvas: JPanel() {
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
-    private var dragCtx: ElementDragContext = ElementDragContext(mutableSetOf(), Point2D.Float(), Point2D.Float())
+    private var dragCtx: ElementDragContext = ElementDragContext(mutableSetOf(), mutableMapOf(), Point2D.Float(), Point2D.Float())
     private var processObject: BpmnProcessObjectView? = null
     private var renderer: BpmnProcessRenderer? = null
     private var areaByElement: Map<DiagramElementId, AreaWithZindex>? = null
@@ -68,7 +67,7 @@ class Canvas: JPanel() {
 
     fun click(location: Point2D.Float) {
         this.selectedElements.clear()
-        dragCtx = ElementDragContext(mutableSetOf(), Point2D.Float(), Point2D.Float())
+        dragCtx = ElementDragContext(mutableSetOf(), mutableMapOf(), Point2D.Float(), Point2D.Float())
         this.selectedElements.addAll(elemsUnderCursor(location))
 
         repaint()
@@ -93,11 +92,15 @@ class Canvas: JPanel() {
     fun startDragWithButton(current: Point2D.Float) {
         val elemsUnderCursor = elemsUnderCursor(current)
         if (selectedElements.intersect(elemsUnderCursor).isEmpty()) {
-            dragCtx = ElementDragContext(emptySet(), camera.fromCameraView(current), camera.fromCameraView(current))
+            dragCtx = ElementDragContext(emptySet(), mutableMapOf(), camera.fromCameraView(current), camera.fromCameraView(current))
             return
         }
 
-        dragCtx = ElementDragContext(selectedElements.toSet(), camera.fromCameraView(current), camera.fromCameraView(current))
+        dragCtx = dragCtx.copy(
+                draggedIds = selectedElements.toMutableSet(),
+                start = camera.fromCameraView(current),
+                current = camera.fromCameraView(current)
+        )
     }
 
     fun dragWithWheel(previous: Point2D.Float, current: Point2D.Float) {
@@ -116,16 +119,9 @@ class Canvas: JPanel() {
 
     fun stopDrag() {
         if (dragCtx.draggedIds.isNotEmpty() && (dragCtx.current.distance(dragCtx.start) > epsilon)) {
-            dragCtx.draggedIds
-                    .forEach {
-                        updateEvents.addLocationUpdateEvent(
-                                DraggedToEvent(
-                                        it,
-                                        dragCtx.current.x - dragCtx.start.x,
-                                        dragCtx.current.y - dragCtx.start.y
-                                )
-                        )
-                    }
+            val dx = dragCtx.current.x - dragCtx.start.x
+            val dy = dragCtx.current.y - dragCtx.start.y
+            dragCtx.draggedIds.forEach { dragCtx.dragEndCallbacks[it]?.invoke(dx, dy, updateEvents) }
         }
 
         dragCtx = dragCtx.copy(draggedIds = emptySet())
@@ -159,7 +155,7 @@ class Canvas: JPanel() {
         intersection
                 ?.filter { it.value.index == minZindex?.value?.index }
                 ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this }  }
-        return result;
+        return result
     }
 
     private fun setupGraphics(graphics: Graphics): Graphics2D {

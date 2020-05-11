@@ -45,9 +45,9 @@ class ProcessModelUpdateEvents(private val updates: MutableList<Event>) {
         locationUpdatesByStaticId.computeIfAbsent(event.diagramElementId) { CopyOnWriteArrayList() } += event
     }
 
-    fun addChildCreated(event: NewChildElementWithId) {
+    fun addWaypointStructureUpdate(event: NewWaypointsEvent) {
         updates.add(event)
-        parentCreatesByStaticId.computeIfAbsent(event.parentElementId) { CopyOnWriteArrayList() } += event
+        parentCreatesByStaticId.computeIfAbsent(event.edgeElementId) { CopyOnWriteArrayList() } += event
     }
 
     fun currentPropertyUpdateEventList(elementId: BpmnElementId): List<PropertyUpdateWithId> {
@@ -62,9 +62,9 @@ class ProcessModelUpdateEvents(private val updates: MutableList<Event>) {
                 .filterIsInstance<LocationUpdateWithId>()
     }
 
-    fun newElementCreateFromParentEventList(parentElementId: DiagramElementId): List<NewChildElementWithId> {
+    fun newWaypointStructure(parentElementId: DiagramElementId): List<NewWaypointsEvent> {
         return parentCreatesByStaticId
-                .getOrDefault(parentElementId, emptyList<NewChildElementWithId>())
-                .filterIsInstance<NewChildElementWithId>()
+                .getOrDefault(parentElementId, emptyList<NewWaypointsEvent>())
+                .filterIsInstance<NewWaypointsEvent>()
     }
 }

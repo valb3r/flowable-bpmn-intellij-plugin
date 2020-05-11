@@ -11,6 +11,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.NAME
+import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
+import com.valb3r.bpmn.intellij.plugin.events.NewWaypointsEvent
+import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
 import java.awt.Color
 import java.awt.geom.Area
 import java.nio.charset.StandardCharsets
@@ -52,7 +55,10 @@ class BpmnProcessRenderer {
     }
 
     private fun dramBpmnElements(shapes: List<ShapeElement>, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
-        shapes.forEach { mergeArea(it.id, areaByElement, drawShapeElement(canvas, it, renderMeta)) }
+        shapes.forEach {
+            mergeArea(it.id, areaByElement, drawShapeElement(canvas, it, renderMeta))
+            renderMeta.dragContext.dragEndCallbacks[it.id] = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy))}
+        }
     }
 
     private fun mergeArea(id: DiagramElementId, areas: MutableMap<DiagramElementId, AreaWithZindex>, area: AreaWithZindex) {
@@ -86,26 +92,44 @@ class BpmnProcessRenderer {
         val waypoints = if (isVirtualDragged || isPhysicalDragged) trueWaypoints else shape.waypoint
         waypoints.forEachIndexed { index, it ->
             when {
-                index == waypoints.size - 1 -> area.putAll(drawWaypointAnchors(canvas, waypoints[index - 1], it, shape.id, meta, true))
-                index > 0 -> area.putAll(drawWaypointAnchors(canvas, waypoints[index - 1], it, shape.id, meta, false))
+                index == waypoints.size - 1 -> area.putAll(drawWaypointAnchors(canvas, waypoints[index - 1], it, shape, meta, true))
+                index > 0 -> area.putAll(drawWaypointAnchors(canvas, waypoints[index - 1], it, shape, meta, false))
             }
         }
 
         return area
     }
 
-    private fun drawWaypointAnchors(canvas: CanvasPainter, begin: WaypointElementState, end: WaypointElementState, parent: DiagramElementId, meta: RenderMetadata, isLast: Boolean): Map<DiagramElementId, AreaWithZindex> {
+    private fun drawWaypointAnchors(canvas: CanvasPainter, begin: WaypointElementState, end: WaypointElementState, parent: EdgeElementState, meta: RenderMetadata, isLast: Boolean): Map<DiagramElementId, AreaWithZindex> {
         val result = HashMap<DiagramElementId, AreaWithZindex>()
         val translatedBegin = translateElement(meta, begin)
         val translatedEnd = translateElement(meta, end)
         val nodeColor: (WaypointElementState) -> Color = { elem -> color(isActive(elem.id, meta), if (elem.physical) Colors.WAYPOINT_COLOR else Colors.MID_WAYPOINT_COLOR) }
+
+        val dragCallback = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents, elem: WaypointElementState ->
+            if (elem.physical) {
+                dest.addLocationUpdateEvent(DraggedToEvent(elem.id, dx, dy))
+            } else {
+                dest.addWaypointStructureUpdate(NewWaypointsEvent(
+                        parent.id,
+                        parent.waypoint
+                                .filter { it.physical || it.id == elem.id }
+                                .map { if (it.id == elem.id) it.moveTo(dx, dy).asPhysical() else it }
+                                .toList()
+                ))
+            }
+        }
+
         if (isLast) {
-            result[begin.id] = AreaWithZindex(canvas.drawCircle(translatedBegin.asWaypointElement(), nodeRadius, nodeColor(begin)), ANCHOR_Z_INDEX, parent)
-            result[end.id] = AreaWithZindex(canvas.drawCircle(translatedEnd.asWaypointElement(), nodeRadius, nodeColor(end)), ANCHOR_Z_INDEX, parent)
+            result[begin.id] = AreaWithZindex(canvas.drawCircle(translatedBegin.asWaypointElement(), nodeRadius, nodeColor(begin)), ANCHOR_Z_INDEX, parent.id)
+            meta.dragContext.dragEndCallbacks[begin.id] = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, begin)}
+            result[end.id] = AreaWithZindex(canvas.drawCircle(translatedEnd.asWaypointElement(), nodeRadius, nodeColor(end)), ANCHOR_Z_INDEX, parent.id)
+            meta.dragContext.dragEndCallbacks[end.id] = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, end)}
             return result
         }
 
-        result[begin.id] = AreaWithZindex(canvas.drawCircle(translatedBegin.asWaypointElement(), nodeRadius, nodeColor(begin)), ANCHOR_Z_INDEX, parent)
+        result[begin.id] = AreaWithZindex(canvas.drawCircle(translatedBegin.asWaypointElement(), nodeRadius, nodeColor(begin)), ANCHOR_Z_INDEX, parent.id)
+        meta.dragContext.dragEndCallbacks[begin.id] = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, begin)}
         return result
     }
 

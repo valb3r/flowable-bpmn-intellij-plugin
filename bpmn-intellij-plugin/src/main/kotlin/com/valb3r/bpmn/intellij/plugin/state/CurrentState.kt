@@ -67,12 +67,14 @@ class CurrentStateProvider {
 
     private fun updateLocationAndInnerTopology(elem: EdgeElementState): EdgeElementState {
         val hasNoCommittedAnchorUpdates = elem.waypoint.firstOrNull { updateEvents.currentLocationUpdateEventList(it.id).isNotEmpty() }
-        val hasNoNewAnchors = elem.waypoint.firstOrNull { updateEvents.newElementCreateFromParentEventList(it.id).isNotEmpty() }
-        if (null == hasNoCommittedAnchorUpdates && null == hasNoNewAnchors) {
+        val hasNoNewAnchors = updateEvents.newWaypointStructure(elem.id).isEmpty()
+        if (null == hasNoCommittedAnchorUpdates && hasNoNewAnchors) {
             return elem
         }
 
-        val updatedLocations = elem.waypoint.filter { it.physical }.map { updateWaypointLocation(it) }
+        val waypoints: MutableList<WaypointElementState> =
+                updateEvents.newWaypointStructure(elem.id).lastOrNull()?.waypoints?.toMutableList() ?: elem.waypoint.filter { it.physical }.toMutableList()
+        val updatedLocations = waypoints.filter { it.physical }.map { updateWaypointLocation(it) }
         return EdgeElementState(elem, updatedLocations)
     }
 
