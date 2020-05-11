@@ -32,7 +32,7 @@ class Canvas: JPanel() {
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
-    private var dragCtx: ElementDragContext = ElementDragContext(mutableSetOf(), mutableMapOf(), Point2D.Float(), Point2D.Float())
+    private var interactionCtx: ElementInteractionContext = ElementInteractionContext(mutableSetOf(), mutableMapOf(), mutableMapOf(), Point2D.Float(), Point2D.Float())
     private var processObject: BpmnProcessObjectView? = null
     private var renderer: BpmnProcessRenderer? = null
     private var areaByElement: Map<DiagramElementId, AreaWithZindex>? = null
@@ -51,7 +51,7 @@ class Canvas: JPanel() {
                 RenderContext(
                         CanvasPainter(graphics2D, camera.copy(), cachedIcons),
                         selectedElements.toSet(),
-                        dragCtx.copy(),
+                        interactionCtx.copy(),
                         stateProvider
                 )
         )
@@ -66,9 +66,12 @@ class Canvas: JPanel() {
     }
 
     fun click(location: Point2D.Float) {
+        val clickedElements = elemsUnderCursor(location)
+        clickedElements.forEach { interactionCtx.clickCallbacks.get(it)?.invoke(updateEvents) }
+
         this.selectedElements.clear()
-        dragCtx = ElementDragContext(mutableSetOf(), mutableMapOf(), Point2D.Float(), Point2D.Float())
-        this.selectedElements.addAll(elemsUnderCursor(location))
+        interactionCtx = ElementInteractionContext(mutableSetOf(), mutableMapOf(), mutableMapOf(), Point2D.Float(), Point2D.Float())
+        this.selectedElements.addAll(clickedElements)
 
         repaint()
 
@@ -92,11 +95,11 @@ class Canvas: JPanel() {
     fun startDragWithButton(current: Point2D.Float) {
         val elemsUnderCursor = elemsUnderCursor(current)
         if (selectedElements.intersect(elemsUnderCursor).isEmpty()) {
-            dragCtx = ElementDragContext(emptySet(), mutableMapOf(), camera.fromCameraView(current), camera.fromCameraView(current))
+            interactionCtx = ElementInteractionContext(emptySet(), mutableMapOf(), mutableMapOf(), camera.fromCameraView(current), camera.fromCameraView(current))
             return
         }
 
-        dragCtx = dragCtx.copy(
+        interactionCtx = interactionCtx.copy(
                 draggedIds = selectedElements.toMutableSet(),
                 start = camera.fromCameraView(current),
                 current = camera.fromCameraView(current)
@@ -108,23 +111,23 @@ class Canvas: JPanel() {
     }
 
     fun dragWithLeftButton(previous: Point2D.Float, current: Point2D.Float) {
-        if (selectedElements.isEmpty() || dragCtx.draggedIds.isEmpty()) {
+        if (selectedElements.isEmpty() || interactionCtx.draggedIds.isEmpty()) {
             dragCanvas(previous, current)
             return
         }
 
-        dragCtx = dragCtx.copy(current = camera.fromCameraView(current))
+        interactionCtx = interactionCtx.copy(current = camera.fromCameraView(current))
         repaint()
     }
 
     fun stopDrag() {
-        if (dragCtx.draggedIds.isNotEmpty() && (dragCtx.current.distance(dragCtx.start) > epsilon)) {
-            val dx = dragCtx.current.x - dragCtx.start.x
-            val dy = dragCtx.current.y - dragCtx.start.y
-            dragCtx.draggedIds.forEach { dragCtx.dragEndCallbacks[it]?.invoke(dx, dy, updateEvents) }
+        if (interactionCtx.draggedIds.isNotEmpty() && (interactionCtx.current.distance(interactionCtx.start) > epsilon)) {
+            val dx = interactionCtx.current.x - interactionCtx.start.x
+            val dy = interactionCtx.current.y - interactionCtx.start.y
+            interactionCtx.draggedIds.forEach { interactionCtx.dragEndCallbacks[it]?.invoke(dx, dy, updateEvents) }
         }
 
-        dragCtx = dragCtx.copy(draggedIds = emptySet())
+        interactionCtx = interactionCtx.copy(draggedIds = emptySet())
         repaint()
     }
 

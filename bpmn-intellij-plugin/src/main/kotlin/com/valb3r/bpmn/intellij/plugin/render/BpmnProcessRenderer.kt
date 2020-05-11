@@ -35,7 +35,7 @@ class BpmnProcessRenderer {
         val state = ctx.stateProvider.currentState()
         val areaByElement: MutableMap<DiagramElementId, AreaWithZindex> = HashMap()
         val renderMeta = RenderMetadata(
-                ctx.dragContext,
+                ctx.interactionContext,
                 ctx.selectedIds,
                 state.elementByDiagramId,
                 state.elementByStaticId,
@@ -61,7 +61,7 @@ class BpmnProcessRenderer {
     private fun dramBpmnElements(shapes: List<ShapeElement>, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
         shapes.forEach {
             mergeArea(it.id, areaByElement, drawShapeElement(canvas, it, renderMeta))
-            renderMeta.dragContext.dragEndCallbacks[it.id] = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy))}
+            renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy))}
         }
     }
 
@@ -91,20 +91,20 @@ class BpmnProcessRenderer {
         val area = HashMap<DiagramElementId, AreaWithZindex>()
         val trueWaypoints = calculateTrueWaypoints(shape, meta)
         // draw all endpoints only if none virtual is dragged and not physical
-        val isVirtualDragged = meta.dragContext.draggedIds.intersect(shape.waypoint.filter { !it.physical }.map { it.id }).isNotEmpty()
-        val isPhysicalDragged = meta.dragContext.draggedIds.intersect(shape.waypoint.filter { it.physical }.map { it.id }).isNotEmpty()
+        val isVirtualDragged = meta.interactionContext.draggedIds.intersect(shape.waypoint.filter { !it.physical }.map { it.id }).isNotEmpty()
+        val isPhysicalDragged = meta.interactionContext.draggedIds.intersect(shape.waypoint.filter { it.physical }.map { it.id }).isNotEmpty()
         val waypoints = if (isVirtualDragged || isPhysicalDragged) trueWaypoints else shape.waypoint
         waypoints.forEachIndexed { index, it ->
             when {
-                index == waypoints.size - 1 -> area.putAll(drawWaypointAnchors(canvas, waypoints[index - 1], it, shape, meta, true))
-                index > 0 -> area.putAll(drawWaypointAnchors(canvas, waypoints[index - 1], it, shape, meta, false))
+                index == waypoints.size - 1 -> area.putAll(drawWaypointAnchors(canvas, waypoints[index - 1], it, shape, meta, true, index))
+                index > 0 -> area.putAll(drawWaypointAnchors(canvas, waypoints[index - 1], it, shape, meta, false, index))
             }
         }
 
         return area
     }
 
-    private fun drawWaypointAnchors(canvas: CanvasPainter, begin: WaypointElementState, end: WaypointElementState, parent: EdgeElementState, meta: RenderMetadata, isLast: Boolean): Map<DiagramElementId, AreaWithZindex> {
+    private fun drawWaypointAnchors(canvas: CanvasPainter, begin: WaypointElementState, end: WaypointElementState, parent: EdgeElementState, meta: RenderMetadata, isLast: Boolean, segmentIndex: Int): Map<DiagramElementId, AreaWithZindex> {
         val result = HashMap<DiagramElementId, AreaWithZindex>()
 
         val dragCallback = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents, elem: WaypointElementState ->
@@ -121,25 +121,35 @@ class BpmnProcessRenderer {
             }
         }
 
-        val drawNode = { node: WaypointElementState ->
+        val drawNode = { node: WaypointElementState, index: Int ->
             val translatedNode = translateElement(meta, node)
             val active = isActive(node.id, meta)
             val color = color(active, if (node.physical) Colors.WAYPOINT_COLOR else Colors.MID_WAYPOINT_COLOR)
             result[node.id] = AreaWithZindex(canvas.drawCircle(translatedNode.asWaypointElement(), nodeRadius, color), ANCHOR_Z_INDEX, parent.id)
-            meta.dragContext.dragEndCallbacks[node.id] = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, node)}
-            if (active) {
-                canvas.drawIcon(BoundsElement(translatedNode.x + recycleBinMargin, translatedNode.y + recycleBinMargin, recycleBinSize, recycleBinSize), RECYCLE_BIN)
+            meta.interactionContext.dragEndCallbacks[node.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, node)}
+            if (active && index > 0 && (index < parent.waypoint.size - 1)) {
+                val delId = DiagramElementId("DEL:" + node.id)
+                val deleteIconArea = canvas.drawIcon(BoundsElement(translatedNode.x + recycleBinMargin, translatedNode.y + recycleBinMargin, recycleBinSize, recycleBinSize), RECYCLE_BIN)
+                meta.interactionContext.clickCallbacks[delId] = { dest: ProcessModelUpdateEvents -> dest.addWaypointStructureUpdate(NewWaypointsEvent(
+                        parent.id,
+                        parent.waypoint
+                                .filter { it.physical }
+                                .filter { it.id != node.id }
+                                .map { it.originalLocation() }
+                                .toList()
+                ))}
+                result[delId] = AreaWithZindex(deleteIconArea, ANCHOR_Z_INDEX, parent.id)
             }
         }
 
         if (isLast) {
-            drawNode(begin)
-            drawNode(end)
+            drawNode(begin, segmentIndex - 1)
+            drawNode(end, segmentIndex)
             return result
         }
 
-        drawNode(begin)
-        meta.dragContext.dragEndCallbacks[begin.id] = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, begin)}
+        drawNode(begin, segmentIndex - 1)
+        meta.interactionContext.dragEndCallbacks[begin.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, begin)}
         return result
     }
 
@@ -179,10 +189,10 @@ class BpmnProcessRenderer {
     }
 
     private fun <T> translateElement(meta: RenderMetadata, elem: T): T where T : Translatable<T>, T: WithDiagramId {
-        return if (meta.dragContext.draggedIds.contains(elem.id)) {
+        return if (meta.interactionContext.draggedIds.contains(elem.id)) {
             elem.copyAndTranslate(
-                    meta.dragContext.current.x - meta.dragContext.start.x,
-                    meta.dragContext.current.y - meta.dragContext.start.y
+                    meta.interactionContext.current.x - meta.interactionContext.start.x,
+                    meta.interactionContext.current.y - meta.interactionContext.start.y
             )
         } else {
             elem
@@ -217,7 +227,7 @@ class BpmnProcessRenderer {
     }
 
     private data class RenderMetadata(
-            val dragContext: ElementDragContext,
+            val interactionContext: ElementInteractionContext,
             val selectedIds: Set<DiagramElementId>,
             val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
             val elementById: Map<BpmnElementId, WithId>,

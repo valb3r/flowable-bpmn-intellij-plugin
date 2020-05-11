@@ -6,6 +6,6 @@ import com.valb3r.bpmn.intellij.plugin.state.CurrentStateProvider
 data class RenderContext(
         val canvas: CanvasPainter,
         val selectedIds: Set<DiagramElementId>,
-        val dragContext: ElementDragContext,
+        val interactionContext: ElementInteractionContext,
         val stateProvider: CurrentStateProvider
 )
