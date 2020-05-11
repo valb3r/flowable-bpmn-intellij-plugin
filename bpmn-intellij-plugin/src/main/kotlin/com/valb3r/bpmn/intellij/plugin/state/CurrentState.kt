@@ -4,11 +4,11 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
+import com.valb3r.bpmn.intellij.plugin.render.dto.EdgeElementState
 import java.util.concurrent.atomic.AtomicReference
 
 private val currentStateProvider = AtomicReference<CurrentStateProvider>()
@@ -25,7 +25,7 @@ fun currentStateProvider(): CurrentStateProvider {
 
 data class CurrentState(
         val shapes: List<ShapeElement>,
-        val edges: List<EdgeElement>,
+        val edges: List<EdgeElementState>,
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
         val elementByStaticId: Map<BpmnElementId, WithId>,
         val elemPropertiesByStaticElementId: Map<BpmnElementId, Map<PropertyType, Property>>
@@ -41,7 +41,7 @@ class CurrentStateProvider {
     fun resetStateTo(processObject: BpmnProcessObjectView) {
         fileState = CurrentState(
                 processObject.diagram.firstOrNull()?.bpmnPlane?.bpmnShape ?: emptyList(),
-                processObject.diagram.firstOrNull()?.bpmnPlane?.bpmnEdge ?: emptyList(),
+                processObject.diagram.firstOrNull()?.bpmnPlane?.bpmnEdge?.map { EdgeElementState(it) } ?: emptyList(),
                 processObject.elementByDiagramId,
                 processObject.elementByStaticId,
                 processObject.elemPropertiesByElementId
@@ -64,7 +64,7 @@ class CurrentStateProvider {
         return elem.copyAndTranslate(dx, dy)
     }
 
-    private fun updateLocation(elem: EdgeElement): EdgeElement {
+    private fun updateLocation(elem: EdgeElementState): EdgeElementState {
         val updates = updateEvents.currentLocationUpdateEventList(elem.id)
         var dx = 0.0f
         var dy = 0.0f

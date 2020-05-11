@@ -6,10 +6,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 
 @KotlinBuilder
 data class ShapeElement(
-        val id: DiagramElementId,
+        override val id: DiagramElementId,
         val bpmnElement: BpmnElementId,
         val bounds: BoundsElement
-): Translatable<ShapeElement> {
+): Translatable<ShapeElement>, WithDiagramId {
 
     override fun copyAndTranslate(dx: Float, dy: Float): ShapeElement {
         return this.copy(bounds = BoundsElement(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height))

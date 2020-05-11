@@ -5,27 +5,30 @@ import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.Translatable
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.NAME
+import com.valb3r.bpmn.intellij.plugin.render.dto.EdgeElementState
+import com.valb3r.bpmn.intellij.plugin.render.dto.WaypointElementState
 import java.awt.Color
 import java.awt.geom.Area
 import java.nio.charset.StandardCharsets
+import kotlin.math.min
 
 class BpmnProcessRenderer {
 
-    val nodeRadius = 2f
+    private val nodeRadius = 3f
 
     val GEAR = IconLoader.getIcon("/icons/gear.png")
     val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
     val DRAG = "/icons/drag.svg".asResource()!!
 
-    fun render(ctx: RenderContext): Map<DiagramElementId, Area> {
+    fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val state = ctx.stateProvider.currentState()
-        val areaByElement: MutableMap<DiagramElementId, Area> = HashMap()
+        val areaByElement: MutableMap<DiagramElementId, AreaWithZindex> = HashMap()
         val renderMeta = RenderMetadata(
                 ctx.dragContext,
                 ctx.selectedIds,
@@ -39,93 +42,108 @@ class BpmnProcessRenderer {
         return areaByElement
     }
 
-    private fun drawBpmnEdges(shapes: List<EdgeElement>, areaByElement: MutableMap<DiagramElementId, Area>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
-        shapes.forEach { mergeArea(it.id, areaByElement, drawEdgeElement(canvas, it, renderMeta)) }
+    private fun drawBpmnEdges(shapes: List<EdgeElementState>, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
+        shapes.forEach {
+            mergeArea(it.id, areaByElement, drawEdgeElement(canvas, it, renderMeta))
+            if (isActive(it.id, renderMeta)) {
+                drawWaypointElements(canvas, it, renderMeta).forEach {waypoint ->
+                    mergeArea(waypoint.key, areaByElement, waypoint.value)
+                }
+            }
+        }
     }
 
-    private fun dramBpmnElements(shapes: List<ShapeElement>, areaByElement: MutableMap<DiagramElementId, Area>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
+    private fun dramBpmnElements(shapes: List<ShapeElement>, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
         shapes.forEach { mergeArea(it.id, areaByElement, drawShapeElement(canvas, it, renderMeta)) }
     }
 
-    private fun mergeArea(id: DiagramElementId, areas: MutableMap<DiagramElementId, Area>, area: Area) {
-        val target = areas[id] ?: Area()
-        target.add(area)
-        areas[id] = target
+    private fun mergeArea(id: DiagramElementId, areas: MutableMap<DiagramElementId, AreaWithZindex>, area: AreaWithZindex) {
+        val target = areas[id] ?: AreaWithZindex(Area())
+        target.area.add(area.area)
+        areas[id] = AreaWithZindex(target.area, min(target.index, area.index), target.parentToSelect ?: area.parentToSelect)
     }
 
-    private fun drawEdgeElement(canvas: CanvasPainter, shape: EdgeElement, meta: RenderMetadata): Area {
+    private fun drawEdgeElement(canvas: CanvasPainter, shape: EdgeElementState, meta: RenderMetadata): AreaWithZindex {
         val active = isActive(shape.id, meta)
         val area = Area()
-        if (null == shape.waypoint) {
-            return area
-        }
 
         val color = color(active, Colors.ARROW_COLOR)
-        val drawFunction = if (active) {
-            begin: WaypointElement, end: WaypointElement, isLast: Boolean -> drawEdgeWithAnchors(canvas, begin, end, color, isLast)
-        } else {
-            begin: WaypointElement, end: WaypointElement, isLast: Boolean -> drawEdgeWithoutAnchors(canvas, begin, end, color, isLast)
+        shape.waypoint.forEachIndexed { index, it ->
+            when {
+                index == shape.waypoint.size - 1 -> area.add(drawEdge(canvas, shape.waypoint[index - 1], it, meta, color, true))
+                index > 0 -> area.add(drawEdge(canvas, shape.waypoint[index - 1], it, meta, color, false))
+            }
         }
 
-        shape.waypoint?.forEachIndexed { index, it ->
+        return AreaWithZindex(area)
+    }
+
+    private fun drawWaypointElements(canvas: CanvasPainter, shape: EdgeElementState, meta: RenderMetadata): Map<DiagramElementId, AreaWithZindex> {
+        val area = HashMap<DiagramElementId, AreaWithZindex>()
+        shape.waypoint.forEachIndexed { index, it ->
             when {
-                index == shape.waypoint!!.size - 1 -> area.add(drawFunction(shape.waypoint!![index - 1], it, true))
-                index > 0 -> area.add(drawFunction(shape.waypoint!![index - 1], it, false))
+                index == shape.waypoint.size - 1 -> area.putAll(drawWaypointAnchors(canvas, shape.waypoint[index - 1], it, shape.id, meta, true))
+                index > 0 -> area.putAll(drawWaypointAnchors(canvas, shape.waypoint[index - 1], it, shape.id, meta, false))
             }
         }
 
         return area
     }
 
-    private fun drawEdgeWithAnchors(canvas: CanvasPainter, begin: WaypointElement, end: WaypointElement, color: Color, isLast: Boolean): Area {
-        val anchorColor = Color.RED
-        val result = Area()
+    private fun drawWaypointAnchors(canvas: CanvasPainter, begin: WaypointElementState, end: WaypointElementState, parent: DiagramElementId, meta: RenderMetadata, isLast: Boolean): Map<DiagramElementId, AreaWithZindex> {
+        val result = HashMap<DiagramElementId, AreaWithZindex>()
+        val translatedBegin = translateElement(meta, begin)
+        val translatedEnd = translateElement(meta, end)
         if (isLast) {
-            result.add(canvas.drawLineWithArrow(begin, end, color))
-            result.add(canvas.drawCircle(begin, nodeRadius, anchorColor, anchorColor))
-            result.add(canvas.drawCircle(end, nodeRadius, anchorColor, anchorColor))
+            result[begin.id] = AreaWithZindex(canvas.drawCircle(translatedBegin.asWaypointElement(), nodeRadius, color(isActive(begin.id, meta), Colors.WAYPOINT_COLOR)), ANCHOR_Z_INDEX, parent)
+            result[end.id] = AreaWithZindex(canvas.drawCircle(translatedEnd.asWaypointElement(), nodeRadius, color(isActive(end.id, meta), Colors.WAYPOINT_COLOR)), ANCHOR_Z_INDEX, parent)
             return result
         }
 
-        result.add(canvas.drawLine(begin, end, color))
-        result.add(canvas.drawCircle(begin, nodeRadius, anchorColor, anchorColor))
-        result.add(canvas.drawCircle(end, nodeRadius, anchorColor, anchorColor))
+        result[begin.id] = AreaWithZindex(canvas.drawCircle(translatedBegin.asWaypointElement(), nodeRadius, color(isActive(begin.id, meta), Colors.WAYPOINT_COLOR)), ANCHOR_Z_INDEX, parent)
         return result
     }
 
-    private fun drawEdgeWithoutAnchors(canvas: CanvasPainter, begin: WaypointElement, end: WaypointElement, color: Color, isLast: Boolean): Area {
+    private fun drawEdge(canvas: CanvasPainter, begin: WaypointElementState, end: WaypointElementState, meta: RenderMetadata, color: Color, isLast: Boolean): Area {
+        val translatedBegin = translateElement(meta, begin)
+        val translatedEnd = translateElement(meta, end)
         if (isLast) {
-            return canvas.drawLineWithArrow(begin, end, color)
+            return canvas.drawLineWithArrow(translatedBegin.asWaypointElement(), translatedEnd.asWaypointElement(), color)
         }
 
-        return canvas.drawLine(begin, end, color)
+        return canvas.drawLine(translatedBegin.asWaypointElement(), translatedEnd.asWaypointElement(), color)
     }
 
-    private fun drawShapeElement(canvas: CanvasPainter, bpmnShape: ShapeElement, meta: RenderMetadata): Area {
+    private fun drawShapeElement(canvas: CanvasPainter, bpmnShape: ShapeElement, meta: RenderMetadata): AreaWithZindex {
         val elem = meta.elementById[bpmnShape.bpmnElement]
         val props = meta.elemPropertiesByElementId[bpmnShape.bpmnElement]
         val name = props?.get(NAME)?.value as String?
         val active = isActive(bpmnShape.id, meta)
 
-        val shape = if (meta.dragContext.draggedIds.contains(bpmnShape.id)) {
-            bpmnShape.copyAndTranslate(
+        val shape = translateElement(meta, bpmnShape)
+
+        val resultArea = when (elem) {
+            null -> defaultElementRender(canvas, shape, name, active)
+            is BpmnStartEvent -> drawStartEvent(canvas, shape, name, active)
+            is BpmnServiceTask -> drawServiceTask(canvas, shape, name, active)
+            is BpmnCallActivity -> drawCallActivity(canvas, shape, name, active)
+            is BpmnExclusiveGateway -> drawExclusiveGateway(canvas, shape, active)
+            is BpmnEndEvent -> drawEndEvent(canvas, shape, name, active)
+            else -> Area()
+        }
+
+        return AreaWithZindex(resultArea)
+    }
+
+    private fun <T> translateElement(meta: RenderMetadata, elem: T): T where T : Translatable<T>, T: WithDiagramId {
+        return if (meta.dragContext.draggedIds.contains(elem.id)) {
+            elem.copyAndTranslate(
                     meta.dragContext.current.x - meta.dragContext.start.x,
                     meta.dragContext.current.y - meta.dragContext.start.y
             )
         } else {
-            bpmnShape
+            elem
         }
-
-        when (elem) {
-            null -> return defaultElementRender(canvas, shape, name, active)
-            is BpmnStartEvent -> return drawStartEvent(canvas, shape, name, active)
-            is BpmnServiceTask -> return drawServiceTask(canvas, shape, name, active)
-            is BpmnCallActivity -> return drawCallActivity(canvas, shape, name, active)
-            is BpmnExclusiveGateway -> return drawExclusiveGateway(canvas, shape, active)
-            is BpmnEndEvent -> return drawEndEvent(canvas, shape, name, active)
-        }
-
-        return Area()
     }
 
     private fun drawEndEvent(canvas: CanvasPainter, shape: ShapeElement, name: String?, active: Boolean) =

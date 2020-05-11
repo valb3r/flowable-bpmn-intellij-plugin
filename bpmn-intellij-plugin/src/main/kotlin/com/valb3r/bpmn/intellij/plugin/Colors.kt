@@ -9,6 +9,7 @@ enum class Colors(val color: JBColor) {
     ELEMENT_BORDER_COLOR(JBColor(Color(0xC9C9C9), Color(0xC9C9C9))),
     TEXT_COLOR(JBColor(Color(0x292B2D), Color(0xFDFEFF))),
     ARROW_COLOR(JBColor(Color(0x292B2D), Color(0xFDFEFF))),
+    WAYPOINT_COLOR(JBColor(Color(0xFF0000), Color(0xFF0000))),
     BACKGROUND_COLOR(JBColor(Color(0xFDFEFF), Color(0x292B2D))),
     UN_HIGHLIGHTED_COLOR(JBColor(Color(0xC6C8CA), Color(0x585A5C))),
     NEUTRAL_COLOR(JBColor(Color(0x626466), Color(0x949698))),

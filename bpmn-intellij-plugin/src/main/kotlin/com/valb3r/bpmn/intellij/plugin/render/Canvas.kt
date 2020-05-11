@@ -13,7 +13,6 @@ import com.valb3r.bpmn.intellij.plugin.state.currentStateProvider
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
-import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
@@ -38,7 +37,7 @@ class Canvas: JPanel() {
     private var dragCtx: ElementDragContext = ElementDragContext(mutableSetOf(), Point2D.Float(), Point2D.Float())
     private var processObject: BpmnProcessObjectView? = null
     private var renderer: BpmnProcessRenderer? = null
-    private var areaByElement: Map<DiagramElementId, Area>? = null
+    private var areaByElement: Map<DiagramElementId, AreaWithZindex>? = null
     private var propertiesVisualizer: PropertiesVisualizer? = null
 
     private val cachedIcons = CacheBuilder.newBuilder()
@@ -71,17 +70,13 @@ class Canvas: JPanel() {
     fun click(location: Point2D.Float) {
         this.selectedElements.clear()
         dragCtx = ElementDragContext(mutableSetOf(), Point2D.Float(), Point2D.Float())
-
-        val cursor = cursorRect(location)
-        areaByElement
-                ?.filter { it.value.intersects(cursor) }
-                ?.forEach { this.selectedElements.add(it.key) }
+        this.selectedElements.addAll(elemsUnderCursor(location))
 
         repaint()
 
-        val selectedElementId = selectedElements.firstOrNull()
+        val elementIdForPropertiesTable = selectedElements.firstOrNull()
         processObject?.elementByDiagramId
-                ?.get(selectedElementId)
+                ?.get(elementIdForPropertiesTable)
                 ?.let { elemId ->
                     processObject?.elemPropertiesByElementId?.get(elemId)?.let { propertiesVisualizer?.visualize(elemId, it) }
                 }
@@ -97,9 +92,8 @@ class Canvas: JPanel() {
     }
 
     fun startDragWithButton(current: Point2D.Float) {
-        val cursor = cursorRect(current)
-        val elemsUnderCursor = areaByElement?.filter { it.value.intersects(cursor) }?.map { it.key }
-        if (selectedElements.intersect(elemsUnderCursor ?: emptyList()).isEmpty()) {
+        val elemsUnderCursor = elemsUnderCursor(current)
+        if (selectedElements.intersect(elemsUnderCursor).isEmpty()) {
             dragCtx = ElementDragContext(emptySet(), camera.fromCameraView(current), camera.fromCameraView(current))
             return
         }
@@ -125,13 +119,15 @@ class Canvas: JPanel() {
         if (dragCtx.draggedIds.isNotEmpty() && (dragCtx.current.distance(dragCtx.start) > epsilon)) {
             dragCtx.draggedIds
                     .filter { isDraggable(it) }
-                    .forEach { updateEvents.addLocationUpdateEvent(
-                            DraggedToEvent(
-                                    it,
-                                    dragCtx.current.x - dragCtx.start.x,
-                                    dragCtx.current.y - dragCtx.start.y
-                            )
-                    ) }
+                    .forEach {
+                        updateEvents.addLocationUpdateEvent(
+                                DraggedToEvent(
+                                        it,
+                                        dragCtx.current.x - dragCtx.start.x,
+                                        dragCtx.current.y - dragCtx.start.y
+                                )
+                        )
+                    }
         }
 
         dragCtx = dragCtx.copy(draggedIds = emptySet())
@@ -154,6 +150,18 @@ class Canvas: JPanel() {
                 Point2D.Float(camera.zoom.x * scale, camera.zoom.y * scale)
         )
         repaint()
+    }
+
+    private fun elemsUnderCursor(cursorPoint: Point2D.Float): List<DiagramElementId> {
+        val cursor = cursorRect(cursorPoint)
+        val intersection = areaByElement?.filter { it.value.area.intersects(cursor) }
+        val minZindex = areaByElement?.minBy { it.value.index }
+        val result = mutableListOf<DiagramElementId>()
+        // Force elements of only one dominating Z-Index and their parents
+        intersection
+                ?.filter { it.value.index == minZindex?.value?.index }
+                ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this }  }
+        return result;
     }
 
     private fun isDraggable(elemId: DiagramElementId): Boolean {
