@@ -25,8 +25,10 @@ class Canvas: JPanel() {
 
     private val epsilon = 0.1f
     private val anchorAttractionThreshold = 10.0f
-    private val anchorElasticity = 0.3f
-    private val anchorForceThreshold = 10.0f
+    private val anchorPointElasticity = 0.3f
+    private val anchorPointForceThreshold = 3.0f
+    private val anchorShapeElasticity = 0.5f
+    private val anchorShapeForceThreshold = 30.0f
     private val zoomFactor = 1.2f
     private val cursorSize = 3
     private val defaultCameraOrigin = Point2D.Float(0f, 0f)
@@ -111,27 +113,39 @@ class Canvas: JPanel() {
     }
 
     fun attractToAnchors(ctx: ElementInteractionContext): ElementInteractionContext {
-        val anchors: MutableSet<Triple<Point2D.Float, Point2D.Float, Point2D.Float>> = mutableSetOf()
+        val anchors: MutableSet<AnchorDetails> = mutableSetOf()
         val elementsWithAnchors = mutableSetOf<DiagramElementId>()
 
         for (dragged in ctx.draggedIds) {
-            val draggedAnchors = areaByElement?.get(dragged)?.anchors.orEmpty()
-            val anchorsToSearchIn = areaByElement?.filter { !ctx.draggedIds.contains(it.key) }
+            val draggedType = areaByElement?.get(dragged)?.areaType ?: AreaType.SHAPE
 
-            val shapeX = areaByElement?.get(dragged)?.dragCenter?.x
-            val shapeY = areaByElement?.get(dragged)?.dragCenter?.y
+            val draggedAnchors = if (AreaType.SHAPE == draggedType) {
+                areaByElement?.get(dragged)?.anchorsForShape.orEmpty()
+            } else {
+                areaByElement?.get(dragged)?.anchorsForWaypoints.orEmpty()
+            }
+
+            val anchorsToSearchIn = areaByElement
+                    ?.filter { !ctx.draggedIds.contains(it.key) }
+                    // shape is not affected by waypoints
+                    ?.filter { if (draggedType == AreaType.SHAPE) it.value.areaType == AreaType.SHAPE else true }
+
+            val elem = areaByElement?.get(dragged)
+            val shapeX = elem?.dragCenter?.x
+            val shapeY = elem?.dragCenter?.y
             // Compensates dragging start location difference from element origin
             val dx = if (null != shapeX) ctx.start.x - shapeX else 0.0f
             val dy = if (null != shapeY) ctx.start.y - shapeY else 0.0f
 
             for ((elemId, searchIn) in anchorsToSearchIn.orEmpty()) {
                 for (draggedAnchor in draggedAnchors) {
-                    for (anchor in searchIn.anchors) {
+                    val targetAnchors = if (AreaType.SHAPE == draggedType) searchIn.anchorsForShape else searchIn.anchorsForWaypoints
+                    for (anchor in targetAnchors) {
                         if (abs(draggedAnchor.x - anchor.x) < anchorAttractionThreshold) {
-                            anchors += Triple(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), Point2D.Float(dx, dy))
+                            anchors += AnchorDetails(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), Point2D.Float(dx, dy), Achors.HORIZONTAL, elem?.areaType)
                             elementsWithAnchors += elemId
                         } else if (abs(draggedAnchor.y - anchor.y) < anchorAttractionThreshold) {
-                            anchors += Triple(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), Point2D.Float(dx, dy))
+                            anchors += AnchorDetails(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), Point2D.Float(dx, dy), Achors.VERTICAL, elem?.areaType)
                             elementsWithAnchors += elemId
                         }
                     }
@@ -139,21 +153,29 @@ class Canvas: JPanel() {
             }
         }
 
-        val anchorX = anchors.filter { abs(it.second.x - it.first.x) < anchorAttractionThreshold }.minBy { it.first.distance(it.second) }
-        val anchorY = anchors.filter { abs(it.second.y - it.first.y) < anchorAttractionThreshold }.minBy { it.first.distance(it.second) }
+        val anchorX = anchors.filter { it.type == Achors.HORIZONTAL }.minBy { it.anchor.distance(Point2D.Float( ctx.current.x - it.dragCenterCompensation.x,  ctx.current.y - it.dragCenterCompensation.y)) }
+        val anchorY = anchors.filter { it.type == Achors.VERTICAL }.minBy { it.anchor.distance(Point2D.Float(ctx.current.x - it.dragCenterCompensation.x,  ctx.current.y - it.dragCenterCompensation.y)) }
+
         val selectedAnchors: MutableSet<Pair<Point2D.Float, Point2D.Float>> = mutableSetOf()
-        val selectedX = anchorX?.first?.x ?: ctx.current.x
-        val selectedY = anchorY?.first?.y ?: ctx.current.y
+        val selectedX = anchorX?.anchor?.x ?: ctx.current.x + (anchorX?.dragCenterCompensation?.x ?: 0.0f)
+        val selectedY = anchorY?.anchor?.y ?: ctx.current.y + (anchorY?.dragCenterCompensation?.y ?: 0.0f)
 
         val dist = Point2D.Float(selectedX, selectedY).distance(ctx.current)
         var targetX = ctx.current.x
         var targetY = ctx.current.y
-        if (dist * anchorElasticity < anchorForceThreshold) {
-            anchorX?.apply { selectedAnchors += Pair(first, second)}
-            anchorY?.apply { selectedAnchors += Pair(first, second)}
+
+        if (dist * anchorPointElasticity < anchorPointForceThreshold && (anchorX?.areaType == AreaType.POINT || anchorY?.areaType == AreaType.POINT)) {
+            anchorX?.apply { selectedAnchors += Pair(anchor, objectAnchor)}
+            anchorY?.apply { selectedAnchors += Pair(anchor, objectAnchor)}
             // compensate drag start position
-            targetX = selectedX + (anchorX?.third?.x ?: 0.0f)
-            targetY = selectedY + (anchorY?.third?.y ?: 0.0f)
+            targetX = selectedX
+            targetY = selectedY
+        } else if (dist * anchorShapeElasticity < anchorShapeForceThreshold && (anchorX?.areaType == AreaType.SHAPE || anchorY?.areaType == AreaType.SHAPE)) {
+            anchorX?.apply { selectedAnchors += Pair(anchor, objectAnchor)}
+            anchorY?.apply { selectedAnchors += Pair(anchor, objectAnchor)}
+            // compensate drag start position
+            targetX = selectedX
+            targetY = selectedY
         }
 
         return ctx.copy(
@@ -243,4 +265,17 @@ class Canvas: JPanel() {
                 right.y - left.y
         )
     }
+
+    private enum class Achors {
+        VERTICAL,
+        HORIZONTAL
+    }
+
+    private data class AnchorDetails(
+            val anchor: Point2D.Float,
+            val objectAnchor: Point2D.Float,
+            val dragCenterCompensation: Point2D.Float,
+            val type: Achors,
+            val areaType: AreaType?
+    )
 }

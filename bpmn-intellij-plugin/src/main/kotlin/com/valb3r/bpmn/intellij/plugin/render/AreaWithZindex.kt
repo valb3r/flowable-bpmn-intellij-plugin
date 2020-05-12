@@ -7,10 +7,17 @@ import java.awt.geom.Point2D
 const val DEFAULT_Z_INDEX = 10000
 const val ANCHOR_Z_INDEX = 1000
 
+enum class AreaType {
+    POINT,
+    SHAPE
+}
+
 data class AreaWithZindex(
         val area: Area,
         val dragCenter: Point2D.Float,
-        val anchors: MutableSet<Point2D.Float> = mutableSetOf(),
+        val areaType: AreaType,
+        val anchorsForWaypoints: MutableSet<Point2D.Float> = mutableSetOf(),
+        val anchorsForShape: MutableSet<Point2D.Float> = mutableSetOf(),
         val index: Int = DEFAULT_Z_INDEX,
         val parentToSelect: DiagramElementId? = null
 )
