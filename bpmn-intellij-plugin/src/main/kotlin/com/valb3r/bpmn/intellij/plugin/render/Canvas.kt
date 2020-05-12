@@ -25,6 +25,8 @@ class Canvas: JPanel() {
 
     private val epsilon = 0.1f
     private val anchorAttractionThreshold = 10.0f
+    private val anchorElasticity = 0.3f
+    private val anchorForceThreshold = 10.0f
     private val zoomFactor = 1.2f
     private val cursorSize = 3
     private val defaultCameraOrigin = Point2D.Float(0f, 0f)
@@ -114,15 +116,22 @@ class Canvas: JPanel() {
 
         for (dragged in ctx.draggedIds) {
             val draggedAnchors = areaByElement?.get(dragged)?.anchors.orEmpty()
-            val anchorsToSearchIn = areaByElement?.filter { !ctx.draggedIds.contains(it.key) }?.filter { !elementsWithAnchors.contains(it.key) }
+            val anchorsToSearchIn = areaByElement?.filter { !ctx.draggedIds.contains(it.key) }
+
+            val shapeX = areaByElement?.get(dragged)?.dragCenter?.x
+            val shapeY = areaByElement?.get(dragged)?.dragCenter?.y
+            // Compensates dragging start location difference from element origin
+            val dx = if (null != shapeX) ctx.start.x - shapeX else 0.0f
+            val dy = if (null != shapeY) ctx.start.y - shapeY else 0.0f
+
             for ((elemId, searchIn) in anchorsToSearchIn.orEmpty()) {
                 for (draggedAnchor in draggedAnchors) {
                     for (anchor in searchIn.anchors) {
                         if (abs(draggedAnchor.x - anchor.x) < anchorAttractionThreshold) {
-                            anchors += Triple(Point2D.Float(anchor.x, anchor.y), Point2D.Float(anchor.x, draggedAnchor.y), Point2D.Float(anchor.x - draggedAnchor.x, 0.0f))
+                            anchors += Triple(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), Point2D.Float(dx, dy))
                             elementsWithAnchors += elemId
                         } else if (abs(draggedAnchor.y - anchor.y) < anchorAttractionThreshold) {
-                            anchors += Triple(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, anchor.y), Point2D.Float(0.0f, anchor.y - draggedAnchor.y))
+                            anchors += Triple(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), Point2D.Float(dx, dy))
                             elementsWithAnchors += elemId
                         }
                     }
@@ -130,15 +139,25 @@ class Canvas: JPanel() {
             }
         }
 
-        val anchorX = anchors.filter { it.third.y == 0.0f }.minBy { it.first.distance(it.second) }
-        val anchorY = anchors.filter { it.third.x == 0.0f }.minBy { it.first.distance(it.second) }
-        val dx = anchorX?.third?.x ?: 0.0f
-        val dy = anchorY?.third?.y ?: 0.0f
+        val anchorX = anchors.filter { abs(it.second.x - it.first.x) < anchorAttractionThreshold }.minBy { it.first.distance(it.second) }
+        val anchorY = anchors.filter { abs(it.second.y - it.first.y) < anchorAttractionThreshold }.minBy { it.first.distance(it.second) }
         val selectedAnchors: MutableSet<Pair<Point2D.Float, Point2D.Float>> = mutableSetOf()
-        anchorX?.apply { selectedAnchors += Pair(first, second)}
-        anchorY?.apply { selectedAnchors += Pair(first, second)}
+        val selectedX = anchorX?.first?.x ?: ctx.current.x
+        val selectedY = anchorY?.first?.y ?: ctx.current.y
+
+        val dist = Point2D.Float(selectedX, selectedY).distance(ctx.current)
+        var targetX = ctx.current.x
+        var targetY = ctx.current.y
+        if (dist * anchorElasticity < anchorForceThreshold) {
+            anchorX?.apply { selectedAnchors += Pair(first, second)}
+            anchorY?.apply { selectedAnchors += Pair(first, second)}
+            // compensate drag start position
+            targetX = selectedX + (anchorX?.third?.x ?: 0.0f)
+            targetY = selectedY + (anchorY?.third?.y ?: 0.0f)
+        }
+
         return ctx.copy(
-                current = Point2D.Float(ctx.current.x + dx, ctx.current.y + dy),
+                current = Point2D.Float(targetX, targetY),
                 anchorsHit = selectedAnchors
         )
     }
