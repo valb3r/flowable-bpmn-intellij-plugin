@@ -1,5 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.events
 
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
@@ -9,7 +11,7 @@ private val updateEvents = AtomicReference<ProcessModelUpdateEvents>()
 fun updateEventsRegistry(): ProcessModelUpdateEvents {
     return updateEvents.updateAndGet {
         if (null == it) {
-            return@updateAndGet ProcessModelUpdateEvents(ConcurrentHashMap())
+            return@updateAndGet ProcessModelUpdateEvents(CopyOnWriteArrayList())
         }
 
         return@updateAndGet it
@@ -17,18 +19,52 @@ fun updateEventsRegistry(): ProcessModelUpdateEvents {
 }
 
 // Global singleton
-class ProcessModelUpdateEvents(val elementIdAndUpdates: MutableMap<String, MutableList<UpdateWithId>>) {
+class ProcessModelUpdateEvents(private val updates: MutableList<Event>) {
 
-    val fileCommitListeners: MutableList<Any> = ArrayList()
+    private val fileCommitListeners: MutableList<Any> = ArrayList()
+    private val parentCreatesByStaticId: MutableMap<DiagramElementId, MutableList<Event>> = ConcurrentHashMap()
+    private val locationUpdatesByStaticId: MutableMap<DiagramElementId, MutableList<Event>> = ConcurrentHashMap()
+    private val propertyUpdatesByStaticId: MutableMap<BpmnElementId, MutableList<Event>> = ConcurrentHashMap()
+
+    fun reset() {
+        locationUpdatesByStaticId.clear()
+        propertyUpdatesByStaticId.clear()
+        parentCreatesByStaticId.clear()
+    }
 
     fun commitToFile() {
     }
 
-    fun addEvent(event: UpdateWithId) {
-        elementIdAndUpdates.computeIfAbsent(event.elementId) { CopyOnWriteArrayList() } += event
+    fun addPropertyUpdateEvent(event: PropertyUpdateWithId) {
+        updates.add(event)
+        propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += event
     }
 
-    fun currentEventList(elementId: String): List<UpdateWithId> {
-        return elementIdAndUpdates.getOrDefault(elementId, emptyList())
+    fun addLocationUpdateEvent(event: LocationUpdateWithId) {
+        updates.add(event)
+        locationUpdatesByStaticId.computeIfAbsent(event.diagramElementId) { CopyOnWriteArrayList() } += event
+    }
+
+    fun addWaypointStructureUpdate(event: NewWaypointsEvent) {
+        updates.add(event)
+        parentCreatesByStaticId.computeIfAbsent(event.edgeElementId) { CopyOnWriteArrayList() } += event
+    }
+
+    fun currentPropertyUpdateEventList(elementId: BpmnElementId): List<PropertyUpdateWithId> {
+        return propertyUpdatesByStaticId
+                .getOrDefault(elementId, emptyList<PropertyUpdateWithId>())
+                .filterIsInstance<PropertyUpdateWithId>()
+    }
+
+    fun currentLocationUpdateEventList(elementId: DiagramElementId): List<LocationUpdateWithId> {
+        return locationUpdatesByStaticId
+                .getOrDefault(elementId, emptyList<LocationUpdateWithId>())
+                .filterIsInstance<LocationUpdateWithId>()
+    }
+
+    fun newWaypointStructure(parentElementId: DiagramElementId): List<NewWaypointsEvent> {
+        return parentCreatesByStaticId
+                .getOrDefault(parentElementId, emptyList<NewWaypointsEvent>())
+                .filterIsInstance<NewWaypointsEvent>()
     }
 }

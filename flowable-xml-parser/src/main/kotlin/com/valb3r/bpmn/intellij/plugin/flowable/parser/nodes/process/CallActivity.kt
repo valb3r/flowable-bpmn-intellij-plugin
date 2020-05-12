@@ -23,7 +23,7 @@ data class CallActivity(
         return Mappers.getMapper(Mapping::class.java).convertToDto(this)
     }
 
-    @Mapper
+    @Mapper(uses = [BpmnElementIdMapper::class])
     interface Mapping {
         fun convertToDto(input: CallActivity) : BpmnCallActivity
     }

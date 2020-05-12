@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.render
 
-import com.google.common.cache.CacheBuilder
+import com.google.common.cache.Cache
 import com.google.common.hash.Hashing
 import com.intellij.util.ui.UIUtil
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
@@ -21,27 +21,32 @@ import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets.UTF_8
 import java.text.AttributedCharacterIterator
 import java.text.AttributedString
-import java.util.concurrent.TimeUnit
 import javax.swing.Icon
 
 
-class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
+class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCachedIcons: Cache<String, BufferedImage>) {
 
     private val iconMargin = 5.0f
     private val textMargin = 5.0f
     private val font = Font("Courier", Font.PLAIN, 10)
     private val arrowWidth = 10;
     private val arrowStyle = Polygon(intArrayOf(0, -arrowWidth, -arrowWidth), intArrayOf(0, 5, -5), 3)
-    private val arrowOpenAngle = Math.toRadians(15.0)
     private val regularLineWidth = 2f
-
     private val nodeRadius = 25f
-    private val solidLineStroke = BasicStroke(regularLineWidth)
 
-    private val cachedIcons = CacheBuilder.newBuilder()
-            .expireAfterAccess(10L, TimeUnit.SECONDS)
-            .maximumSize(100)
-            .build<String, BufferedImage>()
+    fun drawZeroAreaLine(start: Point2D.Float, end: Point2D.Float, stroke: Stroke, color: Color): Area {
+        val st = camera.toCameraView(Point2D.Float(start.x, start.y))
+        val en = camera.toCameraView(Point2D.Float(end.x, end.y))
+
+        val oldColor = graphics2D.color
+        val oldStroke = graphics2D.stroke
+        graphics2D.stroke = stroke
+        graphics2D.color = color
+        graphics2D.drawLine(st.x.toInt(), st.y.toInt(), en.x.toInt(), en.y.toInt())
+        graphics2D.color = oldColor
+        graphics2D.stroke = oldStroke
+        return Area()
+    }
 
     fun drawLine(start: WaypointElement, end: WaypointElement, color: Color): Area {
         val st = camera.toCameraView(Point2D.Float(start.x, start.y))
@@ -83,7 +88,30 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
         return arrow
     }
 
-    fun drawCircle(shape: ShapeElement, name: String?, background: Color, border: Color): Area {
+    fun drawCircle(center: WaypointElement, radius: Float, color: Color): Area {
+        return drawCircle(center, radius, color, color)
+    }
+
+    fun drawCircle(center: WaypointElement, radius: Float, background: Color, border: Color): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(center.x - radius, center.y - radius))
+        val rightBottom = camera.toCameraView(Point2D.Float(center.x + radius, center.y + radius))
+
+        graphics2D.color = background
+        val drawShape = Ellipse2D.Float(
+                leftTop.x,
+                leftTop.y,
+                rightBottom.x - leftTop.x,
+                rightBottom.y - leftTop.y
+        )
+
+        graphics2D.fill(drawShape)
+        graphics2D.color = border
+        graphics2D.draw(drawShape)
+
+        return Area(drawShape)
+    }
+
+    fun drawCircle(shape: ShapeElement, background: Color, border: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
 
@@ -145,6 +173,29 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
         return Area(drawShape)
     }
 
+    fun drawIcon(bounds: BoundsElement, svgIcon: String): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(bounds.x, bounds.y))
+
+        val width = bounds.width.toInt()
+        val height = bounds.height.toInt()
+
+        if (0 == width || 0 == height) {
+            return Area()
+        }
+
+        val highlightedShape = Rectangle2D.Float(
+                leftTop.x,
+                leftTop.y,
+                width.toFloat(),
+                height.toFloat()
+        )
+
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat())
+        graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
+
+        return Area(highlightedShape)
+    }
+
     fun drawWrappedIcon(shape: ShapeElement, svgIcon: String, selected: Boolean, selectedColor: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
@@ -156,9 +207,6 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
             return Area()
         }
 
-        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat())
-        graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
-
         val highlightedShape = Rectangle2D.Float(
                 leftTop.x,
                 leftTop.y,
@@ -168,8 +216,11 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
 
         if (selected) {
             graphics2D.color = selectedColor
-            graphics2D.draw(highlightedShape)
+            graphics2D.fill(highlightedShape)
         }
+
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat())
+        graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
 
         return Area(highlightedShape)
     }
@@ -246,7 +297,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera) {
 
     fun rasterizeSvg(svgFile: String, width: Float, height: Float): BufferedImage {
         val cacheKey = Hashing.md5().hashString(svgFile + ":" + width.toInt() + "@" + height.toInt(), UTF_8).toString()
-        return cachedIcons.get(cacheKey) {
+        return svgCachedIcons.get(cacheKey) {
             val imageTranscoder = BufferedImageTranscoder()
             imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, width)
             imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, height)

@@ -5,6 +5,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.PlaneElement
 
 @KotlinBuilder
 data class DiagramElement(
-        val id: String,
+        val id: DiagramElementId,
         val bpmnPlane: PlaneElement
 )

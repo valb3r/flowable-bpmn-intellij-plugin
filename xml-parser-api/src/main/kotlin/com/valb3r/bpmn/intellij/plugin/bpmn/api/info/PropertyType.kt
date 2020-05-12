@@ -4,7 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 
 enum class PropertyType(val id: String, val caption: String, val valueType: PropertyValueType) {
 
-    ID("id", "ID", STRING),
+    ID("id.id", "ID", STRING),
     NAME("name", "Name", STRING),
     DOCUMENTATION("documentation", "Documentation", STRING),
     ASYNC("async", "Asynchronous", BOOLEAN),

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.BPMNPlane
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.DiagramElementIdMapper
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.*
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
@@ -54,7 +55,7 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         return Mappers.getMapper(Mapping::class.java).convertToDto(this)
     }
 
-    @Mapper
+    @Mapper(uses = [BpmnElementIdMapper::class])
     interface Mapping {
         fun convertToDto(input: ProcessNode): BpmnProcess
     }
@@ -69,7 +70,7 @@ data class DiagramNode(
         return Mappers.getMapper(Mapping::class.java).convertToDto(this)
     }
 
-    @Mapper
+    @Mapper(uses = [DiagramElementIdMapper::class, BpmnElementIdMapper::class])
     interface Mapping {
         fun convertToDto(input: DiagramNode): DiagramElement
     }
