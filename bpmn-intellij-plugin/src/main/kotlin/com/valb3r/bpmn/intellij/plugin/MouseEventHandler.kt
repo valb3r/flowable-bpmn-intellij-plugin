@@ -1,16 +1,25 @@
 package com.valb3r.bpmn.intellij.plugin
 
 import com.valb3r.bpmn.intellij.plugin.render.Canvas
+import com.valb3r.bpmn.intellij.plugin.ui.components.popupmenu.popupMenuProvider
 import java.awt.event.*
 import java.awt.geom.Point2D
 import javax.swing.SwingUtilities
 
 class MouseEventHandler(private val canvas: Canvas): MouseListener, MouseMotionListener, MouseWheelListener {
 
+    val popupMenuProvider = popupMenuProvider()
+
     var prevMousePosition: Point2D.Float? = null
 
     override fun mouseClicked(event: MouseEvent) {
         val point2D = Point2D.Float(event.x.toFloat(), event.y.toFloat())
+
+        if (SwingUtilities.isRightMouseButton(event)) {
+            popupMenuProvider.popupMenu(point2D).show(event.component, event.x, event.y)
+            return
+        }
+
         this.canvas.click(point2D)
     }
 

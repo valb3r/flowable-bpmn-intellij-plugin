@@ -25,8 +25,8 @@ import kotlin.math.min
 class BpmnProcessRenderer {
 
     private val nodeRadius = 3f
-    private val recycleBinSize = 20f
-    private val recycleBinMargin = 10f
+    private val recycleBinSize = 15f
+    private val recycleBinMargin = 5f
 
     private val GEAR = IconLoader.getIcon("/icons/gear.png")
     private val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
