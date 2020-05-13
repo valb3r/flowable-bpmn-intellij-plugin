@@ -1,14 +1,14 @@
-package com.valb3r.bpmn.intellij.plugin.events
+package com.valb3r.bpmn.intellij.plugin.bpmn.api.events
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.Translatable
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
-import com.valb3r.bpmn.intellij.plugin.render.WaypointElementState
-
 interface Event
 
 interface EventOrder<T: Event> {
@@ -24,7 +24,7 @@ interface LocationUpdateWithId: Event {
 
 interface NewWaypoints: Event {
     val edgeElementId: DiagramElementId
-    val waypoints: List<WaypointElementState>
+    val waypoints: List<IdentifiableWaypoint>
 }
 
 interface DiagramElementRemoved: Event {
@@ -43,11 +43,29 @@ interface BpmnShapeObjectAdded: Event {
 
 interface BpmnEdgeObjectAdded: Event {
     val bpmnObject: WithBpmnId
-    val edge: EdgeElementState
+    val edge: EdgeWithIdentifiableWaypoints
     val props: Map<PropertyType, Property>
 }
 
 interface PropertyUpdateWithId: Event {
     val bpmnElementId: BpmnElementId
     val property: PropertyType
+}
+
+interface IdentifiableWaypoint: Translatable<IdentifiableWaypoint>, WithDiagramId {
+    val x: Float
+    val y: Float
+    val origX: Float
+    val origY: Float
+    val physical: Boolean
+
+    fun moveTo(dx: Float, dy: Float): IdentifiableWaypoint
+    fun asPhysical(): IdentifiableWaypoint
+    fun originalLocation(): IdentifiableWaypoint
+    fun asWaypointElement(): WaypointElement
+}
+
+interface EdgeWithIdentifiableWaypoints: WithDiagramId {
+    val bpmnElement: BpmnElementId?
+    val waypoint: MutableList<IdentifiableWaypoint>
 }

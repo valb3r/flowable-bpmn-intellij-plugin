@@ -5,12 +5,13 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.IdentifiableWaypoint
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
-import com.valb3r.bpmn.intellij.plugin.render.WaypointElementState
 import java.util.concurrent.atomic.AtomicReference
 
 private val currentStateProvider = AtomicReference<CurrentStateProvider>()
@@ -27,7 +28,7 @@ fun currentStateProvider(): CurrentStateProvider {
 
 data class CurrentState(
         val shapes: List<ShapeElement>,
-        val edges: List<EdgeElementState>,
+        val edges: List<EdgeWithIdentifiableWaypoints>,
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
         val elementByStaticId: Map<BpmnElementId, WithBpmnId>,
         val elemPropertiesByStaticElementId: Map<BpmnElementId, Map<PropertyType, Property>>
@@ -104,20 +105,20 @@ class CurrentStateProvider {
         return elem.copyAndTranslate(dx, dy)
     }
 
-    private fun updateLocationAndInnerTopology(elem: EdgeElementState): EdgeElementState {
+    private fun updateLocationAndInnerTopology(elem: EdgeWithIdentifiableWaypoints): EdgeWithIdentifiableWaypoints {
         val hasNoCommittedAnchorUpdates = elem.waypoint.firstOrNull { updateEvents.currentLocationUpdateEventList(it.id).isNotEmpty() }
         val hasNoNewAnchors = updateEvents.newWaypointStructure(elem.id).isEmpty()
         if (null == hasNoCommittedAnchorUpdates && hasNoNewAnchors) {
             return elem
         }
 
-        val waypoints: MutableList<WaypointElementState> =
+        val waypoints: MutableList<IdentifiableWaypoint> =
                 updateEvents.newWaypointStructure(elem.id).lastOrNull()?.event?.waypoints?.toMutableList() ?: elem.waypoint.filter { it.physical }.toMutableList()
         val updatedLocations = waypoints.filter { it.physical }.map { updateWaypointLocation(it) }
         return EdgeElementState(elem, updatedLocations)
     }
 
-    private fun updateWaypointLocation(waypoint: WaypointElementState): WaypointElementState {
+    private fun updateWaypointLocation(waypoint: IdentifiableWaypoint): IdentifiableWaypoint {
         val updates = updateEvents.currentLocationUpdateEventList(waypoint.id)
         var dx = 0.0f
         var dy = 0.0f

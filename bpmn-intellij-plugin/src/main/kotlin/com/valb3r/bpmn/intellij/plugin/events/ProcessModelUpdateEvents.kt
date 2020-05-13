@@ -2,6 +2,10 @@ package com.valb3r.bpmn.intellij.plugin.events
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventOrder
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.LocationUpdateWithId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
