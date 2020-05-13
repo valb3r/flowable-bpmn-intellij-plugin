@@ -12,7 +12,6 @@ import com.intellij.ui.EditorTextField
 import com.intellij.ui.JavaReferenceEditorUtil
 import com.intellij.ui.components.JBScrollPane
 import com.valb3r.bpmn.intellij.plugin.render.Canvas
-import com.valb3r.bpmn.intellij.plugin.render.CanvasBuilder
 import com.valb3r.bpmn.intellij.plugin.ui.components.MultiEditJTable
 import javax.swing.JPanel
 import javax.swing.JSplitPane

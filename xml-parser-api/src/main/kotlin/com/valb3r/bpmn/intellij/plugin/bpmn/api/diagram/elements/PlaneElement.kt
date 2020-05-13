@@ -6,8 +6,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 
 @KotlinBuilder
 data class PlaneElement(
-        val id: DiagramElementId,
+        override val id: DiagramElementId,
         val bpmnElement: BpmnElementId,
         val bpmnShape: List<ShapeElement>?,
         val bpmnEdge: List<EdgeElement>?
-)
+): WithDiagramId

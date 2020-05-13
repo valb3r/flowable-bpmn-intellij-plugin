@@ -16,7 +16,7 @@ class MouseEventHandler(private val canvas: Canvas): MouseListener, MouseMotionL
         val point2D = Point2D.Float(event.x.toFloat(), event.y.toFloat())
 
         if (SwingUtilities.isRightMouseButton(event)) {
-            popupMenuProvider.popupMenu(point2D).show(event.component, event.x, event.y)
+            popupMenuProvider.popupMenu(canvas.fromCameraView(point2D)).show(event.component, event.x, event.y)
             return
         }
 

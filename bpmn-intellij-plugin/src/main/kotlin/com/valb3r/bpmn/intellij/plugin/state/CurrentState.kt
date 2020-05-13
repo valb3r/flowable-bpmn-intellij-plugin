@@ -2,11 +2,12 @@ package com.valb3r.bpmn.intellij.plugin.state
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
 import com.valb3r.bpmn.intellij.plugin.render.WaypointElementState
@@ -28,7 +29,7 @@ data class CurrentState(
         val shapes: List<ShapeElement>,
         val edges: List<EdgeElementState>,
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
-        val elementByStaticId: Map<BpmnElementId, WithId>,
+        val elementByStaticId: Map<BpmnElementId, WithBpmnId>,
         val elemPropertiesByStaticElementId: Map<BpmnElementId, Map<PropertyType, Property>>
 )
 
@@ -48,12 +49,51 @@ class CurrentStateProvider {
                 processObject.elemPropertiesByElementId
         )
         currentState = fileState
+        updateEvents.reset()
     }
 
     fun currentState(): CurrentState {
-        return fileState.copy(
-                shapes = fileState.shapes.map { updateLocationAndInnerTopology(it) },
-                edges = fileState.edges.map { updateLocationAndInnerTopology(it) }
+        val newShapes = updateEvents.newShapeElements().map { it.event }
+        val newEdges = updateEvents.newEdgeElements().map { it.event }
+        val newEdgeElems = updateEvents.newEdgeElements().map { EdgeElementState(it.event.edge) }
+
+        val newElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId> = HashMap()
+        val newElementByStaticId: MutableMap<BpmnElementId, WithBpmnId> = HashMap()
+        val newElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>> = HashMap()
+
+        newShapes.forEach {newElementByDiagramId[it.shape.id] = it.shape.bpmnElement}
+        newEdgeElems.filter { null != it.bpmnElement }.forEach {newElementByDiagramId[it.id] = it.bpmnElement!!}
+
+        newShapes.forEach {newElementByStaticId[it.bpmnObject.id] = it.bpmnObject}
+        newEdges.forEach {newElementByStaticId[it.bpmnObject.id] = it.bpmnObject}
+
+        newShapes.forEach {newElemPropertiesByStaticElementId[it.bpmnObject.id] = it.props}
+        newEdges.forEach {newElemPropertiesByStaticElementId[it.bpmnObject.id] = it.props}
+
+        // Update element names
+        val allProperties = fileState.elemPropertiesByStaticElementId.toMutableMap().plus(newElemPropertiesByStaticElementId)
+        val updatedProperties:  MutableMap<BpmnElementId, MutableMap<PropertyType, Property>> = HashMap()
+        allProperties.forEach { prop ->
+            updatedProperties[prop.key] = prop.value.toMutableMap()
+            updateEvents.currentPropertyUpdateEventList(prop.key)
+                    .map { it.event }
+                    .filterIsInstance<StringValueUpdatedEvent>()
+                    .lastOrNull()
+                    ?.let {
+                        updatedProperties[prop.key]?.set(it.property, Property(it.newValue))
+                    }
+        }
+
+        return CurrentState(
+                shapes = fileState.shapes.toList().union(newShapes.map { it.shape })
+                        .filter { !updateEvents.isDeleted(it.id) && !updateEvents.isDeleted(it.bpmnElement) }
+                        .map { updateLocationAndInnerTopology(it) },
+                edges = fileState.edges.toList().union(newEdgeElems)
+                        .filter { !updateEvents.isDeleted(it.id) && !(it.bpmnElement?.let { updateEvents.isDeleted(it) }  ?: false)}
+                        .map { updateLocationAndInnerTopology(it) },
+                elementByDiagramId = fileState.elementByDiagramId.toMutableMap().plus(newElementByDiagramId),
+                elementByStaticId = fileState.elementByStaticId.toMutableMap().plus(newElementByStaticId),
+                elemPropertiesByStaticElementId = updatedProperties
         )
     }
 
@@ -61,7 +101,7 @@ class CurrentStateProvider {
         val updates = updateEvents.currentLocationUpdateEventList(elem.id)
         var dx = 0.0f
         var dy = 0.0f
-        updates.forEach { dx += it.dx; dy += it.dy }
+        updates.forEach { dx += it.event.dx; dy += it.event.dy }
         return elem.copyAndTranslate(dx, dy)
     }
 
@@ -73,7 +113,7 @@ class CurrentStateProvider {
         }
 
         val waypoints: MutableList<WaypointElementState> =
-                updateEvents.newWaypointStructure(elem.id).lastOrNull()?.waypoints?.toMutableList() ?: elem.waypoint.filter { it.physical }.toMutableList()
+                updateEvents.newWaypointStructure(elem.id).lastOrNull()?.event?.waypoints?.toMutableList() ?: elem.waypoint.filter { it.physical }.toMutableList()
         val updatedLocations = waypoints.filter { it.physical }.map { updateWaypointLocation(it) }
         return EdgeElementState(elem, updatedLocations)
     }
@@ -82,7 +122,7 @@ class CurrentStateProvider {
         val updates = updateEvents.currentLocationUpdateEventList(waypoint.id)
         var dx = 0.0f
         var dy = 0.0f
-        updates.forEach { dx += it.dx; dy += it.dy }
+        updates.forEach { dx += it.event.dx; dy += it.event.dy }
 
         return waypoint.copyAndTranslate(dx, dy)
     }

@@ -99,6 +99,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
 
     private fun lastStringValueFromRegistry(bpmnElementId: BpmnElementId, type: PropertyType): String? {
         return (updateRegistry.currentPropertyUpdateEventList(bpmnElementId)
+                .map { it.event }
                 .filter { it.property.id == type.id }
                 .lastOrNull { it is StringValueUpdatedEvent } as StringValueUpdatedEvent?)
                 ?.newValue
@@ -106,6 +107,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
 
     private fun lastBooleanValueFromRegistry(bpmnElementId: BpmnElementId, type: PropertyType): Boolean? {
         return (updateRegistry.currentPropertyUpdateEventList(bpmnElementId)
+                .map { it.event }
                 .filter { it.property.id == type.id }
                 .lastOrNull { it is BooleanValueUpdatedEvent } as BooleanValueUpdatedEvent?)
                 ?.newValue
