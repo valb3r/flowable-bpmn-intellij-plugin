@@ -35,7 +35,6 @@ class Canvas: JPanel() {
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
     private var interactionCtx: ElementInteractionContext = ElementInteractionContext(mutableSetOf(), mutableMapOf(), mutableMapOf(), emptySet(), Point2D.Float(), Point2D.Float())
-    private var processObject: BpmnProcessObjectView? = null
     private var renderer: BpmnProcessRenderer? = null
     private var areaByElement: Map<DiagramElementId, AreaWithZindex>? = null
     private var propertiesVisualizer: PropertiesVisualizer? = null
@@ -60,7 +59,6 @@ class Canvas: JPanel() {
     }
 
     fun reset(properties: JTable, editorFactory: (value: String) -> EditorTextField, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
-        this.processObject = processObject
         this.renderer = renderer
         this.camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
         this.propertiesVisualizer = PropertiesVisualizer(properties, editorFactory)
@@ -78,10 +76,10 @@ class Canvas: JPanel() {
         repaint()
 
         val elementIdForPropertiesTable = selectedElements.firstOrNull()
-        processObject?.elementByDiagramId
-                ?.get(elementIdForPropertiesTable)
+        stateProvider.currentState()
+                .elementByDiagramId[elementIdForPropertiesTable]
                 ?.let { elemId ->
-                    processObject?.elemPropertiesByElementId?.get(elemId)?.let { propertiesVisualizer?.visualize(elemId, it) }
+                    stateProvider.currentState().elemPropertiesByStaticElementId[elemId]?.let { propertiesVisualizer?.visualize(elemId, it) }
                 }
     }
 
@@ -124,7 +122,7 @@ class Canvas: JPanel() {
                     // shape is not affected by waypoints
                     ?.filter { if (draggedType == AreaType.SHAPE) it.value.areaType == AreaType.SHAPE else true }
 
-            for ((elemId, searchIn) in anchorsToSearchIn.orEmpty()) {
+            for ((_, searchIn) in anchorsToSearchIn.orEmpty()) {
                 for (draggedAnchor in draggedAnchors) {
                     val targetAnchors = if (AreaType.SHAPE == draggedType) searchIn.anchorsForShape else searchIn.anchorsForWaypoints
                     for (anchor in targetAnchors) {
@@ -196,6 +194,10 @@ class Canvas: JPanel() {
                 Point2D.Float(camera.zoom.x * scale, camera.zoom.y * scale)
         )
         repaint()
+    }
+
+    fun fromCameraView(point: Point2D.Float): Point2D.Float {
+        return camera.fromCameraView(point)
     }
 
     private fun elemsUnderCursor(cursorPoint: Point2D.Float): List<DiagramElementId> {

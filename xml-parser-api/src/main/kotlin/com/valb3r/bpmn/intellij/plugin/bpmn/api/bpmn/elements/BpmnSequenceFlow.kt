@@ -11,7 +11,7 @@ data class BpmnSequenceFlow(
         val sourceRef: String,
         val targetRef: String,
         val conditionExpression: ConditionExpression?
-): WithId
+): WithBpmnId
 
 @KotlinBuilder
 data class ConditionExpression(

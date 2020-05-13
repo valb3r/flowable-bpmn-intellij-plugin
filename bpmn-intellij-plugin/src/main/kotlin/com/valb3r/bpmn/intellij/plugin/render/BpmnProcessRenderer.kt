@@ -5,16 +5,12 @@ import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.Translatable
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.NAME
-import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
-import com.valb3r.bpmn.intellij.plugin.events.NewWaypointsEvent
-import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
+import com.valb3r.bpmn.intellij.plugin.events.*
+import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.geom.Area
@@ -24,15 +20,19 @@ import kotlin.math.min
 
 class BpmnProcessRenderer {
 
+    private val waypointLen = 40.0f
+    private val activityToolBoxGap = 5.0f
     private val nodeRadius = 3f
-    private val recycleBinSize = 20f
-    private val recycleBinMargin = 10f
+    private val actionsIcoSize = 15f
+    private val actionsMargin = 5f
 
     private val GEAR = IconLoader.getIcon("/icons/gear.png")
     private val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
+    private val SEQUENCE = "/icons/sequence.svg".asResource()!!
     private val RECYCLE_BIN = "/icons/recycle-bin.svg".asResource()!!
 
     private val ANCHOR_STROKE = BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(5.0f), 0.0f)
+    private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
 
     fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val state = ctx.stateProvider.currentState()
@@ -59,6 +59,11 @@ class BpmnProcessRenderer {
                 drawWaypointElements(canvas, it, renderMeta).forEach {waypoint ->
                     mergeArea(waypoint.key, areaByElement, waypoint.value)
                 }
+
+                val deleteCallback = { dest: ProcessModelUpdateEvents -> dest.addElementRemovedEvent(DiagramElementRemovedEvent(it.id))}
+                val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback))
+                areaByElement += actionsElem
+                renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy))}
             }
         }
     }
@@ -66,7 +71,24 @@ class BpmnProcessRenderer {
     private fun dramBpmnElements(shapes: List<ShapeElement>, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
         shapes.forEach {
             mergeArea(it.id, areaByElement, drawShapeElement(canvas, it, renderMeta))
-            renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy))}
+            if (isActive(it.id, renderMeta)) {
+                val deleteCallback = { dest: ProcessModelUpdateEvents -> dest.addElementRemovedEvent(DiagramElementRemovedEvent(it.id))}
+                val newSequenceCallback = { dest: ProcessModelUpdateEvents ->
+                    val elem = renderMeta.elementById[it.bpmnElement]
+                    if (null != elem) {
+                        val newSequenceBpmn = newElementsFactory().newOutgoingSequence(elem)
+                        val newSequenceDiagram = newElementsFactory().newDiagramObject(EdgeElement::class, newSequenceBpmn)
+                                .copy(waypoint = listOf(
+                                        WaypointElement(it.bounds.x + it.bounds.width, it.bounds.y + it.bounds.height / 2.0f),
+                                        WaypointElement(it.bounds.x + it.bounds.width + waypointLen, it.bounds.y + it.bounds.height / 2.0f)
+                                ))
+                        dest.addObjectEvent(BpmnEdgeObjectAddedEvent(newSequenceBpmn, EdgeElementState(newSequenceDiagram), newElementsFactory().propertiesOf(newSequenceBpmn)))
+                    }
+                }
+                val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
+                areaByElement += actionsElem
+                renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy))}
+            }
         }
     }
 
@@ -149,9 +171,7 @@ class BpmnProcessRenderer {
             )
             meta.interactionContext.dragEndCallbacks[node.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, node)}
             if (active && node.physical && index > 0 && (index < parent.waypoint.size - 1)) {
-                val delId = DiagramElementId("DEL:" + node.id)
-                val deleteIconArea = canvas.drawIcon(BoundsElement(translatedNode.x + recycleBinMargin, translatedNode.y + recycleBinMargin, recycleBinSize, recycleBinSize), RECYCLE_BIN)
-                meta.interactionContext.clickCallbacks[delId] = { dest: ProcessModelUpdateEvents -> dest.addWaypointStructureUpdate(NewWaypointsEvent(
+                val callback = { dest: ProcessModelUpdateEvents -> dest.addWaypointStructureUpdate(NewWaypointsEvent(
                         parent.id,
                         parent.waypoint
                                 .filter { it.physical }
@@ -159,7 +179,7 @@ class BpmnProcessRenderer {
                                 .map { it.originalLocation() }
                                 .toList()
                 ))}
-                result[delId] = AreaWithZindex(deleteIconArea, Point2D.Float(node.x, node.y), AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, parent.id)
+                result += drawActionsElement(canvas, translatedNode, meta.interactionContext, mapOf(Actions.DELETE to callback))
             }
         }
 
@@ -306,13 +326,92 @@ class BpmnProcessRenderer {
         return elemId.let { meta.selectedIds.contains(it) }
     }
 
+    private fun drawActionsElement(canvas: CanvasPainter, edge: EdgeElementState, ctx: ElementInteractionContext, actions: Map<Actions, (dest: ProcessModelUpdateEvents) -> Unit>): Map<DiagramElementId, AreaWithZindex> {
+        val minX = edge.waypoint.minBy { it.x }?.x ?: 0.0f
+        val minY = edge.waypoint.minBy { it.y }?.y ?: 0.0f
+        val maxX = edge.waypoint.maxBy { it.x }?.x ?: 0.0f
+        val maxY = edge.waypoint.maxBy { it.y }?.y ?: 0.0f
+        return drawActionsElement(
+                canvas,
+                edge.id,
+                Point2D.Float(minX - activityToolBoxGap, minY - activityToolBoxGap),
+                maxX - minX + activityToolBoxGap * 2.0f,
+                maxY - minY + activityToolBoxGap * 2.0f,
+                ctx,
+                actions
+        )
+    }
+
+    private fun drawActionsElement(canvas: CanvasPainter, waypoint: WaypointElementState, ctx: ElementInteractionContext, actions: Map<Actions, (dest: ProcessModelUpdateEvents) -> Unit>): Map<DiagramElementId, AreaWithZindex> {
+        return drawActionsElement(
+                canvas,
+                waypoint.id,
+                Point2D.Float(waypoint.x - activityToolBoxGap, waypoint.y - activityToolBoxGap),
+                activityToolBoxGap * 2.0f,
+                activityToolBoxGap * 2.0f,
+                ctx,
+                actions
+        )
+    }
+
+    private fun drawActionsElement(canvas: CanvasPainter, shape: ShapeElement, ctx: ElementInteractionContext, actions: Map<Actions, (dest: ProcessModelUpdateEvents) -> Unit>): Map<DiagramElementId, AreaWithZindex> {
+        return drawActionsElement(
+                canvas,
+                shape.id,
+                Point2D.Float(shape.bounds.x - activityToolBoxGap, shape.bounds.y - activityToolBoxGap),
+                shape.bounds.width + activityToolBoxGap * 2.0f,
+                shape.bounds.height + activityToolBoxGap * 2.0f,
+                ctx,
+                actions
+        )
+    }
+
+    private fun drawActionsElement(
+            canvas: CanvasPainter,
+            ownerId: DiagramElementId,
+            location: Point2D.Float,
+            width: Float,
+            height: Float,
+            ctx: ElementInteractionContext,
+            actions: Map<Actions, (dest: ProcessModelUpdateEvents) -> Unit>
+    ): Map<DiagramElementId, AreaWithZindex> {
+        val result = HashMap<DiagramElementId, AreaWithZindex>()
+        canvas.drawRectNoFill(location, width, height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
+        var yLocation = location.y
+        actions.forEach {
+            when(it.key) {
+                Actions.DELETE -> {
+                    val delId = DiagramElementId("DEL:$ownerId")
+                    val deleteIconArea = canvas.drawIcon(BoundsElement(location.x + width + actionsMargin, yLocation, actionsIcoSize, actionsIcoSize), RECYCLE_BIN)
+                    ctx.clickCallbacks[delId] = it.value
+                    result[delId] = AreaWithZindex(deleteIconArea, Point2D.Float(0.0f, 0.0f), AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, ownerId)
+                    yLocation += actionsIcoSize + actionsMargin
+                }
+                Actions.NEW_LINK -> {
+                    val newLinkId = DiagramElementId("NEWLINK:$ownerId")
+                    val newSequence = canvas.drawIcon(BoundsElement(location.x + width + actionsMargin, yLocation, actionsIcoSize, actionsIcoSize), SEQUENCE)
+                    ctx.clickCallbacks[newLinkId] = it.value
+                    result[newLinkId] = AreaWithZindex(newSequence, Point2D.Float(0.0f, 0.0f), AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, ownerId)
+                    yLocation += actionsIcoSize + actionsMargin
+                }
+            }
+        }
+
+        return result
+    }
+
     private data class RenderMetadata(
             val interactionContext: ElementInteractionContext,
             val selectedIds: Set<DiagramElementId>,
             val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
-            val elementById: Map<BpmnElementId, WithId>,
+            val elementById: Map<BpmnElementId, WithBpmnId>,
             val elemPropertiesByElementId: Map<BpmnElementId, Map<PropertyType, Property>>
     )
+
+    private enum class Actions {
+        DELETE,
+        NEW_LINK
+    }
 
     fun String.asResource(): String? = BpmnProcessRenderer::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
 }

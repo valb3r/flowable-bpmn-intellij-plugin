@@ -130,6 +130,25 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(drawShape)
     }
 
+    fun drawRectNoFill(location: Point2D.Float, width: Float, height: Float, stroke: Stroke, color: Color): Area {
+        val leftTop = camera.toCameraView(location)
+        val rightBottom = camera.toCameraView(Point2D.Float(location.x + width, location.y + height))
+
+        val oldStroke = graphics2D.stroke
+        graphics2D.stroke = stroke
+        graphics2D.color = color
+        val drawShape = Rectangle2D.Float(
+                leftTop.x,
+                leftTop.y,
+                (rightBottom.x - leftTop.x),
+                (rightBottom.y - leftTop.y)
+        )
+
+        graphics2D.draw(drawShape)
+        graphics2D.stroke = oldStroke
+        return Area(drawShape)
+    }
+
     fun drawRoundedRect(shape: ShapeElement, name: String?, background: Color, border: Color, textColor: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))

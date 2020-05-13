@@ -9,4 +9,4 @@ data class BpmnExclusiveGateway(
         val name: String?,
         val defaultElement: String?,
         val documentation: String?
-): WithId
+): WithBpmnId

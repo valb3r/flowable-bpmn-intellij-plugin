@@ -12,4 +12,4 @@ data class BpmnServiceTask(
         val exclusive: Boolean?,
         val delegateExpression: String?,
         val triggerable: Boolean?
-): WithId
+): WithBpmnId

@@ -6,10 +6,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 
 @KotlinBuilder
 data class EdgeElement  (
-        val id: DiagramElementId,
+        override val id: DiagramElementId,
         val bpmnElement: BpmnElementId?,
         val waypoint: List<WaypointElement>?
-)
+): WithDiagramId
 
 @KotlinBuilder
 data class WaypointElement (

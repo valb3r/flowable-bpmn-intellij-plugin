@@ -14,7 +14,7 @@ data class BpmnCallActivity(
         val inheritVariables: Boolean?,
         val fallbackToDefaultTenant: Boolean?,
         val extensionElements: ExtensionElements?
-) : WithId
+) : WithBpmnId
 
 @KotlinBuilder
 data class ExtensionElements(

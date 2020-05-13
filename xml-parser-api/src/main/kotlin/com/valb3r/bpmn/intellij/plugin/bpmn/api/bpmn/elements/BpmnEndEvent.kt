@@ -8,4 +8,4 @@ data class BpmnEndEvent(
         override val id: BpmnElementId,
         val name: String?,
         val documentation: String?
-): WithId
+): WithBpmnId
