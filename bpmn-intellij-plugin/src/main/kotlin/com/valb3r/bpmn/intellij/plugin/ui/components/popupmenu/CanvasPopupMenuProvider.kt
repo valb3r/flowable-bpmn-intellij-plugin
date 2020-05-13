@@ -90,7 +90,6 @@ class CanvasPopupMenuProvider {
             val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, startEvent)
 
             val shape = templateShape.copy(
-                    bpmnElement = startEvent.id,
                     bounds = BoundsElement(
                             sceneLocation.x,
                             sceneLocation.y,
@@ -112,7 +111,6 @@ class CanvasPopupMenuProvider {
             val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, serviceTask)
 
             val shape = templateShape.copy(
-                    bpmnElement = serviceTask.id,
                     bounds = BoundsElement(
                             sceneLocation.x,
                             sceneLocation.y,
@@ -134,7 +132,6 @@ class CanvasPopupMenuProvider {
             val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, callActivity)
 
             val shape = templateShape.copy(
-                    bpmnElement = callActivity.id,
                     bounds = BoundsElement(
                             sceneLocation.x,
                             sceneLocation.y,
@@ -157,7 +154,6 @@ class CanvasPopupMenuProvider {
             val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, exclusiveGateway)
 
             val shape = templateShape.copy(
-                    bpmnElement = exclusiveGateway.id,
                     bounds = BoundsElement(
                             sceneLocation.x,
                             sceneLocation.y,
@@ -179,7 +175,6 @@ class CanvasPopupMenuProvider {
             val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, endEvent)
 
             val shape = templateShape.copy(
-                    bpmnElement = endEvent.id,
                     bounds = BoundsElement(
                             sceneLocation.x,
                             sceneLocation.y,

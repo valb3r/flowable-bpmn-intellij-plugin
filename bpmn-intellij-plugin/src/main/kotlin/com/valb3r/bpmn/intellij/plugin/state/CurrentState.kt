@@ -55,14 +55,14 @@ class CurrentStateProvider {
     fun currentState(): CurrentState {
         val newShapes = updateEvents.newShapeElements().map { it.event }
         val newEdges = updateEvents.newEdgeElements().map { it.event }
-        val newEdgeElems = updateEvents.newEdgeElements().map { EdgeElementState(it.event.edge) }
+        val newEdgeElems = updateEvents.newEdgeElements().map { it.event }
 
         val newElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId> = HashMap()
         val newElementByStaticId: MutableMap<BpmnElementId, WithBpmnId> = HashMap()
         val newElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>> = HashMap()
 
         newShapes.forEach {newElementByDiagramId[it.shape.id] = it.shape.bpmnElement}
-        newEdgeElems.filter { null != it.bpmnElement }.forEach {newElementByDiagramId[it.id] = it.bpmnElement!!}
+        newEdgeElems.forEach {newElementByDiagramId[it.edge.id] = it.bpmnObject.id}
 
         newShapes.forEach {newElementByStaticId[it.bpmnObject.id] = it.bpmnObject}
         newEdges.forEach {newElementByStaticId[it.bpmnObject.id] = it.bpmnObject}
@@ -78,8 +78,7 @@ class CurrentStateProvider {
             updateEvents.currentPropertyUpdateEventList(prop.key)
                     .map { it.event }
                     .filterIsInstance<StringValueUpdatedEvent>()
-                    .lastOrNull()
-                    ?.let {
+                    .forEach {
                         updatedProperties[prop.key]?.set(it.property, Property(it.newValue))
                     }
         }
@@ -88,7 +87,7 @@ class CurrentStateProvider {
                 shapes = fileState.shapes.toList().union(newShapes.map { it.shape })
                         .filter { !updateEvents.isDeleted(it.id) && !updateEvents.isDeleted(it.bpmnElement) }
                         .map { updateLocationAndInnerTopology(it) },
-                edges = fileState.edges.toList().union(newEdgeElems)
+                edges = fileState.edges.toList().union(newEdgeElems.map { it.edge })
                         .filter { !updateEvents.isDeleted(it.id) && !(it.bpmnElement?.let { updateEvents.isDeleted(it) }  ?: false)}
                         .map { updateLocationAndInnerTopology(it) },
                 elementByDiagramId = fileState.elementByDiagramId.toMutableMap().plus(newElementByDiagramId),

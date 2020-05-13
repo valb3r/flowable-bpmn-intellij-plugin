@@ -35,10 +35,14 @@ class ProcessModelUpdateEvents(private val updates: MutableList<Order<out Event>
     @Synchronized
     fun reset() {
         order.set(0)
+        fileCommitListeners.clear()
+        parentCreatesByStaticId.clear()
         locationUpdatesByStaticId.clear()
         propertyUpdatesByStaticId.clear()
-        parentCreatesByStaticId.clear()
+        newShapeElements.clear()
+        newDiagramElements.clear()
         deletionsByStaticId.clear()
+        deletionsByStaticBpmnId.clear()
     }
 
     fun commitToFile() {

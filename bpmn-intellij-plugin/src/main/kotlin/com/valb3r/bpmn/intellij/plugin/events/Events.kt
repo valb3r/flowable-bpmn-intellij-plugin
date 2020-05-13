@@ -3,10 +3,10 @@ package com.valb3r.bpmn.intellij.plugin.events
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
 import com.valb3r.bpmn.intellij.plugin.render.WaypointElementState
 
 data class StringValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, val newValue: String): PropertyUpdateWithId
@@ -23,6 +23,6 @@ data class BpmnElementRemovedEvent(override val elementId: BpmnElementId): BpmnE
 
 data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithBpmnId, override val shape: ShapeElement, override val props: Map<PropertyType, Property>): BpmnShapeObjectAdded
 
-data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithBpmnId, override val edge: EdgeElement, override val props: Map<PropertyType, Property>): BpmnEdgeObjectAdded
+data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithBpmnId, override val edge: EdgeElementState, override val props: Map<PropertyType, Property>): BpmnEdgeObjectAdded
 
 data class CommittedToFile(val eventCount: Int): Event

@@ -35,12 +35,19 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithDiagramId> newDiagramObject(clazz: KClass<T>, forBpmnObject: WithBpmnId): T {
         val result: WithDiagramId = when(clazz) {
-            EdgeElement::class -> EdgeElement(DiagramElementId(UUID.randomUUID().toString()), null, null)
-            ShapeElement::class -> ShapeElement(DiagramElementId(UUID.randomUUID().toString()), BpmnElementId(""), bounds(forBpmnObject))
+            EdgeElement::class -> EdgeElement(DiagramElementId(UUID.randomUUID().toString()), forBpmnObject.id, null)
+            ShapeElement::class -> ShapeElement(DiagramElementId(UUID.randomUUID().toString()), forBpmnObject.id, bounds(forBpmnObject))
             else -> throw IllegalArgumentException("Can't create class: " + clazz.qualifiedName)
         }
 
         return result as T
+    }
+
+    override fun <T : WithBpmnId> newOutgoingSequence(obj: T): BpmnSequenceFlow {
+        return when(obj) {
+            is BpmnExclusiveGateway -> BpmnSequenceFlow(BpmnElementId(UUID.randomUUID().toString()), null, null, obj.id.id, "", ConditionExpression("tFormalExpression", ""))
+            else -> BpmnSequenceFlow(BpmnElementId(UUID.randomUUID().toString()), null, null, obj.id.id, "", null)
+        }
     }
 
     override fun <T : WithBpmnId> propertiesOf(obj: T): Map<PropertyType, Property> {

@@ -3,10 +3,10 @@ package com.valb3r.bpmn.intellij.plugin.events
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
 import com.valb3r.bpmn.intellij.plugin.render.WaypointElementState
 
 interface Event
@@ -43,7 +43,7 @@ interface BpmnShapeObjectAdded: Event {
 
 interface BpmnEdgeObjectAdded: Event {
     val bpmnObject: WithBpmnId
-    val edge: EdgeElement
+    val edge: EdgeElementState
     val props: Map<PropertyType, Property>
 }
 
