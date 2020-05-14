@@ -12,7 +12,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
@@ -211,7 +210,7 @@ class FlowableParser : BpmnParser {
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 
-        update.props.forEach { setPropertyToNode(doc, newNode, it.key, it.value) }
+        update.props.forEach { setPropertyToNode(doc, newNode, it.key, it.value.value) }
         trimWhitespace(diagramParent, false)
         diagramParent.appendChild(newNode)
 
@@ -246,7 +245,7 @@ class FlowableParser : BpmnParser {
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 
-        update.props.forEach { setPropertyToNode(doc, newNode, it.key, it.value) }
+        update.props.forEach { setPropertyToNode(doc, newNode, it.key, it.value.value) }
         trimWhitespace(diagramParent, false)
         diagramParent.appendChild(newNode)
 
@@ -264,16 +263,24 @@ class FlowableParser : BpmnParser {
     }
 
     private fun applyPropertyUpdateWithId(doc: Document, update: PropertyUpdateWithId) {
+        val xpath = xpathFactory.newXPath()
+        val node = xpath.evaluate(
+                "//process/*[@id='${update.bpmnElementId.id}'][1]",
+                doc,
+                XPathConstants.NODE
+        ) as Element
+
+        setPropertyToNode(doc, node, update.property, asString(update.property.valueType, update.newValue))
     }
 
-    private fun setPropertyToNode(doc: Document, node: Element, type: PropertyType, value: Property) {
+    private fun setPropertyToNode(doc: Document, node: Element, type: PropertyType, value: Any?) {
         when {
             type.xmlPath.contains(".") -> setNestedPropertyToNode(doc, node, type, value)
             else -> node.setAttribute(type.xmlPath, asString(type.valueType, value))
         }
     }
 
-    private fun setNestedPropertyToNode(doc: Document, node: Element, type: PropertyType, value: Property) {
+    private fun setNestedPropertyToNode(doc: Document, node: Element, type: PropertyType, value: Any?) {
         val segments = type.xmlPath.split(".")
         val childOf: ((Element, String) -> Element?) = child@{target, name ->
             for (pos in 0 until target.childNodes.length) {
@@ -305,10 +312,14 @@ class FlowableParser : BpmnParser {
         }
     }
 
-    private fun asString(type: PropertyValueType, property: Property): String {
+    private fun asString(type: PropertyValueType, value: Any?): String? {
+        if (null == value) {
+            return null
+        }
+
         return when(type) {
-            STRING, CLASS, EXPRESSION -> property.value as String
-            BOOLEAN -> (property.value as Boolean).toString()
+            STRING, CLASS, EXPRESSION -> value as String
+            BOOLEAN -> (value as Boolean).toString()
         }
     }
 

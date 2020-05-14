@@ -148,6 +148,22 @@ internal class FlowableParserTest {
     }
 
 
+    @Test
+    fun `XML process with interlaced elements of same type should be updatable with property update event without error`() {
+        val updated = FlowableParser().update("duplicates.bpmn20.xml".asResource()!!, listOf(
+                object: PropertyUpdateWithId {
+                    override val bpmnElementId: BpmnElementId
+                        get() = BpmnElementId("activityStart")
+                    override val property: PropertyType
+                        get() = PropertyType.NAME
+                    override val newValue: Any
+                        get() = "A new name"
+                }
+        ))
+
+        updated.shouldNotBeNull()
+    }
+
     fun String.asResource(): String? = object {}::class.java.classLoader.getResource(this)?.readText(UTF_8)
 }
 

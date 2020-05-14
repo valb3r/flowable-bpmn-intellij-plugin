@@ -51,6 +51,7 @@ interface BpmnEdgeObjectAdded: Event {
 interface PropertyUpdateWithId: Event {
     val bpmnElementId: BpmnElementId
     val property: PropertyType
+    val newValue: Any
 }
 
 interface IdentifiableWaypoint: Translatable<IdentifiableWaypoint>, WithDiagramId {
