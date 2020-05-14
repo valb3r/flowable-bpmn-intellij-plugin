@@ -65,7 +65,6 @@ class BpmnProcessRenderer {
                 val deleteCallback = { dest: ProcessModelUpdateEvents -> dest.addElementRemovedEvent(DiagramElementRemovedEvent(it.id))}
                 val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback))
                 areaByElement += actionsElem
-                renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy))}
             }
         }
     }
@@ -89,7 +88,7 @@ class BpmnProcessRenderer {
                 }
                 val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
                 areaByElement += actionsElem
-                renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy))}
+                renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy, null))}
             }
         }
     }
@@ -146,7 +145,7 @@ class BpmnProcessRenderer {
 
         val dragCallback = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents, elem: IdentifiableWaypoint ->
             if (elem.physical) {
-                dest.addLocationUpdateEvent(DraggedToEvent(elem.id, dx, dy))
+                dest.addLocationUpdateEvent(DraggedToEvent(elem.id, dx, dy, elem.internalPos))
             } else {
                 dest.addWaypointStructureUpdate(NewWaypointsEvent(
                         parent.id,

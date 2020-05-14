@@ -20,6 +20,7 @@ interface LocationUpdateWithId: Event {
     val diagramElementId: DiagramElementId
     val dx: Float
     val dy: Float
+    val internalPos: Int?
 }
 
 interface NewWaypoints: Event {
@@ -58,6 +59,7 @@ interface IdentifiableWaypoint: Translatable<IdentifiableWaypoint>, WithDiagramI
     val origX: Float
     val origY: Float
     val physical: Boolean
+    val internalPos: Int
 
     fun moveTo(dx: Float, dy: Float): IdentifiableWaypoint
     fun asPhysical(): IdentifiableWaypoint

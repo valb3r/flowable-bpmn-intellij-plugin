@@ -12,7 +12,7 @@ data class StringValueUpdatedEvent(override val bpmnElementId: BpmnElementId, ov
 
 data class BooleanValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, val newValue: Boolean): PropertyUpdateWithId
 
-data class DraggedToEvent(override val diagramElementId: DiagramElementId, override val dx: Float, override val dy: Float): LocationUpdateWithId
+data class DraggedToEvent(override val diagramElementId: DiagramElementId, override val dx: Float, override val dy: Float, override val internalPos: Int?): LocationUpdateWithId
 
 data class NewWaypointsEvent(override val edgeElementId: DiagramElementId, override val waypoints: List<IdentifiableWaypoint>): NewWaypoints
 
