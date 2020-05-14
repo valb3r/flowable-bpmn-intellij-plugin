@@ -97,12 +97,12 @@ class FlowableObjectFactory: BpmnObjectFactory {
         val propertyTree = mapper.valueToTree<JsonNode>(dto)
 
         for (type in PropertyType.values()) {
-            if (type.id.contains(".")) {
+            if (type.path.contains(".")) {
                 tryParseNestedValue(type, propertyTree, result)
                 continue
             }
 
-            propertyTree[type.id]?.apply {
+            propertyTree[type.path]?.apply {
                 parseValue(result, type)
             }
         }
@@ -111,7 +111,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
     }
 
     private fun tryParseNestedValue(type: PropertyType, propertyTree: JsonNode, result: MutableMap<PropertyType, Property>) {
-        val split = type.id.split(".", limit = 2)
+        val split = type.path.split(".", limit = 2)
         val targetId = split[0]
         propertyTree[targetId]?.apply {
             if (split[1].contains(".")) {
