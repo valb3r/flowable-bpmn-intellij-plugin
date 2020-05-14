@@ -36,8 +36,6 @@ data class CurrentState(
 
 // Global singleton
 class CurrentStateProvider {
-
-    private val updateEvents = updateEventsRegistry()
     private var fileState = CurrentState(emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap())
     private var currentState = CurrentState(emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap())
 
@@ -50,13 +48,13 @@ class CurrentStateProvider {
                 processObject.elemPropertiesByElementId
         )
         currentState = fileState
-        updateEvents.reset()
+        updateEventsRegistry().reset()
     }
 
     fun currentState(): CurrentState {
-        val newShapes = updateEvents.newShapeElements().map { it.event }
-        val newEdges = updateEvents.newEdgeElements().map { it.event }
-        val newEdgeElems = updateEvents.newEdgeElements().map { it.event }
+        val newShapes = updateEventsRegistry().newShapeElements().map { it.event }
+        val newEdges = updateEventsRegistry().newEdgeElements().map { it.event }
+        val newEdgeElems = updateEventsRegistry().newEdgeElements().map { it.event }
 
         val newElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId> = HashMap()
         val newElementByStaticId: MutableMap<BpmnElementId, WithBpmnId> = HashMap()
@@ -76,7 +74,7 @@ class CurrentStateProvider {
         val updatedProperties:  MutableMap<BpmnElementId, MutableMap<PropertyType, Property>> = HashMap()
         allProperties.forEach { prop ->
             updatedProperties[prop.key] = prop.value.toMutableMap()
-            updateEvents.currentPropertyUpdateEventList(prop.key)
+            updateEventsRegistry().currentPropertyUpdateEventList(prop.key)
                     .map { it.event }
                     .filterIsInstance<StringValueUpdatedEvent>()
                     .forEach {
@@ -86,10 +84,10 @@ class CurrentStateProvider {
 
         return CurrentState(
                 shapes = fileState.shapes.toList().union(newShapes.map { it.shape })
-                        .filter { !updateEvents.isDeleted(it.id) && !updateEvents.isDeleted(it.bpmnElement) }
+                        .filter { !updateEventsRegistry().isDeleted(it.id) && !updateEventsRegistry().isDeleted(it.bpmnElement) }
                         .map { updateLocationAndInnerTopology(it) },
                 edges = fileState.edges.toList().union(newEdgeElems.map { it.edge })
-                        .filter { !updateEvents.isDeleted(it.id) && !(it.bpmnElement?.let { updateEvents.isDeleted(it) }  ?: false)}
+                        .filter { !updateEventsRegistry().isDeleted(it.id) && !(it.bpmnElement?.let { updateEventsRegistry().isDeleted(it) }  ?: false)}
                         .map { updateLocationAndInnerTopology(it) },
                 elementByDiagramId = fileState.elementByDiagramId.toMutableMap().plus(newElementByDiagramId),
                 elementByStaticId = fileState.elementByStaticId.toMutableMap().plus(newElementByStaticId),
@@ -98,7 +96,7 @@ class CurrentStateProvider {
     }
 
     private fun updateLocationAndInnerTopology(elem: ShapeElement): ShapeElement {
-        val updates = updateEvents.currentLocationUpdateEventList(elem.id)
+        val updates = updateEventsRegistry().currentLocationUpdateEventList(elem.id)
         var dx = 0.0f
         var dy = 0.0f
         updates.forEach { dx += it.event.dx; dy += it.event.dy }
@@ -106,20 +104,20 @@ class CurrentStateProvider {
     }
 
     private fun updateLocationAndInnerTopology(elem: EdgeWithIdentifiableWaypoints): EdgeWithIdentifiableWaypoints {
-        val hasNoCommittedAnchorUpdates = elem.waypoint.firstOrNull { updateEvents.currentLocationUpdateEventList(it.id).isNotEmpty() }
-        val hasNoNewAnchors = updateEvents.newWaypointStructure(elem.id).isEmpty()
+        val hasNoCommittedAnchorUpdates = elem.waypoint.firstOrNull { updateEventsRegistry().currentLocationUpdateEventList(it.id).isNotEmpty() }
+        val hasNoNewAnchors = updateEventsRegistry().newWaypointStructure(elem.id).isEmpty()
         if (null == hasNoCommittedAnchorUpdates && hasNoNewAnchors) {
             return elem
         }
 
         val waypoints: MutableList<IdentifiableWaypoint> =
-                updateEvents.newWaypointStructure(elem.id).lastOrNull()?.event?.waypoints?.toMutableList() ?: elem.waypoint.filter { it.physical }.toMutableList()
+                updateEventsRegistry().newWaypointStructure(elem.id).lastOrNull()?.event?.waypoints?.toMutableList() ?: elem.waypoint.filter { it.physical }.toMutableList()
         val updatedLocations = waypoints.filter { it.physical }.map { updateWaypointLocation(it) }
         return EdgeElementState(elem, updatedLocations)
     }
 
     private fun updateWaypointLocation(waypoint: IdentifiableWaypoint): IdentifiableWaypoint {
-        val updates = updateEvents.currentLocationUpdateEventList(waypoint.id)
+        val updates = updateEventsRegistry().currentLocationUpdateEventList(waypoint.id)
         var dx = 0.0f
         var dy = 0.0f
         updates.forEach { dx += it.event.dx; dy += it.event.dy }

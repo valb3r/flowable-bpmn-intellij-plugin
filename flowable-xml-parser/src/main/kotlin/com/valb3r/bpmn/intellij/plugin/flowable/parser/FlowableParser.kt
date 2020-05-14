@@ -118,14 +118,20 @@ class FlowableParser : BpmnParser {
 
     private fun applyLocationUpdate(doc: Document, update: LocationUpdateWithId) {
         val xpath = xpathFactory.newXPath()
-        val node = xpath.evaluate(
-                """
-                //BPMNShape[@id='${update.diagramElementId.id}']/*[@x][@y][${update.internalPos!! + 1}]
-                | //BPMNEdge[@id='${update.diagramElementId.id}']/*[@x][@y][${update.internalPos!! + 1}]
-                """,
-                doc,
-                XPathConstants.NODE
-        ) as Node
+        val node = if (null != update.internalPos) {
+            // Internal waypoint update
+            xpath.evaluate(
+                    "//BPMNEdge[@id='${update.parentElementId!!.id}']/*[@x][@y][${update.internalPos!! + 1}]",
+                    doc,
+                    XPathConstants.NODE
+            ) as Node
+        } else {
+            xpath.evaluate(
+                    "//BPMNShape[@id='${update.diagramElementId.id}']/*[@x][@y]",
+                    doc,
+                    XPathConstants.NODE
+            ) as Node
+        }
 
         val nx = node.attributes.getNamedItem("x")
         val ny = node.attributes.getNamedItem("y")
@@ -270,13 +276,13 @@ class FlowableParser : BpmnParser {
                 XPathConstants.NODE
         ) as Element
 
-        setPropertyToNode(doc, node, update.property, asString(update.property.valueType, update.newValue))
+        setPropertyToNode(doc, node, update.property, update.newValue)
     }
 
     private fun setPropertyToNode(doc: Document, node: Element, type: PropertyType, value: Any?) {
         when {
             type.xmlPath.contains(".") -> setNestedPropertyToNode(doc, node, type, value)
-            else -> node.setAttribute(type.xmlPath, asString(type.valueType, value))
+            else -> setOrRemoveIfNull(node, type.xmlPath, asString(type.valueType, value))
         }
     }
 
@@ -305,15 +311,27 @@ class FlowableParser : BpmnParser {
         }
 
         if (type.isCdata) {
-            val cdata = doc.createCDATASection(asString(type.valueType, value))
-            currentNode.appendChild(cdata)
+            if (null == asString(type.valueType, value) && currentNode.textContent.isNullOrEmpty()) {
+                currentNode.textContent = ""
+            } else {
+                val cdata = doc.createCDATASection(asString(type.valueType, value))
+                currentNode.appendChild(cdata)
+            }
         } else {
-            currentNode.setAttribute(segments[segments.size - 1], asString(type.valueType, value))
+            setOrRemoveIfNull(currentNode, segments[segments.size - 1], asString(type.valueType, value))
         }
     }
 
+    private fun setOrRemoveIfNull(node: Element, name: String, value: String?) {
+        if (null == value && node.hasAttribute(name)) {
+            node.removeAttribute(name)
+        }
+
+        node.setAttribute(name, value)
+    }
+
     private fun asString(type: PropertyValueType, value: Any?): String? {
-        if (null == value) {
+        if (null == value || "" == value) {
             return null
         }
 

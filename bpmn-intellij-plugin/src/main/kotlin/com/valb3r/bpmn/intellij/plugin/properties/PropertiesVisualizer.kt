@@ -11,14 +11,26 @@ import com.valb3r.bpmn.intellij.plugin.events.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.ui.components.FirstColumnReadOnlyModel
-import java.awt.event.FocusEvent
-import java.awt.event.FocusListener
 import javax.swing.JTable
 
 class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String) -> EditorTextField) {
 
-    private val updateRegistry = updateEventsRegistry()
     private var listenersForCurrentView: MutableList<(() -> Unit)> = mutableListOf()
+
+    @Synchronized
+    fun clear() {
+        // fire de-focus to move changes to memory, component listeners doesn't seem to work with EditorTextField
+        listenersForCurrentView.forEach { it() }
+        listenersForCurrentView.clear()
+
+        // drop and re-create table model
+        val model = FirstColumnReadOnlyModel()
+        model.addColumn("")
+        model.addColumn("")
+        table.model = model
+        table.columnModel.getColumn(1).preferredWidth = 500
+        model.fireTableDataChanged()
+    }
 
     @Synchronized
     fun visualize(bpmnElementId: BpmnElementId, properties: Map<PropertyType, Property>) {
@@ -51,7 +63,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
 
         listenersForCurrentView.add {
             if (initialValue != field.text) {
-                updateRegistry.addPropertyUpdateEvent(StringValueUpdatedEvent(bpmnElementId, type, field.text))
+                updateEventsRegistry().addPropertyUpdateEvent(StringValueUpdatedEvent(bpmnElementId, type, field.text))
             }
         }
         return field
@@ -64,7 +76,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
 
         listenersForCurrentView.add {
             if (initialValue != field.isSelected) {
-                updateRegistry.addPropertyUpdateEvent(StringValueUpdatedEvent(bpmnElementId, type, field.text))
+                updateEventsRegistry().addPropertyUpdateEvent(BooleanValueUpdatedEvent(bpmnElementId, type, field.isSelected))
             }
         }
         return field
@@ -88,7 +100,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
         val initialValue = field.text
         listenersForCurrentView.add {
             if (initialValue != field.text) {
-                updateRegistry.addPropertyUpdateEvent(StringValueUpdatedEvent(bpmnElementId, type, removeQuotes(field.text)))
+                updateEventsRegistry().addPropertyUpdateEvent(StringValueUpdatedEvent(bpmnElementId, type, removeQuotes(field.text)))
             }
         }
     }
@@ -98,7 +110,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
     }
 
     private fun lastStringValueFromRegistry(bpmnElementId: BpmnElementId, type: PropertyType): String? {
-        return (updateRegistry.currentPropertyUpdateEventList(bpmnElementId)
+        return (updateEventsRegistry().currentPropertyUpdateEventList(bpmnElementId)
                 .map { it.event }
                 .filter { it.property.id == type.id }
                 .lastOrNull { it is StringValueUpdatedEvent } as StringValueUpdatedEvent?)
@@ -106,21 +118,10 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
     }
 
     private fun lastBooleanValueFromRegistry(bpmnElementId: BpmnElementId, type: PropertyType): Boolean? {
-        return (updateRegistry.currentPropertyUpdateEventList(bpmnElementId)
+        return (updateEventsRegistry().currentPropertyUpdateEventList(bpmnElementId)
                 .map { it.event }
                 .filter { it.property.id == type.id }
                 .lastOrNull { it is BooleanValueUpdatedEvent } as BooleanValueUpdatedEvent?)
                 ?.newValue
-    }
-
-    private class FocusEventListener(val onFocusLost: ((e: FocusEvent?) -> Unit)): FocusListener {
-
-        override fun focusLost(e: FocusEvent?) {
-            onFocusLost(e)
-        }
-
-        override fun focusGained(e: FocusEvent?) {
-            // NOP
-        }
     }
 }

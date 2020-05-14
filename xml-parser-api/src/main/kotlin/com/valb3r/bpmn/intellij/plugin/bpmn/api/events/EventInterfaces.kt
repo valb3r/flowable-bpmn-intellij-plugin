@@ -20,6 +20,7 @@ interface LocationUpdateWithId: Event {
     val diagramElementId: DiagramElementId
     val dx: Float
     val dy: Float
+    val parentElementId: DiagramElementId?
     val internalPos: Int?
 }
 
