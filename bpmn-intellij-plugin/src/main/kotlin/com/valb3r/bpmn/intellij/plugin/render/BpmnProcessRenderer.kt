@@ -151,8 +151,9 @@ class BpmnProcessRenderer {
                         parent.id,
                         parent.waypoint
                                 .filter { it.physical || it.id == elem.id }
-                                .map { if (it.id == elem.id && !it.physical) it.moveTo(dx, dy).asPhysical() else it.originalLocation() }
-                                .toList()
+                                .map { if (it.id == elem.id && !it.physical) it.moveTo(dx, dy).asPhysical() else it }
+                                .toList(),
+                        parent.epoch + 1
                 ))
             }
         }
@@ -177,8 +178,8 @@ class BpmnProcessRenderer {
                         parent.waypoint
                                 .filter { it.physical }
                                 .filter { it.id != node.id }
-                                .map { it.originalLocation() }
-                                .toList()
+                                .toList(),
+                        parent.epoch + 1
                 ))}
                 result += drawActionsElement(canvas, translatedNode, meta.interactionContext, mapOf(Actions.DELETE to callback))
             }

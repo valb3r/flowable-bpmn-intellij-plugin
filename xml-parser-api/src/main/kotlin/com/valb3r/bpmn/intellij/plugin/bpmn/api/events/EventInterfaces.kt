@@ -27,6 +27,7 @@ interface LocationUpdateWithId: Event {
 interface NewWaypoints: Event {
     val edgeElementId: DiagramElementId
     val waypoints: List<IdentifiableWaypoint>
+    val epoch: Int
 }
 
 interface DiagramElementRemoved: Event {
@@ -72,4 +73,5 @@ interface IdentifiableWaypoint: Translatable<IdentifiableWaypoint>, WithDiagramI
 interface EdgeWithIdentifiableWaypoints: WithDiagramId {
     val bpmnElement: BpmnElementId?
     val waypoint: MutableList<IdentifiableWaypoint>
+    val epoch: Int
 }

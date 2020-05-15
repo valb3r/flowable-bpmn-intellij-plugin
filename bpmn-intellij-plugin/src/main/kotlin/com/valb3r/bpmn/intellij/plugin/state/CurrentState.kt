@@ -110,10 +110,12 @@ class CurrentStateProvider {
             return elem
         }
 
-        val waypoints: MutableList<IdentifiableWaypoint> =
-                updateEventsRegistry().newWaypointStructure(elem.id).lastOrNull()?.event?.waypoints?.toMutableList() ?: elem.waypoint.filter { it.physical }.toMutableList()
-        val updatedLocations = waypoints.filter { it.physical }.map { updateWaypointLocation(it) }
-        return EdgeElementState(elem, updatedLocations)
+        val event = updateEventsRegistry().newWaypointStructure(elem.id).lastOrNull()?.event
+        val waypoints =  event?.waypoints?.toMutableList() ?: elem.waypoint.filter { it.physical }.toMutableList()
+        val epoch = event?.epoch ?: 0
+        val newState = EdgeElementState(elem, waypoints, epoch)
+        val updatedWaypoints = newState.waypoint.filter { it.physical }.map { updateWaypointLocation(it) }
+        return EdgeElementState(newState, updatedWaypoints, epoch)
     }
 
     private fun updateWaypointLocation(waypoint: IdentifiableWaypoint): IdentifiableWaypoint {

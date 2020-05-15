@@ -12,16 +12,17 @@ import java.nio.charset.StandardCharsets.UTF_8
 data class EdgeElementState  (
         override val id: DiagramElementId,
         override val bpmnElement: BpmnElementId?,
-        override val waypoint: MutableList<IdentifiableWaypoint> = mutableListOf()
+        override val waypoint: MutableList<IdentifiableWaypoint> = mutableListOf(),
+        override val epoch: Int
 ): EdgeWithIdentifiableWaypoints {
-    constructor(elem: EdgeElement): this(elem.id, elem.bpmnElement, ArrayList()) {
+    constructor(elem: EdgeElement): this(elem.id, elem.bpmnElement, ArrayList(), 0) {
         elem.waypoint?.withIndex()?.forEach {
             when {
-                it.index == 0 -> waypoint += WaypointElementState(waypointId(0), it.value, 0)
+                it.index == 0 -> waypoint += WaypointElementState(waypointId(epoch, 0), it.value, 0)
                 it.index > 0 -> {
                     val midpointX = (elem.waypoint!![it.index - 1].x + it.value.x) / 2.0f
                     val midpointY = (elem.waypoint!![it.index - 1].y + it.value.y) / 2.0f
-                    val next = WaypointElementState(waypointId(it.index), it.value, it.index)
+                    val next = WaypointElementState(waypointId(epoch, it.index), it.value, it.index)
                     waypoint += WaypointElementState(childWaypointId(waypoint[it.index - 1], next), midpointX, midpointY, it.index)
                     waypoint += next
                 }
@@ -29,14 +30,14 @@ data class EdgeElementState  (
         }
     }
 
-    constructor(toCopy: EdgeWithIdentifiableWaypoints, newPhysicalWaypoints: List<IdentifiableWaypoint>): this(toCopy.id, toCopy.bpmnElement, ArrayList()) {
+    constructor(toCopy: EdgeWithIdentifiableWaypoints, newPhysicalWaypoints: List<IdentifiableWaypoint>, newEpoch: Int): this(toCopy.id, toCopy.bpmnElement, ArrayList(), newEpoch) {
         newPhysicalWaypoints.withIndex().forEach {
             when {
-                it.index == 0 -> waypoint += WaypointElementState(waypointId(0), it.value.asWaypointElement(), 0)
+                it.index == 0 -> waypoint += WaypointElementState(waypointId(epoch, 0), it.value.asWaypointElement(), 0)
                 it.index > 0 -> {
                     val midpointX = (newPhysicalWaypoints[it.index - 1].x + it.value.x) / 2.0f
                     val midpointY = (newPhysicalWaypoints[it.index - 1].y + it.value.y) / 2.0f
-                    val next = WaypointElementState(waypointId(it.index), it.value.asWaypointElement(), it.index)
+                    val next = WaypointElementState(waypointId(epoch, it.index), it.value.asWaypointElement(), it.index)
                     waypoint += WaypointElementState(childWaypointId(waypoint[it.index - 1], next), midpointX, midpointY, it.index)
                     waypoint += next
                 }
@@ -44,8 +45,8 @@ data class EdgeElementState  (
         }
     }
 
-    fun waypointId(internalOrder: Int): String {
-        return Hashing.md5().hashString(id.id + ":" + internalOrder, UTF_8).toString()
+    fun waypointId(currentEpoch: Int, internalOrder: Int): String {
+        return Hashing.md5().hashString(currentEpoch.toString() + ":" + id.id + ":" + internalOrder, UTF_8).toString()
     }
 
     fun childWaypointId(start: IdentifiableWaypoint, end: IdentifiableWaypoint): String {
