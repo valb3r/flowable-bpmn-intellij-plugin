@@ -32,6 +32,35 @@ import javax.xml.xpath.XPathFactory
 
 const val CDATA_FIELD = "CDATA"
 
+enum class PropertyTypeDetails(
+        val propertyType: PropertyType,
+        val xmlPath: String,
+        val type: XmlType
+) {
+    ID(PropertyType.ID, "id", XmlType.ATTRIBUTE),
+    NAME(PropertyType.NAME,"name", XmlType.ATTRIBUTE),
+    DOCUMENTATION(PropertyType.DOCUMENTATION, "documentation.text", XmlType.CDATA),
+    ASYNC(PropertyType.ASYNC, "flowable:async", XmlType.ATTRIBUTE),
+    CALLED_ELEM(PropertyType.CALLED_ELEM, "calledElement", XmlType.ATTRIBUTE),
+    CALLED_ELEM_TYPE(PropertyType.CALLED_ELEM_TYPE, "flowable:calledElementType", XmlType.ATTRIBUTE),
+    INHERIT_VARS(PropertyType.INHERIT_VARS, "flowable:inheritVariables", XmlType.ATTRIBUTE),
+    FALLBACK_TO_DEF_TENANT(PropertyType.FALLBACK_TO_DEF_TENANT, "flowable:fallbackToDefaultTenant", XmlType.ATTRIBUTE),
+    EXCLUSIVE(PropertyType.EXCLUSIVE,"flowable:exclusive", XmlType.ATTRIBUTE),
+    DELEGATE_EXPRESSION(PropertyType.DELEGATE_EXPRESSION, "flowable:delegateExpression", XmlType.ATTRIBUTE),
+    IS_TRIGGERABLE(PropertyType.IS_TRIGGERABLE, "flowable:triggerable", XmlType.ATTRIBUTE),
+    SOURCE_REF(PropertyType.SOURCE_REF,"sourceRef", XmlType.ATTRIBUTE),
+    TARGET_REF(PropertyType.TARGET_REF, "targetRef", XmlType.ATTRIBUTE),
+    CONDITION_EXPR_VALUE(PropertyType.CONDITION_EXPR_VALUE, "conditionExpression.text", XmlType.CDATA),
+    CONDITION_EXPR_TYPE(PropertyType.CONDITION_EXPR_TYPE, "conditionExpression.xsi:type", XmlType.ATTRIBUTE),
+    DEFAULT_FLOW(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE)
+}
+
+enum class XmlType {
+
+    CDATA,
+    ATTRIBUTE
+}
+
 class FlowableParser : BpmnParser {
 
     val OMGDI_NS = "http://www.omg.org/spec/DD/20100524/DI"
@@ -216,7 +245,7 @@ class FlowableParser : BpmnParser {
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 
-        update.props.forEach { setPropertyToNode(doc, newNode, it.key, it.value.value) }
+        update.props.forEach { setToNode(doc, newNode, it.key, it.value.value) }
         trimWhitespace(diagramParent, false)
         diagramParent.appendChild(newNode)
 
@@ -251,7 +280,7 @@ class FlowableParser : BpmnParser {
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 
-        update.props.forEach { setPropertyToNode(doc, newNode, it.key, it.value.value) }
+        update.props.forEach { setToNode(doc, newNode, it.key, it.value.value) }
         trimWhitespace(diagramParent, false)
         diagramParent.appendChild(newNode)
 
@@ -276,32 +305,36 @@ class FlowableParser : BpmnParser {
                 XPathConstants.NODE
         ) as Element
 
-        setPropertyToNode(doc, node, update.property, update.newValue)
+        setToNode(doc, node, update.property, update.newValue)
     }
 
-    private fun setPropertyToNode(doc: Document, node: Element, type: PropertyType, value: Any?) {
+
+    private fun setToNode(doc: Document, node: Element, type: PropertyType, value: Any?) {
+        val details = PropertyTypeDetails.values().filter { it.propertyType == type }.firstOrNull()!!
         when {
-            type.xmlPath.contains(".") -> setNestedPropertyToNode(doc, node, type, value)
-            else -> setOrRemoveIfNull(node, type.xmlPath, asString(type.valueType, value))
+            details.xmlPath.contains(".") -> setNestedToNode(doc, node, type, details, value)
+            else -> setAttributeOrValueOrCdataOrRemoveIfNull(node, details.xmlPath, details, asString(type.valueType, value))
         }
     }
 
-    private fun setNestedPropertyToNode(doc: Document, node: Element, type: PropertyType, value: Any?) {
-        val segments = type.xmlPath.split(".")
-        val childOf: ((Element, String) -> Element?) = child@{target, name ->
-            for (pos in 0 until target.childNodes.length) {
-                if (target.childNodes.item(pos).nodeName.contains(name)) {
-                    return@child target.childNodes.item(pos) as Element
-                }
-            }
-            return@child null
-        }
+    private fun setNestedToNode(doc: Document, node: Element, type: PropertyType, details: PropertyTypeDetails, value: Any?) {
+        val segments = details.xmlPath.split(".")
+        val childOf: ((Element, String) -> Element?) = {target, name -> nodeChildByName(target, name)}
 
         var currentNode = node
         for (segment in 0 until segments.size - 1) {
             val name = segments[segment]
+            if ("" == name) {
+                continue
+            }
+
             val child = childOf(currentNode, name)
             if (null == child) {
+                // do not create elements for null values
+                if (null == value ) {
+                    return
+                }
+                
                 val newElem = doc.createElement(name)
                 currentNode.appendChild(newElem)
                 currentNode = newElem
@@ -310,24 +343,45 @@ class FlowableParser : BpmnParser {
             }
         }
 
-        if (type.isCdata) {
-            if (null == asString(type.valueType, value) && currentNode.textContent.isNullOrEmpty()) {
-                currentNode.textContent = ""
-            } else {
-                val cdata = doc.createCDATASection(asString(type.valueType, value))
-                currentNode.appendChild(cdata)
+        setAttributeOrValueOrCdataOrRemoveIfNull(currentNode, segments[segments.size - 1], details, asString(type.valueType, value))
+    }
+
+    private fun nodeChildByName(target: Element, name: String): Element? {
+        for (pos in 0 until target.childNodes.length) {
+            if (target.childNodes.item(pos).nodeName.contains(name)) {
+                return target.childNodes.item(pos) as Element
             }
-        } else {
-            setOrRemoveIfNull(currentNode, segments[segments.size - 1], asString(type.valueType, value))
+        }
+        return null
+    }
+
+    private fun setAttributeOrValueOrCdataOrRemoveIfNull(node: Element, name: String, details: PropertyTypeDetails, value: String?) {
+        when (details.type) {
+            XmlType.ATTRIBUTE -> setAttribute(node, name, value)
+            XmlType.CDATA -> setCdata(node, name, value)
         }
     }
 
-    private fun setOrRemoveIfNull(node: Element, name: String, value: String?) {
-        if (null == value && node.hasAttribute(name)) {
-            node.removeAttribute(name)
+    private fun setAttribute(node: Element, name: String, value: String?) {
+        if (value.isNullOrEmpty()) {
+            if (node.hasAttribute(name)) {
+                node.removeAttribute(name)
+            }
+            return
         }
 
         node.setAttribute(name, value)
+    }
+
+    private fun setCdata(node: Element, name: String, value: String?) {
+        if (value.isNullOrEmpty()) {
+            if (node.textContent.isNotBlank()) {
+                node.textContent = null
+            }
+            return
+        }
+
+        node.textContent = value
     }
 
     private fun asString(type: PropertyValueType, value: Any?): String? {
