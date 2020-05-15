@@ -209,7 +209,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
                 height.toFloat()
         )
 
-        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat())
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
         graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
 
         return Area(highlightedShape)
@@ -238,7 +238,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
             graphics2D.fill(highlightedShape)
         }
 
-        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat())
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
         graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
 
         return Area(highlightedShape)
@@ -314,8 +314,9 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         )
     }
 
-    fun rasterizeSvg(svgFile: String, width: Float, height: Float): BufferedImage {
+    fun rasterizeSvg(svgFile: String, width: Float, height: Float, invertColors: Boolean): BufferedImage {
         val cacheKey = Hashing.md5().hashString(svgFile + ":" + width.toInt() + "@" + height.toInt(), UTF_8).toString()
+
         return svgCachedIcons.get(cacheKey) {
             val imageTranscoder = BufferedImageTranscoder()
             imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, width)
@@ -323,8 +324,26 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
 
             val input = TranscoderInput(ByteArrayInputStream(svgFile.toByteArray(UTF_8)))
             imageTranscoder.transcode(input, null)
-            return@get imageTranscoder.bufferedImage!!
+
+            if (!invertColors) {
+                return@get imageTranscoder.bufferedImage!!
+            } else {
+                return@get invertColors(imageTranscoder.bufferedImage!!)
+            }
         }
+    }
+
+    private fun invertColors(image: BufferedImage): BufferedImage {
+        for (x in 0 until image.width) {
+            for (y in 0 until image.height) {
+                val rgba: Int = image.getRGB(x, y)
+                var color = Color(rgba, true)
+                color = Color(255 - color.red, 255 - color.green, 255 - color.blue, color.alpha)
+                image.setRGB(x, y, color.rgb)
+            }
+        }
+
+        return image
     }
 
     internal class BufferedImageTranscoder : ImageTranscoder() {
