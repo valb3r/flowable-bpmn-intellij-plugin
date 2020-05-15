@@ -14,8 +14,8 @@ data class SequenceFlow(
         @JacksonXmlProperty(isAttribute = true) val id: String,
         @JacksonXmlProperty(isAttribute = true) val name: String?,
         val documentation: String?,
-        @JacksonXmlProperty(isAttribute = true) val sourceRef: String,
-        @JacksonXmlProperty(isAttribute = true) val targetRef: String,
+        @JacksonXmlProperty(isAttribute = true) val sourceRef: String?,
+        @JacksonXmlProperty(isAttribute = true) val targetRef: String?,
         val conditionExpression: ConditionExpression?
 ): BpmnMappable<BpmnSequenceFlow> {
 
@@ -30,6 +30,6 @@ data class SequenceFlow(
 }
 
 data class ConditionExpression(
-        val type: String,
-        @JsonProperty(CDATA_FIELD) @JacksonXmlText @JacksonXmlCData val text: String
+        val type: String?,
+        @JsonProperty(CDATA_FIELD) @JacksonXmlText @JacksonXmlCData val text: String?
 )

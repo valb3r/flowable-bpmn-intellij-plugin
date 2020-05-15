@@ -1,79 +1,89 @@
 package com.valb3r.bpmn.intellij.plugin.render
 
+import com.google.common.hash.Hashing
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.Translatable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
-import java.util.*
-import kotlin.collections.ArrayList
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.IdentifiableWaypoint
+import java.nio.charset.StandardCharsets.UTF_8
 
 data class EdgeElementState  (
-        val id: DiagramElementId,
-        val bpmnElement: BpmnElementId?,
-        val waypoint: MutableList<WaypointElementState> = mutableListOf()
-) {
-    constructor(elem: EdgeElement): this(elem.id, elem.bpmnElement, ArrayList()) {
+        override val id: DiagramElementId,
+        override val bpmnElement: BpmnElementId?,
+        override val waypoint: MutableList<IdentifiableWaypoint> = mutableListOf(),
+        override val epoch: Int
+): EdgeWithIdentifiableWaypoints {
+    constructor(elem: EdgeElement): this(elem.id, elem.bpmnElement, ArrayList(), 0) {
         elem.waypoint?.withIndex()?.forEach {
             when {
-                it.index == 0 -> waypoint += WaypointElementState(it.value)
+                it.index == 0 -> waypoint += WaypointElementState(waypointId(epoch, 0), it.value, 0)
                 it.index > 0 -> {
                     val midpointX = (elem.waypoint!![it.index - 1].x + it.value.x) / 2.0f
                     val midpointY = (elem.waypoint!![it.index - 1].y + it.value.y) / 2.0f
-                    val next = WaypointElementState(it.value)
-                    waypoint += WaypointElementState(waypoint[it.index - 1].id.id + ":" + next.id.id, midpointX, midpointY)
+                    val next = WaypointElementState(waypointId(epoch, it.index), it.value, it.index)
+                    waypoint += WaypointElementState(childWaypointId(waypoint[it.index - 1], next), midpointX, midpointY, it.index)
                     waypoint += next
                 }
             }
         }
     }
 
-    constructor(toCopy: EdgeElementState, newPhysicalWaypoints: List<WaypointElementState>): this(toCopy.id, toCopy.bpmnElement, ArrayList()) {
+    constructor(toCopy: EdgeWithIdentifiableWaypoints, newPhysicalWaypoints: List<IdentifiableWaypoint>, newEpoch: Int): this(toCopy.id, toCopy.bpmnElement, ArrayList(), newEpoch) {
         newPhysicalWaypoints.withIndex().forEach {
             when {
-                it.index == 0 -> waypoint += it.value
+                it.index == 0 -> waypoint += WaypointElementState(waypointId(epoch, 0), it.value.asWaypointElement(), 0)
                 it.index > 0 -> {
                     val midpointX = (newPhysicalWaypoints[it.index - 1].x + it.value.x) / 2.0f
                     val midpointY = (newPhysicalWaypoints[it.index - 1].y + it.value.y) / 2.0f
-                    val next = it.value
-                    waypoint += WaypointElementState(waypoint[it.index - 1].id.id + ":" + next.id.id, midpointX, midpointY)
+                    val next = WaypointElementState(waypointId(epoch, it.index), it.value.asWaypointElement(), it.index)
+                    waypoint += WaypointElementState(childWaypointId(waypoint[it.index - 1], next), midpointX, midpointY, it.index)
                     waypoint += next
                 }
             }
         }
+    }
+
+    fun waypointId(currentEpoch: Int, internalOrder: Int): String {
+        return Hashing.md5().hashString(currentEpoch.toString() + ":" + id.id + ":" + internalOrder, UTF_8).toString()
+    }
+
+    fun childWaypointId(start: IdentifiableWaypoint, end: IdentifiableWaypoint): String {
+        return Hashing.md5().hashString(start.id.id + ":" + end.id.id, UTF_8).toString()
     }
 }
 
 data class WaypointElementState (
         override val id: DiagramElementId,
-        val x: Float,
-        val y: Float,
-        val origX: Float,
-        val origY: Float,
-        val physical: Boolean
-): Translatable<WaypointElementState>, WithDiagramId {
+        override val x: Float,
+        override val y: Float,
+        override val origX: Float,
+        override val origY: Float,
+        override val physical: Boolean,
+        override val internalPhysicalPos: Int
+): IdentifiableWaypoint {
 
-    constructor(elem: WaypointElement): this(DiagramElementId(UUID.randomUUID().toString()), elem.x, elem.y, elem.x, elem.y, true)
-    constructor(id: String, x: Float, y: Float): this(DiagramElementId(id), x, y, x, y, false)
+    constructor(id: String, elem: WaypointElement, internalPos: Int): this(DiagramElementId(id), elem.x, elem.y, elem.x, elem.y, true, internalPos)
+    constructor(id: String, x: Float, y: Float, internalPos: Int): this(DiagramElementId(id), x, y, x, y, false, internalPos)
 
     override fun copyAndTranslate(dx: Float, dy: Float): WaypointElementState {
-        return WaypointElementState(id, x + dx, y + dy, origX, origY, physical)
+        return WaypointElementState(id, x + dx, y + dy, origX, origY, physical, internalPhysicalPos)
     }
 
-    fun moveTo(dx: Float, dy: Float): WaypointElementState {
-        return WaypointElementState(id, x + dx, y + dy, x + dx, y + dy, physical)
+    override fun moveTo(dx: Float, dy: Float): WaypointElementState {
+        return WaypointElementState(id, x + dx, y + dy, x + dx, y + dy, physical, internalPhysicalPos)
     }
 
-    fun asPhysical(): WaypointElementState {
-        return WaypointElementState(id, x, y, origX, origY, true)
+    override fun asPhysical(): WaypointElementState {
+        return WaypointElementState(id, x, y, origX, origY, true, internalPhysicalPos)
     }
 
-    fun originalLocation(): WaypointElementState {
-        return WaypointElementState(id, origX, origY, origX, origY, true)
+    override fun originalLocation(): WaypointElementState {
+        return WaypointElementState(id, origX, origY, origX, origY, true, internalPhysicalPos)
     }
 
-    fun asWaypointElement(): WaypointElement {
+    override fun asWaypointElement(): WaypointElement {
         return WaypointElement(x, y)
     }
 }

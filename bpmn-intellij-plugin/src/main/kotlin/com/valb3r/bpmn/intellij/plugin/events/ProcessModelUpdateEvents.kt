@@ -1,7 +1,16 @@
 package com.valb3r.bpmn.intellij.plugin.events
 
+import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.vfs.VirtualFile
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventOrder
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.LocationUpdateWithId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
@@ -9,18 +18,16 @@ import java.util.concurrent.atomic.AtomicReference
 
 private val updateEvents = AtomicReference<ProcessModelUpdateEvents>()
 
-fun updateEventsRegistry(): ProcessModelUpdateEvents {
-    return updateEvents.updateAndGet {
-        if (null == it) {
-            return@updateAndGet ProcessModelUpdateEvents(CopyOnWriteArrayList())
-        }
+fun setUpdateEventsRegistry(parser: BpmnParser, file: VirtualFile) {
+    updateEvents.set(ProcessModelUpdateEvents(parser, file, CopyOnWriteArrayList()))
+}
 
-        return@updateAndGet it
-    }
+fun updateEventsRegistry(): ProcessModelUpdateEvents {
+    return updateEvents.get()!!
 }
 
 // Global singleton
-class ProcessModelUpdateEvents(private val updates: MutableList<Order<out Event>>) {
+class ProcessModelUpdateEvents(private val parser: BpmnParser, private val file: VirtualFile, private val updates: MutableList<Order<out Event>>) {
 
     private val order: AtomicLong = AtomicLong()
     private val fileCommitListeners: MutableList<Any> = ArrayList()
@@ -46,48 +53,68 @@ class ProcessModelUpdateEvents(private val updates: MutableList<Order<out Event>
     }
 
     fun commitToFile() {
+        val lastCommit = updates.filter { it.event is CommittedToFile }.maxBy { it.order }
+        val bos = ByteArrayOutputStream()
+        file.inputStream.use {input ->
+            parser.update(input, bos, updates.filter { it.order > (lastCommit?.order ?: -1) }.map { it.event })
+        }
+        val toStore = Order(order.getAndIncrement(), CommittedToFile(0))
+        updates.add(toStore)
+
+        WriteAction.run<IOException> {
+            file.getOutputStream(null).use {
+                it.write(bos.toByteArray())
+            }
+        }
     }
 
     fun addPropertyUpdateEvent(event: PropertyUpdateWithId) {
         val toStore = Order(order.getAndIncrement(), event)
         updates.add(toStore)
         propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
+        commitToFile()
     }
 
     fun addLocationUpdateEvent(event: LocationUpdateWithId) {
         val toStore = Order(order.getAndIncrement(), event)
         updates.add(toStore)
         locationUpdatesByStaticId.computeIfAbsent(event.diagramElementId) { CopyOnWriteArrayList() } += toStore
+        commitToFile()
     }
 
     fun addWaypointStructureUpdate(event: NewWaypointsEvent) {
         val toStore = Order(order.getAndIncrement(), event)
         updates.add(toStore)
         parentCreatesByStaticId.computeIfAbsent(event.edgeElementId) { CopyOnWriteArrayList() } += toStore
+        commitToFile()
     }
 
     fun addElementRemovedEvent(event: DiagramElementRemovedEvent) {
         val toStore = Order(order.getAndIncrement(), event)
         updates.add(toStore)
         deletionsByStaticId.computeIfAbsent(event.elementId) { CopyOnWriteArrayList() } += toStore
+        commitToFile()
     }
 
     fun addElementRemovedEvent(event: BpmnElementRemovedEvent) {
         val toStore = Order(order.getAndIncrement(), event)
         updates.add(toStore)
         deletionsByStaticBpmnId.computeIfAbsent(event.elementId) { CopyOnWriteArrayList() } += toStore
+        commitToFile()
     }
 
     fun addObjectEvent(event: BpmnShapeObjectAddedEvent) {
         val toStore = Order(order.getAndIncrement(), event)
         updates.add(toStore)
         newShapeElements.add(toStore)
+        commitToFile()
     }
 
     fun addObjectEvent(event: BpmnEdgeObjectAddedEvent) {
         val toStore = Order(order.getAndIncrement(), event)
         updates.add(toStore)
         newDiagramElements.add(toStore)
+        commitToFile()
     }
 
     fun currentPropertyUpdateEventList(elementId: BpmnElementId): List<EventOrder<PropertyUpdateWithId>> {

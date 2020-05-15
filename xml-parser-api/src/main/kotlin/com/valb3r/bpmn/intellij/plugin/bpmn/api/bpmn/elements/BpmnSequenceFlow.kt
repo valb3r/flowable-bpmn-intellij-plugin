@@ -8,13 +8,13 @@ data class BpmnSequenceFlow(
         override val id: BpmnElementId,
         val name: String?,
         val documentation: String?,
-        val sourceRef: String,
-        val targetRef: String,
+        val sourceRef: String?, // can't be null in reality, but malformed XMLs should be editable too
+        val targetRef: String?, // can't be null in reality, but malformed XMLs should be editable too
         val conditionExpression: ConditionExpression?
 ): WithBpmnId
 
 @KotlinBuilder
 data class ConditionExpression(
-        val type: String,
-        val text: String
+        val type: String?, // can't be null in reality, but malformed XMLs should be editable too
+        val text: String? // can't be null in reality, but malformed XMLs should be editable too
 )

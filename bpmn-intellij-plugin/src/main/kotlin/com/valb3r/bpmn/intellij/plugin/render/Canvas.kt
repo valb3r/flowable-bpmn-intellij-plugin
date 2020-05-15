@@ -4,6 +4,8 @@ import com.google.common.cache.CacheBuilder
 import com.intellij.ui.EditorTextField
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.properties.PropertiesVisualizer
@@ -30,7 +32,6 @@ class Canvas: JPanel() {
     private val defaultCameraOrigin = Point2D.Float(0f, 0f)
     private val defaultZoomRatio = 1f
     private val stateProvider = currentStateProvider()
-    private val updateEvents = updateEventsRegistry()
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
@@ -67,7 +68,7 @@ class Canvas: JPanel() {
 
     fun click(location: Point2D.Float) {
         val clickedElements = elemsUnderCursor(location)
-        clickedElements.forEach { interactionCtx.clickCallbacks.get(it)?.invoke(updateEvents) }
+        clickedElements.forEach { interactionCtx.clickCallbacks.get(it)?.invoke(updateEventsRegistry()) }
 
         this.selectedElements.clear()
         interactionCtx = ElementInteractionContext(mutableSetOf(), mutableMapOf(), mutableMapOf(), emptySet(), Point2D.Float(), Point2D.Float())
@@ -80,7 +81,7 @@ class Canvas: JPanel() {
                 .elementByDiagramId[elementIdForPropertiesTable]
                 ?.let { elemId ->
                     stateProvider.currentState().elemPropertiesByStaticElementId[elemId]?.let { propertiesVisualizer?.visualize(elemId, it) }
-                }
+                } ?: propertiesVisualizer?.clear()
     }
 
     fun dragCanvas(start: Point2D.Float, current: Point2D.Float) {
@@ -171,7 +172,7 @@ class Canvas: JPanel() {
             interactionCtx = attractToAnchors(interactionCtx)
             val dx = interactionCtx.current.x - interactionCtx.start.x
             val dy = interactionCtx.current.y - interactionCtx.start.y
-            interactionCtx.draggedIds.forEach { interactionCtx.dragEndCallbacks[it]?.invoke(dx, dy, updateEvents) }
+            interactionCtx.draggedIds.forEach { interactionCtx.dragEndCallbacks[it]?.invoke(dx, dy, updateEventsRegistry(), bpmnElemsUnderDragCurrent()) }
         }
 
         interactionCtx = interactionCtx.copy(draggedIds = emptySet())
@@ -198,6 +199,20 @@ class Canvas: JPanel() {
 
     fun fromCameraView(point: Point2D.Float): Point2D.Float {
         return camera.fromCameraView(point)
+    }
+
+    private fun bpmnElemsUnderDragCurrent(): BpmnElementId? {
+        val onScreen = camera.toCameraView(interactionCtx.current)
+        val cursor = cursorRect(onScreen)
+        val elems = areaByElement?.filter { it.value.area.intersects(cursor) }
+
+        return elems?.map { stateProvider.currentState().elementByDiagramId[it.key] }
+                ?.filterNotNull()
+                ?.map { stateProvider.currentState().elementByStaticId[it] }
+                ?.filter { it !is BpmnSequenceFlow }
+                ?.filterNotNull()
+                ?.map { it.id }
+                ?.firstOrNull()
     }
 
     private fun elemsUnderCursor(cursorPoint: Point2D.Float): List<DiagramElementId> {

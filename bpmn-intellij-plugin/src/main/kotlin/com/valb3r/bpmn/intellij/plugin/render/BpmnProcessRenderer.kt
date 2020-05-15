@@ -6,6 +6,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.IdentifiableWaypoint
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.NAME
@@ -52,7 +54,7 @@ class BpmnProcessRenderer {
         return areaByElement
     }
 
-    private fun drawBpmnEdges(shapes: List<EdgeElementState>, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
+    private fun drawBpmnEdges(shapes: List<EdgeWithIdentifiableWaypoints>, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
         shapes.forEach {
             mergeArea(it.id, areaByElement, drawEdgeElement(canvas, it, renderMeta))
             if (isActive(it.id, renderMeta)) {
@@ -63,7 +65,6 @@ class BpmnProcessRenderer {
                 val deleteCallback = { dest: ProcessModelUpdateEvents -> dest.addElementRemovedEvent(DiagramElementRemovedEvent(it.id))}
                 val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback))
                 areaByElement += actionsElem
-                renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy))}
             }
         }
     }
@@ -87,7 +88,7 @@ class BpmnProcessRenderer {
                 }
                 val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
                 areaByElement += actionsElem
-                renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy))}
+                renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy, null, null))}
             }
         }
     }
@@ -106,7 +107,7 @@ class BpmnProcessRenderer {
         areas[id] = AreaWithZindex(target.area, area.dragCenter, target.areaType, target.anchorsForWaypoints, target.anchorsForShape, min(target.index, area.index), target.parentToSelect ?: area.parentToSelect)
     }
 
-    private fun drawEdgeElement(canvas: CanvasPainter, shape: EdgeElementState, meta: RenderMetadata): AreaWithZindex {
+    private fun drawEdgeElement(canvas: CanvasPainter, shape: EdgeWithIdentifiableWaypoints, meta: RenderMetadata): AreaWithZindex {
         val active = isActive(shape.id, meta)
         val area = Area()
 
@@ -122,7 +123,7 @@ class BpmnProcessRenderer {
         return AreaWithZindex(area, Point2D.Float(0.0f, 0.0f), AreaType.POINT, if (active) mutableSetOf() else trueWaypoints.map { Point2D.Float(it.x, it.y) }.toMutableSet())
     }
 
-    private fun drawWaypointElements(canvas: CanvasPainter, shape: EdgeElementState, meta: RenderMetadata): Map<DiagramElementId, AreaWithZindex> {
+    private fun drawWaypointElements(canvas: CanvasPainter, shape: EdgeWithIdentifiableWaypoints, meta: RenderMetadata): Map<DiagramElementId, AreaWithZindex> {
         val area = HashMap<DiagramElementId, AreaWithZindex>()
         val trueWaypoints = calculateTrueWaypoints(shape, meta)
         // draw all endpoints only if none virtual is dragged and not physical
@@ -139,24 +140,33 @@ class BpmnProcessRenderer {
         return area
     }
 
-    private fun drawWaypointAnchors(canvas: CanvasPainter, begin: WaypointElementState, end: WaypointElementState, parent: EdgeElementState, meta: RenderMetadata, isLast: Boolean, endWaypointIndex: Int): Map<DiagramElementId, AreaWithZindex> {
+    private fun drawWaypointAnchors(canvas: CanvasPainter, begin: IdentifiableWaypoint, end: IdentifiableWaypoint, parent: EdgeWithIdentifiableWaypoints, meta: RenderMetadata, isLast: Boolean, endWaypointIndex: Int): Map<DiagramElementId, AreaWithZindex> {
         val result = HashMap<DiagramElementId, AreaWithZindex>()
 
-        val dragCallback = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents, elem: WaypointElementState ->
+        val dragCallback = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents, elem: IdentifiableWaypoint, droppedOn: BpmnElementId? ->
+            val index = parent.waypoint.indexOf(elem)
             if (elem.physical) {
-                dest.addLocationUpdateEvent(DraggedToEvent(elem.id, dx, dy))
+                dest.addLocationUpdateEvent(DraggedToEvent(elem.id, dx, dy, parent.id, elem.internalPhysicalPos))
+                if (null != droppedOn && null != parent.bpmnElement) {
+                    if (parent.waypoint.size - 1 == index ) {
+                        dest.addPropertyUpdateEvent(StringValueUpdatedEvent(parent.bpmnElement!!, PropertyType.TARGET_REF, droppedOn.id))
+                    } else if (0 == index) {
+                        dest.addPropertyUpdateEvent(StringValueUpdatedEvent(parent.bpmnElement!!, PropertyType.SOURCE_REF, droppedOn.id))
+                    }
+                }
             } else {
                 dest.addWaypointStructureUpdate(NewWaypointsEvent(
                         parent.id,
                         parent.waypoint
                                 .filter { it.physical || it.id == elem.id }
-                                .map { if (it.id == elem.id && !it.physical) it.moveTo(dx, dy).asPhysical() else it.originalLocation() }
-                                .toList()
+                                .map { if (it.id == elem.id && !it.physical) it.moveTo(dx, dy).asPhysical() else it }
+                                .toList(),
+                        parent.epoch + 1
                 ))
             }
         }
 
-        val drawNode = { node: WaypointElementState, index: Int ->
+        val drawNode = { node: IdentifiableWaypoint, index: Int ->
             val translatedNode = translateElement(meta, node)
             val active = isActive(node.id, meta)
             val color = color(active, if (node.physical) Colors.WAYPOINT_COLOR else Colors.MID_WAYPOINT_COLOR)
@@ -169,15 +179,15 @@ class BpmnProcessRenderer {
                     ANCHOR_Z_INDEX,
                     parent.id
             )
-            meta.interactionContext.dragEndCallbacks[node.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, node)}
+            meta.interactionContext.dragEndCallbacks[node.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? -> dragCallback(dx, dy, dest, node, droppedOn)}
             if (active && node.physical && index > 0 && (index < parent.waypoint.size - 1)) {
                 val callback = { dest: ProcessModelUpdateEvents -> dest.addWaypointStructureUpdate(NewWaypointsEvent(
                         parent.id,
                         parent.waypoint
                                 .filter { it.physical }
                                 .filter { it.id != node.id }
-                                .map { it.originalLocation() }
-                                .toList()
+                                .toList(),
+                        parent.epoch + 1
                 ))}
                 result += drawActionsElement(canvas, translatedNode, meta.interactionContext, mapOf(Actions.DELETE to callback))
             }
@@ -190,15 +200,15 @@ class BpmnProcessRenderer {
         }
 
         drawNode(begin, endWaypointIndex - 1)
-        meta.interactionContext.dragEndCallbacks[begin.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, begin)}
+        meta.interactionContext.dragEndCallbacks[begin.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? -> dragCallback(dx, dy, dest, begin, droppedOn)}
         return result
     }
 
-    private fun calculateTrueWaypoints(shape: EdgeElementState, meta: RenderMetadata): List<WaypointElementState> {
+    private fun calculateTrueWaypoints(shape: EdgeWithIdentifiableWaypoints, meta: RenderMetadata): List<IdentifiableWaypoint> {
         return shape.waypoint.filter { it.physical || isActive(it.id, meta) }
     }
 
-    private fun drawEdge(canvas: CanvasPainter, begin: WaypointElementState, end: WaypointElementState, meta: RenderMetadata, color: Color, isLast: Boolean): Area {
+    private fun drawEdge(canvas: CanvasPainter, begin: IdentifiableWaypoint, end: IdentifiableWaypoint, meta: RenderMetadata, color: Color, isLast: Boolean): Area {
         val translatedBegin = translateElement(meta, begin)
         val translatedEnd = translateElement(meta, end)
         if (isLast) {
@@ -326,7 +336,7 @@ class BpmnProcessRenderer {
         return elemId.let { meta.selectedIds.contains(it) }
     }
 
-    private fun drawActionsElement(canvas: CanvasPainter, edge: EdgeElementState, ctx: ElementInteractionContext, actions: Map<Actions, (dest: ProcessModelUpdateEvents) -> Unit>): Map<DiagramElementId, AreaWithZindex> {
+    private fun drawActionsElement(canvas: CanvasPainter, edge: EdgeWithIdentifiableWaypoints, ctx: ElementInteractionContext, actions: Map<Actions, (dest: ProcessModelUpdateEvents) -> Unit>): Map<DiagramElementId, AreaWithZindex> {
         val minX = edge.waypoint.minBy { it.x }?.x ?: 0.0f
         val minY = edge.waypoint.minBy { it.y }?.y ?: 0.0f
         val maxX = edge.waypoint.maxBy { it.x }?.x ?: 0.0f
@@ -342,7 +352,7 @@ class BpmnProcessRenderer {
         )
     }
 
-    private fun drawActionsElement(canvas: CanvasPainter, waypoint: WaypointElementState, ctx: ElementInteractionContext, actions: Map<Actions, (dest: ProcessModelUpdateEvents) -> Unit>): Map<DiagramElementId, AreaWithZindex> {
+    private fun drawActionsElement(canvas: CanvasPainter, waypoint: IdentifiableWaypoint, ctx: ElementInteractionContext, actions: Map<Actions, (dest: ProcessModelUpdateEvents) -> Unit>): Map<DiagramElementId, AreaWithZindex> {
         return drawActionsElement(
                 canvas,
                 waypoint.id,
