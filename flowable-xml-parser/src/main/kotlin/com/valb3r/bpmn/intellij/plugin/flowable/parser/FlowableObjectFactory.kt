@@ -131,7 +131,8 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     private fun bounds(forBpmnObject: WithBpmnId): BoundsElement {
         return when(forBpmnObject) {
-            is BpmnStartEvent, is BpmnEndEvent, is BpmnExclusiveGateway -> BoundsElement(0.0f, 0.0f, 40.0f, 40.0f)
+            is BpmnStartEvent, is BpmnEndEvent -> BoundsElement(0.0f, 0.0f, 30.0f, 30.0f)
+            is BpmnExclusiveGateway -> BoundsElement(0.0f, 0.0f, 40.0f, 40.0f)
             else -> BoundsElement(0.0f, 0.0f, 100.0f, 80.0f)
         }
     }

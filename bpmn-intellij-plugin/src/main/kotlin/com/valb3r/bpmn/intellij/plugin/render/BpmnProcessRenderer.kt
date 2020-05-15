@@ -62,7 +62,10 @@ class BpmnProcessRenderer {
                     mergeArea(waypoint.key, areaByElement, waypoint.value)
                 }
 
-                val deleteCallback = { dest: ProcessModelUpdateEvents -> dest.addElementRemovedEvent(DiagramElementRemovedEvent(it.id))}
+                val deleteCallback = { dest: ProcessModelUpdateEvents ->
+                    it.bpmnElement?.apply { dest.addElementRemovedEvent(BpmnElementRemovedEvent(this)) }
+                    dest.addElementRemovedEvent(DiagramElementRemovedEvent(it.id))
+                }
                 val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback))
                 areaByElement += actionsElem
             }
@@ -73,7 +76,10 @@ class BpmnProcessRenderer {
         shapes.forEach {
             mergeArea(it.id, areaByElement, drawShapeElement(canvas, it, renderMeta))
             if (isActive(it.id, renderMeta)) {
-                val deleteCallback = { dest: ProcessModelUpdateEvents -> dest.addElementRemovedEvent(DiagramElementRemovedEvent(it.id))}
+                val deleteCallback = { dest: ProcessModelUpdateEvents ->
+                    dest.addElementRemovedEvent(DiagramElementRemovedEvent(it.id))
+                    dest.addElementRemovedEvent(BpmnElementRemovedEvent(it.bpmnElement))
+                }
                 val newSequenceCallback = { dest: ProcessModelUpdateEvents ->
                     val elem = renderMeta.elementById[it.bpmnElement]
                     if (null != elem) {

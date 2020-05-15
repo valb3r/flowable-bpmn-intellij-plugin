@@ -42,8 +42,9 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
     @JacksonXmlProperty(isAttribute = true) var name: String? = null // it is false - it is non-null
     var documentation: String? = null
     @JacksonXmlProperty(isAttribute = true) var isExecutable: Boolean? = null
-    var startEvent: StartEventNode? = null  // it is false - it is non-null
-    val endEvent: EndEventNode? = null  // it is false - it is non-null
+
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var startEvent: List<StartEventNode>? = null  // need to validate how there can be multiple, and - it is non-null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val endEvent: List<EndEventNode>? = null  // need to validate how there can be multiple, and - it is non-null
 
     // Particularly problematic element section
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var callActivity: List<CallActivity>? = null

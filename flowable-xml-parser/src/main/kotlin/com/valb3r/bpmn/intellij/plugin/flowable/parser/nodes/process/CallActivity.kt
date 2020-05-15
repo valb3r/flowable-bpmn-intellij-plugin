@@ -12,7 +12,7 @@ data class CallActivity(
         @JacksonXmlProperty(isAttribute = true) val name: String?,
         @JacksonXmlProperty(isAttribute = true) val documentation: String?,
         @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val calledElement: String,
+        @JacksonXmlProperty(isAttribute = true) val calledElement: String?,
         @JacksonXmlProperty(isAttribute = true) val calledElementType: String?,
         @JacksonXmlProperty(isAttribute = true) val inheritVariables: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val fallbackToDefaultTenant: Boolean?,

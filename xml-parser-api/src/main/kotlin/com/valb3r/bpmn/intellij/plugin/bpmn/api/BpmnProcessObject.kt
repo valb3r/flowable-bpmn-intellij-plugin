@@ -16,8 +16,8 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         val elementByStaticId = mutableMapOf<BpmnElementId, WithBpmnId>()
         val propertiesById = mutableMapOf<BpmnElementId, MutableMap<PropertyType, Property>>()
 
-        fillFor(factory, process.startEvent, elementByStaticId, propertiesById)
-        fillFor(factory, process.endEvent, elementByStaticId, propertiesById)
+        process.startEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.endEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.callActivity?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.serviceTask?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.sequenceFlow?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }

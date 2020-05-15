@@ -9,10 +9,10 @@ data class BpmnProcess(
         val name: String,
         val documentation: String?,
         val isExecutable: Boolean?,
-        val startEvent: BpmnStartEvent,
+        val startEvent: List<BpmnStartEvent>?,
         val callActivity: List<BpmnCallActivity>?,
         val serviceTask: List<BpmnServiceTask>?,
         val sequenceFlow: List<BpmnSequenceFlow>?,
         val exclusiveGateway: List<BpmnExclusiveGateway>?,
-        val endEvent: BpmnEndEvent
+        val endEvent: List<BpmnEndEvent>?
 )
