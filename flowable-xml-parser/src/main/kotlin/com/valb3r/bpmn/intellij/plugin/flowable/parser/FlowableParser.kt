@@ -334,7 +334,7 @@ class FlowableParser : BpmnParser {
                 if (null == value ) {
                     return
                 }
-                
+
                 val newElem = doc.createElement(name)
                 currentNode.appendChild(newElem)
                 currentNode = newElem

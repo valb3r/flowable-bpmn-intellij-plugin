@@ -88,7 +88,7 @@ class BpmnProcessRenderer {
                 }
                 val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
                 areaByElement += actionsElem
-                renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy, null, null))}
+                renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy, null, null))}
             }
         }
     }
@@ -143,9 +143,17 @@ class BpmnProcessRenderer {
     private fun drawWaypointAnchors(canvas: CanvasPainter, begin: IdentifiableWaypoint, end: IdentifiableWaypoint, parent: EdgeWithIdentifiableWaypoints, meta: RenderMetadata, isLast: Boolean, endWaypointIndex: Int): Map<DiagramElementId, AreaWithZindex> {
         val result = HashMap<DiagramElementId, AreaWithZindex>()
 
-        val dragCallback = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents, elem: IdentifiableWaypoint ->
+        val dragCallback = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents, elem: IdentifiableWaypoint, droppedOn: BpmnElementId? ->
+            val index = parent.waypoint.indexOf(elem)
             if (elem.physical) {
                 dest.addLocationUpdateEvent(DraggedToEvent(elem.id, dx, dy, parent.id, elem.internalPhysicalPos))
+                if (null != droppedOn && null != parent.bpmnElement) {
+                    if (parent.waypoint.size - 1 == index ) {
+                        dest.addPropertyUpdateEvent(StringValueUpdatedEvent(parent.bpmnElement!!, PropertyType.TARGET_REF, droppedOn.id))
+                    } else if (0 == index) {
+                        dest.addPropertyUpdateEvent(StringValueUpdatedEvent(parent.bpmnElement!!, PropertyType.SOURCE_REF, droppedOn.id))
+                    }
+                }
             } else {
                 dest.addWaypointStructureUpdate(NewWaypointsEvent(
                         parent.id,
@@ -171,7 +179,7 @@ class BpmnProcessRenderer {
                     ANCHOR_Z_INDEX,
                     parent.id
             )
-            meta.interactionContext.dragEndCallbacks[node.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, node)}
+            meta.interactionContext.dragEndCallbacks[node.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? -> dragCallback(dx, dy, dest, node, droppedOn)}
             if (active && node.physical && index > 0 && (index < parent.waypoint.size - 1)) {
                 val callback = { dest: ProcessModelUpdateEvents -> dest.addWaypointStructureUpdate(NewWaypointsEvent(
                         parent.id,
@@ -192,7 +200,7 @@ class BpmnProcessRenderer {
         }
 
         drawNode(begin, endWaypointIndex - 1)
-        meta.interactionContext.dragEndCallbacks[begin.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents -> dragCallback(dx, dy, dest, begin)}
+        meta.interactionContext.dragEndCallbacks[begin.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? -> dragCallback(dx, dy, dest, begin, droppedOn)}
         return result
     }
 
