@@ -301,7 +301,6 @@ class FlowableParser : BpmnParser {
     private fun applyPropertyUpdateWithId(doc: Document, update: PropertyUpdateWithId) {
         if (update.property.cascades) {
             applyCascadedPropertyUpdateWithId(doc, update)
-            return
         }
 
         val xpath = xpathFactory.newXPath()
@@ -321,8 +320,8 @@ class FlowableParser : BpmnParser {
 
          PropertyType.values()
                  .filter { it.updatedBy == update.property }
-                 .forEach {
-                     val details = PropertyTypeDetails.values().filter { it.propertyType.updatedBy == update.property }.firstOrNull()!!
+                 .forEach { type ->
+                     val details = PropertyTypeDetails.values().firstOrNull { it.propertyType == type }!!
                      val xpath = xpathFactory.newXPath()
                      val nodes = xpath.evaluate(
                              "//process/*[@${details.xmlPath}='${update.referencedValue as String}']",
