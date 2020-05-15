@@ -18,6 +18,18 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+      <p>0.1.0-b0:</p>
+      <ul>
+        <li>
+          MVP baseline release.
+        </li>
+        <li>
+          Support for BPMN diagram editing
+        </li>
+        <li>
+          Support for BPMN properties editing.
+        </li>
+      </ul>
       <p>0.0.1:</p>
       <ul>
         <li>
