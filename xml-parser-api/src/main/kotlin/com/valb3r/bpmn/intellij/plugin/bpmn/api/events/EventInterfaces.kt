@@ -61,7 +61,7 @@ interface IdentifiableWaypoint: Translatable<IdentifiableWaypoint>, WithDiagramI
     val origX: Float
     val origY: Float
     val physical: Boolean
-    val internalPos: Int
+    val internalPhysicalPos: Int
 
     fun moveTo(dx: Float, dy: Float): IdentifiableWaypoint
     fun asPhysical(): IdentifiableWaypoint

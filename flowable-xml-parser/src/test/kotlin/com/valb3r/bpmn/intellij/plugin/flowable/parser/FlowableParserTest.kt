@@ -174,7 +174,7 @@ data class WaypointElementState (
         override val origX: Float,
         override val origY: Float,
         override val physical: Boolean,
-        override val internalPos: Int
+        override val internalPhysicalPos: Int
 ): IdentifiableWaypoint {
 
     override fun moveTo(dx: Float, dy: Float): IdentifiableWaypoint {

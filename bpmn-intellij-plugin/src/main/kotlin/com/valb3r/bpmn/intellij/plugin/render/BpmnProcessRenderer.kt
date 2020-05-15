@@ -145,7 +145,7 @@ class BpmnProcessRenderer {
 
         val dragCallback = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents, elem: IdentifiableWaypoint ->
             if (elem.physical) {
-                dest.addLocationUpdateEvent(DraggedToEvent(elem.id, dx, dy, parent.id, elem.internalPos))
+                dest.addLocationUpdateEvent(DraggedToEvent(elem.id, dx, dy, parent.id, elem.internalPhysicalPos))
             } else {
                 dest.addWaypointStructureUpdate(NewWaypointsEvent(
                         parent.id,

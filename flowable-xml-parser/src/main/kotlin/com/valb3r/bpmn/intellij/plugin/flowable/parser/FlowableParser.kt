@@ -160,7 +160,7 @@ class FlowableParser : BpmnParser {
         toRemove.forEach { node.removeChild(it) }
         trimWhitespace(node)
 
-        update.waypoints.filter { it.physical }.sortedBy { it.internalPos }.forEach {
+        update.waypoints.filter { it.physical }.sortedBy { it.internalPhysicalPos }.forEach {
             newWaypoint(doc, it, node)
         }
     }
