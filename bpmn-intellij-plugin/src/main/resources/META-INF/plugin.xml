@@ -12,7 +12,7 @@
 
     <!-- Description of the plugin. -->
     <description><![CDATA[
-      <p>A plugin Flowable BPMN diagram with code navigation.</p>
+      <p>A plugin to visualize Flowable BPMN diagrams with code navigation support</p>
     ]]></description>
 
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
@@ -42,7 +42,7 @@
           Support navigating from BPMN diagram to <code>Spring beans</code>.
         </li>
         <li>
-          Suppport drawing BPMN diagrams from Flowable XML format.
+          Support drawing BPMN diagrams from Flowable XML format.
         </li>
       </ul>
     ]]></change-notes>

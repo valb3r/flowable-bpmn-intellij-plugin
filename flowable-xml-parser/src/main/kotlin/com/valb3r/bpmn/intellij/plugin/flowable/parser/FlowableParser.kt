@@ -19,6 +19,7 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnFile
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
+import org.w3c.dom.NodeList
 import java.io.*
 import java.nio.charset.StandardCharsets.UTF_8
 import javax.xml.parsers.DocumentBuilderFactory
@@ -298,6 +299,11 @@ class FlowableParser : BpmnParser {
     }
 
     private fun applyPropertyUpdateWithId(doc: Document, update: PropertyUpdateWithId) {
+        if (update.property.cascades) {
+            applyCascadedPropertyUpdateWithId(doc, update)
+            return
+        }
+
         val xpath = xpathFactory.newXPath()
         val node = xpath.evaluate(
                 "//process/*[@id='${update.bpmnElementId.id}'][1]",
@@ -306,6 +312,28 @@ class FlowableParser : BpmnParser {
         ) as Element
 
         setToNode(doc, node, update.property, update.newValue)
+    }
+
+    private fun applyCascadedPropertyUpdateWithId(doc: Document, update: PropertyUpdateWithId) {
+        if (null == update.referencedValue) {
+            throw NullPointerException("Referenced value for cascaded is missing")
+        }
+
+         PropertyType.values()
+                 .filter { it.updatedBy == update.property }
+                 .forEach {
+                     val details = PropertyTypeDetails.values().filter { it.propertyType.updatedBy == update.property }.firstOrNull()!!
+                     val xpath = xpathFactory.newXPath()
+                     val nodes = xpath.evaluate(
+                             "//process/*[@${details.xmlPath}='${update.referencedValue as String}']",
+                             doc,
+                             XPathConstants.NODESET
+                     ) as NodeList
+
+                     for (pos in 0 until nodes.length) {
+                         setToNode(doc, nodes.item(pos) as Element, details.propertyType, update.newValue)
+                     }
+                 }
     }
 
 

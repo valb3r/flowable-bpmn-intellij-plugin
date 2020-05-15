@@ -8,9 +8,19 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 
-data class StringValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: String): PropertyUpdateWithId
+data class StringValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: String, override val referencedValue: String? = null): PropertyUpdateWithId {
 
-data class BooleanValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: Boolean): PropertyUpdateWithId
+    override fun forCascadeTo(property: PropertyType): PropertyUpdateWithId {
+        return this.copy(property = property)
+    }
+}
+
+data class BooleanValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: Boolean, override val referencedValue: Boolean? = null): PropertyUpdateWithId {
+
+    override fun forCascadeTo(property: PropertyType): PropertyUpdateWithId {
+        return this.copy(property = property)
+    }
+}
 
 data class DraggedToEvent(override val diagramElementId: DiagramElementId, override val dx: Float, override val dy: Float, override val parentElementId: DiagramElementId?, override val internalPos: Int?): LocationUpdateWithId
 
