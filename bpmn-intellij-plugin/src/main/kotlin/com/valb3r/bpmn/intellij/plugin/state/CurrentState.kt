@@ -75,8 +75,7 @@ class CurrentStateProvider {
         allProperties.forEach { prop ->
             updatedProperties[prop.key] = prop.value.toMutableMap()
             updateEventsRegistry().currentPropertyUpdateEventList(prop.key)
-                    .map { it.event }
-                    .filter { !it.property.cascades } // UI related properties do not cascade, filtering it out for simplicity
+                    .map { it.event } // UI related properties do not cascade and ids is handled properly, filtering it out for simplicity
                     .filterIsInstance<StringValueUpdatedEvent>()
                     .forEach { updatedProperties[prop.key]?.set(it.property, Property(it.newValue)) }
         }
