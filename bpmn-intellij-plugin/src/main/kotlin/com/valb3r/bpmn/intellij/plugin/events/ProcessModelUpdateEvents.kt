@@ -70,6 +70,10 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val file:
         }
     }
 
+    fun updateEventList(): List<Order<out Event>> {
+        return updates.toList()
+    }
+
     fun addPropertyUpdateEvent(event: PropertyUpdateWithId) {
         val toStore = Order(order.getAndIncrement(), event)
         updates.add(toStore)

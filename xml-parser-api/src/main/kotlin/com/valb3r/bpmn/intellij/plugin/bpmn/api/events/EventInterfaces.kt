@@ -55,8 +55,7 @@ interface PropertyUpdateWithId: Event {
     val property: PropertyType
     val newValue: Any
     val referencedValue: Any?
-
-    fun forCascadeTo(property: PropertyType): PropertyUpdateWithId
+    val newIdValue: BpmnElementId?
 }
 
 interface IdentifiableWaypoint: Translatable<IdentifiableWaypoint>, WithDiagramId {
