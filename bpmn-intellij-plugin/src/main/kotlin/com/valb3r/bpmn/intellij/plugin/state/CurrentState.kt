@@ -149,8 +149,16 @@ class CurrentStateProvider {
     ) {
         val shape = updatedShapes.find { it.bpmnElement == elementId }
         val edge = updatedEdges.find { it.bpmnElement == elementId }
-        shape?.let { updatedElementByDiagramId.remove(it.id); updatedShapes.add(it.copy(bpmnElement = newElementId)) }
-        edge?.let { updatedElementByDiagramId.remove(it.id); updatedEdges.add(it.updateBpmnElemId(newElementId)) }
+        shape?.let {
+            updatedShapes.remove(it)
+            updatedElementByDiagramId[it.id] = newElementId
+            updatedShapes.add(it.copy(bpmnElement = newElementId))
+        }
+        edge?.let {
+            updatedEdges.remove(it)
+            updatedElementByDiagramId[it.id] = newElementId
+            updatedEdges.add(it.updateBpmnElemId(newElementId))
+        }
         val elemByStaticIdUpdated = updatedElementByStaticId.remove(elementId)
         elemByStaticIdUpdated?.let { updatedElementByStaticId[newElementId] = it }
         val elemPropUpdated = updatedElemPropertiesByStaticElementId.remove(elementId)?.toMutableMap() ?: mutableMapOf()
