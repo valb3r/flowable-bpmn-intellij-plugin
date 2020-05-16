@@ -311,6 +311,18 @@ class FlowableParser : BpmnParser {
         ) as Element
 
         setToNode(doc, node, update.property, update.newValue)
+
+        if (null == update.newIdValue) {
+            return
+        }
+
+        val diagramElement = xpath.evaluate(
+                "//BPMNDiagram/BPMNPlane[1]/*[@bpmnElement='${update.bpmnElementId.id}']",
+                doc,
+                XPathConstants.NODE
+        ) as Element
+
+        diagramElement.setAttribute("bpmnElement", update.newIdValue!!.id)
     }
 
     private fun applyCascadedPropertyUpdateWithId(doc: Document, update: PropertyUpdateWithId) {
