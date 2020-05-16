@@ -208,7 +208,7 @@ class Canvas: JPanel() {
 
         return elems?.map { stateProvider.currentState().elementByDiagramId[it.key] }
                 ?.filterNotNull()
-                ?.map { stateProvider.currentState().elementByStaticId[it] }
+                ?.map { stateProvider.currentState().elementByBpmnId[it] }
                 ?.filter { it !is BpmnSequenceFlow }
                 ?.filterNotNull()
                 ?.map { it.id }

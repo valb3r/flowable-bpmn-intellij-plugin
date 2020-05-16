@@ -28,7 +28,7 @@ data class CurrentState(
         val shapes: List<ShapeElement>,
         val edges: List<EdgeWithIdentifiableWaypoints>,
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
-        val elementByStaticId: Map<BpmnElementId, WithBpmnId>,
+        val elementByBpmnId: Map<BpmnElementId, WithBpmnId>,
         val elemPropertiesByStaticElementId: Map<BpmnElementId, Map<PropertyType, Property>>
 )
 
@@ -57,7 +57,7 @@ class CurrentStateProvider {
         var updatedShapes = state.shapes.toMutableList()
         var updatedEdges = state.edges.toMutableList()
         val updatedElementByDiagramId = state.elementByDiagramId.toMutableMap()
-        val updatedElementByStaticId = state.elementByStaticId.toMutableMap()
+        val updatedElementByStaticId = state.elementByBpmnId.toMutableMap()
         val updatedElemPropertiesByStaticElementId = state.elemPropertiesByStaticElementId.toMutableMap()
 
         val updates = updateEventsRegistry().updateEventList()
@@ -159,8 +159,8 @@ class CurrentStateProvider {
             updatedElementByDiagramId[it.id] = newElementId
             updatedEdges.add(it.updateBpmnElemId(newElementId))
         }
-        val elemByStaticIdUpdated = updatedElementByStaticId.remove(elementId)
-        elemByStaticIdUpdated?.let { updatedElementByStaticId[newElementId] = it }
+        val elemByBpmnIdUpdated = updatedElementByStaticId.remove(elementId)
+        elemByBpmnIdUpdated?.let { updatedElementByStaticId[newElementId] = it.updateBpmnElemId(newElementId) }
         val elemPropUpdated = updatedElemPropertiesByStaticElementId.remove(elementId)?.toMutableMap() ?: mutableMapOf()
         elemPropUpdated[PropertyType.ID] = Property(newElementId.id)
         updatedElemPropertiesByStaticElementId[newElementId] = elemPropUpdated
