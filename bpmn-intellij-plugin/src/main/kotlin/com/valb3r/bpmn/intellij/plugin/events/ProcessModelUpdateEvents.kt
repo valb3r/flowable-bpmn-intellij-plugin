@@ -43,6 +43,7 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val file:
     @Synchronized
     fun reset() {
         order.set(0)
+        updates.clear()
         fileCommitListeners.clear()
         parentCreatesByStaticId.clear()
         locationUpdatesByStaticId.clear()

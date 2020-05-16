@@ -52,6 +52,10 @@ data class EdgeElementState  (
     fun childWaypointId(start: IdentifiableWaypoint, end: IdentifiableWaypoint): String {
         return Hashing.md5().hashString(start.id.id + ":" + end.id.id, UTF_8).toString()
     }
+
+    override fun updateBpmnElemId(newId: BpmnElementId): EdgeElementState {
+        return copy(bpmnElement = newId)
+    }
 }
 
 data class WaypointElementState (

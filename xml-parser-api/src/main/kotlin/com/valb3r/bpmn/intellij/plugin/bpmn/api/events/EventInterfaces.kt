@@ -76,4 +76,6 @@ interface EdgeWithIdentifiableWaypoints: WithDiagramId {
     val bpmnElement: BpmnElementId?
     val waypoint: MutableList<IdentifiableWaypoint>
     val epoch: Int
+
+    fun updateBpmnElemId(newId: BpmnElementId): EdgeWithIdentifiableWaypoints
 }

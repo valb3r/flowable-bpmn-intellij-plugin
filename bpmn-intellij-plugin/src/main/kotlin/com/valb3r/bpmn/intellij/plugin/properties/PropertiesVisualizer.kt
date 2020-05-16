@@ -64,7 +64,15 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
 
         listenersForCurrentView.add {
             if (initialValue != field.text) {
-                updateEventsRegistry().addPropertyUpdateEvent(StringValueUpdatedEvent(bpmnElementId, type, field.text, if (type.cascades) initialValue else null))
+                updateEventsRegistry().addPropertyUpdateEvent(
+                        StringValueUpdatedEvent(
+                                bpmnElementId,
+                                type,
+                                field.text,
+                                if (type.cascades) initialValue else null,
+                                if (type == PropertyType.ID) BpmnElementId(field.text) else null
+                        )
+                )
             }
         }
         return field

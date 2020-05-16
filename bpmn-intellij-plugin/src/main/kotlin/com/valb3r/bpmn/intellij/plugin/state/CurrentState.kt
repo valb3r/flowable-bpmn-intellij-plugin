@@ -72,20 +72,10 @@ class CurrentStateProvider {
                     updatedEdges = updatedEdges.map { edge -> if (edge.id == event.edgeElementId) updateWaypointLocation(edge, event) else edge }.toMutableList()
                 }
                 is BpmnElementRemoved -> {
-                    val shape = updatedShapes.find { it.bpmnElement == event.elementId }
-                    val edge = updatedEdges.find { it.bpmnElement == event.elementId }
-                    shape?.let { updatedElementByDiagramId.remove(it.id); updatedShapes.remove(it) }
-                    edge?.let { updatedElementByDiagramId.remove(it.id); updatedEdges.remove(it) }
-                    updatedElementByStaticId.remove(event.elementId)
-                    updatedElemPropertiesByStaticElementId.remove(event.elementId)
+                    handleRemoved(event.elementId, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
                 }
                 is DiagramElementRemoved -> {
-                    val shape = updatedShapes.find { it.id == event.elementId }
-                    val edge = updatedEdges.find { it.id == event.elementId }
-                    shape?.let { updatedElementByDiagramId.remove(it.id); updatedShapes.remove(it) }
-                    edge?.let { updatedElementByDiagramId.remove(it.id); updatedEdges.remove(it) }
-                    updatedElementByDiagramId.remove(event.elementId)
-                    updatedElementByDiagramId.remove(event.elementId)
+                    handleDiagramRemoved(event.elementId, updatedShapes, updatedEdges, updatedElementByDiagramId)
                 }
                 is BpmnShapeObjectAdded -> {
                     updatedShapes.add(event.shape)
@@ -100,9 +90,11 @@ class CurrentStateProvider {
                     updatedElemPropertiesByStaticElementId[event.bpmnObject.id] = event.props
                 }
                 is PropertyUpdateWithId -> {
-                    val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId]?.toMutableMap() ?: mutableMapOf()
-                    updated.set(event.property, Property(event.newValue))
-                    updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
+                    if (null == event.newIdValue) {
+                        updateProperty(event, updatedElemPropertiesByStaticElementId)
+                    } else {
+                        updateId(event.bpmnElementId, event.newIdValue!!, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
+                    }
                 }
             }
         }
@@ -114,6 +106,56 @@ class CurrentStateProvider {
                 updatedElementByStaticId,
                 updatedElemPropertiesByStaticElementId
         )
+    }
+
+    private fun updateProperty(event: PropertyUpdateWithId, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>>) {
+        val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId]?.toMutableMap() ?: mutableMapOf()
+        updated[event.property] = Property(event.newValue)
+        updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
+    }
+
+    private fun handleDiagramRemoved(diagramId: DiagramElementId, updatedShapes: MutableList<ShapeElement>, updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>, updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>) {
+        val shape = updatedShapes.find { it.id == diagramId }
+        val edge = updatedEdges.find { it.id == diagramId }
+        shape?.let { updatedElementByDiagramId.remove(it.id); updatedShapes.remove(it) }
+        edge?.let { updatedElementByDiagramId.remove(it.id); updatedEdges.remove(it) }
+        updatedElementByDiagramId.remove(diagramId)
+    }
+
+    private fun handleRemoved(
+            elementId: BpmnElementId,
+            updatedShapes: MutableList<ShapeElement>,
+            updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>,
+            updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>,
+            updatedElementByStaticId: MutableMap<BpmnElementId, WithBpmnId>,
+            updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>>
+    ) {
+        val shape = updatedShapes.find { it.bpmnElement == elementId }
+        val edge = updatedEdges.find { it.bpmnElement == elementId }
+        shape?.let { updatedElementByDiagramId.remove(it.id); updatedShapes.remove(it) }
+        edge?.let { updatedElementByDiagramId.remove(it.id); updatedEdges.remove(it) }
+        updatedElementByStaticId.remove(elementId)
+        updatedElemPropertiesByStaticElementId.remove(elementId)
+    }
+
+    private fun updateId(
+            elementId: BpmnElementId,
+            newElementId: BpmnElementId,
+            updatedShapes: MutableList<ShapeElement>,
+            updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>,
+            updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>,
+            updatedElementByStaticId: MutableMap<BpmnElementId, WithBpmnId>,
+            updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>>
+    ) {
+        val shape = updatedShapes.find { it.bpmnElement == elementId }
+        val edge = updatedEdges.find { it.bpmnElement == elementId }
+        shape?.let { updatedElementByDiagramId.remove(it.id); updatedShapes.add(it.copy(bpmnElement = newElementId)) }
+        edge?.let { updatedElementByDiagramId.remove(it.id); updatedEdges.add(it.updateBpmnElemId(newElementId)) }
+        val elemByStaticIdUpdated = updatedElementByStaticId.remove(elementId)
+        elemByStaticIdUpdated?.let { updatedElementByStaticId[newElementId] = it }
+        val elemPropUpdated = updatedElemPropertiesByStaticElementId.remove(elementId)?.toMutableMap() ?: mutableMapOf()
+        elemPropUpdated[PropertyType.ID] = Property(newElementId.id)
+        updatedElemPropertiesByStaticElementId[newElementId] = elemPropUpdated
     }
 
     private fun updateWaypointLocation(elem: ShapeElement, update: LocationUpdateWithId): ShapeElement {

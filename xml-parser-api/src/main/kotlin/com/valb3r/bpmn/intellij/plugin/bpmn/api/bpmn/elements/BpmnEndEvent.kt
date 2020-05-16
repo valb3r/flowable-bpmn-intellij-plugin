@@ -8,4 +8,9 @@ data class BpmnEndEvent(
         override val id: BpmnElementId,
         val name: String?,
         val documentation: String?
-): WithBpmnId
+): WithBpmnId {
+
+    override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
+        return copy(id = newId)
+    }
+}

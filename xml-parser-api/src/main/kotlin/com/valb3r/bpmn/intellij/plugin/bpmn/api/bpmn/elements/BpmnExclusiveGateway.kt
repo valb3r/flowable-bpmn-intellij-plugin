@@ -9,4 +9,9 @@ data class BpmnExclusiveGateway(
         val name: String?,
         val defaultElement: String?,
         val documentation: String?
-): WithBpmnId
+): WithBpmnId {
+
+    override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
+        return copy(id = newId)
+    }
+}
