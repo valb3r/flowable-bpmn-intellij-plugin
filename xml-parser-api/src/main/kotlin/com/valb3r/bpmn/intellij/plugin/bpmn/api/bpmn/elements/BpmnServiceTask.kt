@@ -12,4 +12,9 @@ data class BpmnServiceTask(
         val exclusive: Boolean?,
         val delegateExpression: String?,
         val triggerable: Boolean?
-): WithBpmnId
+): WithBpmnId {
+
+    override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
+        return copy(id = newId)
+    }
+}

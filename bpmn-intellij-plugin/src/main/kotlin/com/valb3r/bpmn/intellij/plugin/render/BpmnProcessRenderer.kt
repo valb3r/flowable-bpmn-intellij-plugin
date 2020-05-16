@@ -43,7 +43,7 @@ class BpmnProcessRenderer {
                 ctx.interactionContext,
                 ctx.selectedIds,
                 state.elementByDiagramId,
-                state.elementByStaticId,
+                state.elementByBpmnId,
                 state.elemPropertiesByStaticElementId
         )
 

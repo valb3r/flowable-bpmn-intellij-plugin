@@ -4,4 +4,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 
 interface WithBpmnId {
     val id: BpmnElementId
+
+    fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId
 }

@@ -31,6 +31,7 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val file:
 
     private val order: AtomicLong = AtomicLong()
     private val fileCommitListeners: MutableList<Any> = ArrayList()
+    private val broadcastPropertyEvents: MutableList<Order<PropertyUpdateWithId>> = CopyOnWriteArrayList()
     private val parentCreatesByStaticId: MutableMap<DiagramElementId, MutableList<Order<out Event>>> = ConcurrentHashMap()
     private val locationUpdatesByStaticId: MutableMap<DiagramElementId, MutableList<Order<out Event>>> = ConcurrentHashMap()
     private val propertyUpdatesByStaticId: MutableMap<BpmnElementId, MutableList<Order<out Event>>> = ConcurrentHashMap()
@@ -42,6 +43,7 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val file:
     @Synchronized
     fun reset() {
         order.set(0)
+        updates.clear()
         fileCommitListeners.clear()
         parentCreatesByStaticId.clear()
         locationUpdatesByStaticId.clear()
@@ -50,6 +52,7 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val file:
         newDiagramElements.clear()
         deletionsByStaticId.clear()
         deletionsByStaticBpmnId.clear()
+        broadcastPropertyEvents.clear()
     }
 
     fun commitToFile() {
@@ -68,10 +71,19 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val file:
         }
     }
 
+    fun updateEventList(): List<Order<out Event>> {
+        return updates.toList()
+    }
+
     fun addPropertyUpdateEvent(event: PropertyUpdateWithId) {
         val toStore = Order(order.getAndIncrement(), event)
         updates.add(toStore)
         propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
+
+        if (event.property.cascades) {
+            broadcastPropertyEvents.add(toStore)
+        }
+
         commitToFile()
     }
 
@@ -115,6 +127,17 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val file:
         updates.add(toStore)
         newDiagramElements.add(toStore)
         commitToFile()
+    }
+
+    fun currentPropertyUpdateEventListWithCascaded(elementId: BpmnElementId): List<EventOrder<PropertyUpdateWithId>> {
+        val latestRemoval = lastDeletion(elementId)
+        val allEvents = propertyUpdatesByStaticId
+                .getOrDefault(elementId, emptyList<Order<PropertyUpdateWithId>>())
+                .filterIsInstance<Order<PropertyUpdateWithId>>()
+                .toMutableList();
+        allEvents.addAll(broadcastPropertyEvents)
+
+        return allEvents.filter { it.order >  latestRemoval.order}
     }
 
     fun currentPropertyUpdateEventList(elementId: BpmnElementId): List<EventOrder<PropertyUpdateWithId>> {

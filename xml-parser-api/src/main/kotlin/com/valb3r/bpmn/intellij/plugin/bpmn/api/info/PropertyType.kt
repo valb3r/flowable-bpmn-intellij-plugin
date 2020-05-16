@@ -6,9 +6,11 @@ enum class PropertyType(
         val id: String,
         val caption: String,
         val valueType: PropertyValueType,
-        val path: String = id
+        val path: String = id,
+        val cascades: Boolean = false,
+        val updatedBy: PropertyType? = null
 ) {
-    ID("id", "ID", STRING, "id.id"),
+    ID("id", "ID", STRING, "id.id", true),
     NAME("name", "Name", STRING),
     DOCUMENTATION("documentation", "Documentation", STRING),
     ASYNC("async", "Asynchronous", BOOLEAN),
@@ -19,8 +21,8 @@ enum class PropertyType(
     EXCLUSIVE("exclusive", "Exclusive", BOOLEAN),
     DELEGATE_EXPRESSION("delegateExpression", "Delegate expression", EXPRESSION),
     IS_TRIGGERABLE("triggerable", "Is activity triggerable?", BOOLEAN),
-    SOURCE_REF("sourceRef","Source reference", STRING),
-    TARGET_REF("targetRef", "Target reference", STRING),
+    SOURCE_REF("sourceRef","Source reference", STRING, "sourceRef", false, ID),
+    TARGET_REF("targetRef", "Target reference", STRING, "targetRef", false, ID),
     CONDITION_EXPR_VALUE("conditionExpression.text", "Condition expression", EXPRESSION, "conditionExpression.text"),
     CONDITION_EXPR_TYPE("conditionExpression.type", "Condition expression type", STRING, "conditionExpression.type"),
     DEFAULT_FLOW("defaultElement", "Default flow element", STRING)

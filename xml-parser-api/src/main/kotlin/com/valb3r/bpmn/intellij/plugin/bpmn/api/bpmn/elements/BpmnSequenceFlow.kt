@@ -11,7 +11,12 @@ data class BpmnSequenceFlow(
         val sourceRef: String?, // can't be null in reality, but malformed XMLs should be editable too
         val targetRef: String?, // can't be null in reality, but malformed XMLs should be editable too
         val conditionExpression: ConditionExpression?
-): WithBpmnId
+): WithBpmnId {
+
+    override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
+        return copy(id = newId)
+    }
+}
 
 @KotlinBuilder
 data class ConditionExpression(

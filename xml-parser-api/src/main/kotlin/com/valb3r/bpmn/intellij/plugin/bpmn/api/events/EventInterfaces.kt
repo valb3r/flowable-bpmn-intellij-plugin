@@ -54,6 +54,8 @@ interface PropertyUpdateWithId: Event {
     val bpmnElementId: BpmnElementId
     val property: PropertyType
     val newValue: Any
+    val referencedValue: Any?
+    val newIdValue: BpmnElementId?
 }
 
 interface IdentifiableWaypoint: Translatable<IdentifiableWaypoint>, WithDiagramId {
@@ -74,4 +76,6 @@ interface EdgeWithIdentifiableWaypoints: WithDiagramId {
     val bpmnElement: BpmnElementId?
     val waypoint: MutableList<IdentifiableWaypoint>
     val epoch: Int
+
+    fun updateBpmnElemId(newId: BpmnElementId): EdgeWithIdentifiableWaypoints
 }

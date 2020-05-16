@@ -14,7 +14,12 @@ data class BpmnCallActivity(
         val inheritVariables: Boolean?,
         val fallbackToDefaultTenant: Boolean?,
         val extensionElements: ExtensionElements?
-) : WithBpmnId
+) : WithBpmnId {
+
+    override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
+        return copy(id = newId)
+    }
+}
 
 @KotlinBuilder
 data class ExtensionElements(
