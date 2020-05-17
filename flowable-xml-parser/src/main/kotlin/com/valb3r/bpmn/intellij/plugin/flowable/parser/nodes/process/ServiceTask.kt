@@ -11,8 +11,10 @@ data class ServiceTask(
         @JacksonXmlProperty(isAttribute = true) val name: String?,
         val documentation: String?,
         @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val exclusive: Boolean?,
+        @JacksonXmlProperty(isAttribute = true) val expression: String?,
         @JacksonXmlProperty(isAttribute = true) val delegateExpression: String?,
+        @JacksonXmlProperty(isAttribute = true, localName = "class") val clazz: String?,
+        @JacksonXmlProperty(isAttribute = true) val skipExpression: String?,
         @JacksonXmlProperty(isAttribute = true) val triggerable: Boolean?
 ): BpmnMappable<BpmnServiceTask> {
 

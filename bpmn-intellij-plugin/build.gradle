@@ -27,7 +27,7 @@ sourceSets {
 }
 
 intellij {
-    version 'IU-2018.1'
+    version 'IU-2020.1'
     pluginName 'flowable-bpmn-plugin'
     intellij.updateSinceUntilBuild false
     plugins = ['java']
