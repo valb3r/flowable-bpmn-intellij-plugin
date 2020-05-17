@@ -10,6 +10,8 @@ Currently, it is work-in-progress.
 Install a plugin from:
 [0.1 MVP](https://github.com/valb3r/flowable-bpmn-intellij-plugin/releases/download/v0.1.0-beta/bpmn-intellij-plugin.zip) release page
 
+**NOTE: The plugin requires 'Ultimate Edition' of InteliJ for code navigation**
+
 Installation guideline video:
 
 [![Install plugin](https://img.youtube.com/vi/tfSAEMSIrqA/0.jpg)](https://www.youtube.com/watch?v=tfSAEMSIrqA)
