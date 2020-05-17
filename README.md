@@ -8,7 +8,7 @@ Currently, it is work-in-progress.
 # Installation
 
 Install a plugin from:
-[0.0.1 MVP](https://github.com/valb3r/flowable-bpmn-intellij-plugin/releases/tag/0.0.1-alpha) release page
+[0.1 MVP](https://github.com/valb3r/flowable-bpmn-intellij-plugin/releases/download/v0.1.0-beta/bpmn-intellij-plugin.zip) release page
 
 Installation guideline video:
 
@@ -19,7 +19,7 @@ Installation guideline video:
 
 MVP workflow demo:
 
-[![Work with plugin](https://img.youtube.com/vi/9DkhMtDXf44/0.jpg)](https://www.youtube.com/watch?v=9DkhMtDXf44)
+[![Work with plugin](https://img.youtube.com/vi/b0swfexfiMg/0.jpg)](https://youtu.be/b0swfexfiMg)
 
 
 # Navigation guideline
