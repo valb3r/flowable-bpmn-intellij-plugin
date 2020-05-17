@@ -45,12 +45,12 @@ data class EdgeElementState  (
         }
     }
 
-    fun waypointId(currentEpoch: Int, internalOrder: Int): String {
-        return Hashing.md5().hashString(currentEpoch.toString() + ":" + id.id + ":" + internalOrder, UTF_8).toString()
+    private fun waypointId(currentEpoch: Int, internalOrder: Int): String {
+        return Hashing.goodFastHash(32).hashString(currentEpoch.toString() + ":" + id.id + ":" + internalOrder, UTF_8).toString()
     }
 
-    fun childWaypointId(start: IdentifiableWaypoint, end: IdentifiableWaypoint): String {
-        return Hashing.md5().hashString(start.id.id + ":" + end.id.id, UTF_8).toString()
+    private fun childWaypointId(start: IdentifiableWaypoint, end: IdentifiableWaypoint): String {
+        return Hashing.goodFastHash(32).hashString(start.id.id + ":" + end.id.id, UTF_8).toString()
     }
 
     override fun updateBpmnElemId(newId: BpmnElementId): EdgeElementState {

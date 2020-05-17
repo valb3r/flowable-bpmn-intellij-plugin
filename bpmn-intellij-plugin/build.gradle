@@ -30,6 +30,7 @@ intellij {
     version 'IU-2018.1'
     pluginName 'flowable-bpmn-plugin'
     intellij.updateSinceUntilBuild false
+    plugins = ['java']
 }
 
 publishPlugin {

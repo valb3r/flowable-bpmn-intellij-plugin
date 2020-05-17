@@ -15,7 +15,7 @@ class ViewBpmnDiagramAction : AnAction() {
             return
         }
 
-        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("BPMN-Flowable-Diagram")
+        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("BPMN-Flowable-Diagram")!!
         toolWindow.title = file.name
         toolWindow.activate {
             ServiceManager.getService(project, BpmnPluginToolWindowProjectService::class.java)
