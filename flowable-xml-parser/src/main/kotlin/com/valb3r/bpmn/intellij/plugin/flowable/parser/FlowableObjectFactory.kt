@@ -23,7 +23,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
     override fun <T : WithBpmnId> newBpmnObject(clazz: KClass<T>): T {
         val result: WithBpmnId = when(clazz) {
             BpmnStartEvent::class -> BpmnStartEvent(BpmnElementId(UUID.randomUUID().toString()), null, null)
-            BpmnServiceTask::class -> BpmnServiceTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null)
+            BpmnServiceTask::class -> BpmnServiceTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null, null, null)
             BpmnCallActivity::class -> BpmnCallActivity(BpmnElementId(UUID.randomUUID().toString()), null, null, null, "", null, null, null, null)
             BpmnExclusiveGateway::class -> BpmnExclusiveGateway(BpmnElementId(UUID.randomUUID().toString()), null, null, null)
             BpmnEndEvent::class -> BpmnEndEvent(BpmnElementId(UUID.randomUUID().toString()), null, null)

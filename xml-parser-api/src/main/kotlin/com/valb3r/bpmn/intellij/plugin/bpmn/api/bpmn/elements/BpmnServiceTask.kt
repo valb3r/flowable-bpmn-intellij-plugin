@@ -10,7 +10,10 @@ data class BpmnServiceTask(
         val documentation: String?,
         val async: Boolean?,
         val exclusive: Boolean?,
+        val expression: String?,
         val delegateExpression: String?,
+        val clazz: String?,
+        val skipExpression: String?,
         val triggerable: Boolean?
 ): WithBpmnId {
 

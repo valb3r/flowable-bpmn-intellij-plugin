@@ -93,7 +93,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
 
     private fun buildClassField(bpmnElementId: BpmnElementId, type: PropertyType, value: Property): EditorTextField {
         val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type, value.value as String?) ?: (value.value as String? ?: "")
-        val field = editorFactory( "\"${fieldValue}\"")
+        val field = editorFactory(fieldValue)
         addEditorTextListener(field, bpmnElementId, type)
         return field
     }
