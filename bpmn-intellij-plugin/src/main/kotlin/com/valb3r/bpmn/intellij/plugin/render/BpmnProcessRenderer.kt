@@ -28,6 +28,7 @@ class BpmnProcessRenderer {
     private val actionsIcoSize = 15f
     private val actionsMargin = 5f
 
+    private val USER = IconLoader.getIcon("/icons/user.png")
     private val GEAR = IconLoader.getIcon("/icons/gear.png")
     private val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
     private val SEQUENCE = "/icons/sequence.svg".asResource()!!
@@ -235,6 +236,7 @@ class BpmnProcessRenderer {
         return when (elem) {
             null -> defaultElementRender(canvas, bpmnShape, shape, name, active)
             is BpmnStartEvent -> drawStartEvent(canvas, bpmnShape, shape, active)
+            is BpmnUserTask -> drawUserTask(canvas, bpmnShape, shape, name, active)
             is BpmnServiceTask -> drawServiceTask(canvas, bpmnShape, shape, name, active)
             is BpmnCallActivity -> drawCallActivity(canvas, bpmnShape, shape, name, active)
             is BpmnExclusiveGateway -> drawExclusiveGateway(canvas, bpmnShape, shape, active)
@@ -271,6 +273,11 @@ class BpmnProcessRenderer {
 
     private fun drawServiceTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIcon(shape, GEAR, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
+        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+    }
+
+    private fun drawUserTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+        val area = canvas.drawRoundedRectWithIcon(shape, USER, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
         return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 

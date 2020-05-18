@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (6e3e5246a0, 2020-05-07)"
+   sodipodi:docname="user-task.svg"
+   id="svg1447"
+   version="1.1"
+   viewBox="0 0 2000 2000"
+   preserveAspectRatio="xMidYMid meet"
+   style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);"
+   height="32"
+   width="32"
+   focusable="false"
+   aria-hidden="true">
+  <metadata
+     id="metadata1453">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs1451" />
+  <sodipodi:namedview
+     inkscape:current-layer="svg1447"
+     inkscape:window-maximized="1"
+     inkscape:window-y="27"
+     inkscape:window-x="67"
+     inkscape:cy="16.100471"
+     inkscape:cx="-0.71825474"
+     inkscape:zoom="6.859375"
+     showgrid="false"
+     id="namedview1449"
+     inkscape:window-height="1025"
+     inkscape:window-width="1853"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <rect
+     style="fill:none"
+     width="1800"
+     height="1460"
+     x="100"
+     y="270"
+     rx="329.651"
+     ry="328.5"
+     fill="transparent"
+     stroke="#000000"
+     stroke-width="120"
+     stroke-linecap="round"
+     id="rect1441" />
+  <path
+     d="m 514.36803,673.1155 c 0,108.63548 88.4059,197.04138 197.04134,197.04138 108.63544,0 197.04135,-88.4059 197.04135,-197.04138 0,-108.63548 -88.40591,-197.04136 -197.04135,-197.04136 -108.63544,0 -197.04134,88.40588 -197.04134,197.04136 z m 547.33707,634.911 h 43.787 v -43.787 c 0,-168.9739 -137.53489,-306.50871 -306.50884,-306.50871 H 623.83548 c -169.01766,0 -306.5088,137.53481 -306.5088,306.50871 v 43.787 z"
+     fill="black"
+     id="path833"
+     style="fill:#000000;fill-opacity:1;stroke-width:43.7868" />
+</svg>

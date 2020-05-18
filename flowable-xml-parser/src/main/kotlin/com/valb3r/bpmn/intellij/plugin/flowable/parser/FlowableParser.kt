@@ -41,7 +41,9 @@ enum class PropertyTypeDetails(
     ID(PropertyType.ID, "id", XmlType.ATTRIBUTE),
     NAME(PropertyType.NAME,"name", XmlType.ATTRIBUTE),
     DOCUMENTATION(PropertyType.DOCUMENTATION, "documentation.text", XmlType.CDATA),
+    IS_FOR_COMPENSATION(PropertyType.IS_FOR_COMPENSATION, "isForCompensation", XmlType.ATTRIBUTE),
     ASYNC(PropertyType.ASYNC, "flowable:async", XmlType.ATTRIBUTE),
+    ASSIGNEE(PropertyType.ASSIGNEE, "flowable:assignee", XmlType.ATTRIBUTE),
     CALLED_ELEM(PropertyType.CALLED_ELEM, "calledElement", XmlType.ATTRIBUTE),
     CALLED_ELEM_TYPE(PropertyType.CALLED_ELEM_TYPE, "flowable:calledElementType", XmlType.ATTRIBUTE),
     INHERIT_VARS(PropertyType.INHERIT_VARS, "flowable:inheritVariables", XmlType.ATTRIBUTE),
@@ -52,6 +54,11 @@ enum class PropertyTypeDetails(
     CLASS(PropertyType.CLASS, "flowable:class", XmlType.ATTRIBUTE),
     SKIP_EXPRESSION(PropertyType.SKIP_EXPRESSION, "flowable:skipExpression", XmlType.ATTRIBUTE),
     IS_TRIGGERABLE(PropertyType.IS_TRIGGERABLE, "flowable:triggerable", XmlType.ATTRIBUTE),
+    DUE_DATE(PropertyType.DUE_DATE, "flowable:dueDate", XmlType.ATTRIBUTE),
+    CATEGORY(PropertyType.CATEGORY, "flowable:category", XmlType.ATTRIBUTE),
+    FORM_KEY(PropertyType.FORM_KEY, "flowable:formKey", XmlType.ATTRIBUTE),
+    FORM_FIELD_VALIDATION(PropertyType.FORM_FIELD_VALIDATION, "flowable:formFieldValidation", XmlType.ATTRIBUTE),
+    PRIORITY(PropertyType.PRIORITY, "flowable:priority", XmlType.ATTRIBUTE),
     SOURCE_REF(PropertyType.SOURCE_REF,"sourceRef", XmlType.ATTRIBUTE),
     TARGET_REF(PropertyType.TARGET_REF, "targetRef", XmlType.ATTRIBUTE),
     CONDITION_EXPR_VALUE(PropertyType.CONDITION_EXPR_VALUE, "conditionExpression.text", XmlType.CDATA),
@@ -244,6 +251,7 @@ class FlowableParser : BpmnParser {
             is BpmnCallActivity -> doc.createElement("callActivity")
             is BpmnExclusiveGateway -> doc.createElement("exclusiveGateway")
             is BpmnSequenceFlow -> doc.createElement("sequenceFlow")
+            is BpmnUserTask -> doc.createElement("userTask")
             is BpmnServiceTask -> doc.createElement("serviceTask")
             is BpmnEndEvent -> doc.createElement("endEvent")
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)

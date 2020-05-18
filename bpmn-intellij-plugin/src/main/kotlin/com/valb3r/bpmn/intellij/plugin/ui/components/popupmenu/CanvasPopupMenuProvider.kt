@@ -32,6 +32,7 @@ fun popupMenuProvider(): CanvasPopupMenuProvider {
 class CanvasPopupMenuProvider {
 
     private val START_EVENT = IconLoader.getIcon("/icons/popupmenu/start-event.png")
+    private val USER_TASK = IconLoader.getIcon("/icons/popupmenu/user-task.png")
     private val SERVICE_TASK = IconLoader.getIcon("/icons/popupmenu/service-task.png")
     private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
     private val EXCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/exclusive-gateway.png")
@@ -56,6 +57,7 @@ class CanvasPopupMenuProvider {
     private fun activities(sceneLocation: Point2D.Float): JMenu {
         val menu = JMenu("Activities")
         addItem(menu, "Service task", SERVICE_TASK, NewServiceTask(sceneLocation))
+        addItem(menu, "User task", USER_TASK, NewUserTask(sceneLocation))
         return menu
     }
 
@@ -121,6 +123,27 @@ class CanvasPopupMenuProvider {
 
             updateEventsRegistry().addObjectEvent(
                     BpmnShapeObjectAddedEvent(serviceTask, shape, newElementsFactory().propertiesOf(serviceTask))
+            )
+        }
+    }
+
+    private class NewUserTask(private val sceneLocation: Point2D.Float): ActionListener {
+
+        override fun actionPerformed(e: ActionEvent?) {
+            val userTask = newElementsFactory().newBpmnObject(BpmnUserTask::class)
+            val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, userTask)
+
+            val shape = templateShape.copy(
+                    bounds = BoundsElement(
+                            sceneLocation.x,
+                            sceneLocation.y,
+                            templateShape.bounds.width,
+                            templateShape.bounds.height
+                    )
+            )
+
+            updateEventsRegistry().addObjectEvent(
+                    BpmnShapeObjectAddedEvent(userTask, shape, newElementsFactory().propertiesOf(userTask))
             )
         }
     }

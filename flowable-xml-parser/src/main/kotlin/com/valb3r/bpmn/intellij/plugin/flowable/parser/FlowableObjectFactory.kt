@@ -23,6 +23,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
     override fun <T : WithBpmnId> newBpmnObject(clazz: KClass<T>): T {
         val result: WithBpmnId = when(clazz) {
             BpmnStartEvent::class -> BpmnStartEvent(BpmnElementId(UUID.randomUUID().toString()), null, null)
+            BpmnUserTask::class -> BpmnUserTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null, null, null, null, null)
             BpmnServiceTask::class -> BpmnServiceTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null, null, null)
             BpmnCallActivity::class -> BpmnCallActivity(BpmnElementId(UUID.randomUUID().toString()), null, null, null, "", null, null, null, null)
             BpmnExclusiveGateway::class -> BpmnExclusiveGateway(BpmnElementId(UUID.randomUUID().toString()), null, null, null)
@@ -55,6 +56,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             is BpmnStartEvent -> fillForStartEvent(obj)
             is BpmnEndEvent -> fillForEndEvent(obj)
             is BpmnCallActivity -> fillForCallActivity(obj)
+            is BpmnUserTask -> fillForUserTask(obj)
             is BpmnServiceTask -> fillForServiceTask(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
             is BpmnExclusiveGateway -> fillForExclusiveGateway(obj)
@@ -77,6 +79,10 @@ class FlowableObjectFactory: BpmnObjectFactory {
     }
 
     private fun fillForServiceTask(activity: BpmnServiceTask): Map<PropertyType, Property> {
+        return processDtoToPropertyMap(activity)
+    }
+
+    private fun fillForUserTask(activity: BpmnUserTask): Map<PropertyType, Property> {
         return processDtoToPropertyMap(activity)
     }
 
