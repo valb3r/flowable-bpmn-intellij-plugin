@@ -47,7 +47,7 @@ MVP workflow demo:
 |          bpmndi:BPMNEdge         |     Y     |
 |         bpmndi:BPMNPlane         |     Y     |
 |         bpmndi:BPMNShape         |     Y     |
-|         businessRuleTask         |           |
+|         businessRuleTask         |     Y     |
 |           callActivity           |     Y     |
 |       cancelEventDefinition      |           |
 |     compensateEventDefinition    |           |
@@ -83,8 +83,8 @@ MVP workflow demo:
 |          parallelGateway         |           |
 |              process             |           |
 |            receiveTask           |           |
-|              script              |           |
-|            scriptTask            |           |
+|              script              |     Y     |
+|            scriptTask            |     Y     |
 |           sequenceFlow           |     Y     |
 |            serviceTask           |     Y     |
 |       signalEventDefinition      |           |
@@ -96,6 +96,6 @@ MVP workflow demo:
 |             timeDate             |           |
 |       timerEventDefinition       |           |
 |            transaction           |           |
-|             userTask             |           |
+|             userTask             |     Y     |
 
 </details>

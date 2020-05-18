@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (6e3e5246a0, 2020-05-07)"
+   sodipodi:docname="business-rule-task.svg"
+   id="svg1506"
+   version="1.1"
+   viewBox="0 0 2000 2000"
+   preserveAspectRatio="xMidYMid meet"
+   style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);"
+   height="32"
+   width="32"
+   focusable="false"
+   aria-hidden="true">
+  <metadata
+     id="metadata1512">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs1510" />
+  <sodipodi:namedview
+     inkscape:current-layer="svg1506"
+     inkscape:window-maximized="1"
+     inkscape:window-y="27"
+     inkscape:window-x="67"
+     inkscape:cy="20.556482"
+     inkscape:cx="-1.6473595"
+     inkscape:zoom="13.71875"
+     showgrid="false"
+     id="namedview1508"
+     inkscape:window-height="1025"
+     inkscape:window-width="1853"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <rect
+     inkscape:export-ydpi="75.949371"
+     inkscape:export-xdpi="75.949371"
+     inkscape:export-filename="/home/valb3r/IdeaProjects/flowable-intellij/bpmn-intellij-plugin/src/main/resources/icons/popupmenu/business-rule-task.png"
+     style="fill:none"
+     width="1800"
+     height="1460"
+     x="100"
+     y="270"
+     rx="329.651"
+     ry="328.5"
+     fill="transparent"
+     stroke="#000000"
+     stroke-width="120"
+     stroke-linecap="round"
+     id="rect1496" />
+  <path
+     d="m 404.762,522.563 v 215.175 h 921.642 V 522.563 Z"
+     fill="#000000"
+     id="path1498" />
+  <path
+     d="m 378.773,495.462 v 235.457 h 969.73 V 495.462 Z"
+     fill="#000000"
+     id="path1500" />
+  <path
+     d="M 379.284,853.848 V 495.462 H 1348.4 v 716.774 H 617.528 V 725.523 1212.236 H 379.284 V 964.958 H 1348.4 379.284 Z"
+     fill="none"
+     stroke="#000000"
+     stroke-width="43.1053"
+     stroke-linecap="round"
+     id="path1502" />
+</svg>

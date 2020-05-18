@@ -5,14 +5,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.BpmnElementIdMapper
 import org.mapstruct.Mapper
 
-data class BPMNShape(
+data class Shape(
         @JacksonXmlProperty(isAttribute = true) val id: String,
         @JacksonXmlProperty(isAttribute = true) val bpmnElement: String,
         val bounds: Bounds
 ) {
     @Mapper(uses = [DiagramElementIdMapper::class, BpmnElementIdMapper::class])
     interface Mapping {
-        fun convertToDto(input: BPMNShape) : ShapeElement
+        fun convertToDto(input: Shape) : ShapeElement
     }
 }
 

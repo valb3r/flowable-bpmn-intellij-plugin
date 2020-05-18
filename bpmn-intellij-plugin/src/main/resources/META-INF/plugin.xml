@@ -13,7 +13,7 @@
     <!-- Description of the plugin. -->
     <description><![CDATA[
       <p>A plugin to visualize Flowable BPMN diagrams with code navigation support. Provides necessary glue between
-      code and BPMN digram by allowing to jump directly from the element to its implementing class</p>
+      code and BPMN diagram by allowing to jump directly from the element to its implementing class</p>
     ]]></description>
 
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and

@@ -59,6 +59,13 @@ enum class PropertyTypeDetails(
     FORM_KEY(PropertyType.FORM_KEY, "flowable:formKey", XmlType.ATTRIBUTE),
     FORM_FIELD_VALIDATION(PropertyType.FORM_FIELD_VALIDATION, "flowable:formFieldValidation", XmlType.ATTRIBUTE),
     PRIORITY(PropertyType.PRIORITY, "flowable:priority", XmlType.ATTRIBUTE),
+    SCRIPT(PropertyType.SCRIPT, "script.text", XmlType.CDATA),
+    SCRIPT_FORMAT(PropertyType.SCRIPT_FORMAT, "scriptFormat", XmlType.ATTRIBUTE),
+    AUTO_STORE_VARIABLES(PropertyType.AUTO_STORE_VARIABLES, "flowable:autoStoreVariables", XmlType.ATTRIBUTE),
+    RULE_VARIABLES_INPUT(PropertyType.RULE_VARIABLES_INPUT, "flowable:ruleVariablesInput", XmlType.ATTRIBUTE),
+    RULES(PropertyType.RULES, "flowable:rules", XmlType.ATTRIBUTE),
+    RESULT_VARIABLE(PropertyType.RESULT_VARIABLE, "flowable:resultVariable", XmlType.ATTRIBUTE),
+    EXCLUDE(PropertyType.EXCLUDE, "flowable:exclude", XmlType.ATTRIBUTE),
     SOURCE_REF(PropertyType.SOURCE_REF,"sourceRef", XmlType.ATTRIBUTE),
     TARGET_REF(PropertyType.TARGET_REF, "targetRef", XmlType.ATTRIBUTE),
     CONDITION_EXPR_VALUE(PropertyType.CONDITION_EXPR_VALUE, "conditionExpression.text", XmlType.CDATA),
@@ -252,7 +259,9 @@ class FlowableParser : BpmnParser {
             is BpmnExclusiveGateway -> doc.createElement("exclusiveGateway")
             is BpmnSequenceFlow -> doc.createElement("sequenceFlow")
             is BpmnUserTask -> doc.createElement("userTask")
+            is BpmnScriptTask -> doc.createElement("scriptTask")
             is BpmnServiceTask -> doc.createElement("serviceTask")
+            is BpmnBusinessRuleTask -> doc.createElement("businessRuleTask")
             is BpmnEndEvent -> doc.createElement("endEvent")
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }

@@ -6,14 +6,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.BpmnElementIdMapper
 import org.mapstruct.Mapper
 
-data class BPMNEdge (
+data class Edge (
         @JacksonXmlProperty(isAttribute = true) val id: String?,
         @JacksonXmlProperty(isAttribute = true) val bpmnElement: String?,
         @JacksonXmlElementWrapper(useWrapping = false) val waypoint: List<Waypoint>?
 ) {
     @Mapper(uses = [DiagramElementIdMapper::class, BpmnElementIdMapper::class])
     interface Mapping {
-        fun convertToDto(input: BPMNEdge) : EdgeElement
+        fun convertToDto(input: Edge) : EdgeElement
     }
 }
 
