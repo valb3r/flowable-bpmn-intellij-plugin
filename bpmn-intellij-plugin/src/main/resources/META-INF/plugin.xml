@@ -1,5 +1,5 @@
 <!-- `url` specifies the URL of the plugin homepage (can be opened from "Plugins" settings dialog) -->
-<idea-plugin url="https://example.com">
+<idea-plugin url="https://github.com/valb3r/flowable-bpmn-intellij-plugin">
     <!-- Plugin name -->
     <name>Flowable BPMN visualizer</name>
 
