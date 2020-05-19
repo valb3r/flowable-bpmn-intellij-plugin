@@ -22,11 +22,11 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithBpmnId> newBpmnObject(clazz: KClass<T>): T {
         val result: WithBpmnId = when(clazz) {
-            BpmnStartEvent::class -> BpmnStartEvent(generateId(), null, null)
-            BpmnServiceTask::class -> BpmnServiceTask(generateId(), null, null, null, null, null, null, null, null, null)
-            BpmnCallActivity::class -> BpmnCallActivity(generateId(), null, null, null, "", null, null, null, null)
-            BpmnExclusiveGateway::class -> BpmnExclusiveGateway(generateId(), null, null, null)
-            BpmnEndEvent::class -> BpmnEndEvent(generateId(), null, null)
+            BpmnStartEvent::class -> BpmnStartEvent(generateBpmnId(), null, null)
+            BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId(), null, null, null, null, null, null, null, null, null)
+            BpmnCallActivity::class -> BpmnCallActivity(generateBpmnId(), null, null, null, "", null, null, null, null)
+            BpmnExclusiveGateway::class -> BpmnExclusiveGateway(generateBpmnId(), null, null, null)
+            BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId(), null, null)
             else -> throw IllegalArgumentException("Can't create class: " + clazz.qualifiedName)
         }
 
@@ -35,8 +35,8 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithDiagramId> newDiagramObject(clazz: KClass<T>, forBpmnObject: WithBpmnId): T {
         val result: WithDiagramId = when(clazz) {
-            EdgeElement::class -> EdgeElement(DiagramElementId(UUID.randomUUID().toString()), forBpmnObject.id, null)
-            ShapeElement::class -> ShapeElement(DiagramElementId(UUID.randomUUID().toString()), forBpmnObject.id, bounds(forBpmnObject))
+            EdgeElement::class -> EdgeElement(DiagramElementId("edge-" + UUID.randomUUID().toString()), forBpmnObject.id, null)
+            ShapeElement::class -> ShapeElement(DiagramElementId("shape-" + UUID.randomUUID().toString()), forBpmnObject.id, bounds(forBpmnObject))
             else -> throw IllegalArgumentException("Can't create class: " + clazz.qualifiedName)
         }
 
@@ -45,8 +45,8 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithBpmnId> newOutgoingSequence(obj: T): BpmnSequenceFlow {
         return when(obj) {
-            is BpmnExclusiveGateway -> BpmnSequenceFlow(generateId(), null, null, obj.id.id, "", ConditionExpression("tFormalExpression", ""))
-            else -> BpmnSequenceFlow(generateId(), null, null, obj.id.id, "", null)
+            is BpmnExclusiveGateway -> BpmnSequenceFlow(generateBpmnId(), null, null, obj.id.id, "", ConditionExpression("tFormalExpression", ""))
+            else -> BpmnSequenceFlow(generateBpmnId(), null, null, obj.id.id, "", null)
         }
     }
 
@@ -137,7 +137,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
         }
     }
 
-    private fun generateId(): BpmnElementId {
+    private fun generateBpmnId(): BpmnElementId {
         return BpmnElementId("sid-" + UUID.randomUUID().toString())
     }
 }
