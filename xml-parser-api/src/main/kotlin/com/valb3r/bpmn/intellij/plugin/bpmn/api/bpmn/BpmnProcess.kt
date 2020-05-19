@@ -15,6 +15,7 @@ data class BpmnProcess(
         val scriptTask: List<BpmnScriptTask>?,
         val serviceTask: List<BpmnServiceTask>?,
         val businessRuleTask: List<BpmnBusinessRuleTask>?,
+        val receiveTask: List<BpmnReceiveTask>?,
         val sequenceFlow: List<BpmnSequenceFlow>?,
         val exclusiveGateway: List<BpmnExclusiveGateway>?,
         val endEvent: List<BpmnEndEvent>?

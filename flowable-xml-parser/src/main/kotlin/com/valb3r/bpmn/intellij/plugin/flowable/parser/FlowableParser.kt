@@ -262,6 +262,7 @@ class FlowableParser : BpmnParser {
             is BpmnScriptTask -> doc.createElement("scriptTask")
             is BpmnServiceTask -> doc.createElement("serviceTask")
             is BpmnBusinessRuleTask -> doc.createElement("businessRuleTask")
+            is BpmnReceiveTask -> doc.createElement("receiveTask")
             is BpmnEndEvent -> doc.createElement("endEvent")
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }

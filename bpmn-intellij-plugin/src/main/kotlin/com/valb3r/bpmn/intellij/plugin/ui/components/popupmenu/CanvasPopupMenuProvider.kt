@@ -45,10 +45,11 @@ private fun <T: WithBpmnId> newShapeElement(sceneLocation: Point2D.Float, forObj
 class CanvasPopupMenuProvider {
 
     private val START_EVENT = IconLoader.getIcon("/icons/popupmenu/start-event.png")
+    private val SERVICE_TASK = IconLoader.getIcon("/icons/popupmenu/service-task.png")
     private val USER_TASK = IconLoader.getIcon("/icons/popupmenu/user-task.png")
     private val SCRIPT_TASK = IconLoader.getIcon("/icons/popupmenu/script-task.png")
     private val BUSINESS_RULE_TASK = IconLoader.getIcon("/icons/popupmenu/business-rule-task.png")
-    private val SERVICE_TASK = IconLoader.getIcon("/icons/popupmenu/service-task.png")
+    private val RECEIVE_TASK = IconLoader.getIcon("/icons/popupmenu/receive-task.png")
     private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
     private val EXCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/exclusive-gateway.png")
     private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png")
@@ -75,6 +76,7 @@ class CanvasPopupMenuProvider {
         addItem(menu, "Service task", SERVICE_TASK, NewServiceTask(sceneLocation))
         addItem(menu, "Script task", SCRIPT_TASK, NewScriptTask(sceneLocation))
         addItem(menu, "Business rule task", BUSINESS_RULE_TASK, NewBusinessRuleTask(sceneLocation))
+        addItem(menu, "Receive task", RECEIVE_TASK, NewReceiveTask(sceneLocation))
         return menu
     }
 
@@ -161,6 +163,19 @@ class CanvasPopupMenuProvider {
             )
         }
     }
+
+    private class NewReceiveTask(private val sceneLocation: Point2D.Float): ActionListener {
+
+        override fun actionPerformed(e: ActionEvent?) {
+            val receiveTask = newElementsFactory().newBpmnObject(BpmnReceiveTask::class)
+            val shape = newShapeElement(sceneLocation, receiveTask)
+
+            updateEventsRegistry().addObjectEvent(
+                    BpmnShapeObjectAddedEvent(receiveTask, shape, newElementsFactory().propertiesOf(receiveTask))
+            )
+        }
+    }
+
 
     private class NewCallActivity(private val sceneLocation: Point2D.Float): ActionListener {
 

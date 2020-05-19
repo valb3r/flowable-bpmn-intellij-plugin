@@ -27,6 +27,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             BpmnScriptTask::class -> BpmnScriptTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null)
             BpmnServiceTask::class -> BpmnServiceTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null, null, null)
             BpmnBusinessRuleTask::class -> BpmnBusinessRuleTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null, null)
+            BpmnReceiveTask::class -> BpmnReceiveTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null)
             BpmnCallActivity::class -> BpmnCallActivity(BpmnElementId(UUID.randomUUID().toString()), null, null, null, "", null, null, null, null)
             BpmnExclusiveGateway::class -> BpmnExclusiveGateway(BpmnElementId(UUID.randomUUID().toString()), null, null, null)
             BpmnEndEvent::class -> BpmnEndEvent(BpmnElementId(UUID.randomUUID().toString()), null, null)
@@ -62,6 +63,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             is BpmnScriptTask -> fillForScriptTask(obj)
             is BpmnServiceTask -> fillForServiceTask(obj)
             is BpmnBusinessRuleTask -> fillForBusinessRuleTask(obj)
+            is BpmnReceiveTask -> fillForReceiveTask(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
             is BpmnExclusiveGateway -> fillForExclusiveGateway(obj)
             else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
@@ -87,6 +89,10 @@ class FlowableObjectFactory: BpmnObjectFactory {
     }
 
     private fun fillForScriptTask(activity: BpmnScriptTask): Map<PropertyType, Property> {
+        return processDtoToPropertyMap(activity)
+    }
+
+    private fun fillForReceiveTask(activity: BpmnReceiveTask): Map<PropertyType, Property> {
         return processDtoToPropertyMap(activity)
     }
 
