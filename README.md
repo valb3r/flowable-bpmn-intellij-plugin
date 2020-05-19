@@ -7,6 +7,11 @@ Currently, it is work-in-progress.
 
 # Installation
 
+You can install the plugin from ZIP file provided at releases page of this repository or from alpha-channel of JetBrains
+plugin repository.
+
+## From GitHub releases
+
 Install a plugin from:
 [0.1 MVP](https://github.com/valb3r/flowable-bpmn-intellij-plugin/releases/download/v0.1.0-b0/bpmn-intellij-plugin.zip) release page
 
@@ -16,6 +21,17 @@ Installation guideline video:
 
 [![Install plugin](https://img.youtube.com/vi/tfSAEMSIrqA/0.jpg)](https://www.youtube.com/watch?v=tfSAEMSIrqA)
 
+
+## From IntelliJ plugins alpha-channel repository
+
+1. Open `File -> Settings -> Plugins`
+1. In opened window, click on `Gear` button (Manage plugins, repositories) -> `Manage Plugin Repositories`
+1. Add Alpha releases channel - `https://plugins.jetbrains.com/plugins/alpha/list` to repositories list
+1. Now you are able to list and install `Flowable bpmn visualizer` plugin directly from plugin search window
+
+IntelliJ docs on this topic:
+
+[How to configure and use alpha channel](https://plugins.jetbrains.com/docs/marketplace/custom-release-channels.html#CustomReleaseChannels-ConfiguringaCustomChannelinIntelliJPlatformBasedIDEs)
 
 # Workflow
 
