@@ -22,11 +22,11 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithBpmnId> newBpmnObject(clazz: KClass<T>): T {
         val result: WithBpmnId = when(clazz) {
-            BpmnStartEvent::class -> BpmnStartEvent(BpmnElementId(UUID.randomUUID().toString()), null, null)
-            BpmnServiceTask::class -> BpmnServiceTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null, null, null)
-            BpmnCallActivity::class -> BpmnCallActivity(BpmnElementId(UUID.randomUUID().toString()), null, null, null, "", null, null, null, null)
-            BpmnExclusiveGateway::class -> BpmnExclusiveGateway(BpmnElementId(UUID.randomUUID().toString()), null, null, null)
-            BpmnEndEvent::class -> BpmnEndEvent(BpmnElementId(UUID.randomUUID().toString()), null, null)
+            BpmnStartEvent::class -> BpmnStartEvent(generateId(), null, null)
+            BpmnServiceTask::class -> BpmnServiceTask(generateId(), null, null, null, null, null, null, null, null, null)
+            BpmnCallActivity::class -> BpmnCallActivity(generateId(), null, null, null, "", null, null, null, null)
+            BpmnExclusiveGateway::class -> BpmnExclusiveGateway(generateId(), null, null, null)
+            BpmnEndEvent::class -> BpmnEndEvent(generateId(), null, null)
             else -> throw IllegalArgumentException("Can't create class: " + clazz.qualifiedName)
         }
 
@@ -45,8 +45,8 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithBpmnId> newOutgoingSequence(obj: T): BpmnSequenceFlow {
         return when(obj) {
-            is BpmnExclusiveGateway -> BpmnSequenceFlow(BpmnElementId(UUID.randomUUID().toString()), null, null, obj.id.id, "", ConditionExpression("tFormalExpression", ""))
-            else -> BpmnSequenceFlow(BpmnElementId(UUID.randomUUID().toString()), null, null, obj.id.id, "", null)
+            is BpmnExclusiveGateway -> BpmnSequenceFlow(generateId(), null, null, obj.id.id, "", ConditionExpression("tFormalExpression", ""))
+            else -> BpmnSequenceFlow(generateId(), null, null, obj.id.id, "", null)
         }
     }
 
@@ -135,5 +135,9 @@ class FlowableObjectFactory: BpmnObjectFactory {
             is BpmnExclusiveGateway -> BoundsElement(0.0f, 0.0f, 40.0f, 40.0f)
             else -> BoundsElement(0.0f, 0.0f, 100.0f, 80.0f)
         }
+    }
+
+    private fun generateId(): BpmnElementId {
+        return BpmnElementId("sid-" + UUID.randomUUID().toString())
     }
 }
