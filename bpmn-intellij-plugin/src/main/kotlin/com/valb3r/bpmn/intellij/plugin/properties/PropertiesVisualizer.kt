@@ -1,6 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.properties
 
-import a.a.it
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
@@ -24,9 +23,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
 
     @Synchronized
     fun clear() {
-        // Fire de-focus to move changes to memory (Using order as ID property), component listeners doesn't seem to work with EditorTextField
-        listenersForCurrentView.toSortedMap().flatMap { it.value }.forEach { it() }
-        listenersForCurrentView.clear()
+        notifyDeFocusElement()
 
         // drop and re-create table model
         val model = FirstColumnReadOnlyModel()
@@ -39,9 +36,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
 
     @Synchronized
     fun visualize(bpmnElementId: BpmnElementId, properties: Map<PropertyType, Property>) {
-        // fire de-focus to move changes to memory, component listeners doesn't seem to work with EditorTextField
-        listenersForCurrentView.forEach { it() }
-        listenersForCurrentView.clear()
+        notifyDeFocusElement()
 
         // drop and re-create table model
         val model = FirstColumnReadOnlyModel()
@@ -59,6 +54,12 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
             }
         }
         model.fireTableDataChanged()
+    }
+
+    private fun notifyDeFocusElement() {
+        // Fire de-focus to move changes to memory (Using order as ID property), component listeners doesn't seem to work with EditorTextField
+        listenersForCurrentView.toSortedMap().flatMap { it.value }.forEach { it() }
+        listenersForCurrentView.clear()
     }
 
     private fun buildTextField(bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JBTextField {
