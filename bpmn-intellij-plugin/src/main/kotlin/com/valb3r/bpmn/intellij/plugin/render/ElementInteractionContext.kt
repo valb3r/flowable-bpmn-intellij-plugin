@@ -9,7 +9,15 @@ data class ElementInteractionContext(
         val draggedIds: Set<DiagramElementId>,
         val dragEndCallbacks: MutableMap<DiagramElementId, (dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId?) -> Unit>,
         val clickCallbacks: MutableMap<DiagramElementId, (dest: ProcessModelUpdateEvents) -> Unit>,
-        val anchorsHit: Set<Pair<Point2D.Float, Point2D.Float>>,
+        val anchorsHit: AnchorHit?,
         val start: Point2D.Float,
         val current: Point2D.Float
 )
+
+data class AnchorHit(val dragged: Point2D.Float, val anchors: Map<AnchorType, Point2D.Float>)
+
+enum class AnchorType {
+    VERTICAL,
+    HORIZONTAL,
+    POINT
+}

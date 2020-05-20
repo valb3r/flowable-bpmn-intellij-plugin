@@ -23,7 +23,8 @@ import kotlin.math.min
 class BpmnProcessRenderer {
 
     private val waypointLen = 40.0f
-    private val activityToolBoxGap = 5.0f
+    private val activityToolBoxGap = 8.0f
+    private val anchorRadius = 5f
     private val nodeRadius = 3f
     private val actionsIcoSize = 15f
     private val actionsMargin = 5f
@@ -47,9 +48,9 @@ class BpmnProcessRenderer {
                 state.elemPropertiesByStaticElementId
         )
 
-        drawAnchorsHit(ctx.canvas, ctx.interactionContext.anchorsHit)
         dramBpmnElements(state.shapes, areaByElement, ctx.canvas, renderMeta)
         drawBpmnEdges(state.edges, areaByElement, ctx.canvas, renderMeta)
+        ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
 
         return areaByElement
     }
@@ -99,9 +100,12 @@ class BpmnProcessRenderer {
         }
     }
 
-    private fun drawAnchorsHit(canvas: CanvasPainter, anchors: Set<Pair<Point2D.Float, Point2D.Float>>) {
-        anchors.forEach {
-            canvas.drawZeroAreaLine(it.first, it.second, ANCHOR_STROKE, Colors.ANCHOR_COLOR.color)
+    private fun drawAnchorsHit(canvas: CanvasPainter, anchors: AnchorHit) {
+        anchors.anchors.forEach {
+            when (it.key) {
+                AnchorType.VERTICAL, AnchorType.HORIZONTAL -> canvas.drawZeroAreaLine(it.value, anchors.dragged, ANCHOR_STROKE, Colors.ANCHOR_COLOR.color)
+                AnchorType.POINT -> canvas.drawCircle(it.value, anchorRadius, Colors.ANCHOR_COLOR.color)
+            }
         }
     }
 
