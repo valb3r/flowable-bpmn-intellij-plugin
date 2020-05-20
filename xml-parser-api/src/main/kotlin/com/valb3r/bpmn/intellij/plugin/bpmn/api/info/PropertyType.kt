@@ -9,9 +9,10 @@ enum class PropertyType(
         val valueType: PropertyValueType,
         val path: String = id,
         val cascades: Boolean = false,
-        val updatedBy: PropertyType? = null
+        val updatedBy: PropertyType? = null,
+        val updateOrder: Int = 0
 ) {
-    ID("id", "ID", STRING, "id.id", true),
+    ID("id", "ID", STRING, "id.id", true, null, 1000), // ID should fire last
     NAME("name", "Name", STRING),
     DOCUMENTATION("documentation", "Documentation", STRING),
     ASYNC("async", "Asynchronous", BOOLEAN),

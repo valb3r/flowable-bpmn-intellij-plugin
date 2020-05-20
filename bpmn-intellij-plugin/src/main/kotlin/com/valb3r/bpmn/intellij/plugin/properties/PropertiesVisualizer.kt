@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.properties
 
+import a.a.it
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
@@ -16,12 +17,15 @@ import javax.swing.JTable
 
 class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String) -> EditorTextField) {
 
-    private var listenersForCurrentView: MutableList<(() -> Unit)> = mutableListOf()
+    // Using order as ID property change should fire last for this view, otherwise other property change values
+    // will use wrong ID as an anchor
+    // Listeners with their order
+    private var listenersForCurrentView: MutableMap<Int, MutableList<() -> Unit>> = mutableMapOf()
 
     @Synchronized
     fun clear() {
-        // fire de-focus to move changes to memory, component listeners doesn't seem to work with EditorTextField
-        listenersForCurrentView.forEach { it() }
+        // Fire de-focus to move changes to memory (Using order as ID property), component listeners doesn't seem to work with EditorTextField
+        listenersForCurrentView.toSortedMap().flatMap { it.value }.forEach { it() }
         listenersForCurrentView.clear()
 
         // drop and re-create table model
@@ -62,7 +66,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
         val field = JBTextField(fieldValue)
         val initialValue = field.text
 
-        listenersForCurrentView.add {
+        listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
             if (initialValue != field.text) {
                 updateEventsRegistry().addPropertyUpdateEvent(
                         StringValueUpdatedEvent(
@@ -83,7 +87,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
         val field = JBCheckBox(null, fieldValue)
         val initialValue = field.isSelected
 
-        listenersForCurrentView.add {
+        listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
             if (initialValue != field.isSelected) {
                 updateEventsRegistry().addPropertyUpdateEvent(BooleanValueUpdatedEvent(bpmnElementId, type, field.isSelected))
             }
@@ -107,7 +111,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
 
     private fun addEditorTextListener(field: EditorTextField, bpmnElementId: BpmnElementId, type: PropertyType) {
         val initialValue = field.text
-        listenersForCurrentView.add {
+        listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
             if (initialValue != field.text) {
                 updateEventsRegistry().addPropertyUpdateEvent(StringValueUpdatedEvent(bpmnElementId, type, removeQuotes(field.text)))
             }
