@@ -130,6 +130,10 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(drawShape)
     }
 
+    fun drawCircle(center: Point2D.Float, radius: Float, color: Color): Area {
+        return drawCircle(WaypointElement(center.x, center.y), radius, color, color)
+    }
+
     fun drawRectNoFill(location: Point2D.Float, width: Float, height: Float, stroke: Stroke, color: Color): Area {
         val leftTop = camera.toCameraView(location)
         val rightBottom = camera.toCameraView(Point2D.Float(location.x + width, location.y + height))
