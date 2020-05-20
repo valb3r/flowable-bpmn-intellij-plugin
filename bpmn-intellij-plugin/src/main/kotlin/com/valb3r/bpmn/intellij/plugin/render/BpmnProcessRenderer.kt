@@ -10,9 +10,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypo
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.IdentifiableWaypoint
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.NAME
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.*
 import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
+import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.geom.Area
@@ -45,14 +46,36 @@ class BpmnProcessRenderer {
                 ctx.selectedIds,
                 state.elementByDiagramId,
                 state.elementByBpmnId,
-                state.elemPropertiesByStaticElementId
+                state.elemPropertiesByStaticElementId,
+                computeCascadables(ctx, state)
         )
 
+        // Shapes are drawn first as they can cause cascaded location updates in edges
         dramBpmnElements(state.shapes, areaByElement, ctx.canvas, renderMeta)
         drawBpmnEdges(state.edges, areaByElement, ctx.canvas, renderMeta)
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
 
         return areaByElement
+    }
+
+    private fun computeCascadables(ctx: RenderContext, state: CurrentState): Set<DiagramElementId> {
+        val idCascadesTo = setOf(SOURCE_REF, TARGET_REF)
+        val result = mutableSetOf<DiagramElementId>()
+        val elemToDiagramId = mutableMapOf<BpmnElementId, MutableSet<DiagramElementId>>()
+        state.elementByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
+        ctx.selectedIds.map { state.elementByDiagramId[it] }.filterNotNull().forEach { parent ->
+            state.elemPropertiesByStaticElementId.forEach { (owner, props) ->
+                idCascadesTo.intersect(props.keys).filter { props[it]?.value == parent.id }.forEach { type ->
+                    when (state.elementByBpmnId[owner]) {
+                        is BpmnSequenceFlow -> result += state.edges
+                                .filter { it.bpmnElement == owner }
+                                .map { if (type == SOURCE_REF) it.waypoint[0].id else it.waypoint[it.waypoint.size - 1].id }
+                    }
+                }
+
+            }
+        }
+        return result
     }
 
     private fun drawBpmnEdges(shapes: List<EdgeWithIdentifiableWaypoints>, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
@@ -159,9 +182,9 @@ class BpmnProcessRenderer {
                 dest.addLocationUpdateEvent(DraggedToEvent(elem.id, dx, dy, parent.id, elem.internalPhysicalPos))
                 if (null != droppedOn && null != parent.bpmnElement) {
                     if (parent.waypoint.size - 1 == index ) {
-                        dest.addPropertyUpdateEvent(StringValueUpdatedEvent(parent.bpmnElement!!, PropertyType.TARGET_REF, droppedOn.id))
+                        dest.addPropertyUpdateEvent(StringValueUpdatedEvent(parent.bpmnElement!!, TARGET_REF, droppedOn.id))
                     } else if (0 == index) {
-                        dest.addPropertyUpdateEvent(StringValueUpdatedEvent(parent.bpmnElement!!, PropertyType.SOURCE_REF, droppedOn.id))
+                        dest.addPropertyUpdateEvent(StringValueUpdatedEvent(parent.bpmnElement!!, SOURCE_REF, droppedOn.id))
                     }
                 }
             } else {
@@ -177,7 +200,7 @@ class BpmnProcessRenderer {
         }
 
         val drawNode = { node: IdentifiableWaypoint, index: Int ->
-            val translatedNode = translateElement(meta, node)
+            val translatedNode = translateElementIfNeeded(meta, node)
             val active = isActive(node.id, meta)
             val color = color(active, if (node.physical) Colors.WAYPOINT_COLOR else Colors.MID_WAYPOINT_COLOR)
             result[node.id] = AreaWithZindex(
@@ -219,8 +242,8 @@ class BpmnProcessRenderer {
     }
 
     private fun drawEdge(canvas: CanvasPainter, begin: IdentifiableWaypoint, end: IdentifiableWaypoint, meta: RenderMetadata, color: Color, isLast: Boolean): Area {
-        val translatedBegin = translateElement(meta, begin)
-        val translatedEnd = translateElement(meta, end)
+        val translatedBegin = translateElementIfNeeded(meta, begin)
+        val translatedEnd = translateElementIfNeeded(meta, end)
         if (isLast) {
             return canvas.drawLineWithArrow(translatedBegin.asWaypointElement(), translatedEnd.asWaypointElement(), color)
         }
@@ -234,7 +257,7 @@ class BpmnProcessRenderer {
         val name = props?.get(NAME)?.value as String?
         val active = isActive(bpmnShape.id, meta)
 
-        val shape = translateElement(meta, bpmnShape)
+        val shape = translateElementIfNeeded(meta, bpmnShape)
 
         return when (elem) {
             null -> defaultElementRender(canvas, bpmnShape, shape, name, active)
@@ -247,8 +270,8 @@ class BpmnProcessRenderer {
         }
     }
 
-    private fun <T> translateElement(meta: RenderMetadata, elem: T): T where T : Translatable<T>, T: WithDiagramId {
-        return if (meta.interactionContext.draggedIds.contains(elem.id)) {
+    private fun <T> translateElementIfNeeded(meta: RenderMetadata, elem: T): T where T : Translatable<T>, T: WithDiagramId {
+        return if (meta.interactionContext.draggedIds.contains(elem.id) || meta.cascadedTransalationOf.contains(elem.id)) {
             elem.copyAndTranslate(
                     meta.interactionContext.current.x - meta.interactionContext.start.x,
                     meta.interactionContext.current.y - meta.interactionContext.start.y
@@ -425,7 +448,8 @@ class BpmnProcessRenderer {
             val selectedIds: Set<DiagramElementId>,
             val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
             val elementById: Map<BpmnElementId, WithBpmnId>,
-            val elemPropertiesByElementId: Map<BpmnElementId, Map<PropertyType, Property>>
+            val elemPropertiesByElementId: Map<BpmnElementId, Map<PropertyType, Property>>,
+            val cascadedTransalationOf: Set<DiagramElementId>
     )
 
     private enum class Actions {
