@@ -23,6 +23,7 @@ import kotlin.math.min
 
 class BpmnProcessRenderer {
 
+    private val undoRedoStartMargin = 20.0f
     private val waypointLen = 40.0f
     private val activityToolBoxGap = 8.0f
     private val anchorRadius = 5f
@@ -30,6 +31,11 @@ class BpmnProcessRenderer {
     private val actionsIcoSize = 15f
     private val actionsMargin = 5f
 
+    private val undoId = DiagramElementId("UNDO")
+    private val redoId = DiagramElementId("REDO")
+
+    private val UNDO = IconLoader.getIcon("/icons/undo.png")
+    private val REDO = IconLoader.getIcon("/icons/redo.png")
     private val GEAR = IconLoader.getIcon("/icons/gear.png")
     private val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
     private val SEQUENCE = "/icons/sequence.svg".asResource()!!
@@ -55,7 +61,32 @@ class BpmnProcessRenderer {
         drawBpmnEdges(state.edges, areaByElement, ctx.canvas, renderMeta)
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
 
+        drawUndoRedo(ctx, state, renderMeta, areaByElement)
         return areaByElement
+    }
+
+    private fun drawUndoRedo(ctx: RenderContext, state: CurrentState, meta: RenderMetadata, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>) {
+        val start = Point2D.Float(undoRedoStartMargin, undoRedoStartMargin)
+        var locationX = start.x
+        val locationY = start.y
+
+        if (state.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.UNDO)) {
+            val color = if (isActive(undoId, meta)) Colors.SELECTED_COLOR else null
+            val areaUndo = color?.let { ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), UNDO, it.color) }
+                    ?: ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), UNDO)
+            areaByElement[undoId] = AreaWithZindex(areaUndo, Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
+            locationX += UNDO.iconWidth + undoRedoStartMargin
+            ctx.interactionContext.clickCallbacks[undoId] = { dest -> dest.undo() }
+        }
+
+        if (state.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.REDO)) {
+            val color = if (isActive(redoId, meta)) Colors.SELECTED_COLOR else null
+            val areaRedo = color?.let { ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), REDO, it.color) }
+                    ?: ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), REDO)
+            areaByElement[redoId] = AreaWithZindex(areaRedo, Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
+            locationX += REDO.iconWidth + undoRedoStartMargin
+            ctx.interactionContext.clickCallbacks[redoId] = { dest -> dest.redo() }
+        }
     }
 
     private fun computeCascadables(ctx: RenderContext, state: CurrentState): Set<CascadeTranslationToWaypoint> {
@@ -94,8 +125,11 @@ class BpmnProcessRenderer {
                 }
 
                 val deleteCallback = { dest: ProcessModelUpdateEvents ->
-                    it.bpmnElement?.apply { dest.addElementRemovedEvent(BpmnElementRemovedEvent(this)) }
-                    dest.addElementRemovedEvent(DiagramElementRemovedEvent(it.id))
+                    val bpmnRemoves = mutableListOf<BpmnElementRemovedEvent>()
+                    val diagramRemoves = mutableListOf<DiagramElementRemovedEvent>()
+                    it.bpmnElement?.apply { bpmnRemoves += BpmnElementRemovedEvent(this) }
+                    diagramRemoves += DiagramElementRemovedEvent(it.id)
+                    dest.addElementRemovedEvent(diagramRemoves, bpmnRemoves)
                 }
                 val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback))
                 areaByElement += actionsElem
@@ -108,8 +142,7 @@ class BpmnProcessRenderer {
             mergeArea(it.id, areaByElement, drawShapeElement(canvas, it, renderMeta))
             if (isActive(it.id, renderMeta)) {
                 val deleteCallback = { dest: ProcessModelUpdateEvents ->
-                    dest.addElementRemovedEvent(DiagramElementRemovedEvent(it.id))
-                    dest.addElementRemovedEvent(BpmnElementRemovedEvent(it.bpmnElement))
+                    dest.addElementRemovedEvent(listOf(DiagramElementRemovedEvent(it.id)), listOf(BpmnElementRemovedEvent(it.bpmnElement)))
                 }
                 val newSequenceCallback = { dest: ProcessModelUpdateEvents ->
                     val elem = renderMeta.elementById[it.bpmnElement]
@@ -126,8 +159,10 @@ class BpmnProcessRenderer {
                 val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
                 areaByElement += actionsElem
                 renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? ->
-                    dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy, null, null))
-                    renderMeta.cascadedTransalationOf.forEach {cascadeTo -> dest.addLocationUpdateEvent(DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId)) }
+                    val events = mutableListOf<DraggedToEvent>()
+                    events += DraggedToEvent(it.id, dx, dy, null, null)
+                    events += renderMeta.cascadedTransalationOf.map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
+                    dest.addLocationUpdateEvent(events)
                 }
             }
         }

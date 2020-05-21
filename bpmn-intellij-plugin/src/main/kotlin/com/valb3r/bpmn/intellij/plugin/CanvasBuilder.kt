@@ -8,7 +8,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.ui.EditorTextField
 import com.intellij.util.messages.MessageBusConnection
-import com.valb3r.bpmn.intellij.plugin.events.setUpdateEventsRegistry
+import com.valb3r.bpmn.intellij.plugin.events.initializeUpdateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
@@ -27,7 +27,7 @@ class CanvasBuilder {
 
     fun build(properties: JTable, editorFactory: (value: String) -> EditorTextField, canvas: Canvas, project: Project, bpmnFile: VirtualFile) {
         val parser = FlowableParser()
-        setUpdateEventsRegistry(parser, project, bpmnFile)
+        initializeUpdateEventsRegistry(parser, project, bpmnFile)
 
         val data = readFile(bpmnFile)
         val process = parser.parse(data)

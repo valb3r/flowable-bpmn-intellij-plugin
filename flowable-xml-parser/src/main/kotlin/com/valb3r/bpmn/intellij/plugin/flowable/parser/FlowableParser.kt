@@ -142,13 +142,13 @@ class FlowableParser : BpmnParser {
         val node = if (null != update.internalPos) {
             // Internal waypoint update
             xpath.evaluate(
-                    "//BPMNEdge[@id='${update.parentElementId!!.id}']/*[@x][@y][${update.internalPos!! + 1}]",
+                    "//*[local-name()='BPMNEdge'][@id='${update.parentElementId!!.id}']/*[@x][@y][${update.internalPos!! + 1}]",
                     doc,
                     XPathConstants.NODE
             ) as Node
         } else {
             xpath.evaluate(
-                    "//BPMNShape[@id='${update.diagramElementId.id}']/*[@x][@y]",
+                    "//*[local-name()='BPMNShape'][@id='${update.diagramElementId.id}']/*[@x][@y]",
                     doc,
                     XPathConstants.NODE
             ) as Node
@@ -164,7 +164,7 @@ class FlowableParser : BpmnParser {
     private fun applyNewWaypoints(doc: Document, update: NewWaypoints) {
         val xpath = xpathFactory.newXPath()
         val node = xpath.evaluate(
-                "//BPMNEdge[@id='${update.edgeElementId.id}'][1]",
+                "//*[local-name()='BPMNEdge'][@id='${update.edgeElementId.id}'][1]",
                 doc,
                 XPathConstants.NODE
         ) as Node
@@ -196,7 +196,7 @@ class FlowableParser : BpmnParser {
     private fun applyDiagramElementRemoved(doc: Document, update: DiagramElementRemoved) {
         val xpath = xpathFactory.newXPath()
         val node = xpath.evaluate(
-                "//BPMNDiagram/BPMNPlane/*[@id='${update.elementId.id}'][1]",
+                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane']/*[@id='${update.elementId.id}'][1]",
                 doc,
                 XPathConstants.NODE
         ) as Node
@@ -242,7 +242,7 @@ class FlowableParser : BpmnParser {
         diagramParent.appendChild(newNode)
 
         val shapeParent = xpath.evaluate(
-                "//BPMNDiagram/BPMNPlane[1]",
+                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]",
                 doc,
                 XPathConstants.NODE
         ) as Node
@@ -277,7 +277,7 @@ class FlowableParser : BpmnParser {
         diagramParent.appendChild(newNode)
 
         val shapeParent = xpath.evaluate(
-                "//BPMNDiagram/BPMNPlane[1]",
+                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]",
                 doc,
                 XPathConstants.NODE
         ) as Node
@@ -308,7 +308,7 @@ class FlowableParser : BpmnParser {
         }
 
         val diagramElement = xpath.evaluate(
-                "//BPMNDiagram/BPMNPlane[1]/*[@bpmnElement='${update.bpmnElementId.id}']",
+                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]/*[@bpmnElement='${update.bpmnElementId.id}']",
                 doc,
                 XPathConstants.NODE
         ) as Element

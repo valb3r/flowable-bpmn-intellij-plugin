@@ -196,6 +196,32 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(drawShape)
     }
 
+    fun drawIconAtScreen(position: Point2D.Float, icon: Icon): Area {
+        val shape = Rectangle2D.Float(
+                position.x,
+                position.y,
+                icon.iconWidth.toFloat(),
+                icon.iconHeight.toFloat()
+        )
+
+        icon.paintIcon(null, graphics2D, position.x.toInt(), position.y.toInt())
+        return Area(shape)
+    }
+
+    fun drawIconAtScreen(position: Point2D.Float, icon: Icon, border: Color): Area {
+        val shape = Rectangle2D.Float(
+                position.x,
+                position.y,
+                icon.iconWidth.toFloat(),
+                icon.iconHeight.toFloat()
+        )
+
+        icon.paintIcon(null, graphics2D, position.x.toInt(), position.y.toInt())
+        graphics2D.color = border
+        graphics2D.draw(shape)
+        return Area(shape)
+    }
+
     fun drawIcon(bounds: BoundsElement, svgIcon: String): Area {
         val leftTop = camera.toCameraView(Point2D.Float(bounds.x, bounds.y))
 
