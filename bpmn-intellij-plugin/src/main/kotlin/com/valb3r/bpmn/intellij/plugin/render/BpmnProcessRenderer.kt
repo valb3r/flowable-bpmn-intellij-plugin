@@ -31,6 +31,9 @@ class BpmnProcessRenderer {
     private val actionsIcoSize = 15f
     private val actionsMargin = 5f
 
+    private val undoId = DiagramElementId("UNDO")
+    private val redoId = DiagramElementId("REDO")
+
     private val UNDO = IconLoader.getIcon("/icons/undo.png")
     private val REDO = IconLoader.getIcon("/icons/redo.png")
     private val GEAR = IconLoader.getIcon("/icons/gear.png")
@@ -58,29 +61,31 @@ class BpmnProcessRenderer {
         drawBpmnEdges(state.edges, areaByElement, ctx.canvas, renderMeta)
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
 
-        drawUndoRedo(ctx, state, areaByElement)
+        drawUndoRedo(ctx, state, renderMeta, areaByElement)
         return areaByElement
     }
 
-    private fun drawUndoRedo(ctx: RenderContext, state: CurrentState, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>) {
+    private fun drawUndoRedo(ctx: RenderContext, state: CurrentState, meta: RenderMetadata, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>) {
         val start = Point2D.Float(undoRedoStartMargin, undoRedoStartMargin)
         var locationX = start.x
         val locationY = start.y
 
         if (state.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.UNDO)) {
-            val areaUndo = ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), UNDO)
-            val undo = DiagramElementId("UNDO")
-            areaByElement[undo] = AreaWithZindex(areaUndo, Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
+            val color = if (isActive(undoId, meta)) Colors.SELECTED_COLOR else null
+            val areaUndo = color?.let { ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), UNDO, it.color) }
+                    ?: ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), UNDO)
+            areaByElement[undoId] = AreaWithZindex(areaUndo, Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
             locationX += UNDO.iconWidth + undoRedoStartMargin
-            ctx.interactionContext.clickCallbacks[undo] = { dest -> dest.undo() }
+            ctx.interactionContext.clickCallbacks[undoId] = { dest -> dest.undo() }
         }
 
         if (state.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.REDO)) {
-            val areaRedo = ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), REDO)
-            val redo = DiagramElementId("REDO")
-            areaByElement[redo] = AreaWithZindex(areaRedo, Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
+            val color = if (isActive(redoId, meta)) Colors.SELECTED_COLOR else null
+            val areaRedo = color?.let { ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), REDO, it.color) }
+                    ?: ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), REDO)
+            areaByElement[redoId] = AreaWithZindex(areaRedo, Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
             locationX += REDO.iconWidth + undoRedoStartMargin
-            ctx.interactionContext.clickCallbacks[redo] = { dest -> dest.redo() }
+            ctx.interactionContext.clickCallbacks[redoId] = { dest -> dest.redo() }
         }
     }
 

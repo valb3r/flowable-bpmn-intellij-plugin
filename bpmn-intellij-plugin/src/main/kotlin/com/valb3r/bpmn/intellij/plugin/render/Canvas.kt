@@ -71,7 +71,7 @@ class Canvas: JPanel() {
 
     fun click(location: Point2D.Float) {
         val clickedElements = elemsUnderCursor(location)
-        clickedElements.forEach { interactionCtx.clickCallbacks.get(it)?.invoke(updateEventsRegistry()) }
+        clickedElements.forEach { interactionCtx.clickCallbacks[it]?.invoke(updateEventsRegistry()) }
 
         this.selectedElements.clear()
         interactionCtx = ElementInteractionContext(mutableSetOf(), mutableMapOf(), mutableMapOf(), null, Point2D.Float(), Point2D.Float())
