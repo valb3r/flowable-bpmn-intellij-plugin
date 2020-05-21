@@ -12,6 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.events.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.ui.components.FirstColumnReadOnlyModel
+import java.util.concurrent.atomic.AtomicReference
 import javax.swing.JTable
 
 class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String) -> EditorTextField) {
@@ -124,10 +125,11 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
     }
 
     private fun lastStringValueFromRegistry(bpmnElementId: BpmnElementId, type: PropertyType, currentValue: String?): String? {
+        val computedValue = AtomicReference<String>(currentValue)
         return (updateEventsRegistry().currentPropertyUpdateEventListWithCascaded(bpmnElementId)
                 .map { it.event }
                 .filter {
-                    checkCascadedApplied(currentValue, bpmnElementId, type, it)
+                    checkCascadedApplied(computedValue, bpmnElementId, type, it)
                             || (bpmnElementId == it.bpmnElementId && it.property.id == type.id)
                 }
                 .lastOrNull { it is StringValueUpdatedEvent } as StringValueUpdatedEvent?)
@@ -143,7 +145,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
                 ?.newValue
     }
 
-    private fun checkCascadedApplied(currentValue: String?, elementId: BpmnElementId, type: PropertyType, possibleCascade: PropertyUpdateWithId): Boolean {
+    private fun checkCascadedApplied(computedValue: AtomicReference<String>, elementId: BpmnElementId, type: PropertyType, possibleCascade: PropertyUpdateWithId): Boolean {
         if ((elementId == possibleCascade.bpmnElementId || possibleCascade.property == type) || null == possibleCascade.referencedValue) {
             return false
         }
@@ -152,6 +154,11 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
             return true
         }
 
-        return possibleCascade.property == type.updatedBy && possibleCascade.referencedValue == currentValue
+        if (possibleCascade.property == type.updatedBy && possibleCascade.newValue is String && possibleCascade.referencedValue == computedValue.get()) {
+            computedValue.set(possibleCascade.newValue as String)
+            return true
+        }
+
+        return false
     }
 }

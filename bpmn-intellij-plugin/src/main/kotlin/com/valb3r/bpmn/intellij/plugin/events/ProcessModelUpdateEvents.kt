@@ -20,7 +20,7 @@ import kotlin.collections.HashMap
 private val updateEvents = AtomicReference<ProcessModelUpdateEvents>()
 
 fun initializeUpdateEventsRegistry(parser: BpmnParser, project: Project, file: VirtualFile) {
-    updateEvents.set(ProcessModelUpdateEvents(parser, project, file, CopyOnWriteArrayList()))
+    updateEvents.set(ProcessModelUpdateEvents(parser, project, file, ArrayList()))
 }
 
 fun updateEventsRegistry(): ProcessModelUpdateEvents {
@@ -79,7 +79,7 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
     @Synchronized
     fun redo() {
         allBeforeThis = if (allBeforeThis < updates.size) {
-            updates[allBeforeThis + 1].block?.let { allBeforeThis + it.size } ?: allBeforeThis + 1
+            updates[allBeforeThis].block?.let { allBeforeThis + it.size } ?: allBeforeThis + 1
         } else {
             allBeforeThis
         }
