@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.events
 
+import com.google.common.hash.Hashing
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
@@ -11,6 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventOrder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.LocationUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
@@ -31,6 +33,7 @@ fun updateEventsRegistry(): ProcessModelUpdateEvents {
 class ProcessModelUpdateEvents(private val parser: BpmnParser, private val project: Project, private val file: VirtualFile, private val updates: MutableList<Order<out Event>>) {
 
     private val order: AtomicLong = AtomicLong()
+    private val expectedFileHash: AtomicReference<String> = AtomicReference("")
     private val fileCommitListeners: MutableList<Any> = ArrayList()
     private val broadcastPropertyEvents: MutableList<Order<PropertyUpdateWithId>> = CopyOnWriteArrayList()
     private val parentCreatesByStaticId: MutableMap<DiagramElementId, MutableList<Order<out Event>>> = ConcurrentHashMap()
@@ -41,8 +44,12 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
     private val deletionsByStaticId: MutableMap<DiagramElementId, MutableList<Order<out Event>>> = ConcurrentHashMap()
     private val deletionsByStaticBpmnId: MutableMap<BpmnElementId, MutableList<Order<out Event>>> = ConcurrentHashMap()
 
+    fun fileStateMatches(currentContent: String): Boolean {
+        return expectedFileHash.get() == hashData(currentContent)
+    }
+
     @Synchronized
-    fun reset() {
+    fun reset(fileContent: String) {
         order.set(0)
         updates.clear()
         fileCommitListeners.clear()
@@ -54,18 +61,22 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
         deletionsByStaticId.clear()
         deletionsByStaticBpmnId.clear()
         broadcastPropertyEvents.clear()
+        expectedFileHash.set(hashData(fileContent))
     }
 
     fun commitToFile() {
         val lastCommit = updates.filter { it.event is CommittedToFile }.maxBy { it.order }
         val doc = FileDocumentManager.getInstance().getDocument(file)!!
         WriteCommandAction.runWriteCommandAction(project) {
-            parser.update(
+            val newText = parser.update(
                     doc.text,
-                    {newStr -> doc.replaceString(0, doc.textLength, newStr)},
                     updates.filter { it.order > (lastCommit?.order ?: -1) }.map { it.event }
             )
+
+            expectedFileHash.set(hashData(newText))
+            doc.replaceString(0, doc.textLength, newText)
         }
+        FileDocumentManager.getInstance().saveDocument(doc);
 
         val toStore = Order(order.getAndIncrement(), CommittedToFile(0))
         updates.add(toStore)
@@ -148,42 +159,8 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
                 .filter { it.order >  latestRemoval.order}
     }
 
-    fun currentLocationUpdateEventList(elementId: DiagramElementId): List<EventOrder<LocationUpdateWithId>> {
-        val latestRemoval = lastDeletion(elementId)
-        return locationUpdatesByStaticId
-                .getOrDefault(elementId, emptyList<Order<LocationUpdateWithId>>())
-                .filterIsInstance<Order<LocationUpdateWithId>>()
-                .filter { it.order >  latestRemoval.order}
-    }
-
-    fun newWaypointStructure(parentElementId: DiagramElementId): List<EventOrder<NewWaypointsEvent>> {
-        val latestRemoval = lastDeletion(parentElementId)
-        return parentCreatesByStaticId
-                .getOrDefault(parentElementId, emptyList<Order<NewWaypointsEvent>>())
-                .filterIsInstance<Order<NewWaypointsEvent>>()
-                .filter { it.order >  latestRemoval.order}
-    }
-
-    fun newShapeElements(): List<EventOrder<BpmnShapeObjectAddedEvent>> {
-        return newShapeElements
-                .filter { it.order > lastDeletion(it.event.bpmnObject.id).order}
-    }
-
-    fun newEdgeElements(): List<EventOrder<BpmnEdgeObjectAddedEvent>> {
-        return newDiagramElements
-                .filter { it.order > lastDeletion(it.event.bpmnObject.id).order}
-    }
-
-    fun isDeleted(elementId: DiagramElementId): Boolean {
-        return lastDeletion(elementId).event !is NullEvent
-    }
-
-    fun isDeleted(elementId: BpmnElementId): Boolean {
-        return lastDeletion(elementId).event !is NullEvent
-    }
-
-    private fun lastDeletion(elementId: DiagramElementId): Order<out Event> {
-        return deletionsByStaticId[elementId]?.maxBy { it.order } ?: Order(-1, NullEvent(elementId.id))
+    private fun hashData(data: String): String {
+        return Hashing.goodFastHash(32).hashString(data, StandardCharsets.UTF_8).toString()
     }
 
     private fun lastDeletion(elementId: BpmnElementId): Order<out Event> {

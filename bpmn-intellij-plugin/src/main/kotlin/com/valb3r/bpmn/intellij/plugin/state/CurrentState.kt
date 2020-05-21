@@ -37,7 +37,7 @@ class CurrentStateProvider {
     private var fileState = CurrentState(emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap())
     private var currentState = CurrentState(emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap())
 
-    fun resetStateTo(processObject: BpmnProcessObjectView) {
+    fun resetStateTo(fileContent: String, processObject: BpmnProcessObjectView) {
         fileState = CurrentState(
                 processObject.diagram.firstOrNull()?.bpmnPlane?.bpmnShape ?: emptyList(),
                 processObject.diagram.firstOrNull()?.bpmnPlane?.bpmnEdge?.map { EdgeElementState(it) } ?: emptyList(),
@@ -46,7 +46,7 @@ class CurrentStateProvider {
                 processObject.elemPropertiesByElementId
         )
         currentState = fileState
-        updateEventsRegistry().reset()
+        updateEventsRegistry().reset(fileContent)
     }
 
     fun currentState(): CurrentState {
