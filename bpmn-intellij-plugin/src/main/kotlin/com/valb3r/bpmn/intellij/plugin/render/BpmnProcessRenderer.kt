@@ -58,24 +58,31 @@ class BpmnProcessRenderer {
         return areaByElement
     }
 
-    private fun computeCascadables(ctx: RenderContext, state: CurrentState): Set<DiagramElementId> {
+    private fun computeCascadables(ctx: RenderContext, state: CurrentState): Set<CascadeTranslationToWaypoint> {
         val idCascadesTo = setOf(SOURCE_REF, TARGET_REF)
-        val result = mutableSetOf<DiagramElementId>()
+        val result = mutableSetOf<CascadeTranslationToWaypoint>()
         val elemToDiagramId = mutableMapOf<BpmnElementId, MutableSet<DiagramElementId>>()
         state.elementByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
-        ctx.selectedIds.map { state.elementByDiagramId[it] }.filterNotNull().forEach { parent ->
+        ctx.interactionContext.draggedIds.mapNotNull { state.elementByDiagramId[it] }.filter { state.elementByBpmnId[it] !is BpmnSequenceFlow }.forEach { parent ->
             state.elemPropertiesByStaticElementId.forEach { (owner, props) ->
                 idCascadesTo.intersect(props.keys).filter { props[it]?.value == parent.id }.forEach { type ->
                     when (state.elementByBpmnId[owner]) {
-                        is BpmnSequenceFlow -> result += state.edges
-                                .filter { it.bpmnElement == owner }
-                                .map { if (type == SOURCE_REF) it.waypoint[0].id else it.waypoint[it.waypoint.size - 1].id }
+                        is BpmnSequenceFlow -> result += computeCascadeToWaypoint(state, owner, type)
                     }
                 }
 
             }
         }
         return result
+    }
+
+    private fun computeCascadeToWaypoint(state: CurrentState, owner: BpmnElementId, type: PropertyType): Collection<CascadeTranslationToWaypoint> {
+        return state.edges
+                .filter { it.bpmnElement == owner }
+                .map {
+                    val index = if (type == SOURCE_REF) 0 else it.waypoint.size - 1
+                    CascadeTranslationToWaypoint(it.waypoint[index].id, it.id, it.waypoint[index].internalPhysicalPos)
+                }
     }
 
     private fun drawBpmnEdges(shapes: List<EdgeWithIdentifiableWaypoints>, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
@@ -118,7 +125,10 @@ class BpmnProcessRenderer {
                 }
                 val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
                 areaByElement += actionsElem
-                renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? -> dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy, null, null))}
+                renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? ->
+                    dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy, null, null))
+                    renderMeta.cascadedTransalationOf.forEach {cascadeTo -> dest.addLocationUpdateEvent(DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId)) }
+                }
             }
         }
     }
@@ -271,7 +281,7 @@ class BpmnProcessRenderer {
     }
 
     private fun <T> translateElementIfNeeded(meta: RenderMetadata, elem: T): T where T : Translatable<T>, T: WithDiagramId {
-        return if (meta.interactionContext.draggedIds.contains(elem.id) || meta.cascadedTransalationOf.contains(elem.id)) {
+        return if (meta.interactionContext.draggedIds.contains(elem.id) || meta.cascadedTransalationOf.map { it.waypointId }.contains(elem.id)) {
             elem.copyAndTranslate(
                     meta.interactionContext.current.x - meta.interactionContext.start.x,
                     meta.interactionContext.current.y - meta.interactionContext.start.y
@@ -449,8 +459,10 @@ class BpmnProcessRenderer {
             val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
             val elementById: Map<BpmnElementId, WithBpmnId>,
             val elemPropertiesByElementId: Map<BpmnElementId, Map<PropertyType, Property>>,
-            val cascadedTransalationOf: Set<DiagramElementId>
+            val cascadedTransalationOf: Set<CascadeTranslationToWaypoint>
     )
+
+    private data class CascadeTranslationToWaypoint(val waypointId: DiagramElementId, val parentEdgeId: DiagramElementId, val internalId: Int)
 
     private enum class Actions {
         DELETE,
