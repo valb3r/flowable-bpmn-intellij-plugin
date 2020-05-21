@@ -11,9 +11,12 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 interface Event
 
+data class EventBlock(val size: Int)
+
 interface EventOrder<T: Event> {
     val order: Long
     val event: T
+    val block: EventBlock?
 }
 
 interface LocationUpdateWithId: Event {

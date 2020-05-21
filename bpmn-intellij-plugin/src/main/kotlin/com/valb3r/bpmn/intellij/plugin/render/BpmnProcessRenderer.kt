@@ -23,6 +23,7 @@ import kotlin.math.min
 
 class BpmnProcessRenderer {
 
+    private val undoRedoStartMargin = 20.0f
     private val waypointLen = 40.0f
     private val activityToolBoxGap = 8.0f
     private val anchorRadius = 5f
@@ -30,6 +31,8 @@ class BpmnProcessRenderer {
     private val actionsIcoSize = 15f
     private val actionsMargin = 5f
 
+    private val UNDO = IconLoader.getIcon("/icons/undo.png")
+    private val REDO = IconLoader.getIcon("/icons/redo.png")
     private val GEAR = IconLoader.getIcon("/icons/gear.png")
     private val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
     private val SEQUENCE = "/icons/sequence.svg".asResource()!!
@@ -55,7 +58,30 @@ class BpmnProcessRenderer {
         drawBpmnEdges(state.edges, areaByElement, ctx.canvas, renderMeta)
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
 
+        drawUndoRedo(ctx, state, areaByElement)
         return areaByElement
+    }
+
+    private fun drawUndoRedo(ctx: RenderContext, state: CurrentState, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>) {
+        val start = Point2D.Float(undoRedoStartMargin, undoRedoStartMargin)
+        var locationX = start.x
+        val locationY = start.y
+
+        if (state.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.UNDO)) {
+            val areaUndo = ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), UNDO)
+            val undo = DiagramElementId("UNDO")
+            areaByElement[undo] = AreaWithZindex(areaUndo, Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
+            locationX += UNDO.iconWidth + undoRedoStartMargin
+            ctx.interactionContext.clickCallbacks[undo] = { dest -> dest.undo() }
+        }
+
+        if (state.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.REDO)) {
+            val areaRedo = ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), REDO)
+            val redo = DiagramElementId("REDO")
+            areaByElement[redo] = AreaWithZindex(areaRedo, Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
+            locationX += REDO.iconWidth + undoRedoStartMargin
+            ctx.interactionContext.clickCallbacks[redo] = { dest -> dest.redo() }
+        }
     }
 
     private fun computeCascadables(ctx: RenderContext, state: CurrentState): Set<CascadeTranslationToWaypoint> {
