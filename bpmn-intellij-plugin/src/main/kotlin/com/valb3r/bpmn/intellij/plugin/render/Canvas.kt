@@ -59,11 +59,14 @@ class Canvas: JPanel() {
         )
     }
 
-    fun reset(properties: JTable, editorFactory: (value: String) -> EditorTextField, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
+    fun reset(properties: JTable, editorFactory: (value: String) -> EditorTextField, fileContent: String, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
         this.renderer = renderer
         this.camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
+        this.propertiesVisualizer?.clear()
         this.propertiesVisualizer = PropertiesVisualizer(properties, editorFactory)
-        this.stateProvider.resetStateTo(processObject)
+        this.stateProvider.resetStateTo(fileContent, processObject)
+        selectedElements = mutableSetOf()
+        repaint()
     }
 
     fun click(location: Point2D.Float) {

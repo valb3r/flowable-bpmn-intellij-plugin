@@ -52,11 +52,13 @@ class BpmnPluginToolWindow {
         canvasAndProperties.dividerLocation = (canvasAndProperties.height * 0.8f).toInt()
 
         setupUiBeforeRun()
+        val virtualFile = bpmnFile.virtualFile
         this.canvasBuilder.build(
                 table,
                 { createEditor(context.project, bpmnFile, it) },
                 canvas,
-                bpmnFile
+                bpmnFile.project,
+                virtualFile
         )
         setupUiAfterRun()
     }

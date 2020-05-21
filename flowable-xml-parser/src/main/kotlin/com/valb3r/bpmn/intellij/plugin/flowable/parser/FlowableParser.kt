@@ -20,8 +20,10 @@ import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
-import java.io.*
-import java.nio.charset.StandardCharsets.UTF_8
+import java.io.ByteArrayInputStream
+import java.io.StringWriter
+import java.io.Writer
+import java.nio.charset.StandardCharsets
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
@@ -82,31 +84,17 @@ class FlowableParser : BpmnParser {
         return toProcessObject(dto)
     }
 
-    override fun parse(input: InputStream): BpmnProcessObject {
-        val dto = mapper.readValue<BpmnFile>(input)
-        return toProcessObject(dto)
-    }
-
-    /**
-     * Impossible to use FasterXML - Multiple objects of same type issue:
-     * https://github.com/FasterXML/jackson-dataformat-xml/issues/205
-     */
-    override fun update(input: InputStream, output: OutputStream, events: List<Event>){
-        val dBuilder = dbFactory.newDocumentBuilder()
-        val doc = dBuilder.parse(input)
-
-        parseAndWrite(doc, OutputStreamWriter(output), events)
-    }
-
     /**
      * Impossible to use FasterXML - Multiple objects of same type issue:
      * https://github.com/FasterXML/jackson-dataformat-xml/issues/205
      */
     override fun update(input: String, events: List<Event>): String {
         val dBuilder = dbFactory.newDocumentBuilder()
-        val doc = dBuilder.parse(ByteArrayInputStream(input.toByteArray(UTF_8)))
+        val doc = dBuilder.parse(ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8)))
 
-        return parseAndWrite(doc, StringWriter(), events).buffer.toString()
+        val writer = StringWriter()
+        parseAndWrite(doc, writer, events)
+        return writer.buffer.toString()
     }
 
     private fun <T: Writer> parseAndWrite(doc: Document, writer: T, events: List<Event>): T {
