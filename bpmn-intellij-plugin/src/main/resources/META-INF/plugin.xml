@@ -4,7 +4,7 @@
     <name>Flowable BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.1.0-b0</version>
+    <version>0.1.0-b1</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -19,6 +19,24 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+    <p>0.1.0-b1:</p>
+      <ul>
+        <li>
+          Fixed: issue with wrong element ID format
+        </li>
+        <li>
+          Fixed: Cascade ID update to exclusive gateway default element id
+        </li>
+        <li>
+          Fixed: Better visual anchor highlighting and selection for edge entry
+        </li>
+        <li>
+          Service task and alike elements dragging causes attached edges to follow
+        </li>
+        <li>
+          Support for 'class' and 'expression' in properties
+        </li>
+      </ul>
       <p>0.1.0-b0:</p>
       <ul>
         <li>
