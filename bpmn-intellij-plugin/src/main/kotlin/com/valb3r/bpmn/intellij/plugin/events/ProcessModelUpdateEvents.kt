@@ -30,8 +30,7 @@ fun updateEventsRegistry(): ProcessModelUpdateEvents {
 class ProcessModelUpdateEvents(private val parser: BpmnParser, private val project: Project, private val file: VirtualFile, private val updates: MutableList<Order<out Event>>) {
 
     private var baseFileContent: String? = null
-    private var cursor: Int = 0
-    private var order: Long = 0
+    private var allBeforeThis: Int = 0
     private var expectedFileHash: String = ""
 
     private val fileCommitListeners: MutableList<Any> = ArrayList()
@@ -51,8 +50,7 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
 
     @Synchronized
     fun reset(fileContent: String) {
-        order = 0
-        cursor = 0
+        allBeforeThis = 0
         updates.clear()
         fileCommitListeners.clear()
         parentCreatesByStaticId.clear()
@@ -69,10 +67,10 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
 
     @Synchronized
     fun undo() {
-        cursor = if (cursor > 0) {
-            updates[cursor - 1].block?.let { cursor - it.size } ?: cursor - 1
+        allBeforeThis = if (allBeforeThis > 0) {
+            updates[allBeforeThis - 1].block?.let { allBeforeThis - it.size } ?: allBeforeThis - 1
         } else {
-            cursor
+            allBeforeThis
         }
 
         commitToFile()
@@ -80,10 +78,10 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
 
     @Synchronized
     fun redo() {
-        cursor = if (cursor < updates.size - 1) {
-            updates[cursor + 1].block?.let { cursor + it.size } ?: cursor + 1
+        allBeforeThis = if (allBeforeThis < updates.size) {
+            updates[allBeforeThis + 1].block?.let { allBeforeThis + it.size } ?: allBeforeThis + 1
         } else {
-            cursor
+            allBeforeThis
         }
 
         commitToFile()
@@ -91,8 +89,8 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
 
     @Synchronized
     fun undoRedoStatus(): Set<UndoRedo> {
-        val hasUndo = cursor > 0
-        val hasRedo = cursor < updates.size - 1
+        val hasUndo = allBeforeThis > 0
+        val hasRedo = allBeforeThis < updates.size
         val result = mutableSetOf<UndoRedo>()
         if (hasUndo) result.add(UndoRedo.UNDO)
         if (hasRedo) result.add(UndoRedo.REDO)
@@ -106,26 +104,25 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
         WriteCommandAction.runWriteCommandAction(project) {
             val newText = parser.update(
                     baseFileContent ?: doc.text,
-                    updates.filterIndexed { index, _ -> index < cursor }.map { it.event }
+                    updates.filterIndexed { index, _ -> index < allBeforeThis }.map { it.event }
             )
 
             expectedFileHash = hashData(newText)
             doc.replaceString(0, doc.textLength, newText)
         }
-        FileDocumentManager.getInstance().saveDocument(doc);
+        FileDocumentManager.getInstance().saveDocument(doc)
     }
 
     @Synchronized
     fun getUpdateEventList(): List<Order<out Event>> {
-        return updates.filterIndexed { index, _ ->  index < cursor }.toList()
+        return updates.filterIndexed { index, _ ->  index < allBeforeThis }.toList()
     }
 
     @Synchronized
     fun addPropertyUpdateEvent(event: PropertyUpdateWithId) {
         disableRedo()
-        val toStore = Order(order, event)
-        order++
-        cursor++
+        val toStore = Order(allBeforeThis, event)
+        allBeforeThis++
         updates.add(toStore)
         propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
 
@@ -144,9 +141,8 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
     @Synchronized
     fun addLocationUpdateEvent(events: List<LocationUpdateWithId>) {
         disableRedo()
-        val current = order
-        order += events.size
-        cursor += events.size
+        val current = allBeforeThis
+        allBeforeThis += events.size
         events.forEachIndexed {index, event ->
             val toStore = Order(current + index, event, EventBlock(events.size))
             updates.add(toStore)
@@ -165,18 +161,24 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
     }
 
     @Synchronized
-    fun addElementRemovedEvent(event: DiagramElementRemovedEvent) {
-        val toStore = advanceCursor(event)
-        updates.add(toStore)
-        deletionsByStaticId.computeIfAbsent(event.elementId) { CopyOnWriteArrayList() } += toStore
-        commitToFile()
-    }
+    fun addElementRemovedEvent(diagram: List<DiagramElementRemovedEvent>, bpmn: List<BpmnElementRemovedEvent>) {
+        disableRedo()
+        val current = allBeforeThis
+        val blockSize = diagram.size + bpmn.size
+        allBeforeThis += blockSize
 
-    @Synchronized
-    fun addElementRemovedEvent(event: BpmnElementRemovedEvent) {
-        val toStore = advanceCursor(event)
-        updates.add(toStore)
-        deletionsByStaticBpmnId.computeIfAbsent(event.elementId) { CopyOnWriteArrayList() } += toStore
+        diagram.forEachIndexed {index, event ->
+            val toStore = Order(current + index, event, EventBlock(blockSize))
+            updates.add(toStore)
+            deletionsByStaticId.computeIfAbsent(event.elementId) { CopyOnWriteArrayList() } += toStore
+        }
+
+        bpmn.forEachIndexed {index, event ->
+            val toStore = Order(current + index, event, EventBlock(blockSize))
+            updates.add(toStore)
+            deletionsByStaticBpmnId.computeIfAbsent(event.elementId) { CopyOnWriteArrayList() } += toStore
+        }
+
         commitToFile()
     }
 
@@ -196,31 +198,23 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
         commitToFile()
     }
 
-    private fun <T: Event> advanceCursor(event: T): Order<T> {
-        disableRedo()
-        val toStore = Order(order, event)
-        order++
-        cursor++
-        return toStore
-    }
-
     @Synchronized
     fun currentPropertyUpdateEventListWithCascaded(elementId: BpmnElementId): List<EventOrder<PropertyUpdateWithId>> {
-        val cursorValue = cursor
+        val cursorValue = allBeforeThis
         val latestRemoval = lastDeletion(elementId)
         val allEvents = propertyUpdatesByStaticId
                 .getOrDefault(elementId, emptyList<Order<PropertyUpdateWithId>>())
                 .filterIsInstance<Order<PropertyUpdateWithId>>()
                 .filter { it.order < cursorValue }
-                .toMutableList();
-        allEvents.addAll(broadcastPropertyEvents)
+                .toMutableList()
+        allEvents.addAll(broadcastPropertyEvents.filter { it.order < cursorValue })
 
         return allEvents.filter { it.order >  latestRemoval.order}
     }
 
     @Synchronized
     fun currentPropertyUpdateEventList(elementId: BpmnElementId): List<EventOrder<PropertyUpdateWithId>> {
-        val cursorValue = cursor
+        val cursorValue = allBeforeThis
         val latestRemoval = lastDeletion(elementId)
         return propertyUpdatesByStaticId
                 .getOrDefault(elementId, emptyList<Order<PropertyUpdateWithId>>())
@@ -229,8 +223,15 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
                 .filter { it.order >  latestRemoval.order}
     }
 
+    private fun <T: Event> advanceCursor(event: T): Order<T> {
+        disableRedo()
+        val toStore = Order(allBeforeThis, event)
+        allBeforeThis++
+        return toStore
+    }
+
     private fun disableRedo() {
-        val targetList = updates.subList(0, cursor).toList()
+        val targetList = updates.subList(0, allBeforeThis).toList()
         updates.clear()
         updates.addAll(targetList)
     }
@@ -240,11 +241,11 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
     }
 
     private fun lastDeletion(elementId: BpmnElementId): Order<out Event> {
-        val cursorValue = cursor
+        val cursorValue = allBeforeThis
         return deletionsByStaticBpmnId[elementId]?.filter { it.order < cursorValue }?.maxBy { it.order } ?: Order(-1, NullEvent(elementId.id))
     }
 
-    data class Order<T: Event>(override val order: Long, override val event: T, override val block: EventBlock? = null): EventOrder<T>
+    data class Order<T: Event>(override val order: Int, override val event: T, override val block: EventBlock? = null): EventOrder<T>
     data class NullEvent(val forId: String): Event
 
     enum class UndoRedo {

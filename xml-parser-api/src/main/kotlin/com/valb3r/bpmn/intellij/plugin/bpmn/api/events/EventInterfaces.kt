@@ -14,7 +14,7 @@ interface Event
 data class EventBlock(val size: Int)
 
 interface EventOrder<T: Event> {
-    val order: Long
+    val order: Int
     val event: T
     val block: EventBlock?
 }
