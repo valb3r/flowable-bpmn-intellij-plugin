@@ -126,8 +126,10 @@ class BpmnProcessRenderer {
                 val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
                 areaByElement += actionsElem
                 renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? ->
-                    dest.addLocationUpdateEvent(DraggedToEvent(it.id, dx, dy, null, null))
-                    renderMeta.cascadedTransalationOf.forEach {cascadeTo -> dest.addLocationUpdateEvent(DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId)) }
+                    val events = mutableListOf<DraggedToEvent>()
+                    events += DraggedToEvent(it.id, dx, dy, null, null)
+                    events += renderMeta.cascadedTransalationOf.map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
+                    dest.addLocationUpdateEvent(events)
                 }
             }
         }

@@ -13,10 +13,12 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventOrder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.LocationUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
 import java.nio.charset.StandardCharsets
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.collections.ArrayList
 
 
 private val updateEvents = AtomicReference<ProcessModelUpdateEvents>()
@@ -99,9 +101,17 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
     }
 
     fun addLocationUpdateEvent(event: LocationUpdateWithId) {
-        val toStore = Order(order.getAndIncrement(), event)
-        updates.add(toStore)
-        locationUpdatesByStaticId.computeIfAbsent(event.diagramElementId) { CopyOnWriteArrayList() } += toStore
+        addLocationUpdateEvent(Collections.singletonList(event))
+    }
+
+    fun addLocationUpdateEvent(events: List<LocationUpdateWithId>) {
+        val current = order.getAndAdd(events.size.toLong())
+        events.forEachIndexed {index, event ->
+            val toStore = Order(current + index, event)
+            updates.add(toStore)
+            locationUpdatesByStaticId.computeIfAbsent(event.diagramElementId) { CopyOnWriteArrayList() } += toStore
+        }
+
         commitToFile()
     }
 
