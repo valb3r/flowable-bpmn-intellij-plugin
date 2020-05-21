@@ -18,7 +18,7 @@ class CanvasBuilder {
 
     fun build(properties: JTable, editorFactory: (value: String) -> EditorTextField, canvas: Canvas, bpmnFile: PsiFile) {
         val parser = FlowableParser()
-        setUpdateEventsRegistry(parser, bpmnFile.virtualFile)
+        setUpdateEventsRegistry(parser, bpmnFile.project, bpmnFile.virtualFile)
         updateEventsRegistry().reset()
         bpmnFile.virtualFile.inputStream.use {
             val process = parser.parse(it)

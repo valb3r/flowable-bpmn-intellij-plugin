@@ -1,6 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.events
 
-import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -9,17 +11,16 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventOrder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.LocationUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
-import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
+
 private val updateEvents = AtomicReference<ProcessModelUpdateEvents>()
 
-fun setUpdateEventsRegistry(parser: BpmnParser, file: VirtualFile) {
-    updateEvents.set(ProcessModelUpdateEvents(parser, file, CopyOnWriteArrayList()))
+fun setUpdateEventsRegistry(parser: BpmnParser, project: Project, file: VirtualFile) {
+    updateEvents.set(ProcessModelUpdateEvents(parser, project, file, CopyOnWriteArrayList()))
 }
 
 fun updateEventsRegistry(): ProcessModelUpdateEvents {
@@ -27,7 +28,7 @@ fun updateEventsRegistry(): ProcessModelUpdateEvents {
 }
 
 // Global singleton
-class ProcessModelUpdateEvents(private val parser: BpmnParser, private val file: VirtualFile, private val updates: MutableList<Order<out Event>>) {
+class ProcessModelUpdateEvents(private val parser: BpmnParser, private val project: Project, private val file: VirtualFile, private val updates: MutableList<Order<out Event>>) {
 
     private val order: AtomicLong = AtomicLong()
     private val fileCommitListeners: MutableList<Any> = ArrayList()
@@ -57,18 +58,17 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val file:
 
     fun commitToFile() {
         val lastCommit = updates.filter { it.event is CommittedToFile }.maxBy { it.order }
-        val bos = ByteArrayOutputStream()
-        file.inputStream.use {input ->
-            parser.update(input, bos, updates.filter { it.order > (lastCommit?.order ?: -1) }.map { it.event })
+        val doc = FileDocumentManager.getInstance().getDocument(file)!!
+        WriteCommandAction.runWriteCommandAction(project) {
+            parser.update(
+                    doc.text,
+                    {newStr -> doc.replaceString(0, doc.textLength, newStr)},
+                    updates.filter { it.order > (lastCommit?.order ?: -1) }.map { it.event }
+            )
         }
+
         val toStore = Order(order.getAndIncrement(), CommittedToFile(0))
         updates.add(toStore)
-
-        WriteAction.run<IOException> {
-            file.getOutputStream(null).use {
-                it.write(bos.toByteArray())
-            }
-        }
     }
 
     fun updateEventList(): List<Order<out Event>> {
