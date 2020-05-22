@@ -34,9 +34,9 @@ class BpmnProcessRenderer {
     private val undoId = DiagramElementId("UNDO")
     private val redoId = DiagramElementId("REDO")
 
-    private val UNDO = IconLoader.getIcon("/icons/undo.png")
-    private val REDO = IconLoader.getIcon("/icons/redo.png")
-    private val GEAR = IconLoader.getIcon("/icons/gear.png")
+    private val UNDO = IconLoader.getIcon("/icons/actions/undo.png")
+    private val REDO = IconLoader.getIcon("/icons/actions/redo.png")
+    private val GEAR = IconLoader.getIcon("/icons/render/gear.png")
     private val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
     private val SEQUENCE = "/icons/sequence.svg".asResource()!!
     private val RECYCLE_BIN = "/icons/recycle-bin.svg".asResource()!!
