@@ -287,7 +287,7 @@ class BpmnProcessRenderer {
                                 .toList(),
                         parent.epoch + 1
                 ))}
-                if (isDeepStructure(meta)) {
+                if (active) {
                     result += drawActionsElement(canvas, translatedNode, meta.interactionContext, mapOf(Actions.DELETE to callback))
                 }
             }
