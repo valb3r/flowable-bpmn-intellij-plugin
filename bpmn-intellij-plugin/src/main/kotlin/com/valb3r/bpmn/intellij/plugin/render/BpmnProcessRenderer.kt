@@ -287,7 +287,7 @@ class BpmnProcessRenderer {
                                 .toList(),
                         parent.epoch + 1
                 ))}
-                if (active) {
+                if (active && onlyWaypointAndEdgeSelected(meta, node, parent)) {
                     result += drawActionsElement(canvas, translatedNode, meta.interactionContext, mapOf(Actions.DELETE to callback))
                 }
             }
@@ -303,6 +303,9 @@ class BpmnProcessRenderer {
         meta.interactionContext.dragEndCallbacks[begin.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? -> dragCallback(dx, dy, dest, begin, droppedOn)}
         return result
     }
+
+    private fun onlyWaypointAndEdgeSelected(meta: RenderMetadata, node: IdentifiableWaypoint, parent: EdgeWithIdentifiableWaypoints) =
+            meta.selectedIds.containsAll(setOf(node.id, parent.id)) && meta.selectedIds.size == 2
 
     private fun calculateTrueWaypoints(shape: EdgeWithIdentifiableWaypoints, meta: RenderMetadata): List<IdentifiableWaypoint> {
         return shape.waypoint.filter { it.physical || isActive(it.id, meta) }
