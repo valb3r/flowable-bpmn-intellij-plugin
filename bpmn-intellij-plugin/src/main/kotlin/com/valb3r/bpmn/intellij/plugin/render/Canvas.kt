@@ -35,7 +35,7 @@ class Canvas: JPanel() {
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
-    private var interactionCtx: ElementInteractionContext = ElementInteractionContext(mutableSetOf(), mutableMapOf(), mutableMapOf(), null, Point2D.Float(), Point2D.Float())
+    private var interactionCtx: ElementInteractionContext = ElementInteractionContext(mutableSetOf(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
     private var renderer: BpmnProcessRenderer? = null
     private var areaByElement: Map<DiagramElementId, AreaWithZindex>? = null
     private var propertiesVisualizer: PropertiesVisualizer? = null
@@ -74,7 +74,7 @@ class Canvas: JPanel() {
         clickedElements.forEach { interactionCtx.clickCallbacks[it]?.invoke(updateEventsRegistry()) }
 
         this.selectedElements.clear()
-        interactionCtx = ElementInteractionContext(mutableSetOf(), mutableMapOf(), mutableMapOf(), null, Point2D.Float(), Point2D.Float())
+        interactionCtx = ElementInteractionContext(mutableSetOf(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
         this.selectedElements.addAll(clickedElements)
 
         repaint()
@@ -96,17 +96,28 @@ class Canvas: JPanel() {
         repaint()
     }
 
-    fun startDragWithButton(current: Point2D.Float) {
+    fun startCanvasDragWithButton(current: Point2D.Float) {
+        val point = camera.fromCameraView(current)
         val elemsUnderCursor = elemsUnderCursor(current)
         if (selectedElements.intersect(elemsUnderCursor).isEmpty()) {
-            interactionCtx = ElementInteractionContext(emptySet(), mutableMapOf(), mutableMapOf(), null, camera.fromCameraView(current), camera.fromCameraView(current))
+            interactionCtx = ElementInteractionContext(emptySet(), mutableMapOf(), null, mutableMapOf(), null, point, point)
+            return
+        }
+    }
+
+    fun startSelectionOrDrag(current: Point2D.Float) {
+        val point = camera.fromCameraView(current)
+        val elemsUnderCursor = elemsUnderCursor(current)
+
+        if (elemsUnderCursor.isEmpty()) {
+            interactionCtx = ElementInteractionContext(emptySet(), mutableMapOf(), Rectangle2D.Float(current.x, current.y, 0.0f, 0.0f), mutableMapOf(), null, point, point)
             return
         }
 
         interactionCtx = interactionCtx.copy(
                 draggedIds = selectedElements.toMutableSet(),
-                start = camera.fromCameraView(current),
-                current = camera.fromCameraView(current)
+                start = point,
+                current = point
         )
     }
 
@@ -161,18 +172,42 @@ class Canvas: JPanel() {
         dragCanvas(previous, current)
     }
 
-    fun dragWithLeftButton(previous: Point2D.Float, current: Point2D.Float) {
+    fun dragOrSelectWithLeftButton(previous: Point2D.Float, current: Point2D.Float) {
+        val point = camera.fromCameraView(current)
+        if (null != interactionCtx.dragSelectionRect) {
+            val xmin = min(interactionCtx.dragSelectionRect!!.x, current.x)
+            val ymin = min(interactionCtx.dragSelectionRect!!.y, current.y)
+            val xmax = max(interactionCtx.dragSelectionRect!!.x, current.x)
+            val ymax = max(interactionCtx.dragSelectionRect!!.y, current.y)
+
+            interactionCtx = interactionCtx.copy(dragSelectionRect = Rectangle2D.Float(
+                    xmin,
+                    ymin,
+                    xmax - xmin,
+                    ymax - ymin
+            ))
+            this.selectedElements.addAll(elemsUnderRect(interactionCtx.dragSelectionRect!!, true))
+            repaint()
+            return
+        }
+
         if (selectedElements.isEmpty() || interactionCtx.draggedIds.isEmpty()) {
             dragCanvas(previous, current)
             return
         }
 
-        interactionCtx = interactionCtx.copy(current = camera.fromCameraView(current))
+        interactionCtx = interactionCtx.copy(current = point)
         interactionCtx = attractToAnchors(interactionCtx)
         repaint()
     }
 
-    fun stopDrag() {
+    fun stopDragOrSelect() {
+        if (null != interactionCtx.dragSelectionRect) {
+            interactionCtx = ElementInteractionContext(mutableSetOf(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
+            repaint()
+            return
+        }
+
         if (interactionCtx.draggedIds.isNotEmpty() && (interactionCtx.current.distance(interactionCtx.start) > epsilon)) {
             interactionCtx = attractToAnchors(interactionCtx)
             val dx = interactionCtx.current.x - interactionCtx.start.x
@@ -238,13 +273,16 @@ class Canvas: JPanel() {
     }
 
     private fun elemsUnderCursor(cursorPoint: Point2D.Float): List<DiagramElementId> {
-        val cursor = cursorRect(cursorPoint)
-        val intersection = areaByElement?.filter { it.value.area.intersects(cursor) }
+        return elemsUnderRect(cursorRect(cursorPoint))
+    }
+
+    private fun elemsUnderRect(withinRect: Rectangle2D, withoutZFilter: Boolean = false): List<DiagramElementId> {
+        val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
         val minZindex = intersection?.minBy { it.value.index }
         val result = mutableListOf<DiagramElementId>()
         // Force elements of only one dominating Z-Index and their parents
         intersection
-                ?.filter { it.value.index == minZindex?.value?.index }
+                ?.filter { withoutZFilter || (it.value.index == minZindex?.value?.index) }
                 ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this }  }
         return result
     }

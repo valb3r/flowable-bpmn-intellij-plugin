@@ -62,7 +62,14 @@ class BpmnProcessRenderer {
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
 
         drawUndoRedo(ctx, state, renderMeta, areaByElement)
+        drawSelectionRect(ctx)
         return areaByElement
+    }
+
+    private fun drawSelectionRect(ctx: RenderContext) {
+        ctx.interactionContext.dragSelectionRect?.let {
+            ctx.canvas.drawRectNoCameraTransform(Point2D.Float(it.x, it.y), it.width, it.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
+        }
     }
 
     private fun drawUndoRedo(ctx: RenderContext, state: CurrentState, meta: RenderMetadata, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>) {
@@ -120,7 +127,7 @@ class BpmnProcessRenderer {
         shapes.forEach {
             mergeArea(it.id, areaByElement, drawEdgeElement(canvas, it, renderMeta))
             if (isActive(it.id, renderMeta)) {
-                drawWaypointElements(canvas, it, renderMeta).forEach {waypoint ->
+                drawWaypointElements(canvas, it, renderMeta).forEach { waypoint ->
                     mergeArea(waypoint.key, areaByElement, waypoint.value)
                 }
 
@@ -131,10 +138,16 @@ class BpmnProcessRenderer {
                     diagramRemoves += DiagramElementRemovedEvent(it.id)
                     dest.addElementRemovedEvent(diagramRemoves, bpmnRemoves)
                 }
-                val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback))
-                areaByElement += actionsElem
+                if (isDeepStructure(renderMeta)) {
+                    val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback))
+                    areaByElement += actionsElem
+                }
             }
         }
+    }
+
+    private fun isDeepStructure(renderMeta: RenderMetadata): Boolean {
+        return renderMeta.selectedIds.size == 1 && null == renderMeta.interactionContext.dragSelectionRect
     }
 
     private fun dramBpmnElements(shapes: List<ShapeElement>, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
@@ -156,12 +169,19 @@ class BpmnProcessRenderer {
                         dest.addObjectEvent(BpmnEdgeObjectAddedEvent(newSequenceBpmn, EdgeElementState(newSequenceDiagram), newElementsFactory().propertiesOf(newSequenceBpmn)))
                     }
                 }
-                val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
-                areaByElement += actionsElem
+                val isDeepStructure = isDeepStructure(renderMeta)
+                if (isDeepStructure) {
+                    val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
+                    areaByElement += actionsElem
+                }
+
                 renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? ->
                     val events = mutableListOf<DraggedToEvent>()
                     events += DraggedToEvent(it.id, dx, dy, null, null)
-                    events += renderMeta.cascadedTransalationOf.map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
+                    events += renderMeta
+                            .cascadedTransalationOf
+                            .filter { !renderMeta.interactionContext.draggedIds.contains(it.waypointId) }
+                            .map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
                     dest.addLocationUpdateEvent(events)
                 }
             }
@@ -207,7 +227,7 @@ class BpmnProcessRenderer {
         // draw all endpoints only if none virtual is dragged and not physical
         val isVirtualDragged = meta.interactionContext.draggedIds.intersect(shape.waypoint.filter { !it.physical }.map { it.id }).isNotEmpty()
         val isPhysicalDragged = meta.interactionContext.draggedIds.intersect(shape.waypoint.filter { it.physical }.map { it.id }).isNotEmpty()
-        val waypoints = if (isVirtualDragged || isPhysicalDragged) trueWaypoints else shape.waypoint
+        val waypoints = if (!isDeepStructure(meta) || (isVirtualDragged || isPhysicalDragged)) trueWaypoints else shape.waypoint
         waypoints.forEachIndexed { index, it ->
             when {
                 index == waypoints.size - 1 -> area.putAll(drawWaypointAnchors(canvas, waypoints[index - 1], it, shape, meta, true, index))
@@ -267,7 +287,9 @@ class BpmnProcessRenderer {
                                 .toList(),
                         parent.epoch + 1
                 ))}
-                result += drawActionsElement(canvas, translatedNode, meta.interactionContext, mapOf(Actions.DELETE to callback))
+                if (isDeepStructure(meta)) {
+                    result += drawActionsElement(canvas, translatedNode, meta.interactionContext, mapOf(Actions.DELETE to callback))
+                }
             }
         }
 
@@ -316,7 +338,7 @@ class BpmnProcessRenderer {
     }
 
     private fun <T> translateElementIfNeeded(meta: RenderMetadata, elem: T): T where T : Translatable<T>, T: WithDiagramId {
-        return if (meta.interactionContext.draggedIds.contains(elem.id) || meta.cascadedTransalationOf.map { it.waypointId }.contains(elem.id)) {
+        return if (canTranslate(meta, elem.id)) {
             elem.copyAndTranslate(
                     meta.interactionContext.current.x - meta.interactionContext.start.x,
                     meta.interactionContext.current.y - meta.interactionContext.start.y
@@ -325,6 +347,9 @@ class BpmnProcessRenderer {
             elem
         }
     }
+
+    private fun canTranslate(meta: RenderMetadata, elemId: DiagramElementId) =
+            meta.interactionContext.draggedIds.contains(elemId) || meta.cascadedTransalationOf.map { it.waypointId }.contains(elemId)
 
     private fun drawEndEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
         val area = canvas.drawCircle(shape, color(active, Colors.END_EVENT), Colors.ELEMENT_BORDER_COLOR.color)

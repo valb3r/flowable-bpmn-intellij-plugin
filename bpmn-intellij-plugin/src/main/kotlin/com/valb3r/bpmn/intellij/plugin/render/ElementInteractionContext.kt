@@ -4,10 +4,12 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
 import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
 
 data class ElementInteractionContext(
         val draggedIds: Set<DiagramElementId>,
         val dragEndCallbacks: MutableMap<DiagramElementId, (dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId?) -> Unit>,
+        val dragSelectionRect: Rectangle2D.Float?,
         val clickCallbacks: MutableMap<DiagramElementId, (dest: ProcessModelUpdateEvents) -> Unit>,
         val anchorsHit: AnchorHit?,
         val start: Point2D.Float,
