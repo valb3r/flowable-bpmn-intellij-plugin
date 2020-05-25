@@ -68,7 +68,8 @@ class BpmnProcessRenderer {
 
     private fun drawSelectionRect(ctx: RenderContext) {
         ctx.interactionContext.dragSelectionRect?.let {
-            ctx.canvas.drawRectNoCameraTransform(Point2D.Float(it.x, it.y), it.width, it.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
+            val rect = it.toRect()
+            ctx.canvas.drawRectNoCameraTransform(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
         }
     }
 

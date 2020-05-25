@@ -110,7 +110,7 @@ class Canvas: JPanel() {
         val elemsUnderCursor = elemsUnderCursor(current)
 
         if (elemsUnderCursor.isEmpty()) {
-            interactionCtx = ElementInteractionContext(emptySet(), mutableMapOf(), Rectangle2D.Float(current.x, current.y, 0.0f, 0.0f), mutableMapOf(), null, point, point)
+            interactionCtx = ElementInteractionContext(emptySet(), mutableMapOf(), SelectionRect(current, current), mutableMapOf(), null, point, point)
             return
         }
 
@@ -175,18 +175,12 @@ class Canvas: JPanel() {
     fun dragOrSelectWithLeftButton(previous: Point2D.Float, current: Point2D.Float) {
         val point = camera.fromCameraView(current)
         if (null != interactionCtx.dragSelectionRect) {
-            val xmin = min(interactionCtx.dragSelectionRect!!.x, current.x)
-            val ymin = min(interactionCtx.dragSelectionRect!!.y, current.y)
-            val xmax = max(interactionCtx.dragSelectionRect!!.x, current.x)
-            val ymax = max(interactionCtx.dragSelectionRect!!.y, current.y)
-
-            interactionCtx = interactionCtx.copy(dragSelectionRect = Rectangle2D.Float(
-                    xmin,
-                    ymin,
-                    xmax - xmin,
-                    ymax - ymin
+            interactionCtx = interactionCtx.copy(dragSelectionRect = SelectionRect(
+                    interactionCtx.dragSelectionRect!!.start,
+                    current
             ))
-            this.selectedElements.addAll(elemsUnderRect(interactionCtx.dragSelectionRect!!, true))
+
+            this.selectedElements.addAll(elemsUnderRect(interactionCtx.dragSelectionRect!!.toRect(), true))
             repaint()
             return
         }
