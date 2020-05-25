@@ -80,10 +80,11 @@ class Canvas: JPanel() {
         repaint()
 
         val elementIdForPropertiesTable = selectedElements.firstOrNull()
-        stateProvider.currentState()
+        val state = stateProvider.currentState()
+        state
                 .elementByDiagramId[elementIdForPropertiesTable]
                 ?.let { elemId ->
-                    stateProvider.currentState().elemPropertiesByStaticElementId[elemId]?.let { propertiesVisualizer?.visualize(elemId, it) }
+                    state.elemPropertiesByStaticElementId[elemId]?.let { propertiesVisualizer?.visualize(state.elemPropertiesByStaticElementId, elemId, it) }
                 } ?: propertiesVisualizer?.clear()
     }
 

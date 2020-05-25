@@ -31,7 +31,6 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
     private var expectedFileHash: String = ""
 
     private val fileCommitListeners: MutableList<Any> = ArrayList()
-    private val broadcastPropertyEvents: MutableList<Order<PropertyUpdateWithId>> = ArrayList()
     private val parentCreatesByStaticId: MutableMap<DiagramElementId, MutableList<Order<out Event>>> = HashMap()
     private val locationUpdatesByStaticId: MutableMap<DiagramElementId, MutableList<Order<out Event>>> = HashMap()
     private val propertyUpdatesByStaticId: MutableMap<BpmnElementId, MutableList<Order<out Event>>> = HashMap()
@@ -57,7 +56,6 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
         newDiagramElements.clear()
         deletionsByStaticId.clear()
         deletionsByStaticBpmnId.clear()
-        broadcastPropertyEvents.clear()
         expectedFileHash = hashData(fileContent)
         baseFileContent = fileContent
     }
@@ -122,11 +120,6 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
         allBeforeThis++
         updates.add(toStore)
         propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
-
-        if (event.property.cascades) {
-            broadcastPropertyEvents.add(toStore)
-        }
-
         commitToFile()
     }
 
@@ -185,20 +178,6 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
         updates.add(toStore)
         newDiagramElements.add(toStore)
         commitToFile()
-    }
-
-    @Synchronized
-    fun currentPropertyUpdateEventListWithCascaded(elementId: BpmnElementId): List<EventOrder<PropertyUpdateWithId>> {
-        val cursorValue = allBeforeThis
-        val latestRemoval = lastDeletion(elementId)
-        val allEvents = propertyUpdatesByStaticId
-                .getOrDefault(elementId, emptyList<Order<PropertyUpdateWithId>>())
-                .filterIsInstance<Order<PropertyUpdateWithId>>()
-                .filter { it.order < cursorValue }
-                .toMutableList()
-        allEvents.addAll(broadcastPropertyEvents.filter { it.order < cursorValue })
-
-        return allEvents.filter { it.order >  latestRemoval.order}
     }
 
     @Synchronized

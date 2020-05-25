@@ -107,7 +107,7 @@ class BpmnProcessRenderer {
             state.elemPropertiesByStaticElementId.forEach { (owner, props) ->
                 idCascadesTo.intersect(props.keys).filter { props[it]?.value == parent.id }.forEach { type ->
                     when (state.elementByBpmnId[owner]) {
-                        is BpmnSequenceFlow -> result += computeCascadeToWaypoint(state, owner, type)
+                        is BpmnSequenceFlow -> result += computeCascadeToWaypoint(state, parent, owner, type)
                     }
                 }
 
@@ -116,12 +116,12 @@ class BpmnProcessRenderer {
         return result
     }
 
-    private fun computeCascadeToWaypoint(state: CurrentState, owner: BpmnElementId, type: PropertyType): Collection<CascadeTranslationToWaypoint> {
+    private fun computeCascadeToWaypoint(state: CurrentState, cascadeTrigger: BpmnElementId, owner: BpmnElementId, type: PropertyType): Collection<CascadeTranslationToWaypoint> {
         return state.edges
                 .filter { it.bpmnElement == owner }
                 .map {
                     val index = if (type == SOURCE_REF) 0 else it.waypoint.size - 1
-                    CascadeTranslationToWaypoint(it.waypoint[index].id, it.id, it.waypoint[index].internalPhysicalPos)
+                    CascadeTranslationToWaypoint(cascadeTrigger, it.waypoint[index].id, it.id, it.waypoint[index].internalPhysicalPos)
                 }
     }
 
@@ -177,12 +177,13 @@ class BpmnProcessRenderer {
                     areaByElement += actionsElem
                 }
 
-                renderMeta.interactionContext.dragEndCallbacks[it.id] = OnDragEnd@{ dx: Float, dy: Float, droppedOn: BpmnElementId? ->
+                renderMeta.interactionContext.dragEndCallbacks[it.id] = OnDragEnd@{ dx: Float, dy: Float, _: BpmnElementId? ->
                     val events = mutableListOf<DraggedToEvent>()
                     events += DraggedToEvent(it.id, dx, dy, null, null)
                     events += renderMeta
                             .cascadedTransalationOf
-                            .filter { !renderMeta.interactionContext.draggedIds.contains(it.waypointId) }
+                            .filter { target -> target.cascadeSource == it.bpmnElement}
+                            .filter { target -> !renderMeta.interactionContext.draggedIds.contains(target.waypointId) }
                             .map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
                     return@OnDragEnd events
                 }
@@ -248,7 +249,9 @@ class BpmnProcessRenderer {
             val index = parent.waypoint.indexOf(elem)
             if (elem.physical) {
                 events += DraggedToEvent(elem.id, dx, dy, parent.id, elem.internalPhysicalPos)
-                if (null != droppedOn && null != parent.bpmnElement) {
+                if (null != droppedOn && null != parent.bpmnElement
+                        && meta.interactionContext.draggedIds.containsAll(setOf(elem.id, parent.id))
+                        && meta.interactionContext.draggedIds.size == 2) {
                     if (parent.waypoint.size - 1 == index ) {
                         events += StringValueUpdatedEvent(parent.bpmnElement!!, TARGET_REF, droppedOn.id)
                     } else if (0 == index) {
@@ -531,7 +534,7 @@ class BpmnProcessRenderer {
             val cascadedTransalationOf: Set<CascadeTranslationToWaypoint>
     )
 
-    private data class CascadeTranslationToWaypoint(val waypointId: DiagramElementId, val parentEdgeId: DiagramElementId, val internalId: Int)
+    private data class CascadeTranslationToWaypoint(val cascadeSource: BpmnElementId, val waypointId: DiagramElementId, val parentEdgeId: DiagramElementId, val internalId: Int)
 
     private enum class Actions {
         DELETE,
