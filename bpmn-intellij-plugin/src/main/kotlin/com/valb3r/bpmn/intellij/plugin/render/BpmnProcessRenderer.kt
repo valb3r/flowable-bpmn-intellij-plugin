@@ -140,7 +140,7 @@ class BpmnProcessRenderer {
                     diagramRemoves += DiagramElementRemovedEvent(it.id)
                     dest.addElementRemovedEvent(diagramRemoves, bpmnRemoves)
                 }
-                if (isDeepStructure(renderMeta)) {
+                if (isDeepStructureWithActions(renderMeta)) {
                     val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback))
                     areaByElement += actionsElem
                 }
@@ -149,6 +149,10 @@ class BpmnProcessRenderer {
     }
 
     private fun isDeepStructure(renderMeta: RenderMetadata): Boolean {
+        return null == renderMeta.interactionContext.dragSelectionRect
+    }
+
+    private fun isDeepStructureWithActions(renderMeta: RenderMetadata): Boolean {
         return renderMeta.selectedIds.size == 1 && null == renderMeta.interactionContext.dragSelectionRect
     }
 
@@ -171,8 +175,7 @@ class BpmnProcessRenderer {
                         dest.addObjectEvent(BpmnEdgeObjectAddedEvent(newSequenceBpmn, EdgeElementState(newSequenceDiagram), newElementsFactory().propertiesOf(newSequenceBpmn)))
                     }
                 }
-                val isDeepStructure = isDeepStructure(renderMeta)
-                if (isDeepStructure) {
+                if (isDeepStructureWithActions(renderMeta)) {
                     val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
                     areaByElement += actionsElem
                 }
