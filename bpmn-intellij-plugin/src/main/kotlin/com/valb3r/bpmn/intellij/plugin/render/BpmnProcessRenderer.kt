@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.IdentifiableWaypoint
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -62,7 +63,15 @@ class BpmnProcessRenderer {
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
 
         drawUndoRedo(ctx, state, renderMeta, areaByElement)
+        drawSelectionRect(ctx)
         return areaByElement
+    }
+
+    private fun drawSelectionRect(ctx: RenderContext) {
+        ctx.interactionContext.dragSelectionRect?.let {
+            val rect = it.toRect()
+            ctx.canvas.drawRectNoCameraTransform(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
+        }
     }
 
     private fun drawUndoRedo(ctx: RenderContext, state: CurrentState, meta: RenderMetadata, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>) {
@@ -120,7 +129,7 @@ class BpmnProcessRenderer {
         shapes.forEach {
             mergeArea(it.id, areaByElement, drawEdgeElement(canvas, it, renderMeta))
             if (isActive(it.id, renderMeta)) {
-                drawWaypointElements(canvas, it, renderMeta).forEach {waypoint ->
+                drawWaypointElements(canvas, it, renderMeta).forEach { waypoint ->
                     mergeArea(waypoint.key, areaByElement, waypoint.value)
                 }
 
@@ -131,10 +140,16 @@ class BpmnProcessRenderer {
                     diagramRemoves += DiagramElementRemovedEvent(it.id)
                     dest.addElementRemovedEvent(diagramRemoves, bpmnRemoves)
                 }
-                val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback))
-                areaByElement += actionsElem
+                if (isDeepStructure(renderMeta)) {
+                    val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback))
+                    areaByElement += actionsElem
+                }
             }
         }
+    }
+
+    private fun isDeepStructure(renderMeta: RenderMetadata): Boolean {
+        return renderMeta.selectedIds.size == 1 && null == renderMeta.interactionContext.dragSelectionRect
     }
 
     private fun dramBpmnElements(shapes: List<ShapeElement>, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
@@ -156,13 +171,20 @@ class BpmnProcessRenderer {
                         dest.addObjectEvent(BpmnEdgeObjectAddedEvent(newSequenceBpmn, EdgeElementState(newSequenceDiagram), newElementsFactory().propertiesOf(newSequenceBpmn)))
                     }
                 }
-                val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
-                areaByElement += actionsElem
-                renderMeta.interactionContext.dragEndCallbacks[it.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? ->
+                val isDeepStructure = isDeepStructure(renderMeta)
+                if (isDeepStructure) {
+                    val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
+                    areaByElement += actionsElem
+                }
+
+                renderMeta.interactionContext.dragEndCallbacks[it.id] = OnDragEnd@{ dx: Float, dy: Float, droppedOn: BpmnElementId? ->
                     val events = mutableListOf<DraggedToEvent>()
                     events += DraggedToEvent(it.id, dx, dy, null, null)
-                    events += renderMeta.cascadedTransalationOf.map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
-                    dest.addLocationUpdateEvent(events)
+                    events += renderMeta
+                            .cascadedTransalationOf
+                            .filter { !renderMeta.interactionContext.draggedIds.contains(it.waypointId) }
+                            .map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
+                    return@OnDragEnd events
                 }
             }
         }
@@ -207,7 +229,7 @@ class BpmnProcessRenderer {
         // draw all endpoints only if none virtual is dragged and not physical
         val isVirtualDragged = meta.interactionContext.draggedIds.intersect(shape.waypoint.filter { !it.physical }.map { it.id }).isNotEmpty()
         val isPhysicalDragged = meta.interactionContext.draggedIds.intersect(shape.waypoint.filter { it.physical }.map { it.id }).isNotEmpty()
-        val waypoints = if (isVirtualDragged || isPhysicalDragged) trueWaypoints else shape.waypoint
+        val waypoints = if (!isDeepStructure(meta) || (isVirtualDragged || isPhysicalDragged)) trueWaypoints else shape.waypoint
         waypoints.forEachIndexed { index, it ->
             when {
                 index == waypoints.size - 1 -> area.putAll(drawWaypointAnchors(canvas, waypoints[index - 1], it, shape, meta, true, index))
@@ -221,27 +243,29 @@ class BpmnProcessRenderer {
     private fun drawWaypointAnchors(canvas: CanvasPainter, begin: IdentifiableWaypoint, end: IdentifiableWaypoint, parent: EdgeWithIdentifiableWaypoints, meta: RenderMetadata, isLast: Boolean, endWaypointIndex: Int): Map<DiagramElementId, AreaWithZindex> {
         val result = HashMap<DiagramElementId, AreaWithZindex>()
 
-        val dragCallback = {dx: Float, dy: Float, dest: ProcessModelUpdateEvents, elem: IdentifiableWaypoint, droppedOn: BpmnElementId? ->
+        val dragCallback = DragCallback@{dx: Float, dy: Float, elem: IdentifiableWaypoint, droppedOn: BpmnElementId? ->
+            val events = mutableListOf<Event>()
             val index = parent.waypoint.indexOf(elem)
             if (elem.physical) {
-                dest.addLocationUpdateEvent(DraggedToEvent(elem.id, dx, dy, parent.id, elem.internalPhysicalPos))
+                events += DraggedToEvent(elem.id, dx, dy, parent.id, elem.internalPhysicalPos)
                 if (null != droppedOn && null != parent.bpmnElement) {
                     if (parent.waypoint.size - 1 == index ) {
-                        dest.addPropertyUpdateEvent(StringValueUpdatedEvent(parent.bpmnElement!!, TARGET_REF, droppedOn.id))
+                        events += StringValueUpdatedEvent(parent.bpmnElement!!, TARGET_REF, droppedOn.id)
                     } else if (0 == index) {
-                        dest.addPropertyUpdateEvent(StringValueUpdatedEvent(parent.bpmnElement!!, SOURCE_REF, droppedOn.id))
+                        events += StringValueUpdatedEvent(parent.bpmnElement!!, SOURCE_REF, droppedOn.id)
                     }
                 }
             } else {
-                dest.addWaypointStructureUpdate(NewWaypointsEvent(
+                events += NewWaypointsEvent(
                         parent.id,
                         parent.waypoint
                                 .filter { it.physical || it.id == elem.id }
                                 .map { if (it.id == elem.id && !it.physical) it.moveTo(dx, dy).asPhysical() else it }
                                 .toList(),
                         parent.epoch + 1
-                ))
+                )
             }
+            return@DragCallback events
         }
 
         val drawNode = { node: IdentifiableWaypoint, index: Int ->
@@ -257,17 +281,21 @@ class BpmnProcessRenderer {
                     ANCHOR_Z_INDEX,
                     parent.id
             )
-            meta.interactionContext.dragEndCallbacks[node.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? -> dragCallback(dx, dy, dest, node, droppedOn)}
+
+            meta.interactionContext.dragEndCallbacks[node.id] = { dx: Float, dy: Float, droppedOn: BpmnElementId? -> dragCallback(dx, dy, node, droppedOn)}
+
             if (active && node.physical && index > 0 && (index < parent.waypoint.size - 1)) {
-                val callback = { dest: ProcessModelUpdateEvents -> dest.addWaypointStructureUpdate(NewWaypointsEvent(
+                val callback = { dest: ProcessModelUpdateEvents -> dest.addEvents(listOf(NewWaypointsEvent(
                         parent.id,
                         parent.waypoint
                                 .filter { it.physical }
                                 .filter { it.id != node.id }
                                 .toList(),
                         parent.epoch + 1
-                ))}
-                result += drawActionsElement(canvas, translatedNode, meta.interactionContext, mapOf(Actions.DELETE to callback))
+                )))}
+                if (active && onlyWaypointAndEdgeSelected(meta, node, parent)) {
+                    result += drawActionsElement(canvas, translatedNode, meta.interactionContext, mapOf(Actions.DELETE to callback))
+                }
             }
         }
 
@@ -278,9 +306,12 @@ class BpmnProcessRenderer {
         }
 
         drawNode(begin, endWaypointIndex - 1)
-        meta.interactionContext.dragEndCallbacks[begin.id] = { dx: Float, dy: Float, dest: ProcessModelUpdateEvents, droppedOn: BpmnElementId? -> dragCallback(dx, dy, dest, begin, droppedOn)}
+        meta.interactionContext.dragEndCallbacks[begin.id] = { dx: Float, dy: Float, droppedOn: BpmnElementId? -> dragCallback(dx, dy, begin, droppedOn)}
         return result
     }
+
+    private fun onlyWaypointAndEdgeSelected(meta: RenderMetadata, node: IdentifiableWaypoint, parent: EdgeWithIdentifiableWaypoints) =
+            meta.selectedIds.containsAll(setOf(node.id, parent.id)) && meta.selectedIds.size == 2
 
     private fun calculateTrueWaypoints(shape: EdgeWithIdentifiableWaypoints, meta: RenderMetadata): List<IdentifiableWaypoint> {
         return shape.waypoint.filter { it.physical || isActive(it.id, meta) }
@@ -316,7 +347,7 @@ class BpmnProcessRenderer {
     }
 
     private fun <T> translateElementIfNeeded(meta: RenderMetadata, elem: T): T where T : Translatable<T>, T: WithDiagramId {
-        return if (meta.interactionContext.draggedIds.contains(elem.id) || meta.cascadedTransalationOf.map { it.waypointId }.contains(elem.id)) {
+        return if (canTranslate(meta, elem.id)) {
             elem.copyAndTranslate(
                     meta.interactionContext.current.x - meta.interactionContext.start.x,
                     meta.interactionContext.current.y - meta.interactionContext.start.y
@@ -325,6 +356,9 @@ class BpmnProcessRenderer {
             elem
         }
     }
+
+    private fun canTranslate(meta: RenderMetadata, elemId: DiagramElementId) =
+            meta.interactionContext.draggedIds.contains(elemId) || meta.cascadedTransalationOf.map { it.waypointId }.contains(elemId)
 
     private fun drawEndEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
         val area = canvas.drawCircle(shape, color(active, Colors.END_EVENT), Colors.ELEMENT_BORDER_COLOR.color)

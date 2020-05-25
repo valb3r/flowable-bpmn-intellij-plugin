@@ -10,11 +10,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import java.nio.charset.StandardCharsets
-import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 
 private val updateEvents = AtomicReference<ProcessModelUpdateEvents>()
@@ -134,29 +131,21 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
     }
 
     @Synchronized
-    fun addLocationUpdateEvent(event: LocationUpdateWithId) {
-        addLocationUpdateEvent(Collections.singletonList(event))
-    }
-
-    @Synchronized
-    fun addLocationUpdateEvent(events: List<LocationUpdateWithId>) {
+    fun addEvents(events: List<Event>) {
         disableRedo()
         val current = allBeforeThis
         allBeforeThis += events.size
         events.forEachIndexed {index, event ->
             val toStore = Order(current + index, event, EventBlock(events.size))
             updates.add(toStore)
-            locationUpdatesByStaticId.computeIfAbsent(event.diagramElementId) { CopyOnWriteArrayList() } += toStore
+            when (event) {
+                is LocationUpdateWithId -> locationUpdatesByStaticId.computeIfAbsent(event.diagramElementId) { CopyOnWriteArrayList() } += toStore
+                is PropertyUpdateWithId -> propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
+                is NewWaypointsEvent -> parentCreatesByStaticId.computeIfAbsent(event.edgeElementId) { CopyOnWriteArrayList() } += toStore
+                else -> throw IllegalArgumentException("Can't bulk add: " + event::class.qualifiedName)
+            }
         }
 
-        commitToFile()
-    }
-
-    @Synchronized
-    fun addWaypointStructureUpdate(event: NewWaypointsEvent) {
-        val toStore = advanceCursor(event)
-        updates.add(toStore)
-        parentCreatesByStaticId.computeIfAbsent(event.edgeElementId) { CopyOnWriteArrayList() } += toStore
         commitToFile()
     }
 
