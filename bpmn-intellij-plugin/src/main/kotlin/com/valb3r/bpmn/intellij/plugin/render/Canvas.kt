@@ -123,34 +123,37 @@ class Canvas: JPanel() {
 
     fun attractToAnchors(ctx: ElementInteractionContext): ElementInteractionContext {
         val anchors: MutableSet<AnchorDetails> = mutableSetOf()
-        for (dragged in ctx.draggedIds) {
-            val draggedType = areaByElement?.get(dragged)?.areaType ?: AreaType.SHAPE
+        val cameraPoint = camera.toCameraView(ctx.current)
+        val dragged = ctx.draggedIds.minBy {
+            val bounds = areaByElement?.get(it)?.area?.bounds2D ?: Rectangle2D.Float()
+            return@minBy Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat()).distance(cameraPoint)
+        }
+        val draggedType = areaByElement?.get(dragged)?.areaType ?: AreaType.SHAPE
 
-            val draggedAnchors = if (AreaType.SHAPE == draggedType) {
-                areaByElement?.get(dragged)?.anchorsForShape.orEmpty()
-            } else {
-                areaByElement?.get(dragged)?.anchorsForWaypoints.orEmpty()
-            }
+        val draggedAnchors = if (AreaType.SHAPE == draggedType) {
+            areaByElement?.get(dragged)?.anchorsForShape.orEmpty()
+        } else {
+            areaByElement?.get(dragged)?.anchorsForWaypoints.orEmpty()
+        }
 
-            val anchorsToSearchIn = areaByElement
-                    ?.filter { !ctx.draggedIds.contains(it.key) }
-                    // shape is not affected by waypoints
-                    ?.filter { if (draggedType == AreaType.SHAPE) it.value.areaType == AreaType.SHAPE else true }
+        val anchorsToSearchIn = areaByElement
+                ?.filter { !ctx.draggedIds.contains(it.key) }
+                // shape is not affected by waypoints
+                ?.filter { if (draggedType == AreaType.SHAPE) it.value.areaType == AreaType.SHAPE else true }
 
-            for ((_, searchIn) in anchorsToSearchIn.orEmpty()) {
-                for (draggedAnchor in draggedAnchors) {
-                    val targetAnchors = if (AreaType.SHAPE == draggedType) searchIn.anchorsForShape else searchIn.anchorsForWaypoints
-                    for (anchor in targetAnchors) {
-                        val attractsX = abs(draggedAnchor.x - anchor.x) < anchorAttractionThreshold
-                        val attractsY = abs(draggedAnchor.y - anchor.y) < anchorAttractionThreshold
+        for ((_, searchIn) in anchorsToSearchIn.orEmpty()) {
+            for (draggedAnchor in draggedAnchors) {
+                val targetAnchors = if (AreaType.SHAPE == draggedType) searchIn.anchorsForShape else searchIn.anchorsForWaypoints
+                for (anchor in targetAnchors) {
+                    val attractsX = abs(draggedAnchor.x - anchor.x) < anchorAttractionThreshold
+                    val attractsY = abs(draggedAnchor.y - anchor.y) < anchorAttractionThreshold
 
-                        if (attractsX && attractsY) {
-                            anchors += AnchorDetails(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), AnchorType.POINT)
-                        } else if (attractsX) {
-                            anchors += AnchorDetails(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), AnchorType.HORIZONTAL)
-                        } else if (attractsY) {
-                            anchors += AnchorDetails(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), AnchorType.VERTICAL)
-                        }
+                    if (attractsX && attractsY) {
+                        anchors += AnchorDetails(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), AnchorType.POINT)
+                    } else if (attractsX) {
+                        anchors += AnchorDetails(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), AnchorType.HORIZONTAL)
+                    } else if (attractsY) {
+                        anchors += AnchorDetails(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), AnchorType.VERTICAL)
                     }
                 }
             }
