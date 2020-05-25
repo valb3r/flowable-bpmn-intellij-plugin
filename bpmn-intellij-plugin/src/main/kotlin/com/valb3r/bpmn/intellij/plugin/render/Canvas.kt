@@ -206,7 +206,7 @@ class Canvas: JPanel() {
             interactionCtx = attractToAnchors(interactionCtx)
             val dx = interactionCtx.current.x - interactionCtx.start.x
             val dy = interactionCtx.current.y - interactionCtx.start.y
-            interactionCtx.draggedIds.forEach { interactionCtx.dragEndCallbacks[it]?.invoke(dx, dy, updateEventsRegistry(), bpmnElemsUnderDragCurrent()) }
+            updateEventsRegistry().addEvents(interactionCtx.draggedIds.flatMap {interactionCtx.dragEndCallbacks[it]?.invoke(dx, dy, bpmnElemsUnderDragCurrent()) ?: emptyList()})
         }
 
         interactionCtx = interactionCtx.copy(draggedIds = emptySet())
