@@ -16,15 +16,40 @@ import java.util.concurrent.atomic.AtomicReference
 
 private val updateEvents = AtomicReference<ProcessModelUpdateEvents>()
 
-fun initializeUpdateEventsRegistry(parser: BpmnParser, project: Project, file: VirtualFile) {
-    updateEvents.set(ProcessModelUpdateEvents(parser, project, file, ArrayList()))
+fun initializeUpdateEventsRegistry(committer: FileCommitter) {
+    updateEvents.set(ProcessModelUpdateEvents(committer, ArrayList()))
 }
 
 fun updateEventsRegistry(): ProcessModelUpdateEvents {
     return updateEvents.get()!!
 }
 
-class ProcessModelUpdateEvents(private val parser: BpmnParser, private val project: Project, private val file: VirtualFile, private val updates: MutableList<Order<out Event>>) {
+interface FileCommitter {
+    fun executeCommitAndGetHash(content: String?, events: List<Event>, hasher: (String) -> String): String
+}
+
+class IntelliJFileCommitter(private val parser: BpmnParser, private val project: Project, private val file: VirtualFile): FileCommitter {
+
+    override fun executeCommitAndGetHash(content: String?, events: List<Event>, hasher: (String) -> String): String {
+        var hash: String? = null
+        val doc = FileDocumentManager.getInstance().getDocument(file)!!
+        WriteCommandAction.runWriteCommandAction(project) {
+            val newText = parser.update(
+                    content ?: doc.text,
+                    events
+            )
+
+            hash = hasher.invoke(newText)
+            doc.replaceString(0, doc.textLength, newText)
+        }
+        FileDocumentManager.getInstance().saveDocument(doc)
+
+        return hash!!
+    }
+
+}
+
+class ProcessModelUpdateEvents(private val committer: FileCommitter, private val updates: MutableList<Order<out Event>>) {
 
     private var baseFileContent: String? = null
     private var allBeforeThis: Int = 0
@@ -95,17 +120,10 @@ class ProcessModelUpdateEvents(private val parser: BpmnParser, private val proje
 
     @Synchronized
     fun commitToFile() {
-        val doc = FileDocumentManager.getInstance().getDocument(file)!!
-        WriteCommandAction.runWriteCommandAction(project) {
-            val newText = parser.update(
-                    baseFileContent ?: doc.text,
-                    updates.filterIndexed { index, _ -> index < allBeforeThis }.map { it.event }
-            )
-
-            expectedFileHash = hashData(newText)
-            doc.replaceString(0, doc.textLength, newText)
-        }
-        FileDocumentManager.getInstance().saveDocument(doc)
+        committer.executeCommitAndGetHash(
+                baseFileContent,
+                updates.filterIndexed { index, _ -> index < allBeforeThis }.map { it.event }
+        ) { hashData(it) }
     }
 
     @Synchronized

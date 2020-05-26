@@ -11,6 +11,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.JavaReferenceEditorUtil
 import com.intellij.ui.components.JBScrollPane
+import com.valb3r.bpmn.intellij.plugin.events.IntelliJFileCommitter
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
 import com.valb3r.bpmn.intellij.plugin.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.render.DefaultBpmnProcessRenderer
@@ -57,6 +58,7 @@ class BpmnPluginToolWindow {
         setupUiBeforeRun()
         val virtualFile = bpmnFile.virtualFile
         this.canvasBuilder.build(
+                { IntelliJFileCommitter(it, context.project, virtualFile) },
                 FlowableParser(),
                 table,
                 { createEditor(context.project, bpmnFile, it) },

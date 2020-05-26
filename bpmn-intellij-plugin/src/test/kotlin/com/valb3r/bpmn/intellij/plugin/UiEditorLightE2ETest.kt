@@ -6,6 +6,8 @@ import com.intellij.ui.EditorTextField
 import com.intellij.util.messages.MessageBus
 import com.intellij.util.messages.MessageBusConnection
 import com.nhaarman.mockitokotlin2.*
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.mock
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -16,13 +18,15 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.PlaneElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
+import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
+import com.valb3r.bpmn.intellij.plugin.events.FileCommitter
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.render.DefaultBpmnProcessRenderer
 import com.valb3r.bpmn.intellij.plugin.render.IconProvider
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldHaveKey
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyInt
@@ -37,8 +41,10 @@ import javax.swing.table.TableColumnModel
 
 internal class UiEditorLightE2ETest {
 
+    private val newLink = "NEWLINK"
+    private val doDel = "DEL"
+
     private val icon = "dummy-icon.svg".asResource()
-    private val iconSize = 32
 
     private val startElemX = 0.0f
     private val startElemY = 0.0f
@@ -46,9 +52,6 @@ internal class UiEditorLightE2ETest {
 
     private val endElemX = 10 * serviceTaskSize
     private val endElemY = 0.0f
-
-    private val startElemCenter = Point2D.Float(startElemX + serviceTaskSize / 2.0f, startElemY  + serviceTaskSize / 2.0f)
-    private val endElemCenter = Point2D.Float(endElemX + serviceTaskSize / 2.0f, endElemY  + serviceTaskSize / 2.0f)
 
     private val planeElementBpmnId = BpmnElementId("planeElementId")
     private val diagramMainElementId = DiagramElementId("diagramMainElement")
@@ -79,6 +82,7 @@ internal class UiEditorLightE2ETest {
     private val messageBus = mock<MessageBus>()
     private val messageBusConnection = mock<MessageBusConnection>()
     private val parser = mock<BpmnParser>()
+    private val fileCommitter = mock<FileCommitter>()
     private val project = mock<Project>()
     private val virtualFile = mock<VirtualFile>()
     private val columnModel = mock<TableColumnModel>()
@@ -115,8 +119,7 @@ internal class UiEditorLightE2ETest {
     fun `Ui renders service tasks properly`() {
         prepareTwoServiceTaskView()
 
-        canvasBuilder.build(parser, propertiesTable, editorFieldFactory, canvas, project, virtualFile)
-        canvas.paintComponent(graphics)
+        initializeCanvas()
 
         verifyServiceTasksAreDrawn()
     }
@@ -125,12 +128,48 @@ internal class UiEditorLightE2ETest {
     fun `Action elements are shown when service task is selected`() {
         prepareTwoServiceTaskView()
 
-        canvasBuilder.build(parser, propertiesTable, editorFieldFactory, canvas, project, virtualFile)
-        canvas.paintComponent(graphics)
-        canvas.click(startElemCenter)
-        canvas.paintComponent(graphics)
+        initializeCanvas()
+        clickOnId(serviceTaskStartDiagramId)
 
         verifyServiceTasksAreDrawn()
+        findExactlyOneNewLinkElem().shouldNotBeNull()
+        findExactlyOneDeleteElem().shouldNotBeNull()
+    }
+
+    @Test
+    fun `Service task can be removed`() {
+        prepareTwoServiceTaskView()
+
+        initializeCanvas()
+        clickOnId(serviceTaskStartDiagramId)
+
+        val deleteElem = findExactlyOneDeleteElem().shouldNotBeNull()
+        clickOnId(deleteElem)
+
+        renderResult.shouldNotBeNull().shouldNotHaveKey(serviceTaskStartDiagramId)
+        findFirstNewLinkElem().shouldBeNull()
+        findFirstDeleteElem().shouldBeNull()
+        renderResult.shouldNotBeNull().shouldHaveKey(serviceTaskEndDiagramId)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any())
+            firstValue.shouldContainSame(listOf(
+                    DiagramElementRemovedEvent(serviceTaskStartDiagramId),
+                    BpmnElementRemovedEvent(serviceTaskStartBpmnId))
+            )
+        }
+    }
+
+    private fun clickOnId(elemId: DiagramElementId) {
+        val area = renderResult?.get(elemId).shouldNotBeNull()
+        val bounds = area.area.bounds2D.shouldNotBeNull()
+        canvas.click(Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat()))
+        canvas.paintComponent(graphics)
+    }
+
+    private fun initializeCanvas() {
+        canvasBuilder.build({ fileCommitter }, parser, propertiesTable, editorFieldFactory, canvas, project, virtualFile)
+        canvas.paintComponent(graphics)
     }
 
     private fun verifyServiceTasksAreDrawn() {
@@ -150,6 +189,12 @@ internal class UiEditorLightE2ETest {
         )
         whenever(parser.parse("")).thenReturn(process)
     }
+
+    private fun findFirstNewLinkElem() = renderResult?.keys?.firstOrNull { it.id.contains(newLink) }
+    private fun findFirstDeleteElem() = renderResult?.keys?.firstOrNull { it.id.contains(doDel) }
+
+    private fun findExactlyOneNewLinkElem() = renderResult?.keys?.filter { it.id.contains(newLink) }?.shouldHaveSize(1)?.first()
+    private fun findExactlyOneDeleteElem() = renderResult?.keys?.filter { it.id.contains(doDel) }?.shouldHaveSize(1)?.first()
 
     private fun String.asResource(): String? = UiEditorLightE2ETest::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
 }

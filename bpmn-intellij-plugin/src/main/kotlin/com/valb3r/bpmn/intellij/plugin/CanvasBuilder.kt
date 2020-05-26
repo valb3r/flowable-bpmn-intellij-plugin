@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.ui.EditorTextField
 import com.intellij.util.messages.MessageBusConnection
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
+import com.valb3r.bpmn.intellij.plugin.events.FileCommitter
 import com.valb3r.bpmn.intellij.plugin.events.initializeUpdateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
@@ -25,8 +26,8 @@ class CanvasBuilder(val bpmnProcessRenderer: BpmnProcessRenderer) {
     private var newObjectsFactory: NewElementsProvider? = null
     private var currentConnection: MessageBusConnection? = null
 
-    fun build(parser: BpmnParser, properties: JTable, editorFactory: (value: String) -> EditorTextField, canvas: Canvas, project: Project, bpmnFile: VirtualFile) {
-        initializeUpdateEventsRegistry(parser, project, bpmnFile)
+    fun build(committerFactory: (BpmnParser) -> FileCommitter, parser: BpmnParser, properties: JTable, editorFactory: (value: String) -> EditorTextField, canvas: Canvas, project: Project, bpmnFile: VirtualFile) {
+        initializeUpdateEventsRegistry(committerFactory.invoke(parser))
 
         val data = readFile(bpmnFile)
         val process = parser.parse(data)
@@ -35,7 +36,7 @@ class CanvasBuilder(val bpmnProcessRenderer: BpmnProcessRenderer) {
 
         currentConnection?.let { it.disconnect(); it.dispose() }
         currentConnection = attachFileChangeListener(project, bpmnFile) {
-            build(parser, properties, editorFactory, canvas, project, it)
+            build(committerFactory, parser, properties, editorFactory, canvas, project, it)
         }
     }
 
