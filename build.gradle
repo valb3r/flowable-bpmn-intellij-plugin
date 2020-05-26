@@ -18,3 +18,11 @@ dependencies {
 apply plugin: 'idea'
 apply plugin: 'org.jetbrains.intellij'
 apply plugin: 'kotlin'
+
+allprojects {
+    apply plugin: 'jacoco'
+
+    jacoco {
+        toolVersion = '0.8.5'
+    }
+}
