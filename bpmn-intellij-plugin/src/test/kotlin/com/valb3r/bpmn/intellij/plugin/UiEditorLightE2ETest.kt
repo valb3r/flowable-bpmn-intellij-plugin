@@ -12,6 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -19,13 +20,13 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.PlaneElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.events.BpmnEdgeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.events.FileCommitter
-import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
-import com.valb3r.bpmn.intellij.plugin.render.Canvas
-import com.valb3r.bpmn.intellij.plugin.render.DefaultBpmnProcessRenderer
-import com.valb3r.bpmn.intellij.plugin.render.IconProvider
+import com.valb3r.bpmn.intellij.plugin.render.*
 import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -157,6 +158,37 @@ internal class UiEditorLightE2ETest {
                     DiagramElementRemovedEvent(serviceTaskStartDiagramId),
                     BpmnElementRemovedEvent(serviceTaskStartBpmnId))
             )
+        }
+    }
+
+    @Test
+    fun `New edge element should be addable`() {
+        prepareTwoServiceTaskView()
+
+        initializeCanvas()
+        clickOnId(serviceTaskStartDiagramId)
+
+        verifyServiceTasksAreDrawn()
+        val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
+        clickOnId(newLink)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any())
+            firstValue.shouldHaveSize(1)
+            val edgeBpmn = firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+            val edge = edgeBpmn.edge.shouldBeInstanceOf<EdgeElementState>()
+            edge.waypoint.shouldHaveSize(3)
+            val physicalWaypoints = edge.waypoint.filter { it.physical }
+            physicalWaypoints.shouldHaveSize(2)
+            physicalWaypoints.map { it.x }.shouldContainAll(listOf(60.0f, 100.0f))
+            physicalWaypoints.map { it.y }.shouldContainAll(listOf(30.0f, 30.0f))
+            edgeBpmn.props.shouldHaveKey(PropertyType.ID)
+            edgeBpmn.props.shouldHaveKey(PropertyType.SOURCE_REF)
+            edgeBpmn.props.shouldHaveKey(PropertyType.TARGET_REF)
+            edgeBpmn.props[PropertyType.SOURCE_REF].shouldBeEqualTo(Property(serviceTaskStartBpmnId.id))
         }
     }
 
