@@ -26,3 +26,17 @@ allprojects {
         toolVersion = '0.8.5'
     }
 }
+
+subprojects {
+    tasks.withType(Test) {
+        useJUnitPlatform()
+    }
+
+    jacocoTestReport {
+        reports {
+            html.enabled = true
+            xml.enabled = true
+            csv.enabled = false
+        }
+    }
+}
