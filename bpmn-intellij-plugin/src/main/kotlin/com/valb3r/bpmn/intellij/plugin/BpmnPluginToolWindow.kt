@@ -11,7 +11,10 @@ import com.intellij.psi.PsiFile
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.JavaReferenceEditorUtil
 import com.intellij.ui.components.JBScrollPane
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
 import com.valb3r.bpmn.intellij.plugin.render.Canvas
+import com.valb3r.bpmn.intellij.plugin.render.DefaultBpmnProcessRenderer
+import com.valb3r.bpmn.intellij.plugin.render.IconProviderImpl
 import com.valb3r.bpmn.intellij.plugin.ui.components.MultiEditJTable
 import javax.swing.JPanel
 import javax.swing.JSplitPane
@@ -26,7 +29,7 @@ class BpmnPluginToolWindow {
     private lateinit var mainToolWindowForm: JPanel
     private lateinit var canvasPanel: JPanel
 
-    private val canvasBuilder = CanvasBuilder()
+    private val canvasBuilder = CanvasBuilder(DefaultBpmnProcessRenderer(IconProviderImpl()))
     private val canvas: Canvas = Canvas()
 
     init {
@@ -54,6 +57,7 @@ class BpmnPluginToolWindow {
         setupUiBeforeRun()
         val virtualFile = bpmnFile.virtualFile
         this.canvasBuilder.build(
+                FlowableParser(),
                 table,
                 { createEditor(context.project, bpmnFile, it) },
                 canvas,

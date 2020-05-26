@@ -8,10 +8,10 @@ import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.ui.EditorTextField
 import com.intellij.util.messages.MessageBusConnection
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.events.initializeUpdateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
 import com.valb3r.bpmn.intellij.plugin.newelements.NewElementsProvider
 import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.render.BpmnProcessRenderer
@@ -20,23 +20,22 @@ import java.nio.charset.StandardCharsets.UTF_8
 import javax.swing.JTable
 
 
-class CanvasBuilder {
+class CanvasBuilder(val bpmnProcessRenderer: BpmnProcessRenderer) {
 
     private var newObjectsFactory: NewElementsProvider? = null
     private var currentConnection: MessageBusConnection? = null
 
-    fun build(properties: JTable, editorFactory: (value: String) -> EditorTextField, canvas: Canvas, project: Project, bpmnFile: VirtualFile) {
-        val parser = FlowableParser()
+    fun build(parser: BpmnParser, properties: JTable, editorFactory: (value: String) -> EditorTextField, canvas: Canvas, project: Project, bpmnFile: VirtualFile) {
         initializeUpdateEventsRegistry(parser, project, bpmnFile)
 
         val data = readFile(bpmnFile)
         val process = parser.parse(data)
         newObjectsFactory = newElementsFactory(FlowableObjectFactory())
-        canvas.reset(properties, editorFactory, data, process.toView(newObjectsFactory!!), BpmnProcessRenderer())
+        canvas.reset(properties, editorFactory, data, process.toView(newObjectsFactory!!), bpmnProcessRenderer)
 
         currentConnection?.let { it.disconnect(); it.dispose() }
         currentConnection = attachFileChangeListener(project, bpmnFile) {
-            build(properties, editorFactory, canvas, project, it)
+            build(parser, properties, editorFactory, canvas, project, it)
         }
     }
 

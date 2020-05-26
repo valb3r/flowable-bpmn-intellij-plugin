@@ -45,7 +45,7 @@ class Canvas: JPanel() {
             .maximumSize(100)
             .build<String, BufferedImage>()
 
-    override fun paintComponent(graphics: Graphics) {
+    public override fun paintComponent(graphics: Graphics) {
         super.paintComponent(graphics)
 
         val graphics2D = setupGraphics(graphics)
