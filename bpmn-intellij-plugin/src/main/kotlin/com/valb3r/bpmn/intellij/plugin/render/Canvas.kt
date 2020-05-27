@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.render
 
+import com.google.common.annotations.VisibleForTesting
 import com.google.common.cache.CacheBuilder
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
@@ -44,6 +45,7 @@ class Canvas: JPanel() {
             .maximumSize(100)
             .build<String, BufferedImage>()
 
+    @VisibleForTesting
     public override fun paintComponent(graphics: Graphics) {
         super.paintComponent(graphics)
 

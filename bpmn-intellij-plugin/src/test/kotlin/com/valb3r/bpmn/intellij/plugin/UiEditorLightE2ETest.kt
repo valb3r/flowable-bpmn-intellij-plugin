@@ -520,6 +520,93 @@ internal class UiEditorLightE2ETest {
         }
     }
 
+    @Test
+    fun `Selecting with rectangle of all elements and dragging them works`() {
+        prepareTwoServiceTaskView()
+
+        val begin = Point2D.Float(startElemX, startElemY)
+        canvas.paintComponent(graphics)
+        canvas.startSelectionOrDrag(begin)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize, endElemY  + serviceTaskSize))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        val startCenterX = startElemX + serviceTaskSize / 2.0f
+        val startCenterY = startElemY
+        val dragDelta = Point2D.Float(100.0f, 100.0f)
+        canvas.startSelectionOrDrag(Point2D.Float(startCenterX, startCenterY))
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startCenterX + dragDelta.x, startCenterY + dragDelta.y))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any())
+            lastValue.shouldHaveSize(2)
+            val dragStart = lastValue.filterIsInstance<DraggedToEvent>().first()
+            val dragEnd = lastValue.filterIsInstance<DraggedToEvent>().last()
+            lastValue.shouldContainSame(listOf(dragStart, dragEnd))
+
+            dragStart.diagramElementId.shouldBeEqualTo(serviceTaskStartDiagramId)
+            dragStart.dx.shouldBeNear(dragDelta.x, 0.1f)
+            dragStart.dy.shouldBeNear(dragDelta.y, 0.1f)
+
+            dragEnd.diagramElementId.shouldBeEqualTo(serviceTaskEndDiagramId)
+            dragEnd.dx.shouldBeNear(dragDelta.x, 0.1f)
+            dragEnd.dy.shouldBeNear(dragDelta.y, 0.1f)
+        }
+    }
+
+    @Test
+    fun `Selecting with rectangle of single and ref on it and dragging them works`() {
+        prepareTwoServiceTaskView()
+
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
+
+        val begin = Point2D.Float(startElemX, startElemY)
+        canvas.paintComponent(graphics)
+        canvas.startSelectionOrDrag(begin)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startElemX + serviceTaskSize + 10.0f, startElemY + serviceTaskSize + 10.0f))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        val startCenterX = startElemX + serviceTaskSize / 2.0f
+        val startCenterY = startElemY
+        val dragDelta = Point2D.Float(100.0f, 100.0f)
+        canvas.startSelectionOrDrag(Point2D.Float(startCenterX, startCenterY))
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startCenterX + dragDelta.x, startCenterY + dragDelta.y))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            lastValue.shouldHaveSize(3)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val dragStart = lastValue.filterIsInstance<DraggedToEvent>().first()
+            val dragEdge = lastValue.filterIsInstance<DraggedToEvent>().last()
+            lastValue.shouldContainSame(listOf(edgeBpmn, dragStart, dragEdge))
+
+            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+
+            dragStart.diagramElementId.shouldBeEqualTo(serviceTaskStartDiagramId)
+            dragStart.dx.shouldBeNear(dragDelta.x, 0.1f)
+            dragStart.dy.shouldBeNear(dragDelta.y, 0.1f)
+
+            dragEdge.diagramElementId.shouldBeEqualTo(addedEdge.edge.waypoint.first().id)
+            dragEdge.dx.shouldBeNear(dragDelta.x, 0.1f)
+            dragEdge.dy.shouldBeNear(dragDelta.y, 0.1f)
+        }
+    }
+
     private fun changeIdViaPropertiesVisualizer(diagramElementId: DiagramElementId, elementId: BpmnElementId, newId: String) {
         val id = Pair(elementId, PropertyType.ID)
         clickOnId(diagramElementId)
