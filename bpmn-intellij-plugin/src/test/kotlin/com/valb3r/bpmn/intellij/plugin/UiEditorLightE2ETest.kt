@@ -194,7 +194,7 @@ internal class UiEditorLightE2ETest {
     }
 
     @Test
-    fun `New edge element can be directly dragged to target`() {
+    fun `New edge waypoint element can be directly dragged to target`() {
         prepareTwoServiceTaskView()
 
         val addedEdge = addSequenceElementOnFirstTask()
