@@ -23,7 +23,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.*
-import com.valb3r.bpmn.intellij.plugin.render.*
+import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
+import com.valb3r.bpmn.intellij.plugin.render.Canvas
+import com.valb3r.bpmn.intellij.plugin.render.DefaultBpmnProcessRenderer
+import com.valb3r.bpmn.intellij.plugin.render.IconProvider
 import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -32,6 +35,7 @@ import java.awt.Graphics2D
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.nio.charset.StandardCharsets
+import java.util.*
 import javax.swing.JTable
 import javax.swing.table.TableColumn
 import javax.swing.table.TableColumnModel
@@ -162,34 +166,87 @@ internal class UiEditorLightE2ETest {
     @Test
     fun `New edge element should be addable`() {
         prepareTwoServiceTaskView()
-
         initializeCanvas()
-        clickOnId(serviceTaskStartDiagramId)
 
-        verifyServiceTasksAreDrawn()
-        val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
-        clickOnId(newLink)
+        val addedEdge = addSequenceElementOnFirstTask()
+
+        val intermediateX = 100.0f
+        val intermediateY = 100.0f
+        val newTaskId = newServiceTask(intermediateX, intermediateY)
+
+        clickOnId(addedEdge.edge.id)
+        val lastEndpointId = addedEdge.edge.waypoint.last().id
+        val point = clickOnId(lastEndpointId)
+        dragToEndTaskButDontStop(point, Point2D.Float(intermediateX, intermediateY + serviceTaskSize / 2.0f), lastEndpointId)
+        canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any())
-            firstValue.shouldHaveSize(1)
-            val edgeBpmn = firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any())
+            lastValue.shouldHaveSize(4)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val shapeBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().shouldHaveSingleItem()
+            val draggedTo = lastValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
+            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            lastValue.shouldContainSame(listOf(edgeBpmn, shapeBpmn, draggedTo, propUpdated))
 
+            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
-            val edge = edgeBpmn.edge.shouldBeInstanceOf<EdgeElementState>()
-            edge.waypoint.shouldHaveSize(3)
-            val physicalWaypoints = edge.waypoint.filter { it.physical }
-            physicalWaypoints.shouldHaveSize(2)
-            physicalWaypoints.map { it.x }.shouldContainAll(listOf(60.0f, 100.0f))
-            physicalWaypoints.map { it.y }.shouldContainAll(listOf(30.0f, 30.0f))
+            draggedTo.diagramElementId.shouldBe(lastEndpointId)
+            draggedTo.dx.shouldBeNear(intermediateX - point.x, 0.1f)
+            draggedTo.dy.shouldBeNear(intermediateY + serviceTaskSize / 2.0f - point.y, 0.1f)
 
-            edgeBpmn.props.shouldHaveKey(PropertyType.ID)
-            edgeBpmn.props.shouldHaveKey(PropertyType.SOURCE_REF)
-            edgeBpmn.props.shouldHaveKey(PropertyType.TARGET_REF)
-            edgeBpmn.props[PropertyType.SOURCE_REF].shouldBeEqualTo(Property(serviceTaskStartBpmnId.id))
+            propUpdated.bpmnElementId.shouldBe(edgeBpmn.bpmnObject.id)
+            propUpdated.property.shouldBe(PropertyType.TARGET_REF)
+            propUpdated.newValue.shouldBeEqualTo(newTaskId.id)
+        }
+    }
+
+    private fun newServiceTask(intermediateX: Float, intermediateY: Float): BpmnElementId {
+        val task = bpmnServiceTaskStart.copy(id = BpmnElementId("sid-" + UUID.randomUUID().toString()))
+        val shape = diagramServiceTaskStart.copy(
+                id = DiagramElementId("sid-" + UUID.randomUUID().toString()),
+                bounds = BoundsElement(intermediateX, intermediateY, serviceTaskSize, serviceTaskSize)
+        )
+        updateEventsRegistry().addObjectEvent(
+                BpmnShapeObjectAddedEvent(task, shape, mapOf(PropertyType.ID to Property(task.id)))
+        )
+
+        return task.id
+    }
+
+    @Test
+    fun `New service task can be added and sequence flow can be dropped directly on it`() {
+        prepareTwoServiceTaskView()
+
+        val addedEdge = addSequenceElementOnFirstTask()
+        clickOnId(addedEdge.edge.id)
+        val lastEndpointId = addedEdge.edge.waypoint.last().id
+        val point = clickOnId(lastEndpointId)
+
+        dragToEndTaskButDontStop(point, Point2D.Float(endElemX, endElemMidY), lastEndpointId)
+        canvas.stopDragOrSelect()
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            lastValue.shouldHaveSize(3)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val draggedTo = lastValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
+            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            lastValue.shouldContainSame(listOf(edgeBpmn, draggedTo, propUpdated))
+
+            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+
+            draggedTo.diagramElementId.shouldBe(lastEndpointId)
+            draggedTo.dx.shouldBeNear(endElemX - point.x, 0.1f)
+            draggedTo.dy.shouldBeNear(0.0f, 0.1f)
+
+            propUpdated.bpmnElementId.shouldBe(edgeBpmn.bpmnObject.id)
+            propUpdated.property.shouldBe(PropertyType.TARGET_REF)
+            propUpdated.newValue.shouldBe(serviceTaskEndBpmnId.id)
         }
     }
 
