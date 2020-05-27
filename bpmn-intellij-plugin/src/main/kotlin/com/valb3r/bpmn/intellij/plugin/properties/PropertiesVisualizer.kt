@@ -1,8 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.properties
 
-import com.intellij.ui.EditorTextField
-import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.components.JBTextField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
@@ -12,17 +9,53 @@ import com.valb3r.bpmn.intellij.plugin.events.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.ui.components.FirstColumnReadOnlyModel
+import java.util.concurrent.atomic.AtomicReference
+import javax.swing.JComponent
 import javax.swing.JTable
 
-class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String) -> EditorTextField) {
+private val visualizer = AtomicReference<PropertiesVisualizer>()
 
-    private var listenersForCurrentView: MutableList<(() -> Unit)> = mutableListOf()
+interface TextValueAccessor {
+    val text: String
+    val component: JComponent
+}
+
+interface SelectedValueAccessor {
+    val isSelected: Boolean
+    val component: JComponent
+}
+
+fun intializePropertiesVisualizer(table: JTable,
+                                  editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
+                                  textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
+                                  checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor): PropertiesVisualizer {
+    return visualizer.updateAndGet {
+        if (null == it) {
+            return@updateAndGet PropertiesVisualizer(table, editorFactory, textFieldFactory, checkboxFieldFactory)
+        }
+
+        return@updateAndGet it
+    }
+}
+
+fun propertiesVisualizer(): PropertiesVisualizer {
+    return visualizer.get()!!
+}
+
+class PropertiesVisualizer(
+        val table: JTable,
+        val editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
+        val textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
+        val checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor) {
+
+    // Using order as ID property change should fire last for this view, otherwise other property change values
+    // will use wrong ID as an anchor
+    // Listeners with their order
+    private var listenersForCurrentView: MutableMap<Int, MutableList<() -> Unit>> = mutableMapOf()
 
     @Synchronized
     fun clear() {
-        // fire de-focus to move changes to memory, component listeners doesn't seem to work with EditorTextField
-        listenersForCurrentView.forEach { it() }
-        listenersForCurrentView.clear()
+        notifyDeFocusElement()
 
         // drop and re-create table model
         val model = FirstColumnReadOnlyModel()
@@ -34,10 +67,8 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
     }
 
     @Synchronized
-    fun visualize(bpmnElementId: BpmnElementId, properties: Map<PropertyType, Property>) {
-        // fire de-focus to move changes to memory, component listeners doesn't seem to work with EditorTextField
-        listenersForCurrentView.forEach { it() }
-        listenersForCurrentView.clear()
+    fun visualize(state: Map<BpmnElementId, Map<PropertyType, Property>>, bpmnElementId: BpmnElementId) {
+        notifyDeFocusElement()
 
         // drop and re-create table model
         val model = FirstColumnReadOnlyModel()
@@ -46,25 +77,32 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
         table.model = model
         table.columnModel.getColumn(1).preferredWidth = 500
 
-        properties.forEach {
+        state[bpmnElementId]?.forEach {
             when(it.key.valueType) {
-                STRING -> model.addRow(arrayOf(it.key.caption, buildTextField(bpmnElementId, it.key, it.value)))
+                STRING -> model.addRow(arrayOf(it.key.caption, buildTextField(state, bpmnElementId, it.key, it.value)))
                 BOOLEAN -> model.addRow(arrayOf(it.key.caption, buildCheckboxField(bpmnElementId, it.key, it.value)))
-                CLASS -> model.addRow(arrayOf(it.key.caption, buildClassField(bpmnElementId, it.key, it.value)))
-                EXPRESSION -> model.addRow(arrayOf(it.key.caption, buildExpressionField(bpmnElementId, it.key, it.value)))
+                CLASS -> model.addRow(arrayOf(it.key.caption, buildClassField(state, bpmnElementId, it.key, it.value)))
+                EXPRESSION -> model.addRow(arrayOf(it.key.caption, buildExpressionField(state, bpmnElementId, it.key, it.value)))
             }
         }
         model.fireTableDataChanged()
     }
 
-    private fun buildTextField(bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JBTextField {
-        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type, value.value as String?) ?: (value.value as String? ?: "")
-        val field = JBTextField(fieldValue)
+    private fun notifyDeFocusElement() {
+        // Fire de-focus to move changes to memory (Using order as ID property), component listeners doesn't seem to work with EditorTextField
+        listenersForCurrentView.toSortedMap().flatMap { it.value }.forEach { it() }
+        listenersForCurrentView.clear()
+    }
+
+    private fun buildTextField(state: Map<BpmnElementId, Map<PropertyType, Property>>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
+        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
+        val field = textFieldFactory.invoke(bpmnElementId, type, fieldValue)
         val initialValue = field.text
 
-        listenersForCurrentView.add {
+        listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
             if (initialValue != field.text) {
-                updateEventsRegistry().addPropertyUpdateEvent(
+                emitStringUpdateWithCascadeIfNeeded(
+                        state,
                         StringValueUpdatedEvent(
                                 bpmnElementId,
                                 type,
@@ -75,55 +113,67 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
                 )
             }
         }
-        return field
+        return field.component
     }
 
-    private fun buildCheckboxField(bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JBCheckBox {
+    private fun buildCheckboxField(bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
         val fieldValue =  lastBooleanValueFromRegistry(bpmnElementId, type) ?: (value.value as Boolean? ?: false)
-        val field = JBCheckBox(null, fieldValue)
+        val field = checkboxFieldFactory.invoke(bpmnElementId, type, fieldValue)
         val initialValue = field.isSelected
 
-        listenersForCurrentView.add {
+        listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
             if (initialValue != field.isSelected) {
                 updateEventsRegistry().addPropertyUpdateEvent(BooleanValueUpdatedEvent(bpmnElementId, type, field.isSelected))
             }
         }
-        return field
+        return field.component
     }
 
-    private fun buildClassField(bpmnElementId: BpmnElementId, type: PropertyType, value: Property): EditorTextField {
-        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type, value.value as String?) ?: (value.value as String? ?: "")
-        val field = editorFactory(fieldValue)
-        addEditorTextListener(field, bpmnElementId, type)
-        return field
+    private fun buildClassField(state: Map<BpmnElementId, Map<PropertyType, Property>>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
+        val fieldValue = lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
+        val field = editorFactory(bpmnElementId, type, fieldValue)
+        addEditorTextListener(state, field, bpmnElementId, type)
+        return field.component
     }
 
-    private fun buildExpressionField(bpmnElementId: BpmnElementId, type: PropertyType, value: Property): EditorTextField {
-        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type, value.value as String?) ?: (value.value as String? ?: "")
-        val field = editorFactory( "\"${fieldValue}\"")
-        addEditorTextListener(field, bpmnElementId, type)
-        return field
+    private fun buildExpressionField(state: Map<BpmnElementId, Map<PropertyType, Property>>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
+        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
+        val field = editorFactory(bpmnElementId, type, "\"${fieldValue}\"")
+        addEditorTextListener(state, field, bpmnElementId, type)
+        return field.component
     }
 
-    private fun addEditorTextListener(field: EditorTextField, bpmnElementId: BpmnElementId, type: PropertyType) {
+    private fun addEditorTextListener(state: Map<BpmnElementId, Map<PropertyType, Property>>, field: TextValueAccessor, bpmnElementId: BpmnElementId, type: PropertyType) {
         val initialValue = field.text
-        listenersForCurrentView.add {
+        listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
             if (initialValue != field.text) {
-                updateEventsRegistry().addPropertyUpdateEvent(StringValueUpdatedEvent(bpmnElementId, type, removeQuotes(field.text)))
+                emitStringUpdateWithCascadeIfNeeded(state, StringValueUpdatedEvent(bpmnElementId, type, removeQuotes(field.text)))
             }
         }
+    }
+
+    private fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, Map<PropertyType, Property>>, event: StringValueUpdatedEvent) {
+        val cascades = mutableListOf<PropertyUpdateWithId>()
+        if (null != event.referencedValue) {
+            state.forEach { (id, props) ->
+                props.filter { it.key.updatedBy == event.property }.filter { it.value.value == event.referencedValue }.forEach {prop ->
+                    cascades += StringValueUpdatedEvent(id, prop.key, event.newValue, event.referencedValue, null)
+                }
+            }
+        }
+
+        updateEventsRegistry().addEvents(listOf(event) + cascades)
     }
 
     private fun removeQuotes(value: String): String {
         return value.replace("^\"".toRegex(), "").replace("\"$".toRegex(), "")
     }
 
-    private fun lastStringValueFromRegistry(bpmnElementId: BpmnElementId, type: PropertyType, currentValue: String?): String? {
-        return (updateEventsRegistry().currentPropertyUpdateEventListWithCascaded(bpmnElementId)
+    private fun lastStringValueFromRegistry(bpmnElementId: BpmnElementId, type: PropertyType): String? {
+        return (updateEventsRegistry().currentPropertyUpdateEventList(bpmnElementId)
                 .map { it.event }
                 .filter {
-                    checkCascadedApplied(currentValue, bpmnElementId, type, it)
-                            || (bpmnElementId == it.bpmnElementId && it.property.id == type.id)
+                    bpmnElementId == it.bpmnElementId && it.property.id == type.id
                 }
                 .lastOrNull { it is StringValueUpdatedEvent } as StringValueUpdatedEvent?)
                 ?.newValue
@@ -136,17 +186,5 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
                 .filter { it.property.id == type.id }
                 .lastOrNull { it is BooleanValueUpdatedEvent } as BooleanValueUpdatedEvent?)
                 ?.newValue
-    }
-
-    private fun checkCascadedApplied(currentValue: String?, elementId: BpmnElementId, type: PropertyType, possibleCascade: PropertyUpdateWithId): Boolean {
-        if ((elementId == possibleCascade.bpmnElementId || possibleCascade.property == type) || null == possibleCascade.referencedValue) {
-            return false
-        }
-
-        if (!possibleCascade.property.cascades) {
-            return true
-        }
-
-        return possibleCascade.property == type.updatedBy && possibleCascade.referencedValue == currentValue
     }
 }

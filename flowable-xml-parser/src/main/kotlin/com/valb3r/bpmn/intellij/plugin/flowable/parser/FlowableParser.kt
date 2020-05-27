@@ -19,9 +19,10 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnFile
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
-import org.w3c.dom.NodeList
-import java.io.*
-import java.nio.charset.StandardCharsets.UTF_8
+import java.io.ByteArrayInputStream
+import java.io.StringWriter
+import java.io.Writer
+import java.nio.charset.StandardCharsets
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
@@ -96,31 +97,17 @@ class FlowableParser : BpmnParser {
         return toProcessObject(dto)
     }
 
-    override fun parse(input: InputStream): BpmnProcessObject {
-        val dto = mapper.readValue<BpmnFile>(input)
-        return toProcessObject(dto)
-    }
-
-    /**
-     * Impossible to use FasterXML - Multiple objects of same type issue:
-     * https://github.com/FasterXML/jackson-dataformat-xml/issues/205
-     */
-    override fun update(input: InputStream, output: OutputStream, events: List<Event>){
-        val dBuilder = dbFactory.newDocumentBuilder()
-        val doc = dBuilder.parse(input)
-
-        parseAndWrite(doc, OutputStreamWriter(output), events)
-    }
-
     /**
      * Impossible to use FasterXML - Multiple objects of same type issue:
      * https://github.com/FasterXML/jackson-dataformat-xml/issues/205
      */
     override fun update(input: String, events: List<Event>): String {
         val dBuilder = dbFactory.newDocumentBuilder()
-        val doc = dBuilder.parse(ByteArrayInputStream(input.toByteArray(UTF_8)))
+        val doc = dBuilder.parse(ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8)))
 
-        return parseAndWrite(doc, StringWriter(), events).buffer.toString()
+        val writer = StringWriter()
+        parseAndWrite(doc, writer, events)
+        return writer.buffer.toString()
     }
 
     private fun <T: Writer> parseAndWrite(doc: Document, writer: T, events: List<Event>): T {
@@ -168,13 +155,13 @@ class FlowableParser : BpmnParser {
         val node = if (null != update.internalPos) {
             // Internal waypoint update
             xpath.evaluate(
-                    "//BPMNEdge[@id='${update.parentElementId!!.id}']/*[@x][@y][${update.internalPos!! + 1}]",
+                    "//*[local-name()='BPMNEdge'][@id='${update.parentElementId!!.id}']/*[@x][@y][${update.internalPos!! + 1}]",
                     doc,
                     XPathConstants.NODE
             ) as Node
         } else {
             xpath.evaluate(
-                    "//BPMNShape[@id='${update.diagramElementId.id}']/*[@x][@y]",
+                    "//*[local-name()='BPMNShape'][@id='${update.diagramElementId.id}']/*[@x][@y]",
                     doc,
                     XPathConstants.NODE
             ) as Node
@@ -190,7 +177,7 @@ class FlowableParser : BpmnParser {
     private fun applyNewWaypoints(doc: Document, update: NewWaypoints) {
         val xpath = xpathFactory.newXPath()
         val node = xpath.evaluate(
-                "//BPMNEdge[@id='${update.edgeElementId.id}'][1]",
+                "//*[local-name()='BPMNEdge'][@id='${update.edgeElementId.id}'][1]",
                 doc,
                 XPathConstants.NODE
         ) as Node
@@ -222,7 +209,7 @@ class FlowableParser : BpmnParser {
     private fun applyDiagramElementRemoved(doc: Document, update: DiagramElementRemoved) {
         val xpath = xpathFactory.newXPath()
         val node = xpath.evaluate(
-                "//BPMNDiagram/BPMNPlane/*[@id='${update.elementId.id}'][1]",
+                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane']/*[@id='${update.elementId.id}'][1]",
                 doc,
                 XPathConstants.NODE
         ) as Node
@@ -272,7 +259,7 @@ class FlowableParser : BpmnParser {
         diagramParent.appendChild(newNode)
 
         val shapeParent = xpath.evaluate(
-                "//BPMNDiagram/BPMNPlane[1]",
+                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]",
                 doc,
                 XPathConstants.NODE
         ) as Node
@@ -307,7 +294,7 @@ class FlowableParser : BpmnParser {
         diagramParent.appendChild(newNode)
 
         val shapeParent = xpath.evaluate(
-                "//BPMNDiagram/BPMNPlane[1]",
+                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]",
                 doc,
                 XPathConstants.NODE
         ) as Node
@@ -320,10 +307,6 @@ class FlowableParser : BpmnParser {
     }
 
     private fun applyPropertyUpdateWithId(doc: Document, update: PropertyUpdateWithId) {
-        if (update.property.cascades) {
-            applyCascadedPropertyUpdateWithId(doc, update)
-        }
-
         val xpath = xpathFactory.newXPath()
         val node = xpath.evaluate(
                 "//process/*[@id='${update.bpmnElementId.id}'][1]",
@@ -338,34 +321,12 @@ class FlowableParser : BpmnParser {
         }
 
         val diagramElement = xpath.evaluate(
-                "//BPMNDiagram/BPMNPlane[1]/*[@bpmnElement='${update.bpmnElementId.id}']",
+                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]/*[@bpmnElement='${update.bpmnElementId.id}']",
                 doc,
                 XPathConstants.NODE
         ) as Element
 
         diagramElement.setAttribute("bpmnElement", update.newIdValue!!.id)
-    }
-
-    private fun applyCascadedPropertyUpdateWithId(doc: Document, update: PropertyUpdateWithId) {
-        if (null == update.referencedValue) {
-            throw NullPointerException("Referenced value for cascaded is missing")
-        }
-
-         PropertyType.values()
-                 .filter { it.updatedBy == update.property }
-                 .forEach { type ->
-                     val details = PropertyTypeDetails.values().firstOrNull { it.propertyType == type }!!
-                     val xpath = xpathFactory.newXPath()
-                     val nodes = xpath.evaluate(
-                             "//process/*[@${details.xmlPath}='${update.referencedValue as String}']",
-                             doc,
-                             XPathConstants.NODESET
-                     ) as NodeList
-
-                     for (pos in 0 until nodes.length) {
-                         setToNode(doc, nodes.item(pos) as Element, details.propertyType, update.newValue)
-                     }
-                 }
     }
 
 

@@ -9,9 +9,10 @@ enum class PropertyType(
         val valueType: PropertyValueType,
         val path: String = id,
         val cascades: Boolean = false,
-        val updatedBy: PropertyType? = null
+        val updatedBy: PropertyType? = null,
+        val updateOrder: Int = 0
 ) {
-    ID("id", "ID", STRING, "id.id", true),
+    ID("id", "ID", STRING, "id.id", true, null, 1000), // ID should fire last
     NAME("name", "Name", STRING),
     DOCUMENTATION("documentation", "Documentation", STRING),
     IS_FOR_COMPENSATION("isForCompensation", "Is for compensation", BOOLEAN),
@@ -43,5 +44,5 @@ enum class PropertyType(
     TARGET_REF("targetRef", "Target reference", STRING, "targetRef", false, ID),
     CONDITION_EXPR_VALUE("conditionExpression.text", "Condition expression", PropertyValueType.EXPRESSION, "conditionExpression.text"),
     CONDITION_EXPR_TYPE("conditionExpression.type", "Condition expression type", STRING, "conditionExpression.type"),
-    DEFAULT_FLOW("defaultElement", "Default flow element", STRING)
+    DEFAULT_FLOW("defaultElement", "Default flow element", STRING, "defaultElement", false, ID)
 }

@@ -43,17 +43,9 @@ internal class FlowableParserTest {
 
     @Test
     fun `XML process with interlaced elements of same type should be updatable with location without error`() {
-        val updated = FlowableParser().update("duplicates.bpmn20.xml".asResource()!!, listOf(
-                object: LocationUpdateWithId {
-                    override val diagramElementId: DiagramElementId
-                        get() = DiagramElementId("BPMNEdge_sid-F270B5BF-127E-422B-BF8D-6A6B7E411D31")
-                    override val dx: Float
-                        get() = 10.0f
-                    override val dy: Float
-                        get() = -10.0f
-                    override val internalPos: Int?
-                        get() = 0
-                }
+        val updated = FlowableParser().update(
+                "duplicates.bpmn20.xml".asResource()!!, listOf(
+                DraggedToEvent(DiagramElementId("None"), 10.0f, -10.0f, DiagramElementId("BPMNEdge_sid-F270B5BF-127E-422B-BF8D-6A6B7E411D31"), 0)
         ))
 
         updated.shouldNotBeNull()
@@ -61,16 +53,16 @@ internal class FlowableParserTest {
 
     @Test
     fun `XML process with interlaced elements of same type should be updatable with new waypoints without error`() {
-        val updated = FlowableParser().update("duplicates.bpmn20.xml".asResource()!!, listOf(
-                object: NewWaypoints {
-                    override val edgeElementId: DiagramElementId
-                        get() = DiagramElementId("BPMNEdge_sid-C3BC8962-12B0-482B-B9B5-DCB6551306BD")
-                    override val waypoints: List<IdentifiableWaypoint>
-                        get() = listOf(
+        val updated = FlowableParser().update(
+                "duplicates.bpmn20.xml".asResource()!!, listOf(
+                NewWaypointsEvent(
+                        DiagramElementId("BPMNEdge_sid-C3BC8962-12B0-482B-B9B5-DCB6551306BD"),
+                        listOf(
                                 WaypointElementState(diagramElementId, 10.0f, 20.0f, 0.0f, 0.0f, true, 1),
                                 WaypointElementState(diagramElementId, 30.0f, 40.0f, 0.0f, 0.0f, true, 0)
-                        )
-                }
+                        ),
+                        0
+                )
         ))
 
         updated.shouldNotBeNull()
@@ -78,23 +70,19 @@ internal class FlowableParserTest {
 
     @Test
     fun `XML process with interlaced elements of same type should be updatable with diagram element removal without error`() {
-        val updated = FlowableParser().update("duplicates.bpmn20.xml".asResource()!!, listOf(
-                object: DiagramElementRemoved {
-                    override val elementId: DiagramElementId
-                        get() = DiagramElementId("BPMNEdge_sid-C3BC8962-12B0-482B-B9B5-DCB6551306BD")
-                }
-        ))
+        val updated = FlowableParser().update(
+                "duplicates.bpmn20.xml".asResource()!!,
+                listOf(DiagramElementRemovedEvent(DiagramElementId("BPMNEdge_sid-C3BC8962-12B0-482B-B9B5-DCB6551306BD")))
+        )
 
         updated.shouldNotBeNull()
     }
 
     @Test
     fun `XML process with interlaced elements of same type should be updatable with BPMN element removal without error`() {
-        val updated = FlowableParser().update("duplicates.bpmn20.xml".asResource()!!, listOf(
-                object: BpmnElementRemoved {
-                    override val elementId: BpmnElementId
-                        get() = BpmnElementId("serviceTaskStart")
-                }
+        val updated = FlowableParser().update(
+                "duplicates.bpmn20.xml".asResource()!!,
+                listOf(BpmnElementRemovedEvent(BpmnElementId("serviceTaskStart"))
         ))
 
         updated.shouldNotBeNull()
@@ -102,19 +90,17 @@ internal class FlowableParserTest {
 
     @Test
     fun `XML process with interlaced elements of same type should be updatable with BPMN element addition without error`() {
-        val updated = FlowableParser().update("duplicates.bpmn20.xml".asResource()!!, listOf(
-                object: BpmnShapeObjectAdded {
-                    override val bpmnObject: WithBpmnId
-                        get() = BpmnExclusiveGateway(bmpnElemId, "Exclusive gateway", null, null)
-                    override val shape: ShapeElement
-                        get() = ShapeElement(diagramElementId, bpmnObject.id, BoundsElement(0.0f, 0.0f, 30.0f, 40.0f))
-                    override val props: Map<PropertyType, Property>
-                        get() = mapOf(
-                                PropertyType.ID to Property(bpmnObject.id.id),
+        val updated = FlowableParser().update(
+                "duplicates.bpmn20.xml".asResource()!!,
+                listOf(BpmnShapeObjectAddedEvent(
+                        BpmnExclusiveGateway(bmpnElemId, "Exclusive gateway", null, null),
+                        ShapeElement(diagramElementId, bmpnElemId, BoundsElement(0.0f, 0.0f, 30.0f, 40.0f)),
+                        mapOf(
+                                PropertyType.ID to Property(bmpnElemId.id),
                                 PropertyType.CONDITION_EXPR_VALUE to Property("condition 1"),
                                 PropertyType.CONDITION_EXPR_TYPE to Property("a type")
                         )
-                }
+                )
         ))
 
         updated.shouldNotBeNull()
@@ -122,27 +108,27 @@ internal class FlowableParserTest {
 
     @Test
     fun `XML process with interlaced elements of same type should be updatable with BPMN edge element addition without error`() {
-        val updated = FlowableParser().update("duplicates.bpmn20.xml".asResource()!!, listOf(
-                object: BpmnEdgeObjectAdded {
-                    override val bpmnObject: WithBpmnId
-                        get() = BpmnSequenceFlow(bmpnElemId, "Exclusive gateway", null, "source", "target", null)
-                    override val edge: EdgeWithIdentifiableWaypoints
-                        get() = EdgeElementState(
-                                diagramElementId,
-                                bpmnObject.id,
-                                mutableListOf(
-                                        WaypointElementState(diagramElementId, 10.0f, 20.0f, 0.0f, 0.0f, true, 1),
-                                        WaypointElementState(diagramElementId, 30.0f, 40.0f, 0.0f, 0.0f, true, 0)
+        val updated = FlowableParser().update(
+                "duplicates.bpmn20.xml".asResource()!!,
+                listOf(
+                        BpmnEdgeObjectAddedEvent(
+                                BpmnSequenceFlow(bmpnElemId, "Exclusive gateway", null, "source", "target", null),
+                                EdgeElementState(
+                                        diagramElementId,
+                                        bmpnElemId,
+                                        mutableListOf(
+                                                WaypointElementState(diagramElementId, 10.0f, 20.0f, 0.0f, 0.0f, true, 1),
+                                                WaypointElementState(diagramElementId, 30.0f, 40.0f, 0.0f, 0.0f, true, 0)
+                                        ),
+                                        0),
+                                mapOf(
+                                        PropertyType.ID to Property(bmpnElemId.id),
+                                        PropertyType.CONDITION_EXPR_VALUE to Property("condition 1"),
+                                        PropertyType.CONDITION_EXPR_TYPE to Property("a type")
                                 )
                         )
-                    override val props: Map<PropertyType, Property>
-                        get() = mapOf(
-                                PropertyType.ID to Property(bpmnObject.id.id),
-                                PropertyType.CONDITION_EXPR_VALUE to Property("condition 1"),
-                                PropertyType.CONDITION_EXPR_TYPE to Property("a type")
-                        )
-                }
-        ))
+                )
+        )
 
         updated.shouldNotBeNull()
     }
@@ -150,16 +136,10 @@ internal class FlowableParserTest {
 
     @Test
     fun `XML process with interlaced elements of same type should be updatable with property update event without error`() {
-        val updated = FlowableParser().update("duplicates.bpmn20.xml".asResource()!!, listOf(
-                object: PropertyUpdateWithId {
-                    override val bpmnElementId: BpmnElementId
-                        get() = BpmnElementId("activityStart")
-                    override val property: PropertyType
-                        get() = PropertyType.NAME
-                    override val newValue: Any
-                        get() = "A new name"
-                }
-        ))
+        val updated = FlowableParser().update(
+                "duplicates.bpmn20.xml".asResource()!!,
+                listOf(StringValueUpdatedEvent(BpmnElementId("activityStart"), PropertyType.NAME, "A new name"))
+        )
 
         updated.shouldNotBeNull()
     }
@@ -201,5 +181,27 @@ data class WaypointElementState (
 data class EdgeElementState  (
         override val id: DiagramElementId,
         override val bpmnElement: BpmnElementId?,
-        override val waypoint: MutableList<IdentifiableWaypoint> = mutableListOf()
-): EdgeWithIdentifiableWaypoints
+        override val waypoint: MutableList<IdentifiableWaypoint> = mutableListOf(),
+        override val epoch: Int
+): EdgeWithIdentifiableWaypoints {
+
+    override fun updateBpmnElemId(newId: BpmnElementId): EdgeWithIdentifiableWaypoints {
+        TODO("Not yet implemented")
+    }
+}
+
+data class StringValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: String, override val referencedValue: String? = null, override val newIdValue: BpmnElementId? = null): PropertyUpdateWithId
+
+data class BooleanValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: Boolean, override val referencedValue: Boolean? = null, override val newIdValue: BpmnElementId? = null): PropertyUpdateWithId
+
+data class DraggedToEvent(override val diagramElementId: DiagramElementId, override val dx: Float, override val dy: Float, override val parentElementId: DiagramElementId?, override val internalPos: Int?): LocationUpdateWithId
+
+data class NewWaypointsEvent(override val edgeElementId: DiagramElementId, override val waypoints: List<IdentifiableWaypoint>, override val epoch: Int): NewWaypoints
+
+data class DiagramElementRemovedEvent(override val elementId: DiagramElementId): DiagramElementRemoved
+
+data class BpmnElementRemovedEvent(override val elementId: BpmnElementId): BpmnElementRemoved
+
+data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithBpmnId, override val shape: ShapeElement, override val props: Map<PropertyType, Property>): BpmnShapeObjectAdded
+
+data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithBpmnId, override val edge: EdgeWithIdentifiableWaypoints, override val props: Map<PropertyType, Property>): BpmnEdgeObjectAdded

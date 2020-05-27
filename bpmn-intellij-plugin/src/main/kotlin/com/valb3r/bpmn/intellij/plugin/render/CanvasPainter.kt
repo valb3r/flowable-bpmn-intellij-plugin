@@ -130,6 +130,26 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(drawShape)
     }
 
+    fun drawCircle(center: Point2D.Float, radius: Float, color: Color): Area {
+        return drawCircle(WaypointElement(center.x, center.y), radius, color, color)
+    }
+
+    fun drawRectNoCameraTransform(location: Point2D.Float, width: Float, height: Float, stroke: Stroke, color: Color): Area {
+        val oldStroke = graphics2D.stroke
+        graphics2D.stroke = stroke
+        graphics2D.color = color
+        val drawShape = Rectangle2D.Float(
+                location.x,
+                location.y,
+                width,
+                height
+        )
+
+        graphics2D.draw(drawShape)
+        graphics2D.stroke = oldStroke
+        return Area(drawShape)
+    }
+
     fun drawRectNoFill(location: Point2D.Float, width: Float, height: Float, stroke: Stroke, color: Color): Area {
         val leftTop = camera.toCameraView(location)
         val rightBottom = camera.toCameraView(Point2D.Float(location.x + width, location.y + height))
@@ -190,6 +210,32 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         graphics2D.color = textColor
         name?.apply { drawWrappedText(cropTo, this) }
         return Area(drawShape)
+    }
+
+    fun drawIconAtScreen(position: Point2D.Float, icon: Icon): Area {
+        val shape = Rectangle2D.Float(
+                position.x,
+                position.y,
+                icon.iconWidth.toFloat(),
+                icon.iconHeight.toFloat()
+        )
+
+        icon.paintIcon(null, graphics2D, position.x.toInt(), position.y.toInt())
+        return Area(shape)
+    }
+
+    fun drawIconAtScreen(position: Point2D.Float, icon: Icon, border: Color): Area {
+        val shape = Rectangle2D.Float(
+                position.x,
+                position.y,
+                icon.iconWidth.toFloat(),
+                icon.iconHeight.toFloat()
+        )
+
+        icon.paintIcon(null, graphics2D, position.x.toInt(), position.y.toInt())
+        graphics2D.color = border
+        graphics2D.draw(shape)
+        return Area(shape)
     }
 
     fun drawIcon(bounds: BoundsElement, svgIcon: String): Area {

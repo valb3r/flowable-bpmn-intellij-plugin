@@ -8,6 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
 import java.util.concurrent.atomic.AtomicReference
@@ -29,24 +30,26 @@ data class CurrentState(
         val edges: List<EdgeWithIdentifiableWaypoints>,
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
         val elementByBpmnId: Map<BpmnElementId, WithBpmnId>,
-        val elemPropertiesByStaticElementId: Map<BpmnElementId, Map<PropertyType, Property>>
+        val elemPropertiesByStaticElementId: Map<BpmnElementId, Map<PropertyType, Property>>,
+        val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>
 )
 
 // Global singleton
 class CurrentStateProvider {
-    private var fileState = CurrentState(emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap())
-    private var currentState = CurrentState(emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap())
+    private var fileState = CurrentState(emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptySet())
+    private var currentState = CurrentState(emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptySet())
 
-    fun resetStateTo(processObject: BpmnProcessObjectView) {
+    fun resetStateTo(fileContent: String, processObject: BpmnProcessObjectView) {
         fileState = CurrentState(
                 processObject.diagram.firstOrNull()?.bpmnPlane?.bpmnShape ?: emptyList(),
                 processObject.diagram.firstOrNull()?.bpmnPlane?.bpmnEdge?.map { EdgeElementState(it) } ?: emptyList(),
                 processObject.elementByDiagramId,
                 processObject.elementByStaticId,
-                processObject.elemPropertiesByElementId
+                processObject.elemPropertiesByElementId,
+                emptySet()
         )
         currentState = fileState
-        updateEventsRegistry().reset()
+        updateEventsRegistry().reset(fileContent)
     }
 
     fun currentState(): CurrentState {
@@ -60,7 +63,8 @@ class CurrentStateProvider {
         val updatedElementByStaticId = state.elementByBpmnId.toMutableMap()
         val updatedElemPropertiesByStaticElementId = state.elemPropertiesByStaticElementId.toMutableMap()
 
-        val updates = updateEventsRegistry().updateEventList()
+        val undoRedoStatus = updateEventsRegistry().undoRedoStatus()
+        val updates = updateEventsRegistry().getUpdateEventList()
 
         updates.map { it.event }.forEach { event ->
             when (event) {
@@ -104,7 +108,8 @@ class CurrentStateProvider {
                 updatedEdges,
                 updatedElementByDiagramId,
                 updatedElementByStaticId,
-                updatedElemPropertiesByStaticElementId
+                updatedElemPropertiesByStaticElementId,
+                undoRedoStatus
         )
     }
 

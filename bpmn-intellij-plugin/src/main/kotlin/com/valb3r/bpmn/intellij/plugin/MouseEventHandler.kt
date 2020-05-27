@@ -25,13 +25,18 @@ class MouseEventHandler(private val canvas: Canvas): MouseListener, MouseMotionL
 
     override fun mousePressed(event: MouseEvent) {
         val point2D = Point2D.Float(event.x.toFloat(), event.y.toFloat())
+        if (SwingUtilities.isLeftMouseButton(event) && event.isShiftDown) {
+            this.canvas.startCanvasDragWithButton(point2D)
+            return
+        }
         if (SwingUtilities.isLeftMouseButton(event)) {
-            this.canvas.startDragWithButton(point2D)
+            this.canvas.startSelectionOrDrag(point2D)
+            return
         }
     }
 
     override fun mouseReleased(event: MouseEvent) {
-        this.canvas.stopDrag()
+        this.canvas.stopDragOrSelect()
         prevMousePosition = null
     }
 
@@ -50,7 +55,7 @@ class MouseEventHandler(private val canvas: Canvas): MouseListener, MouseMotionL
         if (SwingUtilities.isMiddleMouseButton(event)) {
             this.canvas.dragWithWheel(prevMousePos, currentMousePosition)
         } else if (SwingUtilities.isLeftMouseButton(event)) {
-            this.canvas.dragWithLeftButton(prevMousePos, currentMousePosition)
+            this.canvas.dragOrSelectWithLeftButton(prevMousePos, currentMousePosition)
         }
 
         prevMousePosition = currentMousePosition

@@ -23,5 +23,3 @@ data class BpmnElementRemovedEvent(override val elementId: BpmnElementId): BpmnE
 data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithBpmnId, override val shape: ShapeElement, override val props: Map<PropertyType, Property>): BpmnShapeObjectAdded
 
 data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithBpmnId, override val edge: EdgeWithIdentifiableWaypoints, override val props: Map<PropertyType, Property>): BpmnEdgeObjectAdded
-
-data class CommittedToFile(val eventCount: Int): Event
