@@ -122,8 +122,6 @@ internal class UiEditorLightE2ETest {
     fun `Ui renders service tasks properly`() {
         prepareTwoServiceTaskView()
 
-        initializeCanvas()
-
         verifyServiceTasksAreDrawn()
     }
 
@@ -131,7 +129,6 @@ internal class UiEditorLightE2ETest {
     fun `Action elements are shown when service task is selected`() {
         prepareTwoServiceTaskView()
 
-        initializeCanvas()
         clickOnId(serviceTaskStartDiagramId)
 
         verifyServiceTasksAreDrawn()
@@ -143,7 +140,6 @@ internal class UiEditorLightE2ETest {
     fun `Service task can be removed`() {
         prepareTwoServiceTaskView()
 
-        initializeCanvas()
         clickOnId(serviceTaskStartDiagramId)
 
         val deleteElem = findExactlyOneDeleteElem().shouldNotBeNull()
@@ -166,9 +162,8 @@ internal class UiEditorLightE2ETest {
     @Test
     fun `New edge element should be addable`() {
         prepareTwoServiceTaskView()
-        initializeCanvas()
 
-        val addedEdge = addSequenceElementOnFirstTask()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
 
         val intermediateX = 100.0f
         val intermediateY = 100.0f
@@ -207,7 +202,7 @@ internal class UiEditorLightE2ETest {
     fun `New service task can be added and sequence flow can be dropped directly on it`() {
         prepareTwoServiceTaskView()
 
-        val addedEdge = addSequenceElementOnFirstTask()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
         clickOnId(addedEdge.edge.id)
         val lastEndpointId = addedEdge.edge.waypoint.last().id
         val point = clickOnId(lastEndpointId)
@@ -241,7 +236,7 @@ internal class UiEditorLightE2ETest {
     fun `For new edge ending waypoint element can be directly dragged to target`() {
         prepareTwoServiceTaskView()
 
-        val addedEdge = addSequenceElementOnFirstTask()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
         clickOnId(addedEdge.edge.id)
         val lastEndpointId = addedEdge.edge.waypoint.last().id
         val point = clickOnId(lastEndpointId)
@@ -275,7 +270,7 @@ internal class UiEditorLightE2ETest {
     fun `For new edge ending waypoint element can be dragged with intermediate stop to target`() {
         prepareTwoServiceTaskView()
 
-        val addedEdge = addSequenceElementOnFirstTask()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
         clickOnId(addedEdge.edge.id)
         val lastEndpointId = addedEdge.edge.waypoint.last().id
         val point = clickOnId(lastEndpointId)
@@ -317,7 +312,7 @@ internal class UiEditorLightE2ETest {
     fun `For new edge intermediate waypoint can be added`() {
         prepareTwoServiceTaskView()
 
-        val addedEdge = addSequenceElementOnFirstTask()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
         clickOnId(addedEdge.edge.id)
         val newWaypointAnchor = addedEdge.edge.waypoint.first { !it.physical }.id
         val point = clickOnId(newWaypointAnchor)
@@ -347,7 +342,7 @@ internal class UiEditorLightE2ETest {
     fun `For new edge two new intermediate waypoints can be added using coordinates clicks`() {
         prepareTwoServiceTaskView()
 
-        val addedEdge = addSequenceElementOnFirstTask()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
         clickOnId(addedEdge.edge.id)
         val edgeStart = addedEdge.edge.waypoint.first()
         val edgeEnd = addedEdge.edge.waypoint.last()
@@ -401,6 +396,38 @@ internal class UiEditorLightE2ETest {
         }
     }
 
+    @Test
+    fun `Dragging service task with sequences attached cascade updates location`() {
+        prepareTwoServiceTaskView()
+
+        val dragDelta = Point2D.Float(100.0f, 100.0f)
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne()
+        val point = clickOnId(serviceTaskStartDiagramId)
+        dragToButDontStop(point, Point2D.Float(point.x + dragDelta.x, point.y + dragDelta.y))
+        canvas.stopDragOrSelect()
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            lastValue.shouldHaveSize(3)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val dragTask = lastValue.filterIsInstance<DraggedToEvent>().first()
+            val dragEdge = lastValue.filterIsInstance<DraggedToEvent>().last()
+            lastValue.shouldContainSame(listOf(edgeBpmn, dragTask, dragEdge))
+
+            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+
+            dragTask.diagramElementId.shouldBeEqualTo(serviceTaskStartDiagramId)
+            dragTask.dx.shouldBeNear(dragDelta.x, 0.1f)
+            dragTask.dy.shouldBeNear(dragDelta.y, 0.1f)
+
+            dragEdge.diagramElementId.shouldBeEqualTo(addedEdge.edge.waypoint.first().id)
+            dragEdge.dx.shouldBeNear(dragDelta.x, 0.1f)
+            dragEdge.dy.shouldBeNear(dragDelta.y, 0.1f)
+        }
+    }
+
     private fun newServiceTask(intermediateX: Float, intermediateY: Float): BpmnElementId {
         val task = bpmnServiceTaskStart.copy(id = BpmnElementId("sid-" + UUID.randomUUID().toString()))
         val shape = diagramServiceTaskStart.copy(
@@ -428,12 +455,8 @@ internal class UiEditorLightE2ETest {
         canvas.paintComponent(graphics)
     }
 
-    private fun addSequenceElementOnFirstTask(): BpmnEdgeObjectAddedEvent {
-        initializeCanvas()
-        clickOnId(serviceTaskStartDiagramId)
-        verifyServiceTasksAreDrawn()
-        val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
-        clickOnId(newLink)
+    private fun addSequenceElementOnFirstTaskAndValidateCommittedExactOnce(): BpmnEdgeObjectAddedEvent {
+        addSequenceElementOnFirstTask()
 
         argumentCaptor<List<Event>>().let {
             verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any())
@@ -441,6 +464,25 @@ internal class UiEditorLightE2ETest {
             val edgeBpmn = it.firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             return edgeBpmn
         }
+    }
+
+    private fun addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne(): BpmnEdgeObjectAddedEvent {
+        clickOnId(serviceTaskStartDiagramId)
+        verifyServiceTasksAreDrawn()
+        val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
+        clickOnId(newLink)
+
+        argumentCaptor<List<Event>>().let {
+            verify(fileCommitter, atLeastOnce()).executeCommitAndGetHash(any(), it.capture(), any())
+            return it.lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().last().shouldNotBeNull()
+        }
+    }
+
+    private fun addSequenceElementOnFirstTask() {
+        clickOnId(serviceTaskStartDiagramId)
+        verifyServiceTasksAreDrawn()
+        val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
+        clickOnId(newLink)
     }
 
     private fun clickOnId(elemId: DiagramElementId): Point2D.Float {
@@ -473,6 +515,7 @@ internal class UiEditorLightE2ETest {
                 )
         )
         whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
     }
 
     private fun elemAreaById(id: DiagramElementId) = renderResult?.get(id)!!

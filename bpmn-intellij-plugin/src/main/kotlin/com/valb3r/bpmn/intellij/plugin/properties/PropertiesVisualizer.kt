@@ -123,7 +123,7 @@ class PropertiesVisualizer(val table: JTable, val editorFactory: (value: String)
     private fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, Map<PropertyType, Property>>, event: StringValueUpdatedEvent) {
         val cascades = mutableListOf<PropertyUpdateWithId>()
         if (null != event.referencedValue) {
-            state.forEach { id, props ->
+            state.forEach { (id, props) ->
                 props.filter { it.key.updatedBy == event.property }.filter { it.value.value == event.referencedValue }.forEach {prop ->
                     cascades += StringValueUpdatedEvent(id, prop.key, event.newValue, event.referencedValue, null)
                 }
