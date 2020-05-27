@@ -194,7 +194,7 @@ internal class UiEditorLightE2ETest {
     }
 
     @Test
-    fun `New edge waypoint element can be directly dragged to target`() {
+    fun `For new edge ending waypoint element can be directly dragged to target`() {
         prepareTwoServiceTaskView()
 
         val addedEdge = addSequenceElementOnFirstTask()
@@ -228,7 +228,7 @@ internal class UiEditorLightE2ETest {
     }
 
     @Test
-    fun `New edge waypoint element can be dragged with intermediate stop to target`() {
+    fun `For new edge ending waypoint element can be dragged with intermediate stop to target`() {
         prepareTwoServiceTaskView()
 
         val addedEdge = addSequenceElementOnFirstTask()
@@ -266,6 +266,36 @@ internal class UiEditorLightE2ETest {
             propUpdated.bpmnElementId.shouldBe(edgeBpmn.bpmnObject.id)
             propUpdated.property.shouldBe(PropertyType.TARGET_REF)
             propUpdated.newValue.shouldBe(serviceTaskEndBpmnId.id)
+        }
+    }
+
+    @Test
+    fun `For new edge intermediate waypoint can be added`() {
+        prepareTwoServiceTaskView()
+
+        val addedEdge = addSequenceElementOnFirstTask()
+        clickOnId(addedEdge.edge.id)
+        val newWaypointAnchor = addedEdge.edge.waypoint.first { !it.physical }.id
+        val point = clickOnId(newWaypointAnchor)
+        dragToEndTaskButDontStop(point, Point2D.Float(100.0f, 100.0f), newWaypointAnchor)
+        canvas.stopDragOrSelect()
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            lastValue.shouldHaveSize(2)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val newWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().shouldHaveSingleItem()
+            lastValue.shouldContainSame(listOf(edgeBpmn, newWaypoint))
+
+            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+
+            newWaypoint.edgeElementId.shouldBeEqualTo(addedEdge.edge.id)
+            newWaypoint.waypoints.shouldHaveSize(3)
+            newWaypoint.waypoints.filter { it.physical }.shouldHaveSize(3)
+            newWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 100.0f, 100.0f))
+            newWaypoint.waypoints.map { it.y }.shouldContainSame(listOf(30.0f, 100.0f, 30.0f))
         }
     }
 
