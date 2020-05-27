@@ -22,10 +22,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.events.BpmnEdgeObjectAddedEvent
-import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
-import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
-import com.valb3r.bpmn.intellij.plugin.events.FileCommitter
+import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.render.*
 import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
@@ -53,6 +50,7 @@ internal class UiEditorLightE2ETest {
 
     private val endElemX = 10 * serviceTaskSize
     private val endElemY = 0.0f
+    private val endElemMidY = serviceTaskSize / 2.0f
 
     private val planeElementBpmnId = BpmnElementId("planeElementId")
     private val diagramMainElementId = DiagramElementId("diagramMainElement")
@@ -177,14 +175,17 @@ internal class UiEditorLightE2ETest {
             firstValue.shouldHaveSize(1)
             val edgeBpmn = firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
+
             val edge = edgeBpmn.edge.shouldBeInstanceOf<EdgeElementState>()
             edge.waypoint.shouldHaveSize(3)
             val physicalWaypoints = edge.waypoint.filter { it.physical }
             physicalWaypoints.shouldHaveSize(2)
             physicalWaypoints.map { it.x }.shouldContainAll(listOf(60.0f, 100.0f))
             physicalWaypoints.map { it.y }.shouldContainAll(listOf(30.0f, 30.0f))
+
             edgeBpmn.props.shouldHaveKey(PropertyType.ID)
             edgeBpmn.props.shouldHaveKey(PropertyType.SOURCE_REF)
             edgeBpmn.props.shouldHaveKey(PropertyType.TARGET_REF)
@@ -192,11 +193,72 @@ internal class UiEditorLightE2ETest {
         }
     }
 
-    private fun clickOnId(elemId: DiagramElementId) {
+    @Test
+    fun `New edge element can be directly dragged to target`() {
+        prepareTwoServiceTaskView()
+
+        val addedEdge = addSequenceElementOnFirstTask()
+        clickOnId(addedEdge.edge.id)
+        val lastEndpointId = addedEdge.edge.waypoint.last().id
+        val point = clickOnId(lastEndpointId)
+
+        dragToEndTaskButDontStop(point, lastEndpointId)
+        canvas.stopDragOrSelect()
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            lastValue.shouldHaveSize(3)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val draggedTo = lastValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
+            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            lastValue.shouldContainSame(listOf(edgeBpmn, draggedTo, propUpdated))
+
+            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+
+            draggedTo.diagramElementId.shouldBe(lastEndpointId)
+            draggedTo.dx.shouldBeNear(endElemX - point.x, 0.1f)
+            draggedTo.dy.shouldBeNear(0.0f, 0.1f)
+
+            propUpdated.bpmnElementId.shouldBe(edgeBpmn.bpmnObject.id)
+            propUpdated.property.shouldBe(PropertyType.TARGET_REF)
+            propUpdated.newValue.shouldBe(serviceTaskEndBpmnId.id)
+        }
+    }
+
+    private fun dragToEndTaskButDontStop(point: Point2D.Float, lastEndpointId: DiagramElementId) {
+        canvas.startSelectionOrDrag(point)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(point, Point2D.Float(endElemX, endElemMidY))
+        canvas.paintComponent(graphics)
+        val dragAboutToFinishArea = elemAreaById(lastEndpointId)
+        dragAboutToFinishArea.area.bounds2D.centerX.shouldBeNear(endElemX.toDouble(), 0.1)
+        dragAboutToFinishArea.area.bounds2D.centerY.shouldBeNear(endElemMidY.toDouble(), 0.1)
+    }
+
+    private fun addSequenceElementOnFirstTask(): BpmnEdgeObjectAddedEvent {
+        initializeCanvas()
+        clickOnId(serviceTaskStartDiagramId)
+        verifyServiceTasksAreDrawn()
+        val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
+        clickOnId(newLink)
+
+        argumentCaptor<List<Event>>().let {
+            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any())
+            it.firstValue.shouldHaveSize(1)
+            val edgeBpmn = it.firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            return edgeBpmn
+        }
+    }
+
+    private fun clickOnId(elemId: DiagramElementId): Point2D.Float {
         val area = renderResult?.get(elemId).shouldNotBeNull()
         val bounds = area.area.bounds2D.shouldNotBeNull()
-        canvas.click(Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat()))
+        val point = Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat())
+        canvas.click(point)
         canvas.paintComponent(graphics)
+        return point
     }
 
     private fun initializeCanvas() {
@@ -221,6 +283,8 @@ internal class UiEditorLightE2ETest {
         )
         whenever(parser.parse("")).thenReturn(process)
     }
+
+    private fun elemAreaById(id: DiagramElementId) = renderResult?.get(id)!!
 
     private fun findFirstNewLinkElem() = renderResult?.keys?.firstOrNull { it.id.contains(newLink) }
     private fun findFirstDeleteElem() = renderResult?.keys?.firstOrNull { it.id.contains(doDel) }
