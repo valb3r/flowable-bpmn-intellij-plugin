@@ -167,7 +167,7 @@ internal class UiEditorLightE2ETest {
         renderResult.shouldNotBeNull().shouldHaveKey(serviceTaskEndDiagramId)
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(serviceTaskStartDiagramId),
                     BpmnElementRemovedEvent(serviceTaskStartBpmnId))
@@ -192,7 +192,7 @@ internal class UiEditorLightE2ETest {
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(4)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val shapeBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().shouldHaveSingleItem()
@@ -227,7 +227,7 @@ internal class UiEditorLightE2ETest {
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(3)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val draggedTo = lastValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
@@ -261,7 +261,7 @@ internal class UiEditorLightE2ETest {
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(3)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val draggedTo = lastValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
@@ -298,7 +298,7 @@ internal class UiEditorLightE2ETest {
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(4)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val draggedToMid = lastValue.filterIsInstance<DraggedToEvent>().first().shouldNotBeNull()
@@ -336,7 +336,7 @@ internal class UiEditorLightE2ETest {
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(2)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val newWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().shouldHaveSingleItem()
@@ -387,7 +387,7 @@ internal class UiEditorLightE2ETest {
         // as a result 2 new waypoints should exist
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(3)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val newMidWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().first()
@@ -423,7 +423,7 @@ internal class UiEditorLightE2ETest {
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(3)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val dragTask = lastValue.filterIsInstance<DraggedToEvent>().first()
@@ -453,7 +453,7 @@ internal class UiEditorLightE2ETest {
         changeIdViaPropertiesVisualizer(serviceTaskStartDiagramId, serviceTaskStartBpmnId, newId)
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(3)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val origIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().first()
@@ -488,7 +488,7 @@ internal class UiEditorLightE2ETest {
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(5)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val origIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().first()
@@ -544,7 +544,7 @@ internal class UiEditorLightE2ETest {
         canvas.paintComponent(graphics)
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(2)
             val dragStart = lastValue.filterIsInstance<DraggedToEvent>().first()
             val dragEnd = lastValue.filterIsInstance<DraggedToEvent>().last()
@@ -586,7 +586,7 @@ internal class UiEditorLightE2ETest {
         canvas.paintComponent(graphics)
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(3)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val dragStart = lastValue.filterIsInstance<DraggedToEvent>().first()
@@ -618,7 +618,7 @@ internal class UiEditorLightE2ETest {
         clickOnId(deleteElem)
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(3)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val removeEdgeBpmn = lastValue.filterIsInstance<BpmnElementRemovedEvent>().first()
@@ -653,7 +653,7 @@ internal class UiEditorLightE2ETest {
         clickOnId(deleteElem)
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any())
+            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(3)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val newWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().first()
@@ -720,7 +720,7 @@ internal class UiEditorLightE2ETest {
         addSequenceElementOnFirstTask()
 
         argumentCaptor<List<Event>>().let {
-            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any())
             it.firstValue.shouldHaveSize(1)
             val edgeBpmn = it.firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             return edgeBpmn
@@ -734,7 +734,7 @@ internal class UiEditorLightE2ETest {
         clickOnId(newLink)
 
         argumentCaptor<List<Event>>().let {
-            verify(fileCommitter, atLeastOnce()).executeCommitAndGetHash(any(), it.capture(), any())
+            verify(fileCommitter, atLeastOnce()).executeCommitAndGetHash(any(), it.capture(), any(), any())
             return it.lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().last().shouldNotBeNull()
         }
     }
