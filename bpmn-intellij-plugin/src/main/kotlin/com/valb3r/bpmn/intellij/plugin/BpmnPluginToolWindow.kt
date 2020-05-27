@@ -10,13 +10,20 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.JavaReferenceEditorUtil
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.components.JBTextField
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.IntelliJFileCommitter
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
+import com.valb3r.bpmn.intellij.plugin.properties.SelectedValueAccessor
+import com.valb3r.bpmn.intellij.plugin.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.render.DefaultBpmnProcessRenderer
 import com.valb3r.bpmn.intellij.plugin.render.IconProviderImpl
 import com.valb3r.bpmn.intellij.plugin.ui.components.MultiEditJTable
+import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JSplitPane
 import javax.swing.JTable
@@ -47,7 +54,7 @@ class BpmnPluginToolWindow {
 
     fun run(bpmnFile: PsiFile, context: BpmnActionContext) {
         val table = MultiEditJTable(DefaultTableModel())
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF)
+        table.autoResizeMode = JTable.AUTO_RESIZE_OFF
         table.rowHeight = 24
 
         val scrollPane = JBScrollPane(table)
@@ -61,7 +68,9 @@ class BpmnPluginToolWindow {
                 { IntelliJFileCommitter(it, context.project, virtualFile) },
                 FlowableParser(),
                 table,
-                { createEditor(context.project, bpmnFile, it) },
+                { _: BpmnElementId, _: PropertyType, value: String -> createEditor(context.project, bpmnFile, value) },
+                { _: BpmnElementId, _: PropertyType, value: String -> createTextField(value) },
+                { _: BpmnElementId, _: PropertyType, value: Boolean -> createCheckboxField(value) },
                 canvas,
                 bpmnFile.project,
                 virtualFile
@@ -69,7 +78,29 @@ class BpmnPluginToolWindow {
         setupUiAfterRun()
     }
 
-    protected fun createEditor(project: Project, bpmnFile: PsiFile, text: String): EditorTextField {
+    fun createTextField(value: String): TextValueAccessor {
+        val textField = JBTextField(value)
+
+        return object: TextValueAccessor {
+            override val text: String
+                get() = textField.text
+            override val component: JComponent
+                get() = textField
+        }
+    }
+
+    fun createCheckboxField(value: Boolean): SelectedValueAccessor {
+        val checkBox = JBCheckBox(null, value)
+
+        return object: SelectedValueAccessor {
+            override val isSelected: Boolean
+                get() = checkBox.isSelected
+            override val component: JComponent
+                get() = checkBox
+        }
+    }
+
+    fun createEditor(project: Project, bpmnFile: PsiFile, text: String): TextValueAccessor {
         val factory = JavaCodeFragmentFactory.getInstance(project)
         val fragment: JavaCodeFragment = factory.createCodeBlockCodeFragment(text, bpmnFile, true)
         fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
@@ -77,7 +108,13 @@ class BpmnPluginToolWindow {
 
         val textField: EditorTextField = JavaEditorTextField(document, project)
         textField.setOneLineMode(true)
-        return textField
+
+        return object: TextValueAccessor {
+            override val text: String
+                get() = textField.text
+            override val component: JComponent
+                get() = textField
+        }
     }
 
     // JavaCodeFragmentFactory - important

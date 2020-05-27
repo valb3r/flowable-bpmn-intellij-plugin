@@ -1,7 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.render
 
 import com.google.common.cache.CacheBuilder
-import com.intellij.ui.EditorTextField
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -9,6 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.properties.PropertiesVisualizer
+import com.valb3r.bpmn.intellij.plugin.properties.propertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.state.currentStateProvider
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -18,7 +18,6 @@ import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
 import java.util.concurrent.TimeUnit
 import javax.swing.JPanel
-import javax.swing.JTable
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -38,7 +37,7 @@ class Canvas: JPanel() {
     private var interactionCtx: ElementInteractionContext = ElementInteractionContext(mutableSetOf(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
     private var renderer: BpmnProcessRenderer? = null
     private var areaByElement: Map<DiagramElementId, AreaWithZindex>? = null
-    private var propertiesVisualizer: PropertiesVisualizer? = null
+    private var propsVisualizer: PropertiesVisualizer? = null
 
     private val cachedIcons = CacheBuilder.newBuilder()
             .expireAfterAccess(10L, TimeUnit.SECONDS)
@@ -59,11 +58,11 @@ class Canvas: JPanel() {
         )
     }
 
-    fun reset(properties: JTable, editorFactory: (value: String) -> EditorTextField, fileContent: String, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
+    fun reset(fileContent: String, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
         this.renderer = renderer
         this.camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
-        this.propertiesVisualizer?.clear()
-        this.propertiesVisualizer = PropertiesVisualizer(properties, editorFactory)
+        this.propsVisualizer = propertiesVisualizer()
+        this.propsVisualizer?.clear()
         this.stateProvider.resetStateTo(fileContent, processObject)
         selectedElements = mutableSetOf()
         repaint()
@@ -84,8 +83,8 @@ class Canvas: JPanel() {
         state
                 .elementByDiagramId[elementIdForPropertiesTable]
                 ?.let { elemId ->
-                    state.elemPropertiesByStaticElementId[elemId]?.let { propertiesVisualizer?.visualize(state.elemPropertiesByStaticElementId, elemId, it) }
-                } ?: propertiesVisualizer?.clear()
+                    state.elemPropertiesByStaticElementId[elemId]?.let { propsVisualizer?.visualize(state.elemPropertiesByStaticElementId, elemId) }
+                } ?: propsVisualizer?.clear()
     }
 
     fun dragCanvas(start: Point2D.Float, current: Point2D.Float) {

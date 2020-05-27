@@ -2,7 +2,6 @@ package com.valb3r.bpmn.intellij.plugin
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ui.EditorTextField
 import com.intellij.util.messages.MessageBus
 import com.intellij.util.messages.MessageBusConnection
 import com.nhaarman.mockitokotlin2.*
@@ -23,10 +22,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.*
+import com.valb3r.bpmn.intellij.plugin.properties.SelectedValueAccessor
+import com.valb3r.bpmn.intellij.plugin.properties.TextValueAccessor
+import com.valb3r.bpmn.intellij.plugin.properties.propertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.render.DefaultBpmnProcessRenderer
 import com.valb3r.bpmn.intellij.plugin.render.IconProvider
+import com.valb3r.bpmn.intellij.plugin.state.currentStateProvider
 import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,6 +43,19 @@ import javax.swing.JTable
 import javax.swing.table.TableColumn
 import javax.swing.table.TableColumnModel
 
+// These are global singletons as i.e. `initializeNewElementsFactory` is
+private val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
+private val boolFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, SelectedValueAccessor> = mutableMapOf()
+private val editorFactory = { id: BpmnElementId, type: PropertyType, value: String -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
+    val res = mock<TextValueAccessor>()
+    whenever(res.text).thenReturn(value)
+    return@computeIfAbsent res
+} }
+private val checkboxFieldFactory = { id: BpmnElementId, type: PropertyType, value: Boolean -> boolFieldsConstructed.computeIfAbsent(Pair(id, type)) {
+    val res = mock<SelectedValueAccessor>()
+    whenever(res.isSelected).thenReturn(value)
+    return@computeIfAbsent res
+} }
 
 internal class UiEditorLightE2ETest {
 
@@ -91,12 +107,12 @@ internal class UiEditorLightE2ETest {
     private val columnModel = mock<TableColumnModel>()
     private val tableColumn = mock<TableColumn>()
     private val propertiesTable = mock<JTable>()
-    private val editorTextField = mock<EditorTextField>()
-    private val editorFieldFactory = { id: String -> editorTextField}
 
     @BeforeEach
     fun setupMocks() {
-        whenever(editorTextField.text).thenReturn("")
+        textFieldsConstructed.clear()
+        boolFieldsConstructed.clear()
+
         whenever(propertiesTable.columnModel).thenReturn(columnModel)
         whenever(columnModel.getColumn(anyInt())).thenReturn(tableColumn)
         whenever(graphics.create()).thenReturn(graphics)
@@ -428,6 +444,93 @@ internal class UiEditorLightE2ETest {
         }
     }
 
+    @Test
+    fun `Renaming element ID cascades to sourceRef and targetRef when changed via PropertiesVisualizer`() {
+        prepareTwoServiceTaskView()
+
+        val newId = UUID.randomUUID().toString()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne()
+        changeIdViaPropertiesVisualizer(serviceTaskStartDiagramId, serviceTaskStartBpmnId, newId)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            lastValue.shouldHaveSize(3)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val origIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().first()
+            val cascadeIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().last()
+            lastValue.shouldContainSame(listOf(edgeBpmn, origIdUpdate, cascadeIdUpdate))
+
+            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+
+            origIdUpdate.bpmnElementId.shouldBeEqualTo(serviceTaskStartBpmnId)
+            origIdUpdate.property.shouldBeEqualTo(PropertyType.ID)
+            origIdUpdate.newValue.shouldBeEqualTo(newId)
+            origIdUpdate.newIdValue?.id.shouldBeEqualTo(newId)
+
+            cascadeIdUpdate.bpmnElementId.shouldBeEqualTo(addedEdge.edge.bpmnElement)
+            cascadeIdUpdate.property.shouldBeEqualTo(PropertyType.SOURCE_REF)
+            cascadeIdUpdate.newValue.shouldBeEqualTo(newId)
+        }
+    }
+
+    @Test
+    fun `Cascading position after renaming element ID updates works too`() {
+        prepareTwoServiceTaskView()
+
+        val newId = UUID.randomUUID().toString()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne()
+        changeIdViaPropertiesVisualizer(serviceTaskStartDiagramId, serviceTaskStartBpmnId, newId)
+        val dragDelta = Point2D.Float(100.0f, 100.0f)
+        val point = clickOnId(serviceTaskStartDiagramId)
+        dragToButDontStop(point, Point2D.Float(point.x + dragDelta.x, point.y + dragDelta.y))
+        canvas.stopDragOrSelect()
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any())
+            lastValue.shouldHaveSize(5)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val origIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().first()
+            val cascadeIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().last()
+            val dragTask = lastValue.filterIsInstance<DraggedToEvent>().first()
+            val dragEdge = lastValue.filterIsInstance<DraggedToEvent>().last()
+            lastValue.shouldContainSame(listOf(edgeBpmn, origIdUpdate, cascadeIdUpdate, dragTask, dragEdge))
+
+            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+
+            origIdUpdate.bpmnElementId.shouldBeEqualTo(serviceTaskStartBpmnId)
+            origIdUpdate.property.shouldBeEqualTo(PropertyType.ID)
+            origIdUpdate.newValue.shouldBeEqualTo(newId)
+            origIdUpdate.newIdValue?.id.shouldBeEqualTo(newId)
+
+            cascadeIdUpdate.bpmnElementId.shouldBeEqualTo(addedEdge.edge.bpmnElement)
+            cascadeIdUpdate.property.shouldBeEqualTo(PropertyType.SOURCE_REF)
+            cascadeIdUpdate.newValue.shouldBeEqualTo(newId)
+
+            dragTask.diagramElementId.shouldBeEqualTo(serviceTaskStartDiagramId)
+            dragTask.dx.shouldBeNear(dragDelta.x, 0.1f)
+            dragTask.dy.shouldBeNear(dragDelta.y, 0.1f)
+
+            dragEdge.diagramElementId.shouldBeEqualTo(addedEdge.edge.waypoint.first().id)
+            dragEdge.dx.shouldBeNear(dragDelta.x, 0.1f)
+            dragEdge.dy.shouldBeNear(dragDelta.y, 0.1f)
+        }
+    }
+
+    private fun changeIdViaPropertiesVisualizer(diagramElementId: DiagramElementId, elementId: BpmnElementId, newId: String) {
+        val id = Pair(elementId, PropertyType.ID)
+        clickOnId(diagramElementId)
+        propertiesVisualizer().visualize(
+                currentStateProvider().currentState().elemPropertiesByStaticElementId,
+                elementId
+        )
+        whenever(textFieldsConstructed[id]!!.text).thenReturn(newId)
+        propertiesVisualizer().clear()
+    }
+
     private fun newServiceTask(intermediateX: Float, intermediateY: Float): BpmnElementId {
         val task = bpmnServiceTaskStart.copy(id = BpmnElementId("sid-" + UUID.randomUUID().toString()))
         val shape = diagramServiceTaskStart.copy(
@@ -495,7 +598,7 @@ internal class UiEditorLightE2ETest {
     }
 
     private fun initializeCanvas() {
-        canvasBuilder.build({ fileCommitter }, parser, propertiesTable, editorFieldFactory, canvas, project, virtualFile)
+        canvasBuilder.build({ fileCommitter }, parser, propertiesTable, editorFactory, editorFactory, checkboxFieldFactory, canvas, project, virtualFile)
         canvas.paintComponent(graphics)
     }
 
