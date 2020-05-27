@@ -25,7 +25,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             BpmnStartEvent::class -> BpmnStartEvent(generateBpmnId(), null, null)
             BpmnUserTask::class -> BpmnUserTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null, null, null, null, null)
             BpmnScriptTask::class -> BpmnScriptTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null)
-            BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId(), null, null, null, null, null, null, null, null, null)
+            BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null)
             BpmnBusinessRuleTask::class -> BpmnBusinessRuleTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null, null)
             BpmnReceiveTask::class -> BpmnReceiveTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null)
             BpmnCallActivity::class -> BpmnCallActivity(generateBpmnId(), null, null, null, "", null, null, null, null)
