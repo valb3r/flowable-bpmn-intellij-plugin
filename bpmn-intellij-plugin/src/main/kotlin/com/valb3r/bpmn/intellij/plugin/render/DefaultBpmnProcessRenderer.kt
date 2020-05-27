@@ -1,6 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.render
 
-import com.intellij.openapi.util.IconLoader
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
@@ -19,10 +18,13 @@ import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.geom.Area
 import java.awt.geom.Point2D
-import java.nio.charset.StandardCharsets
 import kotlin.math.min
 
-class BpmnProcessRenderer {
+interface BpmnProcessRenderer {
+    fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
+}
+
+class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer {
 
     private val undoRedoStartMargin = 20.0f
     private val waypointLen = 40.0f
@@ -35,17 +37,10 @@ class BpmnProcessRenderer {
     private val undoId = DiagramElementId("UNDO")
     private val redoId = DiagramElementId("REDO")
 
-    private val UNDO = IconLoader.getIcon("/icons/actions/undo.png")
-    private val REDO = IconLoader.getIcon("/icons/actions/redo.png")
-    private val GEAR = IconLoader.getIcon("/icons/render/gear.png")
-    private val EXCLUSIVE_GATEWAY = "/icons/exclusive-gateway.svg".asResource()!!
-    private val SEQUENCE = "/icons/sequence.svg".asResource()!!
-    private val RECYCLE_BIN = "/icons/recycle-bin.svg".asResource()!!
-
     private val ANCHOR_STROKE = BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(5.0f), 0.0f)
     private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
 
-    fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+    override fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val state = ctx.stateProvider.currentState()
         val areaByElement: MutableMap<DiagramElementId, AreaWithZindex> = HashMap()
         val renderMeta = RenderMetadata(
@@ -81,19 +76,19 @@ class BpmnProcessRenderer {
 
         if (state.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.UNDO)) {
             val color = if (isActive(undoId, meta)) Colors.SELECTED_COLOR else null
-            val areaUndo = color?.let { ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), UNDO, it.color) }
-                    ?: ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), UNDO)
+            val areaUndo = color?.let { ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo, it.color) }
+                    ?: ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo)
             areaByElement[undoId] = AreaWithZindex(areaUndo, Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
-            locationX += UNDO.iconWidth + undoRedoStartMargin
+            locationX += icons.undo.iconWidth + undoRedoStartMargin
             ctx.interactionContext.clickCallbacks[undoId] = { dest -> dest.undo() }
         }
 
         if (state.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.REDO)) {
             val color = if (isActive(redoId, meta)) Colors.SELECTED_COLOR else null
-            val areaRedo = color?.let { ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), REDO, it.color) }
-                    ?: ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), REDO)
+            val areaRedo = color?.let { ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo, it.color) }
+                    ?: ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo)
             areaByElement[redoId] = AreaWithZindex(areaRedo, Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
-            locationX += REDO.iconWidth + undoRedoStartMargin
+            locationX += icons.redo.iconWidth + undoRedoStartMargin
             ctx.interactionContext.clickCallbacks[redoId] = { dest -> dest.redo() }
         }
     }
@@ -372,7 +367,7 @@ class BpmnProcessRenderer {
     }
 
     private fun drawExclusiveGateway(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
-        val area = canvas.drawWrappedIcon(shape, EXCLUSIVE_GATEWAY, active, Colors.SELECTED_COLOR.color)
+        val area = canvas.drawWrappedIcon(shape, icons.exclusiveGateway, active, Colors.SELECTED_COLOR.color)
         return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
@@ -382,7 +377,7 @@ class BpmnProcessRenderer {
     }
 
     private fun drawServiceTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
-        val area = canvas.drawRoundedRectWithIcon(shape, GEAR, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
+        val area = canvas.drawRoundedRectWithIcon(shape, icons.gear, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
         return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
@@ -510,14 +505,14 @@ class BpmnProcessRenderer {
             when(it.key) {
                 Actions.DELETE -> {
                     val delId = DiagramElementId("DEL:$ownerId")
-                    val deleteIconArea = canvas.drawIcon(BoundsElement(location.x + width + actionsMargin, yLocation, actionsIcoSize, actionsIcoSize), RECYCLE_BIN)
+                    val deleteIconArea = canvas.drawIcon(BoundsElement(location.x + width + actionsMargin, yLocation, actionsIcoSize, actionsIcoSize), icons.recycleBin)
                     ctx.clickCallbacks[delId] = it.value
                     result[delId] = AreaWithZindex(deleteIconArea, Point2D.Float(0.0f, 0.0f), AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, ownerId)
                     yLocation += actionsIcoSize + actionsMargin
                 }
                 Actions.NEW_LINK -> {
                     val newLinkId = DiagramElementId("NEWLINK:$ownerId")
-                    val newSequence = canvas.drawIcon(BoundsElement(location.x + width + actionsMargin, yLocation, actionsIcoSize, actionsIcoSize), SEQUENCE)
+                    val newSequence = canvas.drawIcon(BoundsElement(location.x + width + actionsMargin, yLocation, actionsIcoSize, actionsIcoSize), icons.sequence)
                     ctx.clickCallbacks[newLinkId] = it.value
                     result[newLinkId] = AreaWithZindex(newSequence, Point2D.Float(0.0f, 0.0f), AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, ownerId)
                     yLocation += actionsIcoSize + actionsMargin
@@ -543,6 +538,4 @@ class BpmnProcessRenderer {
         DELETE,
         NEW_LINK
     }
-
-    fun String.asResource(): String? = BpmnProcessRenderer::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
 }
