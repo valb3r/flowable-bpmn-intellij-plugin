@@ -607,6 +607,77 @@ internal class UiEditorLightE2ETest {
         }
     }
 
+    @Test
+    fun `Removing edge element works`() {
+        prepareTwoServiceTaskView()
+
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
+        clickOnId(addedEdge.edge.id)
+
+        val deleteElem = findExactlyOneDeleteElem().shouldNotBeNull()
+        clickOnId(deleteElem)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any())
+            lastValue.shouldHaveSize(3)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val removeEdgeBpmn = lastValue.filterIsInstance<BpmnElementRemovedEvent>().first()
+            val removeEdgeDiagram = lastValue.filterIsInstance<DiagramElementRemovedEvent>().first()
+            lastValue.shouldContainSame(listOf(edgeBpmn, removeEdgeDiagram, removeEdgeBpmn))
+
+            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+
+            removeEdgeBpmn.elementId.shouldBeEqualTo(addedEdge.edge.bpmnElement)
+            removeEdgeDiagram.elementId.shouldBeEqualTo(addedEdge.edge.id)
+        }
+    }
+
+    @Test
+    fun `Removing waypoint works`() {
+        prepareTwoServiceTaskView()
+
+        val newLocation = Point2D.Float(100.0f, 100.0f)
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
+        clickOnId(addedEdge.edge.id)
+        val newWaypointAnchor = addedEdge.edge.waypoint.first { !it.physical }.id
+        val point = clickOnId(newWaypointAnchor)
+        dragToAndVerifyButDontStop(point, newLocation, newWaypointAnchor)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        canvas.click(newLocation)
+        canvas.paintComponent(graphics)
+        val deleteElem = findExactlyOneDeleteElem().shouldNotBeNull()
+        clickOnId(deleteElem)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any())
+            lastValue.shouldHaveSize(3)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val newWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().first()
+            val removeWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().last()
+            lastValue.shouldContainSame(listOf(edgeBpmn, newWaypoint, removeWaypoint))
+
+            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+
+            newWaypoint.edgeElementId.shouldBeEqualTo(addedEdge.edge.id)
+            newWaypoint.waypoints.shouldHaveSize(3)
+            newWaypoint.waypoints.filter { it.physical }.shouldHaveSize(3)
+            newWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 100.0f, 100.0f))
+            newWaypoint.waypoints.map { it.y }.shouldContainSame(listOf(30.0f, 100.0f, 30.0f))
+
+            removeWaypoint.edgeElementId.shouldBeEqualTo(addedEdge.edge.id)
+            removeWaypoint.waypoints.shouldHaveSize(2)
+            removeWaypoint.waypoints.filter { it.physical }.shouldHaveSize(2)
+            removeWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 100.0f))
+            removeWaypoint.waypoints.map { it.y }.shouldContainSame(listOf(30.0f, 30.0f))
+        }
+    }
+
     private fun changeIdViaPropertiesVisualizer(diagramElementId: DiagramElementId, elementId: BpmnElementId, newId: String) {
         val id = Pair(elementId, PropertyType.ID)
         clickOnId(diagramElementId)
