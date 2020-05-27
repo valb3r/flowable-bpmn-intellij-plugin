@@ -15,7 +15,9 @@ data class ServiceTask(
         @JacksonXmlProperty(isAttribute = true) val delegateExpression: String?,
         @JacksonXmlProperty(isAttribute = true, localName = "class") val clazz: String?,
         @JacksonXmlProperty(isAttribute = true) val skipExpression: String?,
-        @JacksonXmlProperty(isAttribute = true) val triggerable: Boolean?
+        @JacksonXmlProperty(isAttribute = true) val triggerable: Boolean?,
+        @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
+        @JacksonXmlProperty(isAttribute = true) val type: String?
 ): BpmnMappable<BpmnServiceTask> {
 
     override fun toElement(): BpmnServiceTask {

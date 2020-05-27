@@ -15,7 +15,7 @@ enum class PropertyType(
     ID("id", "ID", STRING, "id.id", true, null, 1000), // ID should fire last
     NAME("name", "Name", STRING),
     DOCUMENTATION("documentation", "Documentation", STRING),
-    IS_FOR_COMPENSATION("isForCompensation", "Is for compensation", BOOLEAN),
+    IS_FOR_COMPENSATION("forCompensation", "Is for compensation", BOOLEAN),
     ASYNC("async", "Asynchronous", BOOLEAN),
     ASSIGNEE("assignee", "Assignee", STRING),
     CALLED_ELEM("calledElement", "Called element", PropertyValueType.EXPRESSION),
