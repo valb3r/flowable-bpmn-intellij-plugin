@@ -177,7 +177,7 @@ internal class UiEditorLightE2ETest {
         clickOnId(addedEdge.edge.id)
         val lastEndpointId = addedEdge.edge.waypoint.last().id
         val point = clickOnId(lastEndpointId)
-        dragToEndTaskButDontStop(point, Point2D.Float(intermediateX, intermediateY + serviceTaskSize / 2.0f), lastEndpointId)
+        dragToAndVerifyButDontStop(point, Point2D.Float(intermediateX, intermediateY + serviceTaskSize / 2.0f), lastEndpointId)
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
@@ -203,19 +203,6 @@ internal class UiEditorLightE2ETest {
         }
     }
 
-    private fun newServiceTask(intermediateX: Float, intermediateY: Float): BpmnElementId {
-        val task = bpmnServiceTaskStart.copy(id = BpmnElementId("sid-" + UUID.randomUUID().toString()))
-        val shape = diagramServiceTaskStart.copy(
-                id = DiagramElementId("sid-" + UUID.randomUUID().toString()),
-                bounds = BoundsElement(intermediateX, intermediateY, serviceTaskSize, serviceTaskSize)
-        )
-        updateEventsRegistry().addObjectEvent(
-                BpmnShapeObjectAddedEvent(task, shape, mapOf(PropertyType.ID to Property(task.id)))
-        )
-
-        return task.id
-    }
-
     @Test
     fun `New service task can be added and sequence flow can be dropped directly on it`() {
         prepareTwoServiceTaskView()
@@ -225,7 +212,7 @@ internal class UiEditorLightE2ETest {
         val lastEndpointId = addedEdge.edge.waypoint.last().id
         val point = clickOnId(lastEndpointId)
 
-        dragToEndTaskButDontStop(point, Point2D.Float(endElemX, endElemMidY), lastEndpointId)
+        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX, endElemMidY), lastEndpointId)
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
@@ -259,7 +246,7 @@ internal class UiEditorLightE2ETest {
         val lastEndpointId = addedEdge.edge.waypoint.last().id
         val point = clickOnId(lastEndpointId)
 
-        dragToEndTaskButDontStop(point, Point2D.Float(endElemX, endElemMidY), lastEndpointId)
+        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX, endElemMidY), lastEndpointId)
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
@@ -294,9 +281,9 @@ internal class UiEditorLightE2ETest {
         val point = clickOnId(lastEndpointId)
 
         val midPoint = Point2D.Float(endElemX / 2.0f, 100.0f)
-        dragToEndTaskButDontStop(point, midPoint, lastEndpointId)
+        dragToAndVerifyButDontStop(point, midPoint, lastEndpointId)
         canvas.stopDragOrSelect()
-        dragToEndTaskButDontStop(midPoint, Point2D.Float(endElemX, endElemMidY), lastEndpointId)
+        dragToAndVerifyButDontStop(midPoint, Point2D.Float(endElemX, endElemMidY), lastEndpointId)
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
@@ -334,7 +321,7 @@ internal class UiEditorLightE2ETest {
         clickOnId(addedEdge.edge.id)
         val newWaypointAnchor = addedEdge.edge.waypoint.first { !it.physical }.id
         val point = clickOnId(newWaypointAnchor)
-        dragToEndTaskButDontStop(point, Point2D.Float(100.0f, 100.0f), newWaypointAnchor)
+        dragToAndVerifyButDontStop(point, Point2D.Float(100.0f, 100.0f), newWaypointAnchor)
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
@@ -356,14 +343,89 @@ internal class UiEditorLightE2ETest {
         }
     }
 
-    private fun dragToEndTaskButDontStop(point: Point2D.Float, target: Point2D.Float, lastEndpointId: DiagramElementId) {
+    @Test
+    fun `For new edge two new intermediate waypoints can be added using coordinates clicks`() {
+        prepareTwoServiceTaskView()
+
+        val addedEdge = addSequenceElementOnFirstTask()
+        clickOnId(addedEdge.edge.id)
+        val edgeStart = addedEdge.edge.waypoint.first()
+        val edgeEnd = addedEdge.edge.waypoint.last()
+        val dragDelta = Point2D.Float(0.0f, 20.0f)
+        val startAtMidpoint = Point2D.Float(edgeStart.x + (edgeEnd.x - edgeStart.x) / 2.0f, edgeStart.y + (edgeEnd.y - edgeStart.y) / 2.0f)
+        val afterDragQuarter = Point2D.Float(edgeStart.x + (startAtMidpoint.x - edgeStart.x - dragDelta.x) / 2.0f, edgeStart.y + (startAtMidpoint.y - edgeStart.y - dragDelta.y) / 2.0f)
+        // select edge
+        canvas.click(startAtMidpoint)
+        canvas.paintComponent(graphics)
+        // select waypoint
+        canvas.click(startAtMidpoint)
+        canvas.paintComponent(graphics)
+        // drag midpoint
+        dragToButDontStop(startAtMidpoint, Point2D.Float(startAtMidpoint.x - dragDelta.x, startAtMidpoint.y - dragDelta.y))
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+        // select edge again
+        canvas.click(afterDragQuarter)
+        canvas.paintComponent(graphics)
+        // select quarter waypoint
+        canvas.click(afterDragQuarter)
+        canvas.paintComponent(graphics)
+        // drag quarter
+        dragToButDontStop(afterDragQuarter, Point2D.Float(afterDragQuarter.x - dragDelta.x, afterDragQuarter.y - dragDelta.y))
+        canvas.stopDragOrSelect()
+        // as a result 2 new waypoints should exist
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any())
+            lastValue.shouldHaveSize(3)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val newMidWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().first()
+            val newQuarterWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().last()
+            lastValue.shouldContainSame(listOf(edgeBpmn, newMidWaypoint, newQuarterWaypoint))
+
+            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+
+            newMidWaypoint.edgeElementId.shouldBeEqualTo(addedEdge.edge.id)
+            newMidWaypoint.waypoints.shouldHaveSize(3)
+            newMidWaypoint.waypoints.filter { it.physical }.shouldHaveSize(3)
+            newMidWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 80.0f, 100.0f))
+            newMidWaypoint.waypoints.map { it.y }.shouldContainSame(listOf(30.0f, 10.0f, 30.0f))
+
+            newQuarterWaypoint.edgeElementId.shouldBeEqualTo(addedEdge.edge.id)
+            newQuarterWaypoint.waypoints.shouldHaveSize(4)
+            newQuarterWaypoint.waypoints.filter { it.physical }.shouldHaveSize(4)
+            newQuarterWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 70.0f, 80.0f, 100.0f))
+            newQuarterWaypoint.waypoints.map { it.y }.shouldContainSame(listOf(30.0f, 0.0f, 10.0f, 30.0f))
+        }
+    }
+
+    private fun newServiceTask(intermediateX: Float, intermediateY: Float): BpmnElementId {
+        val task = bpmnServiceTaskStart.copy(id = BpmnElementId("sid-" + UUID.randomUUID().toString()))
+        val shape = diagramServiceTaskStart.copy(
+                id = DiagramElementId("sid-" + UUID.randomUUID().toString()),
+                bounds = BoundsElement(intermediateX, intermediateY, serviceTaskSize, serviceTaskSize)
+        )
+        updateEventsRegistry().addObjectEvent(
+                BpmnShapeObjectAddedEvent(task, shape, mapOf(PropertyType.ID to Property(task.id)))
+        )
+
+        return task.id
+    }
+
+    private fun dragToAndVerifyButDontStop(point: Point2D.Float, target: Point2D.Float, lastEndpointId: DiagramElementId) {
+        dragToButDontStop(point, target)
+        val dragAboutToFinishArea = elemAreaById(lastEndpointId)
+        dragAboutToFinishArea.area.bounds2D.centerX.shouldBeNear(target.x.toDouble(), 0.1)
+        dragAboutToFinishArea.area.bounds2D.centerY.shouldBeNear(target.y.toDouble(), 0.1)
+    }
+
+    private fun dragToButDontStop(point: Point2D.Float, target: Point2D.Float) {
         canvas.startSelectionOrDrag(point)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(point, target)
         canvas.paintComponent(graphics)
-        val dragAboutToFinishArea = elemAreaById(lastEndpointId)
-        dragAboutToFinishArea.area.bounds2D.centerX.shouldBeNear(target.x.toDouble(), 0.1)
-        dragAboutToFinishArea.area.bounds2D.centerY.shouldBeNear(target.y.toDouble(), 0.1)
     }
 
     private fun addSequenceElementOnFirstTask(): BpmnEdgeObjectAddedEvent {
