@@ -25,13 +25,13 @@ fun updateEventsRegistry(): ProcessModelUpdateEvents {
 }
 
 interface FileCommitter {
-    fun executeCommitAndGetHash(content: String?, events: List<Event>, hasher: (String) -> String): String
+    fun executeCommitAndGetHash(content: String?, events: List<Event>, hasher: (String) -> String, updateHash: (String) -> Unit)
 }
 
 class IntelliJFileCommitter(private val parser: BpmnParser, private val project: Project, private val file: VirtualFile): FileCommitter {
 
-    override fun executeCommitAndGetHash(content: String?, events: List<Event>, hasher: (String) -> String): String {
-        var hash: String? = null
+    override fun executeCommitAndGetHash(content: String?, events: List<Event>, hasher: (String) -> String, updateHash: (String) -> Unit) {
+        var hash: String?
         val doc = FileDocumentManager.getInstance().getDocument(file)!!
         WriteCommandAction.runWriteCommandAction(project) {
             val newText = parser.update(
@@ -39,12 +39,11 @@ class IntelliJFileCommitter(private val parser: BpmnParser, private val project:
                     events
             )
 
-            hash = hasher.invoke(newText)
+            hash = hasher(newText)
             doc.replaceString(0, doc.textLength, newText)
+            updateHash(hash!!)
         }
         FileDocumentManager.getInstance().saveDocument(doc)
-
-        return hash!!
     }
 
 }
@@ -122,8 +121,10 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
     fun commitToFile() {
         committer.executeCommitAndGetHash(
                 baseFileContent,
-                updates.filterIndexed { index, _ -> index < allBeforeThis }.map { it.event }
-        ) { hashData(it) }
+                updates.filterIndexed { index, _ -> index < allBeforeThis }.map { it.event },
+                { hashData(it) },
+                { expectedFileHash = it}
+        )
     }
 
     @Synchronized
