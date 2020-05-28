@@ -66,6 +66,7 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         result = extractTasksBasedOnType(result, "camel",  Mappers.getMapper(CamelMapper::class.java)) { updates, target -> target.copy(camelTask = updates) }
         result = extractTasksBasedOnType(result, "http",  Mappers.getMapper(HttpMapper::class.java)) { updates, target -> target.copy(httpTask = updates) }
         result = extractTasksBasedOnType(result, "mule",  Mappers.getMapper(MuleMapper::class.java)) { updates, target -> target.copy(muleTask = updates) }
+        result = extractTasksBasedOnType(result, "dmn",  Mappers.getMapper(DecisionMapper::class.java)) { updates, target -> target.copy(decisionTask = updates) }
         result = extractTasksBasedOnType(result, "shell",  Mappers.getMapper(ShellMapper::class.java)) { updates, target -> target.copy(shellTask = updates) }
         return result
     }
@@ -93,6 +94,9 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
 
     @Mapper
     interface MuleMapper: ServiceTaskMapper<BpmnMuleTask>
+
+    @Mapper
+    interface DecisionMapper: ServiceTaskMapper<BpmnDecisionTask>
 
     @Mapper
     interface ShellMapper: ServiceTaskMapper<BpmnShellTask>

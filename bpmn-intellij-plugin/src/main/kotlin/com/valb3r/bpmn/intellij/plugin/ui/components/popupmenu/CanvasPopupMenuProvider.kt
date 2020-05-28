@@ -53,6 +53,7 @@ class CanvasPopupMenuProvider {
     private val CAMEL_TASK = IconLoader.getIcon("/icons/popupmenu/camel-task.png")
     private val HTTP_TASK = IconLoader.getIcon("/icons/popupmenu/http-task.png")
     private val MULE_TASK = IconLoader.getIcon("/icons/popupmenu/mule-task.png")
+    private val DECISION_TASK = IconLoader.getIcon("/icons/popupmenu/decision-task.png")
     private val SHELL_TASK = IconLoader.getIcon("/icons/popupmenu/shell-task.png")
     private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
     private val EXCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/exclusive-gateway.png")
@@ -84,6 +85,7 @@ class CanvasPopupMenuProvider {
         addItem(menu, "Camel task", CAMEL_TASK, NewCamelTask(sceneLocation))
         addItem(menu, "Http task", HTTP_TASK, NewHttpTask(sceneLocation))
         addItem(menu, "Mule task", MULE_TASK, NewMuleTask(sceneLocation))
+        addItem(menu, "Decision task", DECISION_TASK, NewDecisionTask(sceneLocation))
         addItem(menu, "Shell task", SHELL_TASK, NewShellTask(sceneLocation))
         return menu
     }
@@ -212,6 +214,18 @@ class CanvasPopupMenuProvider {
 
         override fun actionPerformed(e: ActionEvent?) {
             val httpTask = newElementsFactory().newBpmnObject(BpmnMuleTask::class)
+            val shape = newShapeElement(sceneLocation, httpTask)
+
+            updateEventsRegistry().addObjectEvent(
+                    BpmnShapeObjectAddedEvent(httpTask, shape, newElementsFactory().propertiesOf(httpTask))
+            )
+        }
+    }
+
+    private class NewDecisionTask(private val sceneLocation: Point2D.Float): ActionListener {
+
+        override fun actionPerformed(e: ActionEvent?) {
+            val httpTask = newElementsFactory().newBpmnObject(BpmnDecisionTask::class)
             val shape = newShapeElement(sceneLocation, httpTask)
 
             updateEventsRegistry().addObjectEvent(

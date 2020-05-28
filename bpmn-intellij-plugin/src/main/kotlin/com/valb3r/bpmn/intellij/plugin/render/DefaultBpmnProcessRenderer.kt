@@ -347,6 +347,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             is BpmnCamelTask -> drawCamelTask(canvas, bpmnShape, shape, name, active)
             is BpmnHttpTask -> drawHttpTask(canvas, bpmnShape, shape, name, active)
             is BpmnMuleTask -> drawMuleTask(canvas, bpmnShape, shape, name, active)
+            is BpmnDecisionTask -> drawDecisionTask(canvas, bpmnShape, shape, name, active)
             is BpmnShellTask -> drawShellTask(canvas, bpmnShape, shape, name, active)
             is BpmnCallActivity -> drawCallActivity(canvas, bpmnShape, shape, name, active)
             is BpmnExclusiveGateway -> drawExclusiveGateway(canvas, bpmnShape, shape, active)
@@ -421,6 +422,11 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
     private fun drawMuleTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIcon(shape, icons.mule, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
+        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+    }
+
+    private fun drawDecisionTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+        val area = canvas.drawRoundedRectWithIcon(shape, icons.decision, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
         return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
