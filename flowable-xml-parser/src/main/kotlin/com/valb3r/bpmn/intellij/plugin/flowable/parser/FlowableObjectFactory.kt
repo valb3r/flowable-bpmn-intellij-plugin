@@ -31,6 +31,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             BpmnCamelTask::class -> BpmnCamelTask(generateBpmnId(), null, null, null, null, null)
             BpmnHttpTask::class -> BpmnHttpTask(generateBpmnId(), null, null, null, null, null)
             BpmnMuleTask::class -> BpmnMuleTask(generateBpmnId(), null, null, null, null, null)
+            BpmnShellTask::class -> BpmnShellTask(generateBpmnId(), null, null, null, null, null)
             BpmnCallActivity::class -> BpmnCallActivity(generateBpmnId(), null, null, null, "", null, null, null, null)
             BpmnExclusiveGateway::class -> BpmnExclusiveGateway(generateBpmnId(), null, null, null)
             BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId(), null, null)
@@ -70,6 +71,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             is BpmnCamelTask -> fillForCamelTask(obj)
             is BpmnHttpTask -> fillForHttpTask(obj)
             is BpmnMuleTask -> fillForMuleTask(obj)
+            is BpmnShellTask -> fillForShellTask(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
             is BpmnExclusiveGateway -> fillForExclusiveGateway(obj)
             else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
@@ -119,6 +121,10 @@ class FlowableObjectFactory: BpmnObjectFactory {
     }
 
     private fun fillForMuleTask(activity: BpmnMuleTask): Map<PropertyType, Property> {
+        return processDtoToPropertyMap(activity)
+    }
+
+    private fun fillForShellTask(activity: BpmnShellTask): Map<PropertyType, Property> {
         return processDtoToPropertyMap(activity)
     }
 
