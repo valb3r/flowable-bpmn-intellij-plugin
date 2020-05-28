@@ -27,7 +27,7 @@ data class IconProviderImpl(
         override val businessRule: Icon = IconLoader.getIcon("/icons/popupmenu/business-rule.png"),
         override val receive: Icon = IconLoader.getIcon("/icons/popupmenu/receive.png"),
         override val user: Icon = IconLoader.getIcon("/icons/popupmenu/user.png"),
-        override val exclusiveGateway: String = "/icons/exclusive-gateway.svg".asResource()!!,
-        override val sequence: String = "/icons/sequence.svg".asResource()!!,
-        override val recycleBin: String = "/icons/recycle-bin.svg".asResource()!!
+        override val exclusiveGateway: String = "/icons/ui-icons/svg/exclusive-gateway.svg".asResource()!!,
+        override val sequence: String = "/icons/ui-icons/svg/sequence.svg".asResource()!!,
+        override val recycleBin: String = "/icons/ui-icons/svg/recycle-bin.svg".asResource()!!
 ): IconProvider
