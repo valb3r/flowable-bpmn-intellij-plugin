@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnCamelTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnHttpTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnMuleTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.DiagramElementIdMapper
@@ -67,6 +68,7 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         var result = process
         result = extractTasksBasedOnType(result, "camel",  Mappers.getMapper(CamelMapper::class.java)) { updates, target -> target.copy(camelTask = updates) }
         result = extractTasksBasedOnType(result, "http",  Mappers.getMapper(HttpMapper::class.java)) { updates, target -> target.copy(httpTask = updates) }
+        result = extractTasksBasedOnType(result, "mule",  Mappers.getMapper(MuleMapper::class.java)) { updates, target -> target.copy(muleTask = updates) }
         return result
     }
 
@@ -90,6 +92,9 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
 
     @Mapper
     interface HttpMapper: ServiceTaskMapper<BpmnHttpTask>
+
+    @Mapper
+    interface MuleMapper: ServiceTaskMapper<BpmnMuleTask>
 
     interface ServiceTaskMapper<T> {
         fun convertToDto(input: BpmnServiceTask): T

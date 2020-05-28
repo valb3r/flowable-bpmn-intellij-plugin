@@ -19,6 +19,7 @@ data class BpmnProcess(
         // Customizations of ServiceTask
         val camelTask: List<BpmnCamelTask>?,
         val httpTask: List<BpmnHttpTask>?,
+        val muleTask: List<BpmnMuleTask>?,
         // end customizations
         val sequenceFlow: List<BpmnSequenceFlow>?,
         val exclusiveGateway: List<BpmnExclusiveGateway>?,

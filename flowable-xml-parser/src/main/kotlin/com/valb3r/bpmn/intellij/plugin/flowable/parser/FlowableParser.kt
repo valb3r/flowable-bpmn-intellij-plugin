@@ -252,6 +252,7 @@ class FlowableParser : BpmnParser {
             is BpmnReceiveTask -> doc.createElement("receiveTask")
             is BpmnCamelTask -> createServiceTaskWithType(doc, "camel")
             is BpmnHttpTask -> createServiceTaskWithType(doc, "http")
+            is BpmnMuleTask -> createServiceTaskWithType(doc, "mule")
             is BpmnEndEvent -> doc.createElement("endEvent")
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
