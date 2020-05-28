@@ -44,7 +44,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
                 ?.forEach { elementByDiagramId[it.id] = it.bpmnElement }
 
         return BpmnProcessObjectView(
-                process,
+                process.id,
                 elementByDiagramId,
                 elementByStaticId,
                 propertiesById,
@@ -64,7 +64,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
 }
 
 data class BpmnProcessObjectView(
-        val process: BpmnProcess,
+        val processId: BpmnElementId,
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
         val elementByStaticId: Map<BpmnElementId, WithBpmnId>,
         val elemPropertiesByElementId: Map<BpmnElementId, Map<PropertyType, Property>>,
