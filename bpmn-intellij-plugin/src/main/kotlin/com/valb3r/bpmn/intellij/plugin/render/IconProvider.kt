@@ -13,6 +13,7 @@ interface IconProvider {
     val receive: Icon
     val user: Icon
     val camel: Icon
+    val http: Icon
     val exclusiveGateway: String
     val sequence: String
     val recycleBin: String
@@ -29,6 +30,7 @@ data class IconProviderImpl(
         override val receive: Icon = IconLoader.getIcon("/icons/ui-icons/receive.png"),
         override val user: Icon = IconLoader.getIcon("/icons/ui-icons/user.png"),
         override val camel: Icon = IconLoader.getIcon("/icons/ui-icons/camel.png"),
+        override val http: Icon = IconLoader.getIcon("/icons/ui-icons/http.png"),
         override val exclusiveGateway: String = "/icons/ui-icons/svg/exclusive-gateway.svg".asResource()!!,
         override val sequence: String = "/icons/ui-icons/svg/sequence.svg".asResource()!!,
         override val recycleBin: String = "/icons/ui-icons/svg/recycle-bin.svg".asResource()!!

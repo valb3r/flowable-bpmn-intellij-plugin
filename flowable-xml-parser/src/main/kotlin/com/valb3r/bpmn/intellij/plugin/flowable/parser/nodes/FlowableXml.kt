@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnCamelTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnHttpTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.DiagramElementIdMapper
@@ -64,15 +65,16 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
 
     private fun applyServiceTaskCustomizationByType(process: BpmnProcess): BpmnProcess {
         var result = process
-        result = extractCamelTasks(result)
+        result = extractTasksBasedOnType(result, "camel",  Mappers.getMapper(CamelMapper::class.java)) { updates, target -> target.copy(camelTask = updates) }
+        result = extractTasksBasedOnType(result, "http",  Mappers.getMapper(HttpMapper::class.java)) { updates, target -> target.copy(httpTask = updates) }
         return result
     }
 
-    private fun extractCamelTasks(process: BpmnProcess): BpmnProcess {
-        val mapper = Mappers.getMapper(CamelMapper::class.java)
+    private fun <T> extractTasksBasedOnType(process: BpmnProcess, type: String, mapper: ServiceTaskMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
         process.serviceTask?.apply {
-            val camelGroup = this.groupBy { it.type == "camel" }
-            return process.copy(serviceTask = camelGroup[false], camelTask = camelGroup[true]?.map { mapper.convertToDto(it) })
+            val byTypeGroup = this.groupBy { it.type == type }
+            val newProcess = process.copy(serviceTask = byTypeGroup[false])
+            return update(byTypeGroup[true]?.map { mapper.convertToDto(it) }, newProcess)
         }
 
         return process
@@ -84,8 +86,13 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
     }
 
     @Mapper
-    interface CamelMapper {
-        fun convertToDto(input: BpmnServiceTask): BpmnCamelTask
+    interface CamelMapper: ServiceTaskMapper<BpmnCamelTask>
+
+    @Mapper
+    interface HttpMapper: ServiceTaskMapper<BpmnHttpTask>
+
+    interface ServiceTaskMapper<T> {
+        fun convertToDto(input: BpmnServiceTask): T
     }
 }
 
