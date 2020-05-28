@@ -247,9 +247,10 @@ class FlowableParser : BpmnParser {
             is BpmnSequenceFlow -> doc.createElement("sequenceFlow")
             is BpmnUserTask -> doc.createElement("userTask")
             is BpmnScriptTask -> doc.createElement("scriptTask")
-            is BpmnServiceTask -> doc.createElement("serviceTask")
+            is BpmnServiceTask -> createServiceTask(doc)
             is BpmnBusinessRuleTask -> doc.createElement("businessRuleTask")
             is BpmnReceiveTask -> doc.createElement("receiveTask")
+            is BpmnCamelTask -> createServiceTaskWithType(doc, "camel")
             is BpmnEndEvent -> doc.createElement("endEvent")
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
@@ -274,6 +275,16 @@ class FlowableParser : BpmnParser {
         newBounds.setAttribute("height", update.shape.bounds.height.toString())
         newShape.appendChild(newBounds)
         trimWhitespace(shapeParent, false)
+    }
+
+    private fun createServiceTask(doc: Document): Element {
+        return createServiceTaskWithType(doc)
+    }
+
+    private fun createServiceTaskWithType(doc: Document, type: String? = null): Element {
+        val elem = doc.createElement("serviceTask")
+        type?.let { elem.setAttribute("flowable:type", type) }
+        return elem
     }
 
     private fun applyBpmnEdgeObjectAdded(doc: Document, update: BpmnEdgeObjectAdded) {

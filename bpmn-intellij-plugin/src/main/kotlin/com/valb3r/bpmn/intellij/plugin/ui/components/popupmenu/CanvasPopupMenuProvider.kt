@@ -50,6 +50,7 @@ class CanvasPopupMenuProvider {
     private val SCRIPT_TASK = IconLoader.getIcon("/icons/popupmenu/script-task.png")
     private val BUSINESS_RULE_TASK = IconLoader.getIcon("/icons/popupmenu/business-rule-task.png")
     private val RECEIVE_TASK = IconLoader.getIcon("/icons/popupmenu/receive-task.png")
+    private val CAMEL_TASK = IconLoader.getIcon("/icons/popupmenu/camel-task.png")
     private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
     private val EXCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/exclusive-gateway.png")
     private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png")
@@ -77,6 +78,7 @@ class CanvasPopupMenuProvider {
         addItem(menu, "Script task", SCRIPT_TASK, NewScriptTask(sceneLocation))
         addItem(menu, "Business rule task", BUSINESS_RULE_TASK, NewBusinessRuleTask(sceneLocation))
         addItem(menu, "Receive task", RECEIVE_TASK, NewReceiveTask(sceneLocation))
+        addItem(menu, "Camel task", CAMEL_TASK, NewCamelTask(sceneLocation))
         return menu
     }
 
@@ -172,6 +174,18 @@ class CanvasPopupMenuProvider {
 
             updateEventsRegistry().addObjectEvent(
                     BpmnShapeObjectAddedEvent(receiveTask, shape, newElementsFactory().propertiesOf(receiveTask))
+            )
+        }
+    }
+
+    private class NewCamelTask(private val sceneLocation: Point2D.Float): ActionListener {
+
+        override fun actionPerformed(e: ActionEvent?) {
+            val camelTask = newElementsFactory().newBpmnObject(BpmnCamelTask::class)
+            val shape = newShapeElement(sceneLocation, camelTask)
+
+            updateEventsRegistry().addObjectEvent(
+                    BpmnShapeObjectAddedEvent(camelTask, shape, newElementsFactory().propertiesOf(camelTask))
             )
         }
     }

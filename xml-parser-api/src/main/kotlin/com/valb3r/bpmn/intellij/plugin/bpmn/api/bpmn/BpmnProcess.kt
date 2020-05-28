@@ -16,6 +16,9 @@ data class BpmnProcess(
         val serviceTask: List<BpmnServiceTask>?,
         val businessRuleTask: List<BpmnBusinessRuleTask>?,
         val receiveTask: List<BpmnReceiveTask>?,
+        // Customizations of ServiceTask
+        val camelTask: List<BpmnCamelTask>?,
+        // end customizations
         val sequenceFlow: List<BpmnSequenceFlow>?,
         val exclusiveGateway: List<BpmnExclusiveGateway>?,
         val endEvent: List<BpmnEndEvent>?

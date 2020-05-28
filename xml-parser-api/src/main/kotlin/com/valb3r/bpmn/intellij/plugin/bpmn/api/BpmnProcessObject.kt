@@ -24,6 +24,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         process.serviceTask?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.businessRuleTask?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.receiveTask?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.camelTask?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.sequenceFlow?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.exclusiveGateway?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
 

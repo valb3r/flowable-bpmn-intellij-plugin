@@ -23,11 +23,12 @@ class FlowableObjectFactory: BpmnObjectFactory {
     override fun <T : WithBpmnId> newBpmnObject(clazz: KClass<T>): T {
         val result: WithBpmnId = when(clazz) {
             BpmnStartEvent::class -> BpmnStartEvent(generateBpmnId(), null, null)
-            BpmnUserTask::class -> BpmnUserTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null, null, null, null, null)
-            BpmnScriptTask::class -> BpmnScriptTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null)
+            BpmnUserTask::class -> BpmnUserTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null)
+            BpmnScriptTask::class -> BpmnScriptTask(generateBpmnId(), null, null, null, null, null, null, null)
             BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null)
-            BpmnBusinessRuleTask::class -> BpmnBusinessRuleTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null, null)
-            BpmnReceiveTask::class -> BpmnReceiveTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null)
+            BpmnBusinessRuleTask::class -> BpmnBusinessRuleTask(generateBpmnId(), null, null, null, null, null, null, null, null)
+            BpmnReceiveTask::class -> BpmnReceiveTask(generateBpmnId(), null, null, null, null)
+            BpmnCamelTask::class -> BpmnCamelTask(generateBpmnId(), null, null, null, null, null)
             BpmnCallActivity::class -> BpmnCallActivity(generateBpmnId(), null, null, null, "", null, null, null, null)
             BpmnExclusiveGateway::class -> BpmnExclusiveGateway(generateBpmnId(), null, null, null)
             BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId(), null, null)
@@ -64,6 +65,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             is BpmnServiceTask -> fillForServiceTask(obj)
             is BpmnBusinessRuleTask -> fillForBusinessRuleTask(obj)
             is BpmnReceiveTask -> fillForReceiveTask(obj)
+            is BpmnCamelTask -> fillForCamelTask(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
             is BpmnExclusiveGateway -> fillForExclusiveGateway(obj)
             else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
@@ -101,6 +103,10 @@ class FlowableObjectFactory: BpmnObjectFactory {
     }
 
     private fun fillForUserTask(activity: BpmnUserTask): Map<PropertyType, Property> {
+        return processDtoToPropertyMap(activity)
+    }
+
+    private fun fillForCamelTask(activity: BpmnCamelTask): Map<PropertyType, Property> {
         return processDtoToPropertyMap(activity)
     }
 

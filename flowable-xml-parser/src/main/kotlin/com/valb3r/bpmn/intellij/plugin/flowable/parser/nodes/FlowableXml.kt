@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonMerge
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnCamelTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.DiagramElementIdMapper
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.Plane
@@ -55,12 +57,35 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var exclusiveGateway: List<ExclusiveGateway>? = null
 
     override fun toElement(): BpmnProcess {
-        return Mappers.getMapper(Mapping::class.java).convertToDto(this)
+        var result = Mappers.getMapper(Mapping::class.java).convertToDto(this)
+        result = applyServiceTaskCustomizationByType(result)
+        return result
+    }
+
+    private fun applyServiceTaskCustomizationByType(process: BpmnProcess): BpmnProcess {
+        var result = process
+        result = extractCamelTasks(result)
+        return result
+    }
+
+    private fun extractCamelTasks(process: BpmnProcess): BpmnProcess {
+        val mapper = Mappers.getMapper(CamelMapper::class.java)
+        process.serviceTask?.apply {
+            val camelGroup = this.groupBy { it.type == "camel" }
+            return process.copy(serviceTask = camelGroup[false], camelTask = camelGroup[true]?.map { mapper.convertToDto(it) })
+        }
+
+        return process
     }
 
     @Mapper(uses = [BpmnElementIdMapper::class])
     interface Mapping {
         fun convertToDto(input: ProcessNode): BpmnProcess
+    }
+
+    @Mapper
+    interface CamelMapper {
+        fun convertToDto(input: BpmnServiceTask): BpmnCamelTask
     }
 }
 
