@@ -407,7 +407,6 @@
             </multiInstanceLoopCharacteristics>
         </callActivity>
         <sequenceFlow id="sid-3AE1411A-3E03-4C2A-B735-FD70FAEDA917" sourceRef="callActivityId" targetRef="adhocSubProcessId"></sequenceFlow>
-        <sequenceFlow id="sid-4E65A124-C8E0-47B3-838F-F24FE0CFB083" sourceRef="collapsedSubProcess" targetRef="callActivityId"></sequenceFlow>
         <sequenceFlow id="sid-4CC33BEB-27C5-44A4-8C60-39C9E5D6B356" sourceRef="adhocSubProcessId" targetRef="exclusiveGatewayId"></sequenceFlow>
         <sequenceFlow id="sid-034DE6AA-24BE-42A8-86E0-2FE710C6049E" sourceRef="inclusiveGatewayId" targetRef="eventGatewayId"></sequenceFlow>
         <sequenceFlow id="sid-31BC4B5F-0570-4D09-B92F-97F09FB8CD23" sourceRef="parallelGatewayId" targetRef="eventGatewayId"></sequenceFlow>
@@ -458,6 +457,15 @@
         </subProcess>
         <sequenceFlow id="sid-241DD1A7-FBEB-4E8D-B58F-C57F31B79F21" sourceRef="transactionalSubProcessId" targetRef="subProcessId"></sequenceFlow>
         <sequenceFlow id="sid-13DA8428-8777-47DF-BF37-C52106909433" sourceRef="subProcessId" targetRef="collapsedSubProcess"></sequenceFlow>
+        <transaction id="transactionalCollapsedSubprocess" name="Transaction collapsed subprocess name">
+            <documentation>Collapsed sub process docs</documentation>
+            <multiInstanceLoopCharacteristics isSequential="false" flowable:collection="COLLECTION" flowable:elementVariable="ELEM_VAR">
+                <loopCardinality>12</loopCardinality>
+                <completionCondition>completionCondition</completionCondition>
+            </multiInstanceLoopCharacteristics>
+        </transaction>
+        <sequenceFlow id="sid-53ADAFBA-7E10-46B5-A4A9-14CF8EC46802" sourceRef="collapsedSubProcess" targetRef="transactionalCollapsedSubprocess"></sequenceFlow>
+        <sequenceFlow id="sid-9ADBE624-AE43-46C4-AE2D-D660A05057FD" sourceRef="transactionalCollapsedSubprocess" targetRef="callActivityId"></sequenceFlow>
         <textAnnotation id="globalAnnotationId">
             <text>Global annotation text</text>
         </textAnnotation>
@@ -526,10 +534,10 @@
                 <omgdc:Bounds height="81.41455929171332" width="98.78576731818566" x="1020.3467099689562" y="508.6831649510401"></omgdc:Bounds>
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="eventSubProcessId" id="BPMNShape_eventSubProcessId">
-                <omgdc:Bounds height="100.0" width="130.37931016273478" x="1007.628537352349" y="619.8173097034854"></omgdc:Bounds>
+                <omgdc:Bounds height="100.0" width="130.37931016273478" x="1007.628537352349" y="752.4086548517428"></omgdc:Bounds>
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="adhocSubProcessId" id="BPMNShape_adhocSubProcessId">
-                <omgdc:Bounds height="100.66497435939368" width="144.42164907989786" x="1000.6073678937673" y="885.0"></omgdc:Bounds>
+                <omgdc:Bounds height="100.66497435939357" width="144.42164907989786" x="1000.6073678937673" y="1017.5913451482573"></omgdc:Bounds>
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="exclusiveGatewayId" id="BPMNShape_exclusiveGatewayId">
                 <omgdc:Bounds height="40.0" width="40.0" x="1417.4820177249235" y="253.557009934956"></omgdc:Bounds>
@@ -598,7 +606,7 @@
                 <omgdc:Bounds height="28.0" width="28.0" x="1984.8787942170454" y="611.7319366821678"></omgdc:Bounds>
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="callActivityId" id="BPMNShape_callActivityId">
-                <omgdc:Bounds height="80.0" width="100.0" x="1022.8181924337161" y="744.3295478313918"></omgdc:Bounds>
+                <omgdc:Bounds height="80.0" width="100.0" x="1022.8181924337161" y="876.9208929796491"></omgdc:Bounds>
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="aDecsionTask" id="BPMNShape_aDecsionTask">
                 <omgdc:Bounds height="80.0" width="100.0" x="956.0" y="1153.0"></omgdc:Bounds>
@@ -614,6 +622,9 @@
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="subProcessId" id="BPMNShape_subProcessId">
                 <omgdc:Bounds height="101.75984083968706" width="155.8146257208673" x="991.8322807676154" y="373.6993515981359"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="transactionalCollapsedSubprocess" id="BPMNShape_transactionalCollapsedSubprocess" isExpanded="false">
+                <omgdc:Bounds height="81.41455929171332" width="98.78576731818566" x="1020.3467099689562" y="629.1100300576288"></omgdc:Bounds>
             </bpmndi:BPMNShape>
             <bpmndi:BPMNEdge bpmnElement="sid-99F42091-CFAA-4E13-BEE7-E3847B900351" id="BPMNEdge_sid-99F42091-CFAA-4E13-BEE7-E3847B900351">
                 <omgdi:waypoint x="1675.9274528546432" y="289.0070073210827"></omgdi:waypoint>
@@ -631,17 +642,21 @@
                 <omgdi:waypoint x="1828.110437025185" y="288.507007405686"></omgdi:waypoint>
                 <omgdi:waypoint x="1828.1104370251855" y="343.53671438371936"></omgdi:waypoint>
             </bpmndi:BPMNEdge>
-            <bpmndi:BPMNEdge bpmnElement="sid-4E65A124-C8E0-47B3-838F-F24FE0CFB083" id="BPMNEdge_sid-4E65A124-C8E0-47B3-838F-F24FE0CFB083">
-                <omgdi:waypoint x="1020.3467099687281" y="549.3904445968967"></omgdi:waypoint>
-                <omgdi:waypoint x="940.0" y="549.3904445968967"></omgdi:waypoint>
-                <omgdi:waypoint x="940.0" y="784.3295478313918"></omgdi:waypoint>
-                <omgdi:waypoint x="1022.818192433654" y="784.3295478313918"></omgdi:waypoint>
+            <bpmndi:BPMNEdge bpmnElement="sid-9ADBE624-AE43-46C4-AE2D-D660A05057FD" id="BPMNEdge_sid-9ADBE624-AE43-46C4-AE2D-D660A05057FD">
+                <omgdi:waypoint x="1020.3467099689562" y="669.8173097034855"></omgdi:waypoint>
+                <omgdi:waypoint x="961.0" y="669.8173097034855"></omgdi:waypoint>
+                <omgdi:waypoint x="961.0" y="916.9208929796491"></omgdi:waypoint>
+                <omgdi:waypoint x="1022.8181924337161" y="916.9208929796491"></omgdi:waypoint>
             </bpmndi:BPMNEdge>
             <bpmndi:BPMNEdge bpmnElement="onGatewayOk" id="BPMNEdge_onGatewayOk">
                 <omgdi:waypoint x="1457.3121659669298" y="273.66483749660273"></omgdi:waypoint>
                 <omgdi:waypoint x="1519.0" y="274.0"></omgdi:waypoint>
                 <omgdi:waypoint x="1519.0" y="440.0"></omgdi:waypoint>
                 <omgdi:waypoint x="1452.086786364405" y="440.6115630585923"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-53ADAFBA-7E10-46B5-A4A9-14CF8EC46802" id="BPMNEdge_sid-53ADAFBA-7E10-46B5-A4A9-14CF8EC46802">
+                <omgdi:waypoint x="1069.739593628049" y="590.0477242427535"></omgdi:waypoint>
+                <omgdi:waypoint x="1069.739593628049" y="629.1100300576288"></omgdi:waypoint>
             </bpmndi:BPMNEdge>
             <bpmndi:BPMNEdge bpmnElement="sid-648EB684-DEFD-425B-8943-EC6FE7E67144" id="BPMNEdge_sid-648EB684-DEFD-425B-8943-EC6FE7E67144">
                 <omgdi:waypoint x="1901.4495307344264" y="348.8087682540379"></omgdi:waypoint>
@@ -656,8 +671,8 @@
                 <omgdi:waypoint x="740.1153513986628" y="1326.3713469525019"></omgdi:waypoint>
             </bpmndi:BPMNEdge>
             <bpmndi:BPMNEdge bpmnElement="sid-4CC33BEB-27C5-44A4-8C60-39C9E5D6B356" id="BPMNEdge_sid-4CC33BEB-27C5-44A4-8C60-39C9E5D6B356">
-                <omgdi:waypoint x="1144.9790169735231" y="935.3324871796968"></omgdi:waypoint>
-                <omgdi:waypoint x="1212.0" y="935.3324871796968"></omgdi:waypoint>
+                <omgdi:waypoint x="1144.979016973523" y="1067.9238323279542"></omgdi:waypoint>
+                <omgdi:waypoint x="1212.0" y="1067.9238323279542"></omgdi:waypoint>
                 <omgdi:waypoint x="1212.0" y="273.0"></omgdi:waypoint>
                 <omgdi:waypoint x="1417.4859708165989" y="273.5077255312207"></omgdi:waypoint>
             </bpmndi:BPMNEdge>
@@ -736,8 +751,8 @@
                 <omgdi:waypoint x="737.0734287674387" y="629.8173097034854"></omgdi:waypoint>
             </bpmndi:BPMNEdge>
             <bpmndi:BPMNEdge bpmnElement="sid-3AE1411A-3E03-4C2A-B735-FD70FAEDA917" id="BPMNEdge_sid-3AE1411A-3E03-4C2A-B735-FD70FAEDA917">
-                <omgdi:waypoint x="1072.8181924337161" y="824.2795478313917"></omgdi:waypoint>
-                <omgdi:waypoint x="1072.8181924337164" y="885.0"></omgdi:waypoint>
+                <omgdi:waypoint x="1072.8181924337161" y="956.870892979649"></omgdi:waypoint>
+                <omgdi:waypoint x="1072.8181924337164" y="1017.5913451482573"></omgdi:waypoint>
             </bpmndi:BPMNEdge>
             <bpmndi:BPMNEdge bpmnElement="sid-89F26497-BE15-44E2-B1F1-CC65948ABF1F" id="BPMNEdge_sid-89F26497-BE15-44E2-B1F1-CC65948ABF1F">
                 <omgdi:waypoint x="738.1087040830183" y="347.1452222984484"></omgdi:waypoint>
@@ -785,6 +800,9 @@
                 <omgdi:waypoint x="1675.9274528546434" y="438.963579490308"></omgdi:waypoint>
             </bpmndi:BPMNEdge>
         </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_transactionalCollapsedSubprocess">
+        <bpmndi:BPMNPlane bpmnElement="transactionalCollapsedSubprocess" id="BPMNPlane_transactionalCollapsedSubprocess"></bpmndi:BPMNPlane>
     </bpmndi:BPMNDiagram>
     <bpmndi:BPMNDiagram id="BPMNDiagram_collapsedSubProcess">
         <bpmndi:BPMNPlane bpmnElement="collapsedSubProcess" id="BPMNPlane_collapsedSubProcess"></bpmndi:BPMNPlane>
