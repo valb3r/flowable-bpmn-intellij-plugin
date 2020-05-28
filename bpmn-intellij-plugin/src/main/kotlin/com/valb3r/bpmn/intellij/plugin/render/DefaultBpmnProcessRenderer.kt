@@ -339,7 +339,11 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         return when (elem) {
             null -> defaultElementRender(canvas, bpmnShape, shape, name, active)
             is BpmnStartEvent -> drawStartEvent(canvas, bpmnShape, shape, active)
+            is BpmnUserTask -> drawUserTask(canvas, bpmnShape, shape, name, active)
+            is BpmnScriptTask -> drawScriptTask(canvas, bpmnShape, shape, name, active)
             is BpmnServiceTask -> drawServiceTask(canvas, bpmnShape, shape, name, active)
+            is BpmnBusinessRuleTask -> drawBusinessRuleTask(canvas, bpmnShape, shape, name, active)
+            is BpmnReceiveTask -> drawReceiveRuleTask(canvas, bpmnShape, shape, name, active)
             is BpmnCallActivity -> drawCallActivity(canvas, bpmnShape, shape, name, active)
             is BpmnExclusiveGateway -> drawExclusiveGateway(canvas, bpmnShape, shape, active)
             is BpmnEndEvent -> drawEndEvent(canvas, bpmnShape, shape, active)
@@ -378,6 +382,26 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
     private fun drawServiceTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIcon(shape, icons.gear, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
+        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+    }
+
+    private fun drawUserTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+        val area = canvas.drawRoundedRectWithIcon(shape, icons.user, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
+        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+    }
+
+    private fun drawScriptTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+        val area = canvas.drawRoundedRectWithIcon(shape, icons.script, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
+        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+    }
+
+    private fun drawBusinessRuleTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+        val area = canvas.drawRoundedRectWithIcon(shape, icons.businessRule, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
+        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+    }
+
+    private fun drawReceiveRuleTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+        val area = canvas.drawRoundedRectWithIcon(shape, icons.receive, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
         return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 

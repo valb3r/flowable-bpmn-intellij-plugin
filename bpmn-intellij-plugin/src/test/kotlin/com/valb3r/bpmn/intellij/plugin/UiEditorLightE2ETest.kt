@@ -81,8 +81,8 @@ internal class UiEditorLightE2ETest {
     private val serviceTaskStartDiagramId = DiagramElementId("DIAGRAM-startServiceTask")
     private val serviceTaskEndDiagramId = DiagramElementId("DIAGRAM-endServiceTask")
 
-    private val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId, null, null, null, null, null, null, null, null, null)
-    private val bpmnServiceTaskEnd = BpmnServiceTask(serviceTaskEndBpmnId, null, null, null, null, null, null, null, null, null)
+    private val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId, null, null, null, null, null, null, null, null, null, null, null)
+    private val bpmnServiceTaskEnd = BpmnServiceTask(serviceTaskEndBpmnId, null, null, null, null, null, null, null, null, null, null, null)
     private val diagramServiceTaskStart = ShapeElement(serviceTaskStartDiagramId, bpmnServiceTaskStart.id, BoundsElement(startElemX, startElemY, serviceTaskSize, serviceTaskSize))
     private val diagramServiceTaskEnd = ShapeElement(serviceTaskEndDiagramId, bpmnServiceTaskEnd.id, BoundsElement(endElemX, endElemY, serviceTaskSize, serviceTaskSize))
 
@@ -93,7 +93,22 @@ internal class UiEditorLightE2ETest {
     private var renderResult: Map<DiagramElementId, AreaWithZindex>? = null
 
     private val basicProcess = BpmnProcessObject(
-            BpmnProcess(BpmnElementId("processElem"), "mainProcess", null, null, null, null, null, null, null, null),
+            BpmnProcess(
+                    BpmnElementId("processElem"),
+                    "mainProcess",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            ),
             mutableListOf()
     )
 

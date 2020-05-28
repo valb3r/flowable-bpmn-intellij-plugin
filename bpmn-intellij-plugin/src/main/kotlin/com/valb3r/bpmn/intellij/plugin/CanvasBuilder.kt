@@ -15,10 +15,10 @@ import com.valb3r.bpmn.intellij.plugin.events.initializeUpdateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import com.valb3r.bpmn.intellij.plugin.newelements.NewElementsProvider
-import com.valb3r.bpmn.intellij.plugin.newelements.initializeNewElementsFactory
+import com.valb3r.bpmn.intellij.plugin.newelements.createNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.properties.TextValueAccessor
-import com.valb3r.bpmn.intellij.plugin.properties.intializePropertiesVisualizer
+import com.valb3r.bpmn.intellij.plugin.properties.newPropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.render.BpmnProcessRenderer
 import com.valb3r.bpmn.intellij.plugin.render.Canvas
 import java.nio.charset.StandardCharsets.UTF_8
@@ -43,8 +43,8 @@ class CanvasBuilder(val bpmnProcessRenderer: BpmnProcessRenderer) {
 
         val data = readFile(bpmnFile)
         val process = parser.parse(data)
-        newObjectsFactory = initializeNewElementsFactory(FlowableObjectFactory())
-        intializePropertiesVisualizer(properties, editorFactory, textFieldFactory, checkboxFieldFactory)
+        newObjectsFactory = createNewElementsFactory(FlowableObjectFactory())
+        newPropertiesVisualizer(properties, editorFactory, textFieldFactory, checkboxFieldFactory)
         canvas.reset(data, process.toView(newObjectsFactory!!), bpmnProcessRenderer)
 
         currentConnection?.let { it.disconnect(); it.dispose() }

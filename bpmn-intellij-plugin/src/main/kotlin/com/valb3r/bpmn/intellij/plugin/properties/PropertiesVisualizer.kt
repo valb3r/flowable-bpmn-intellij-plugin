@@ -25,16 +25,12 @@ interface SelectedValueAccessor {
     val component: JComponent
 }
 
-fun intializePropertiesVisualizer(table: JTable,
-                                  editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
-                                  textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
-                                  checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor): PropertiesVisualizer {
+fun newPropertiesVisualizer(table: JTable,
+                            editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
+                            textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
+                            checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor): PropertiesVisualizer {
     return visualizer.updateAndGet {
-        if (null == it) {
-            return@updateAndGet PropertiesVisualizer(table, editorFactory, textFieldFactory, checkboxFieldFactory)
-        }
-
-        return@updateAndGet it
+        return@updateAndGet PropertiesVisualizer(table, editorFactory, textFieldFactory, checkboxFieldFactory)
     }
 }
 

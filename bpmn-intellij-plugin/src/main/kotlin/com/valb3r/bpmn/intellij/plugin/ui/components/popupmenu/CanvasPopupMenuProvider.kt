@@ -29,10 +29,27 @@ fun popupMenuProvider(): CanvasPopupMenuProvider {
     }
 }
 
+private fun <T: WithBpmnId> newShapeElement(sceneLocation: Point2D.Float, forObject: T): ShapeElement {
+    val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, forObject)
+
+    return templateShape.copy(
+            bounds = BoundsElement(
+                    sceneLocation.x,
+                    sceneLocation.y,
+                    templateShape.bounds.width,
+                    templateShape.bounds.height
+            )
+    )
+}
+
 class CanvasPopupMenuProvider {
 
     private val START_EVENT = IconLoader.getIcon("/icons/popupmenu/start-event.png")
     private val SERVICE_TASK = IconLoader.getIcon("/icons/popupmenu/service-task.png")
+    private val USER_TASK = IconLoader.getIcon("/icons/popupmenu/user-task.png")
+    private val SCRIPT_TASK = IconLoader.getIcon("/icons/popupmenu/script-task.png")
+    private val BUSINESS_RULE_TASK = IconLoader.getIcon("/icons/popupmenu/business-rule-task.png")
+    private val RECEIVE_TASK = IconLoader.getIcon("/icons/popupmenu/receive-task.png")
     private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
     private val EXCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/exclusive-gateway.png")
     private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png")
@@ -55,7 +72,11 @@ class CanvasPopupMenuProvider {
 
     private fun activities(sceneLocation: Point2D.Float): JMenu {
         val menu = JMenu("Activities")
+        addItem(menu, "User task", USER_TASK, NewUserTask(sceneLocation))
         addItem(menu, "Service task", SERVICE_TASK, NewServiceTask(sceneLocation))
+        addItem(menu, "Script task", SCRIPT_TASK, NewScriptTask(sceneLocation))
+        addItem(menu, "Business rule task", BUSINESS_RULE_TASK, NewBusinessRuleTask(sceneLocation))
+        addItem(menu, "Receive task", RECEIVE_TASK, NewReceiveTask(sceneLocation))
         return menu
     }
 
@@ -87,16 +108,7 @@ class CanvasPopupMenuProvider {
 
         override fun actionPerformed(e: ActionEvent?) {
             val startEvent = newElementsFactory().newBpmnObject(BpmnStartEvent::class)
-            val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, startEvent)
-
-            val shape = templateShape.copy(
-                    bounds = BoundsElement(
-                            sceneLocation.x,
-                            sceneLocation.y,
-                            templateShape.bounds.width,
-                            templateShape.bounds.height
-                    )
-            )
+            val shape = newShapeElement(sceneLocation, startEvent)
 
             updateEventsRegistry().addObjectEvent(
                     BpmnShapeObjectAddedEvent(startEvent, shape, newElementsFactory().propertiesOf(startEvent))
@@ -108,16 +120,7 @@ class CanvasPopupMenuProvider {
 
         override fun actionPerformed(e: ActionEvent?) {
             val serviceTask = newElementsFactory().newBpmnObject(BpmnServiceTask::class)
-            val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, serviceTask)
-
-            val shape = templateShape.copy(
-                    bounds = BoundsElement(
-                            sceneLocation.x,
-                            sceneLocation.y,
-                            templateShape.bounds.width,
-                            templateShape.bounds.height
-                    )
-            )
+            val shape = newShapeElement(sceneLocation, serviceTask)
 
             updateEventsRegistry().addObjectEvent(
                     BpmnShapeObjectAddedEvent(serviceTask, shape, newElementsFactory().propertiesOf(serviceTask))
@@ -125,20 +128,60 @@ class CanvasPopupMenuProvider {
         }
     }
 
+    private class NewScriptTask(private val sceneLocation: Point2D.Float): ActionListener {
+
+        override fun actionPerformed(e: ActionEvent?) {
+            val scriptTask = newElementsFactory().newBpmnObject(BpmnScriptTask::class)
+            val shape = newShapeElement(sceneLocation, scriptTask)
+
+            updateEventsRegistry().addObjectEvent(
+                    BpmnShapeObjectAddedEvent(scriptTask, shape, newElementsFactory().propertiesOf(scriptTask))
+            )
+        }
+    }
+
+    private class NewBusinessRuleTask(private val sceneLocation: Point2D.Float): ActionListener {
+
+        override fun actionPerformed(e: ActionEvent?) {
+            val businessRuleTask = newElementsFactory().newBpmnObject(BpmnBusinessRuleTask::class)
+            val shape = newShapeElement(sceneLocation, businessRuleTask)
+
+            updateEventsRegistry().addObjectEvent(
+                    BpmnShapeObjectAddedEvent(businessRuleTask, shape, newElementsFactory().propertiesOf(businessRuleTask))
+            )
+        }
+    }
+
+    private class NewUserTask(private val sceneLocation: Point2D.Float): ActionListener {
+
+        override fun actionPerformed(e: ActionEvent?) {
+            val userTask = newElementsFactory().newBpmnObject(BpmnUserTask::class)
+            val shape = newShapeElement(sceneLocation, userTask)
+
+            updateEventsRegistry().addObjectEvent(
+                    BpmnShapeObjectAddedEvent(userTask, shape, newElementsFactory().propertiesOf(userTask))
+            )
+        }
+    }
+
+    private class NewReceiveTask(private val sceneLocation: Point2D.Float): ActionListener {
+
+        override fun actionPerformed(e: ActionEvent?) {
+            val receiveTask = newElementsFactory().newBpmnObject(BpmnReceiveTask::class)
+            val shape = newShapeElement(sceneLocation, receiveTask)
+
+            updateEventsRegistry().addObjectEvent(
+                    BpmnShapeObjectAddedEvent(receiveTask, shape, newElementsFactory().propertiesOf(receiveTask))
+            )
+        }
+    }
+
+
     private class NewCallActivity(private val sceneLocation: Point2D.Float): ActionListener {
 
         override fun actionPerformed(e: ActionEvent?) {
             val callActivity = newElementsFactory().newBpmnObject(BpmnCallActivity::class)
-            val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, callActivity)
-
-            val shape = templateShape.copy(
-                    bounds = BoundsElement(
-                            sceneLocation.x,
-                            sceneLocation.y,
-                            templateShape.bounds.width,
-                            templateShape.bounds.height
-                    )
-            )
+            val shape = newShapeElement(sceneLocation, callActivity)
 
             updateEventsRegistry().addObjectEvent(
                     BpmnShapeObjectAddedEvent(callActivity, shape, newElementsFactory().propertiesOf(callActivity))
@@ -151,16 +194,7 @@ class CanvasPopupMenuProvider {
 
         override fun actionPerformed(e: ActionEvent?) {
             val exclusiveGateway = newElementsFactory().newBpmnObject(BpmnExclusiveGateway::class)
-            val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, exclusiveGateway)
-
-            val shape = templateShape.copy(
-                    bounds = BoundsElement(
-                            sceneLocation.x,
-                            sceneLocation.y,
-                            templateShape.bounds.width,
-                            templateShape.bounds.height
-                    )
-            )
+            val shape = newShapeElement(sceneLocation, exclusiveGateway)
 
             updateEventsRegistry().addObjectEvent(
                     BpmnShapeObjectAddedEvent(exclusiveGateway, shape, newElementsFactory().propertiesOf(exclusiveGateway))
@@ -172,16 +206,7 @@ class CanvasPopupMenuProvider {
 
         override fun actionPerformed(e: ActionEvent?) {
             val endEvent = newElementsFactory().newBpmnObject(BpmnEndEvent::class)
-            val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, endEvent)
-
-            val shape = templateShape.copy(
-                    bounds = BoundsElement(
-                            sceneLocation.x,
-                            sceneLocation.y,
-                            templateShape.bounds.width,
-                            templateShape.bounds.height
-                    )
-            )
+            val shape = newShapeElement(sceneLocation, endEvent)
 
             updateEventsRegistry().addObjectEvent(
                     BpmnShapeObjectAddedEvent(endEvent, shape, newElementsFactory().propertiesOf(endEvent))

@@ -8,6 +8,10 @@ interface IconProvider {
     val undo: Icon
     val redo: Icon
     val gear: Icon
+    val script: Icon
+    val businessRule: Icon
+    val receive: Icon
+    val user: Icon
     val exclusiveGateway: String
     val sequence: String
     val recycleBin: String
@@ -19,6 +23,10 @@ data class IconProviderImpl(
         override val undo: Icon = IconLoader.getIcon("/icons/actions/undo.png"),
         override val redo: Icon = IconLoader.getIcon("/icons/actions/redo.png"),
         override val gear: Icon = IconLoader.getIcon("/icons/render/gear.png"),
+        override val script: Icon = IconLoader.getIcon("/icons/popupmenu/script.png"),
+        override val businessRule: Icon = IconLoader.getIcon("/icons/popupmenu/business-rule.png"),
+        override val receive: Icon = IconLoader.getIcon("/icons/popupmenu/receive.png"),
+        override val user: Icon = IconLoader.getIcon("/icons/popupmenu/user.png"),
         override val exclusiveGateway: String = "/icons/exclusive-gateway.svg".asResource()!!,
         override val sequence: String = "/icons/sequence.svg".asResource()!!,
         override val recycleBin: String = "/icons/recycle-bin.svg".asResource()!!
