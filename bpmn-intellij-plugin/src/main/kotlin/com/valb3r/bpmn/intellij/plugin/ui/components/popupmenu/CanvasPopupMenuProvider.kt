@@ -4,6 +4,10 @@ import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.openapi.util.IconLoader
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement

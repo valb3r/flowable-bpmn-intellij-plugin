@@ -2,7 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
