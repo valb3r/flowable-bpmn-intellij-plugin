@@ -22,7 +22,7 @@ private fun String.asResource(): String? = DefaultBpmnProcessRenderer::class.jav
 data class IconProviderImpl(
         override val undo: Icon = IconLoader.getIcon("/icons/actions/undo.png"),
         override val redo: Icon = IconLoader.getIcon("/icons/actions/redo.png"),
-        override val gear: Icon = IconLoader.getIcon("/icons/render/gear.png"),
+        override val gear: Icon = IconLoader.getIcon("/icons/ui-icons/gear.png"),
         override val script: Icon = IconLoader.getIcon("/icons/popupmenu/script.png"),
         override val businessRule: Icon = IconLoader.getIcon("/icons/popupmenu/business-rule.png"),
         override val receive: Icon = IconLoader.getIcon("/icons/popupmenu/receive.png"),
