@@ -4,11 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnObjectFactory
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ConditionExpression
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
@@ -38,6 +41,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             BpmnMuleTask::class -> BpmnMuleTask(generateBpmnId(), null, null, null, null, null)
             BpmnDecisionTask::class -> BpmnDecisionTask(generateBpmnId(), null, null, null, null, null)
             BpmnShellTask::class -> BpmnShellTask(generateBpmnId(), null, null, null, null, null)
+            BpmnSubProcess::class -> BpmnSubProcess(generateBpmnId(), null, null, null, null)
             BpmnCallActivity::class -> BpmnCallActivity(generateBpmnId(), null, null, null, "", null, null, null, null)
             BpmnExclusiveGateway::class -> BpmnExclusiveGateway(generateBpmnId(), null, null, null)
             BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId(), null, null)
@@ -79,6 +83,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             is BpmnMuleTask -> fillForMuleTask(obj)
             is BpmnDecisionTask -> fillForDecisionTask(obj)
             is BpmnShellTask -> fillForShellTask(obj)
+            is BpmnSubProcess -> fillForSubProcess(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
             is BpmnExclusiveGateway -> fillForExclusiveGateway(obj)
             else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
@@ -136,6 +141,10 @@ class FlowableObjectFactory: BpmnObjectFactory {
     }
 
     private fun fillForShellTask(activity: BpmnShellTask): Map<PropertyType, Property> {
+        return processDtoToPropertyMap(activity)
+    }
+
+    private fun fillForSubProcess(activity: BpmnSubProcess): Map<PropertyType, Property> {
         return processDtoToPropertyMap(activity)
     }
 

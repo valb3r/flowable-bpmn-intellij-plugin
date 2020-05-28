@@ -3,11 +3,12 @@ package com.valb3r.bpmn.intellij.plugin.ui.components.popupmenu
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.openapi.util.IconLoader
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
@@ -61,6 +62,7 @@ class CanvasPopupMenuProvider {
     private val DECISION_TASK = IconLoader.getIcon("/icons/popupmenu/decision-task.png")
     private val SHELL_TASK = IconLoader.getIcon("/icons/popupmenu/shell-task.png")
     private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
+    private val SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/subprocess.png")
     private val EXCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/exclusive-gateway.png")
     private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png")
 
@@ -97,6 +99,7 @@ class CanvasPopupMenuProvider {
 
     private fun structural(sceneLocation: Point2D.Float): JMenu {
         val menu = JMenu("Structural")
+        addItem(menu, "Sub process", SUB_PROCESS, NewSubProcess(sceneLocation))
         addItem(menu, "Call activity", CALL_ACTIVITY, NewCallActivity(sceneLocation))
         return menu
     }
@@ -247,6 +250,18 @@ class CanvasPopupMenuProvider {
 
             updateEventsRegistry().addObjectEvent(
                     BpmnShapeObjectAddedEvent(httpTask, shape, newElementsFactory().propertiesOf(httpTask))
+            )
+        }
+    }
+
+    private class NewSubProcess(private val sceneLocation: Point2D.Float): ActionListener {
+
+        override fun actionPerformed(e: ActionEvent?) {
+            val subProcess = newElementsFactory().newBpmnObject(BpmnSubProcess::class)
+            val shape = newShapeElement(sceneLocation, subProcess)
+
+            updateEventsRegistry().addObjectEvent(
+                    BpmnShapeObjectAddedEvent(subProcess, shape, newElementsFactory().propertiesOf(subProcess))
             )
         }
     }

@@ -1,11 +1,12 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn
 
 import com.github.pozo.KotlinBuilder
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 
 @KotlinBuilder
@@ -28,6 +29,7 @@ data class BpmnProcess(
         val decisionTask: List<BpmnDecisionTask>?,
         val shellTask: List<BpmnShellTask>?,
         // end customizations
+        val subProcess: List<BpmnSubProcess>?,
         val sequenceFlow: List<BpmnSequenceFlow>?,
         val exclusiveGateway: List<BpmnExclusiveGateway>?,
         val endEvent: List<BpmnEndEvent>?
