@@ -11,6 +11,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType

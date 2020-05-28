@@ -1,13 +1,14 @@
-package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements
+package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks
 
 import com.github.pozo.KotlinBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
 /**
  * Is created from BpmnServiceTask based on its type
  */
 @KotlinBuilder
-data class BpmnCamelTask(
+data class BpmnShellTask(
         override val id: BpmnElementId,
         val name: String?,
         val documentation: String?,
