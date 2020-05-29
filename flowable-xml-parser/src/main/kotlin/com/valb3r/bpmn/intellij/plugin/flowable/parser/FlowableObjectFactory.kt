@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCal
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
@@ -49,6 +50,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             BpmnCallActivity::class -> BpmnCallActivity(generateBpmnId(), null, null, null, "", null, null, null, null)
             BpmnAdHocSubProcess::class -> BpmnAdHocSubProcess(generateBpmnId(), null, null, CompletionCondition(null))
             BpmnExclusiveGateway::class -> BpmnExclusiveGateway(generateBpmnId(), null, null, null)
+            BpmnParallelGateway::class -> BpmnParallelGateway(generateBpmnId(), null, null, null)
             BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId(), null, null)
             else -> throw IllegalArgumentException("Can't create class: " + clazz.qualifiedName)
         }
@@ -68,31 +70,19 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithBpmnId> newOutgoingSequence(obj: T): BpmnSequenceFlow {
         return when(obj) {
-            is BpmnExclusiveGateway -> BpmnSequenceFlow(generateBpmnId(), null, null, obj.id.id, "", ConditionExpression("tFormalExpression", ""))
+            is BpmnExclusiveGateway, is BpmnParallelGateway -> BpmnSequenceFlow(generateBpmnId(), null, null, obj.id.id, "", ConditionExpression("tFormalExpression", ""))
             else -> BpmnSequenceFlow(generateBpmnId(), null, null, obj.id.id, "", null)
         }
     }
 
     override fun <T : WithBpmnId> propertiesOf(obj: T): Map<PropertyType, Property> {
         return when(obj) {
-            is BpmnStartEvent -> processDtoToPropertyMap(obj)
-            is BpmnEndEvent -> processDtoToPropertyMap(obj)
+            is BpmnStartEvent, is BpmnEndEvent, is BpmnUserTask,  is BpmnScriptTask, is BpmnServiceTask, is BpmnBusinessRuleTask,
+            is BpmnReceiveTask, is BpmnCamelTask, is BpmnHttpTask, is BpmnMuleTask, is BpmnDecisionTask, is BpmnShellTask,
+            is BpmnSubProcess, is BpmnTransactionalSubProcess, is BpmnAdHocSubProcess, is BpmnExclusiveGateway,
+            is BpmnParallelGateway -> processDtoToPropertyMap(obj)
             is BpmnCallActivity -> fillForCallActivity(obj)
-            is BpmnUserTask -> processDtoToPropertyMap(obj)
-            is BpmnScriptTask -> processDtoToPropertyMap(obj)
-            is BpmnServiceTask -> processDtoToPropertyMap(obj)
-            is BpmnBusinessRuleTask -> processDtoToPropertyMap(obj)
-            is BpmnReceiveTask -> processDtoToPropertyMap(obj)
-            is BpmnCamelTask -> processDtoToPropertyMap(obj)
-            is BpmnHttpTask -> processDtoToPropertyMap(obj)
-            is BpmnMuleTask -> processDtoToPropertyMap(obj)
-            is BpmnDecisionTask -> processDtoToPropertyMap(obj)
-            is BpmnShellTask -> processDtoToPropertyMap(obj)
-            is BpmnSubProcess -> processDtoToPropertyMap(obj)
-            is BpmnTransactionalSubProcess -> processDtoToPropertyMap(obj)
-            is BpmnAdHocSubProcess -> processDtoToPropertyMap(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
-            is BpmnExclusiveGateway -> processDtoToPropertyMap(obj)
             else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
         }
     }
@@ -151,7 +141,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
     private fun bounds(forBpmnObject: WithBpmnId): BoundsElement {
         return when(forBpmnObject) {
             is BpmnStartEvent, is BpmnEndEvent -> BoundsElement(0.0f, 0.0f, 30.0f, 30.0f)
-            is BpmnExclusiveGateway -> BoundsElement(0.0f, 0.0f, 40.0f, 40.0f)
+            is BpmnExclusiveGateway, is BpmnParallelGateway -> BoundsElement(0.0f, 0.0f, 40.0f, 40.0f)
             else -> BoundsElement(0.0f, 0.0f, 100.0f, 80.0f)
         }
     }

@@ -34,6 +34,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         process.adHocSubProcess?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.sequenceFlow?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.exclusiveGateway?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.parallelGateway?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
 
         diagram.firstOrNull()
                 ?.bpmnPlane

@@ -57,6 +57,7 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var adHocSubProcess: List<AdHocSubProcess>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var sequenceFlow: List<SequenceFlow>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var exclusiveGateway: List<ExclusiveGateway>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var parallelGateway: List<ParallelGateway>? = null
 
     override fun toElement(): BpmnProcess {
         var result = Mappers.getMapper(Mapping::class.java).convertToDto(this)
