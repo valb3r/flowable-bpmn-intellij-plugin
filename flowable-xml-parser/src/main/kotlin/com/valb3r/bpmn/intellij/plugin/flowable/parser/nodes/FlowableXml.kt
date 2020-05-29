@@ -5,6 +5,10 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.DiagramElementIdMapper
@@ -50,6 +54,7 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val endEvent: List<EndEventNode>? = null  // need to validate how there can be multiple, and - it is non-null
     // Events-intermediate
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val intermediateCatchEvent: List<IntermediateCatchEvent>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val intermediateThrowEvent: List<IntermediateThrowEvent>? = null
 
     // Service task alike:
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var userTask: List<UserTask>? = null
@@ -77,6 +82,7 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         var result = Mappers.getMapper(Mapping::class.java).convertToDto(this)
         result = applyServiceTaskCustomizationByType(result)
         result = applyIntermediateCatchEventCustomizationByType(result)
+        result = applyIntermediateThrowingEventCustomizationByType(result)
         return result
     }
 
@@ -99,6 +105,14 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         return result
     }
 
+    private fun applyIntermediateThrowingEventCustomizationByType(process: BpmnProcess): BpmnProcess {
+        var result = process
+        result = extractIntermediateThrowingEventsBasedOnType(result, { null == it.escalationEventDefinition && null == it.signalEventDefinition },  Mappers.getMapper(NoneThrowMapper::class.java)) { updates, target -> target.copy(intermediateNoneThrowingEvent = updates) }
+        result = extractIntermediateThrowingEventsBasedOnType(result, { null != it.signalEventDefinition },  Mappers.getMapper(SignalThrowMapper::class.java)) { updates, target -> target.copy(intermediateSignalThrowingEvent = updates) }
+        result = extractIntermediateThrowingEventsBasedOnType(result, { null != it.escalationEventDefinition },  Mappers.getMapper(EscalationThrowMapper::class.java)) { updates, target -> target.copy(intermediateEscalationThrowingEvent = updates) }
+        return result
+    }
+
     private fun <T> extractTasksBasedOnType(process: BpmnProcess, type: String, mapper: ServiceTaskMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
         process.serviceTask?.apply {
             val byTypeGroup = this.groupBy { it.type == type }
@@ -113,6 +127,16 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         process.intermediateCatchEvent?.apply {
             val byTypeGroup = this.groupBy { filter(it) }
             val newProcess = process.copy(intermediateCatchEvent = byTypeGroup[false])
+            return update(byTypeGroup[true]?.map { mapper.convertToDto(it) }, newProcess)
+        }
+
+        return process
+    }
+
+    private fun <T> extractIntermediateThrowingEventsBasedOnType(process: BpmnProcess, filter: (BpmnIntermediateThrowingEvent) -> Boolean, mapper: IntermediateThrowEventMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
+        process.intermediateThrowEvent?.apply {
+            val byTypeGroup = this.groupBy { filter(it) }
+            val newProcess = process.copy(intermediateThrowEvent = byTypeGroup[false])
             return update(byTypeGroup[true]?.map { mapper.convertToDto(it) }, newProcess)
         }
 
@@ -157,6 +181,19 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
 
     interface IntermediateCatchEventMapper<T> {
         fun convertToDto(input: BpmnIntermediateCatchingEvent): T
+    }
+
+    @Mapper
+    interface NoneThrowMapper: IntermediateThrowEventMapper<BpmnIntermediateNoneThrowingEvent>
+
+    @Mapper
+    interface SignalThrowMapper: IntermediateThrowEventMapper<BpmnIntermediateSignalThrowingEvent>
+
+    @Mapper
+    interface EscalationThrowMapper: IntermediateThrowEventMapper<BpmnIntermediateEscalationThrowingEvent>
+
+    interface IntermediateThrowEventMapper<T> {
+        fun convertToDto(input: BpmnIntermediateThrowingEvent): T
     }
 }
 

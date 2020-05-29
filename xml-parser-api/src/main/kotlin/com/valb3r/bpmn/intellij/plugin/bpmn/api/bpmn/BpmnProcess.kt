@@ -6,6 +6,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCal
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
@@ -25,11 +29,17 @@ data class BpmnProcess(
         // Events
         val startEvent: List<BpmnStartEvent>?,
         val endEvent: List<BpmnEndEvent>?,
-        val intermediateCatchEvent: List<BpmnIntermediateCatchingEvent>?,
+        // Catching
+        val intermediateCatchEvent: List<BpmnIntermediateCatchingEvent>?, // generic mapping point should be empty when processed
         val intermediateTimerCatchingEvent: List<BpmnIntermediateTimerCatchingEvent>?,
         val intermediateMessageCatchingEvent: List<BpmnIntermediateMessageCatchingEvent>?,
         val intermediateSignalCatchingEvent: List<BpmnIntermediateSignalCatchingEvent>?,
         val intermediateConditionalCatchingEvent: List<BpmnIntermediateConditionalCatchingEvent>?,
+        // Throwing
+        val intermediateThrowEvent: List<BpmnIntermediateThrowingEvent>?, // generic mapping point should be empty when processed
+        val intermediateNoneThrowingEvent: List<BpmnIntermediateNoneThrowingEvent>?,
+        val intermediateSignalThrowingEvent: List<BpmnIntermediateSignalThrowingEvent>?,
+        val intermediateEscalationThrowingEvent: List<BpmnIntermediateEscalationThrowingEvent>?,
 
         // Service-task alike
         val userTask: List<BpmnUserTask>?,

@@ -27,20 +27,20 @@ data class IntermediateCatchEvent(
     interface Mapping {
         fun convertToDto(input: IntermediateCatchEvent) : BpmnIntermediateCatchingEvent
     }
+
+    data class TimerEventDefinition(
+            val timeDate: String? = null
+    )
+
+    data class SignalEventDefinition(
+            @JacksonXmlProperty(isAttribute = true) val signalRef: String? = null
+    )
+
+    data class MessageEventDefinition(
+            @JacksonXmlProperty(isAttribute = true) val messageRef: String? = null
+    )
+
+    data class ConditionalEventDefinition(
+            val condition: String? = null
+    )
 }
-
-data class TimerEventDefinition(
-        val timeDate: String? = null
-)
-
-data class SignalEventDefinition(
-        @JacksonXmlProperty(isAttribute = true) val signalRef: String? = null
-)
-
-data class MessageEventDefinition(
-        @JacksonXmlProperty(isAttribute = true) val messageRef: String? = null
-)
-
-data class ConditionalEventDefinition(
-        val condition: String? = null
-)

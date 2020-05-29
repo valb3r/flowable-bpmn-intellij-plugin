@@ -14,6 +14,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateTimerCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
@@ -64,6 +67,9 @@ class FlowableObjectFactory: BpmnObjectFactory {
             BpmnIntermediateMessageCatchingEvent::class -> BpmnIntermediateMessageCatchingEvent(generateBpmnId(), null, null)
             BpmnIntermediateSignalCatchingEvent::class -> BpmnIntermediateSignalCatchingEvent(generateBpmnId(), null, null)
             BpmnIntermediateConditionalCatchingEvent::class -> BpmnIntermediateConditionalCatchingEvent(generateBpmnId(), null, null)
+            BpmnIntermediateNoneThrowingEvent::class -> BpmnIntermediateNoneThrowingEvent(generateBpmnId(), null, null)
+            BpmnIntermediateSignalThrowingEvent::class -> BpmnIntermediateSignalThrowingEvent(generateBpmnId(), null, null)
+            BpmnIntermediateEscalationThrowingEvent::class -> BpmnIntermediateEscalationThrowingEvent(generateBpmnId(), null, null)
             else -> throw IllegalArgumentException("Can't create class: " + clazz.qualifiedName)
         }
 
@@ -93,7 +99,8 @@ class FlowableObjectFactory: BpmnObjectFactory {
             is BpmnReceiveTask, is BpmnCamelTask, is BpmnHttpTask, is BpmnMuleTask, is BpmnDecisionTask, is BpmnShellTask,
             is BpmnSubProcess, is BpmnTransactionalSubProcess, is BpmnAdHocSubProcess, is BpmnExclusiveGateway,
             is BpmnParallelGateway, is BpmnInclusiveGateway, is BpmnEventGateway, is BpmnIntermediateTimerCatchingEvent,
-            is BpmnIntermediateMessageCatchingEvent, is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent -> processDtoToPropertyMap(obj)
+            is BpmnIntermediateMessageCatchingEvent, is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent,
+            is BpmnIntermediateNoneThrowingEvent, is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent -> processDtoToPropertyMap(obj)
             is BpmnCallActivity -> fillForCallActivity(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
             else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
@@ -154,7 +161,8 @@ class FlowableObjectFactory: BpmnObjectFactory {
     private fun bounds(forBpmnObject: WithBpmnId): BoundsElement {
         return when(forBpmnObject) {
             is BpmnStartEvent, is BpmnEndEvent, is BpmnIntermediateTimerCatchingEvent, is BpmnIntermediateMessageCatchingEvent,
-            is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent -> BoundsElement(0.0f, 0.0f, 30.0f, 30.0f)
+            is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent, is BpmnIntermediateNoneThrowingEvent,
+            is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent -> BoundsElement(0.0f, 0.0f, 30.0f, 30.0f)
             is BpmnExclusiveGateway, is BpmnParallelGateway, is BpmnInclusiveGateway, is BpmnEventGateway -> BoundsElement(0.0f, 0.0f, 40.0f, 40.0f)
             else -> BoundsElement(0.0f, 0.0f, 100.0f, 80.0f)
         }

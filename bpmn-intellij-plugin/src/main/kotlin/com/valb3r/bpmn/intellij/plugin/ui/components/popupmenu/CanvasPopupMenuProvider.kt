@@ -11,6 +11,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateTimerCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
@@ -63,10 +66,15 @@ class CanvasPopupMenuProvider {
     private val START_EVENT = IconLoader.getIcon("/icons/popupmenu/start-event.png")
     private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png")
     // Intermediate events
-    private val INTERMEDIATE_TIMER_CATCHING = IconLoader.getIcon("/icons/popupmenu/timer-event.png")
-    private val INTERMEDIATE_MESSAGE_CATCHING = IconLoader.getIcon("/icons/popupmenu/message-event.png")
-    private val INTERMEDIATE_SIGNAL_CATCHING = IconLoader.getIcon("/icons/popupmenu/signal-event.png")
-    private val INTERMEDIATE_CONDITIONAL_CATCHING = IconLoader.getIcon("/icons/popupmenu/conditional-event.png")
+    // Catch
+    private val INTERMEDIATE_TIMER_CATCHING = IconLoader.getIcon("/icons/popupmenu/timer-catch-event.png")
+    private val INTERMEDIATE_MESSAGE_CATCHING = IconLoader.getIcon("/icons/popupmenu/message-catch-event.png")
+    private val INTERMEDIATE_SIGNAL_CATCHING = IconLoader.getIcon("/icons/popupmenu/signal-catch-event.png")
+    private val INTERMEDIATE_CONDITIONAL_CATCHING = IconLoader.getIcon("/icons/popupmenu/conditional-catch-event.png")
+    // Throw
+    private val INTERMEDIATE_NONE_THROWING = IconLoader.getIcon("/icons/popupmenu/none-throw-event.png")
+    private val INTERMEDIATE_SIGNAL_THROWING = IconLoader.getIcon("/icons/popupmenu/signal-throw-event.png")
+    private val INTERMEDIATE_ESCALATION_THROWING = IconLoader.getIcon("/icons/popupmenu/escalation-throw-event.png")
 
     // Service-task alike
     private val SERVICE_TASK = IconLoader.getIcon("/icons/popupmenu/service-task.png")
@@ -98,6 +106,7 @@ class CanvasPopupMenuProvider {
         popup.add(structural(sceneLocation))
         popup.add(gateways(sceneLocation))
         popup.add(intermediateCatchingEvents(sceneLocation))
+        popup.add(intermediateThrowingEvents(sceneLocation))
         popup.add(endEvents(sceneLocation))
         return popup
     }
@@ -149,6 +158,13 @@ class CanvasPopupMenuProvider {
         return menu
     }
 
+    private fun intermediateThrowingEvents(sceneLocation: Point2D.Float): JMenu {
+        val menu = JMenu("Intermediate throwing events")
+        addItem(menu, "Intermediate none throwing event", INTERMEDIATE_NONE_THROWING, ShapeCreator(BpmnIntermediateNoneThrowingEvent::class, sceneLocation))
+        addItem(menu, "Intermediate signal throwing event", INTERMEDIATE_SIGNAL_THROWING, ShapeCreator(BpmnIntermediateSignalThrowingEvent::class, sceneLocation))
+        addItem(menu, "Intermediate escalation throwing event", INTERMEDIATE_ESCALATION_THROWING, ShapeCreator(BpmnIntermediateEscalationThrowingEvent::class, sceneLocation))
+        return menu
+    }
 
     private fun endEvents(sceneLocation: Point2D.Float): JMenu {
         val menu = JMenu("End events")

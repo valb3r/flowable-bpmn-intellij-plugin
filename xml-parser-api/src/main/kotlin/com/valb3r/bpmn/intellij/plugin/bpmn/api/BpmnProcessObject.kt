@@ -19,10 +19,15 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         // Events
         process.startEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.endEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        // Catching
         process.intermediateTimerCatchingEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.intermediateMessageCatchingEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.intermediateSignalCatchingEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.intermediateConditionalCatchingEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        // Throwing
+        process.intermediateNoneThrowingEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.intermediateSignalThrowingEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.intermediateEscalationThrowingEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
 
         // Service-task alike
         process.userTask?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }

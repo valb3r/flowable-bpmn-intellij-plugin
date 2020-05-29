@@ -18,6 +18,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateTimerCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
@@ -262,10 +265,15 @@ class FlowableParser : BpmnParser {
             is BpmnStartEvent -> doc.createElement("startEvent")
             is BpmnEndEvent -> doc.createElement("endEvent")
             // Intermediate events
+            // Catching
             is BpmnIntermediateTimerCatchingEvent -> createIntermediateCatchEventWithType(doc, "timerEventDefinition")
             is BpmnIntermediateMessageCatchingEvent -> createIntermediateCatchEventWithType(doc, "messageEventDefinition")
             is BpmnIntermediateSignalCatchingEvent -> createIntermediateCatchEventWithType(doc, "signalEventDefinition")
             is BpmnIntermediateConditionalCatchingEvent -> createIntermediateCatchEventWithType(doc, "conditionalEventDefinition")
+            // Throwing
+            is BpmnIntermediateNoneThrowingEvent -> createIntermediateThrowEventWithType(doc, null)
+            is BpmnIntermediateSignalThrowingEvent -> createIntermediateThrowEventWithType(doc, "signalEventDefinition")
+            is BpmnIntermediateEscalationThrowingEvent -> createIntermediateThrowEventWithType(doc, "escalationEventDefinition")
 
             // Service tasks
             is BpmnUserTask -> doc.createElement("userTask")
@@ -327,6 +335,15 @@ class FlowableParser : BpmnParser {
         val elem = doc.createElement("intermediateCatchEvent")
         val elemType = doc.createElement(type)
         elem.appendChild(elemType)
+        return elem
+    }
+
+    private fun createIntermediateThrowEventWithType(doc: Document, type: String?): Element {
+        val elem = doc.createElement("intermediateThrowEvent")
+        type?.let {
+            val elemType = doc.createElement(it)
+            elem.appendChild(elemType)
+        }
         return elem
     }
 
