@@ -10,6 +10,7 @@ const val ANCHOR_Z_INDEX = 1000
 
 enum class AreaType {
     POINT,
+    EDGE,
     SHAPE
 }
 
