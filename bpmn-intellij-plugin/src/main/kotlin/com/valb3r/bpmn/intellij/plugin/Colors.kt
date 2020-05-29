@@ -10,6 +10,7 @@ enum class Colors(val color: JBColor) {
     PROCESS_COLOR(JBColor(Color(0xFDFEFF), Color(0x292B2D))),
     CALL_ACTIVITY_COLOR(JBColor(Color(0xF9F9F9), Color(0xF9F9F9))),
     ELEMENT_BORDER_COLOR(JBColor(Color(0xC9C9C9), Color(0xC9C9C9))),
+    SUBPROCESS_TEXT_COLOR(JBColor(Color(0x292B2D), Color(0xFDFEFF))),
     INNER_TEXT_COLOR(JBColor(Color(0x292B2D), Color(0x292B2D))),
     ARROW_COLOR(JBColor(Color(0x292B2D), Color(0xFDFEFF))),
     ANCHOR_COLOR(JBColor(Color(0xFFAA00), Color(0xFFAA00))),

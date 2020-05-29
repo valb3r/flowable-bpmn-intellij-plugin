@@ -433,11 +433,6 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawAdHocSubProcess(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
-        val area = canvas.drawRoundedRectWithIconAtBottom(shape, icons.tilde, name, color(active, Colors.TRANSACTION_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
-    }
-
     private fun drawServiceTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIconAtCorner(shape, icons.gear, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
         return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
@@ -489,13 +484,18 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     }
 
     private fun drawSubProcess(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
-        val area = canvas.drawRoundedRect(shape, name, color(active, Colors.PROCESS_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
+        val area = canvas.drawRoundedRect(shape, name, color(active, Colors.PROCESS_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.SUBPROCESS_TEXT_COLOR.color)
         return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
     private fun drawTransactionSubProcess(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
-        val area = canvas.drawRoundedRect(shape, null, color(active, Colors.PROCESS_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        canvas.drawRoundedRect(shape.wrapInto(transactionalBoundaryMargin), name, color(active, Colors.TRANSACTION_COLOR), Colors.TRANSACTION_ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
+        val area = canvas.drawRoundedRect(shape, null, color(active, Colors.PROCESS_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.SUBPROCESS_TEXT_COLOR.color)
+        canvas.drawRoundedRect(shape.wrapInto(transactionalBoundaryMargin), name, color(active, Colors.TRANSACTION_COLOR), Colors.TRANSACTION_ELEMENT_BORDER_COLOR.color, Colors.SUBPROCESS_TEXT_COLOR.color)
+        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+    }
+
+    private fun drawAdHocSubProcess(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+        val area = canvas.drawRoundedRectWithIconAtBottom(shape, icons.tilde, name, color(active, Colors.TRANSACTION_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.SUBPROCESS_TEXT_COLOR.color)
         return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
