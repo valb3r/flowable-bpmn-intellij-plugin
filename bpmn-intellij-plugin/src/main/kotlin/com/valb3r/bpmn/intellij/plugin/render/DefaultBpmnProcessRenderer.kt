@@ -401,7 +401,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             is BpmnIntermediateTimerCatchingEvent -> drawTimerCatchEvent(canvas, bpmnShape, shape, active)
             is BpmnIntermediateMessageCatchingEvent -> drawMessageCatchEvent(canvas, bpmnShape, shape, active)
             is BpmnIntermediateSignalCatchingEvent -> drawSignalCatchEvent(canvas, bpmnShape, shape, active)
-            is BpmnIntermediateConditionalCatchingEvent -> drawBoundaryTimerEvent(canvas, bpmnShape, shape, active)
+            is BpmnIntermediateConditionalCatchingEvent -> drawConditionalCatchEvent(canvas, bpmnShape, shape, active)
             is BpmnIntermediateNoneThrowingEvent -> drawNoneThrowEvent(canvas, bpmnShape, shape, active)
             is BpmnIntermediateSignalThrowingEvent -> drawSignalThrowEvent(canvas, bpmnShape, shape, active)
             is BpmnIntermediateEscalationThrowingEvent -> drawEscalationThrowEvent(canvas, bpmnShape, shape, active)
