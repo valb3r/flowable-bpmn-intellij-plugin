@@ -397,12 +397,14 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         val iconY = rightBottom.y - iconMargin - icon.iconHeight
         icon.paintIcon(null, graphics2D, iconX.toInt(), iconY.toInt())
 
+        val shapeBottom = camera.fromCameraView(Point2D.Float(iconX, iconY))
+
         return shape.copy(
                 bounds = BoundsElement(
                         shape.bounds.x,
                         shape.bounds.y,
                         shape.bounds.width,
-                        shape.bounds.height - iconMargin - icon.iconHeight
+                        shapeBottom.y - shape.bounds.y
                 )
         )
     }
