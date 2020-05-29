@@ -13,6 +13,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateConditionalCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateTimerCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
@@ -257,6 +261,11 @@ class FlowableParser : BpmnParser {
             // Events
             is BpmnStartEvent -> doc.createElement("startEvent")
             is BpmnEndEvent -> doc.createElement("endEvent")
+            // Intermediate events
+            is BpmnIntermediateTimerCatchingEvent -> createIntermediateCatchEventWithType(doc, "timerEventDefinition")
+            is BpmnIntermediateMessageCatchingEvent -> createIntermediateCatchEventWithType(doc, "messageEventDefinition")
+            is BpmnIntermediateSignalCatchingEvent -> createIntermediateCatchEventWithType(doc, "signalEventDefinition")
+            is BpmnIntermediateConditionalCatchingEvent -> createIntermediateCatchEventWithType(doc, "conditionalEventDefinition")
 
             // Service tasks
             is BpmnUserTask -> doc.createElement("userTask")
@@ -312,6 +321,13 @@ class FlowableParser : BpmnParser {
 
     private fun createServiceTask(doc: Document): Element {
         return createServiceTaskWithType(doc)
+    }
+
+    private fun createIntermediateCatchEventWithType(doc: Document, type: String): Element {
+        val elem = doc.createElement("intermediateCatchEvent")
+        val elemType = doc.createElement(type)
+        elem.appendChild(elemType)
+        return elem
     }
 
     private fun createServiceTaskWithType(doc: Document, type: String? = null): Element {

@@ -22,6 +22,10 @@ interface IconProvider {
     val parallelGateway: String
     val inclusiveGateway: String
     val eventGateway: String
+    val timerEvent: String
+    val messageEvent: String
+    val signalEvent: String
+    val conditionalEvent: String
     val sequence: String
     val recycleBin: String
 }
@@ -46,6 +50,10 @@ data class IconProviderImpl(
         override val parallelGateway: String = "/icons/ui-icons/svg/parallel-gateway.svg".asResource()!!,
         override val inclusiveGateway: String = "/icons/ui-icons/svg/inclusive-gateway.svg".asResource()!!,
         override val eventGateway: String = "/icons/ui-icons/svg/event-gateway.svg".asResource()!!,
+        override val timerEvent: String = "/icons/ui-icons/svg/timer-event.svg".asResource()!!,
+        override val messageEvent: String = "/icons/ui-icons/svg/message-event.svg".asResource()!!,
+        override val signalEvent: String = "/icons/ui-icons/svg/signal-event.svg".asResource()!!,
+        override val conditionalEvent: String = "/icons/ui-icons/svg/conditional-event.svg".asResource()!!,
         override val sequence: String = "/icons/ui-icons/svg/sequence.svg".asResource()!!,
         override val recycleBin: String = "/icons/ui-icons/svg/recycle-bin.svg".asResource()!!
 ): IconProvider

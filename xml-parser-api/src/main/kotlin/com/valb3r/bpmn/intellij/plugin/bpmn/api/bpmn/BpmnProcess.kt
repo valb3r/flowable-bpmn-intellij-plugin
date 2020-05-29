@@ -4,6 +4,7 @@ import com.github.pozo.KotlinBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
@@ -24,6 +25,11 @@ data class BpmnProcess(
         // Events
         val startEvent: List<BpmnStartEvent>?,
         val endEvent: List<BpmnEndEvent>?,
+        val intermediateCatchEvent: List<BpmnIntermediateCatchingEvent>?,
+        val intermediateTimerCatchingEvent: List<BpmnIntermediateTimerCatchingEvent>?,
+        val intermediateMessageCatchingEvent: List<BpmnIntermediateMessageCatchingEvent>?,
+        val intermediateSignalCatchingEvent: List<BpmnIntermediateSignalCatchingEvent>?,
+        val intermediateConditionalCatchingEvent: List<BpmnIntermediateConditionalCatchingEvent>?,
 
         // Service-task alike
         val userTask: List<BpmnUserTask>?,

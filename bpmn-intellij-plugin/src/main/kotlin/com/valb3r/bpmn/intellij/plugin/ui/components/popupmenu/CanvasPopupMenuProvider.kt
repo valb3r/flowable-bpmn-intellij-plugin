@@ -6,6 +6,10 @@ import com.intellij.openapi.util.IconLoader
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateConditionalCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateTimerCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
@@ -55,7 +59,16 @@ private fun <T: WithBpmnId> newShapeElement(sceneLocation: Point2D.Float, forObj
 
 class CanvasPopupMenuProvider {
 
+    // Events
     private val START_EVENT = IconLoader.getIcon("/icons/popupmenu/start-event.png")
+    private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png")
+    // Intermediate events
+    private val INTERMEDIATE_TIMER_CATCHING = IconLoader.getIcon("/icons/popupmenu/timer-event.png")
+    private val INTERMEDIATE_MESSAGE_CATCHING = IconLoader.getIcon("/icons/popupmenu/message-event.png")
+    private val INTERMEDIATE_SIGNAL_CATCHING = IconLoader.getIcon("/icons/popupmenu/signal-event.png")
+    private val INTERMEDIATE_CONDITIONAL_CATCHING = IconLoader.getIcon("/icons/popupmenu/conditional-event.png")
+
+    // Service-task alike
     private val SERVICE_TASK = IconLoader.getIcon("/icons/popupmenu/service-task.png")
     private val USER_TASK = IconLoader.getIcon("/icons/popupmenu/user-task.png")
     private val SCRIPT_TASK = IconLoader.getIcon("/icons/popupmenu/script-task.png")
@@ -66,14 +79,17 @@ class CanvasPopupMenuProvider {
     private val MULE_TASK = IconLoader.getIcon("/icons/popupmenu/mule-task.png")
     private val DECISION_TASK = IconLoader.getIcon("/icons/popupmenu/decision-task.png")
     private val SHELL_TASK = IconLoader.getIcon("/icons/popupmenu/shell-task.png")
+
+    // Sub process alike
     private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
     private val SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/subprocess.png")
     private val ADHOC_SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/adhoc-subprocess.png")
+
+    // Gateway
     private val EXCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/exclusive-gateway.png")
     private val PARALLEL_GATEWAY = IconLoader.getIcon("/icons/popupmenu/parallel-gateway.png")
     private val INCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/inclusive-gateway.png")
     private val EVENT_GATEWAY = IconLoader.getIcon("/icons/popupmenu/event-gateway.png")
-    private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png")
 
     fun popupMenu(sceneLocation: Point2D.Float): JBPopupMenu {
         val popup = JBPopupMenu()
@@ -81,6 +97,7 @@ class CanvasPopupMenuProvider {
         popup.add(activities(sceneLocation))
         popup.add(structural(sceneLocation))
         popup.add(gateways(sceneLocation))
+        popup.add(intermediateCatchingEvents(sceneLocation))
         popup.add(endEvents(sceneLocation))
         return popup
     }
@@ -122,6 +139,16 @@ class CanvasPopupMenuProvider {
         addItem(menu, "Event gateway", EVENT_GATEWAY, ShapeCreator(BpmnEventGateway::class, sceneLocation))
         return menu
     }
+
+    private fun intermediateCatchingEvents(sceneLocation: Point2D.Float): JMenu {
+        val menu = JMenu("Intermediate catching events")
+        addItem(menu, "Intermediate timer catching event", INTERMEDIATE_TIMER_CATCHING, ShapeCreator(BpmnIntermediateTimerCatchingEvent::class, sceneLocation))
+        addItem(menu, "Intermediate message catching event", INTERMEDIATE_MESSAGE_CATCHING, ShapeCreator(BpmnIntermediateMessageCatchingEvent::class, sceneLocation))
+        addItem(menu, "Intermediate signal catching event", INTERMEDIATE_SIGNAL_CATCHING, ShapeCreator(BpmnIntermediateSignalCatchingEvent::class, sceneLocation))
+        addItem(menu, "Intermediate conditional catching event", INTERMEDIATE_CONDITIONAL_CATCHING, ShapeCreator(BpmnIntermediateConditionalCatchingEvent::class, sceneLocation))
+        return menu
+    }
+
 
     private fun endEvents(sceneLocation: Point2D.Float): JMenu {
         val menu = JMenu("End events")

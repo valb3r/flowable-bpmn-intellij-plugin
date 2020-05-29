@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonMerge
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.DiagramElementIdMapper
@@ -47,6 +48,8 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
     // Events
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var startEvent: List<StartEventNode>? = null  // need to validate how there can be multiple, and - it is non-null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val endEvent: List<EndEventNode>? = null  // need to validate how there can be multiple, and - it is non-null
+    // Events-intermediate
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val intermediateCatchEvent: List<IntermediateCatchEvent>? = null
 
     // Service task alike:
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var userTask: List<UserTask>? = null
@@ -73,6 +76,7 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
     override fun toElement(): BpmnProcess {
         var result = Mappers.getMapper(Mapping::class.java).convertToDto(this)
         result = applyServiceTaskCustomizationByType(result)
+        result = applyIntermediateCatchEventCustomizationByType(result)
         return result
     }
 
@@ -86,10 +90,29 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         return result
     }
 
+    private fun applyIntermediateCatchEventCustomizationByType(process: BpmnProcess): BpmnProcess {
+        var result = process
+        result = extractIntermediateCatchEventsBasedOnType(result, { null != it.timerEventDefinition },  Mappers.getMapper(TimerCatchingMapper::class.java)) { updates, target -> target.copy(intermediateTimerCatchingEvent = updates) }
+        result = extractIntermediateCatchEventsBasedOnType(result, { null != it.signalEventDefinition },  Mappers.getMapper(SignalCatchingMapper::class.java)) { updates, target -> target.copy(intermediateSignalCatchingEvent = updates) }
+        result = extractIntermediateCatchEventsBasedOnType(result, { null != it.messageEventDefinition },  Mappers.getMapper(MessageCatchingMapper::class.java)) { updates, target -> target.copy(intermediateMessageCatchingEvent = updates) }
+        result = extractIntermediateCatchEventsBasedOnType(result, { null != it.conditionalEventDefinition },  Mappers.getMapper(ConditionalCatchingMapper::class.java)) { updates, target -> target.copy(intermediateConditionalCatchingEvent = updates) }
+        return result
+    }
+
     private fun <T> extractTasksBasedOnType(process: BpmnProcess, type: String, mapper: ServiceTaskMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
         process.serviceTask?.apply {
             val byTypeGroup = this.groupBy { it.type == type }
             val newProcess = process.copy(serviceTask = byTypeGroup[false])
+            return update(byTypeGroup[true]?.map { mapper.convertToDto(it) }, newProcess)
+        }
+
+        return process
+    }
+
+    private fun <T> extractIntermediateCatchEventsBasedOnType(process: BpmnProcess, filter: (BpmnIntermediateCatchingEvent) -> Boolean, mapper: IntermediateCatchEventMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
+        process.intermediateCatchEvent?.apply {
+            val byTypeGroup = this.groupBy { filter(it) }
+            val newProcess = process.copy(intermediateCatchEvent = byTypeGroup[false])
             return update(byTypeGroup[true]?.map { mapper.convertToDto(it) }, newProcess)
         }
 
@@ -118,6 +141,22 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
 
     interface ServiceTaskMapper<T> {
         fun convertToDto(input: BpmnServiceTask): T
+    }
+
+    @Mapper
+    interface TimerCatchingMapper: IntermediateCatchEventMapper<BpmnIntermediateTimerCatchingEvent>
+
+    @Mapper
+    interface SignalCatchingMapper: IntermediateCatchEventMapper<BpmnIntermediateSignalCatchingEvent>
+
+    @Mapper
+    interface MessageCatchingMapper: IntermediateCatchEventMapper<BpmnIntermediateMessageCatchingEvent>
+
+    @Mapper
+    interface ConditionalCatchingMapper: IntermediateCatchEventMapper<BpmnIntermediateConditionalCatchingEvent>
+
+    interface IntermediateCatchEventMapper<T> {
+        fun convertToDto(input: BpmnIntermediateCatchingEvent): T
     }
 }
 
