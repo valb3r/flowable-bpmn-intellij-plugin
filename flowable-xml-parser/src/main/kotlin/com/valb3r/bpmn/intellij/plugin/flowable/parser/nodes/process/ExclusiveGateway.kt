@@ -1,7 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers

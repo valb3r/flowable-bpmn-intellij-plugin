@@ -190,7 +190,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(drawShape)
     }
 
-    fun drawRoundedRectWithIcon(shape: ShapeElement, icon: Icon, name: String?, background: Color, border: Color, textColor: Color): Area {
+    fun drawRoundedRectWithIconAtCorner(shape: ShapeElement, icon: Icon, name: String?, background: Color, border: Color, textColor: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
 
@@ -206,7 +206,29 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         graphics2D.fill(drawShape)
         graphics2D.color = border
         graphics2D.draw(drawShape)
-        val cropTo = drawIconAndWrapShape(shape, icon)
+        val cropTo = drawIconAtTopLeftAndWrapShape(shape, icon)
+        graphics2D.color = textColor
+        name?.apply { drawWrappedText(cropTo, this) }
+        return Area(drawShape)
+    }
+
+    fun drawRoundedRectWithIconAtBottom(shape: ShapeElement, icon: Icon, name: String?, background: Color, border: Color, textColor: Color): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
+
+        graphics2D.color = background
+        val drawShape = RoundRectangle2D.Float(
+                leftTop.x,
+                leftTop.y,
+                (rightBottom.x - leftTop.x),
+                (rightBottom.y - leftTop.y),
+                (nodeRadius * this.camera.zoom.x),
+                (nodeRadius * this.camera.zoom.y)
+        )
+        graphics2D.fill(drawShape)
+        graphics2D.color = border
+        graphics2D.draw(drawShape)
+        val cropTo = drawIconAtMidBottomAndWrapShape(shape, icon)
         graphics2D.color = textColor
         name?.apply { drawWrappedText(cropTo, this) }
         return Area(drawShape)
@@ -259,6 +281,38 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
 
         return Area(highlightedShape)
+    }
+
+    fun drawWrappedIconWithLayer(shape: ShapeElement, svgIcon: String, selected: Boolean, selectedColor: Color, layer: (Rectangle2D.Float) -> Shape, layerColor: Color): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
+
+        val width = (rightBottom.x - leftTop.x).toInt()
+        val height = (rightBottom.y - leftTop.y).toInt()
+
+        if (0 == width || 0 == height) {
+            return Area()
+        }
+
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
+        val iconRect = Rectangle2D.Float(
+                leftTop.x.toInt().toFloat(),
+                leftTop.y.toInt().toFloat(),
+                resizedImg.width.toFloat(),
+                resizedImg.height.toFloat()
+        )
+
+        if (selected) {
+            graphics2D.color = selectedColor
+            graphics2D.fill(iconRect)
+        } else {
+            graphics2D.color = layerColor
+            graphics2D.fill(layer(iconRect))
+        }
+
+        graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
+
+        return Area(iconRect)
     }
 
     fun drawWrappedIcon(shape: ShapeElement, svgIcon: String, selected: Boolean, selectedColor: Color): Area {
@@ -334,7 +388,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         }
     }
 
-    fun drawIconAndWrapShape(shape: ShapeElement, icon: Icon): ShapeElement {
+    fun drawIconAtTopLeftAndWrapShape(shape: ShapeElement, icon: Icon): ShapeElement {
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
         if (rightBottom.x - leftTop.x < (iconMargin + icon.iconWidth)) {
@@ -356,6 +410,33 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
                         iconTop.y,
                         iconBottom.x - iconTop.x,
                         iconBottom.y - iconTop.y
+                )
+        )
+    }
+
+    fun drawIconAtMidBottomAndWrapShape(shape: ShapeElement, icon: Icon): ShapeElement {
+        val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
+        if (rightBottom.x - leftTop.x < (iconMargin + icon.iconWidth)) {
+            return shape
+        }
+
+        if (rightBottom.y - leftTop.y < (iconMargin + icon.iconHeight)) {
+            return shape
+        }
+
+        val iconX = (leftTop.x + rightBottom.x - icon.iconWidth) / 2.0f
+        val iconY = rightBottom.y - iconMargin - icon.iconHeight
+        icon.paintIcon(null, graphics2D, iconX.toInt(), iconY.toInt())
+
+        val shapeBottom = camera.fromCameraView(Point2D.Float(iconX, iconY))
+
+        return shape.copy(
+                bounds = BoundsElement(
+                        shape.bounds.x,
+                        shape.bounds.y,
+                        shape.bounds.width,
+                        shapeBottom.y - shape.bounds.y
                 )
         )
     }

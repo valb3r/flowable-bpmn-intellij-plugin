@@ -10,7 +10,26 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateConditionalCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateTimerCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
@@ -69,8 +88,10 @@ enum class PropertyTypeDetails(
     EXCLUDE(PropertyType.EXCLUDE, "flowable:exclude", XmlType.ATTRIBUTE),
     SOURCE_REF(PropertyType.SOURCE_REF,"sourceRef", XmlType.ATTRIBUTE),
     TARGET_REF(PropertyType.TARGET_REF, "targetRef", XmlType.ATTRIBUTE),
+    ATTACHED_TO_REF(PropertyType.ATTACHED_TO_REF, "attachedToRef", XmlType.ATTRIBUTE),
     CONDITION_EXPR_VALUE(PropertyType.CONDITION_EXPR_VALUE, "conditionExpression.text", XmlType.CDATA),
     CONDITION_EXPR_TYPE(PropertyType.CONDITION_EXPR_TYPE, "conditionExpression.xsi:type", XmlType.ATTRIBUTE),
+    COMPLETION_CONDITION(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA),
     DEFAULT_FLOW(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE)
 }
 
@@ -241,16 +262,69 @@ class FlowableParser : BpmnParser {
         ) as Node
 
         val newNode = when(update.bpmnObject) {
-            is BpmnStartEvent -> doc.createElement("startEvent")
-            is BpmnCallActivity -> doc.createElement("callActivity")
-            is BpmnExclusiveGateway -> doc.createElement("exclusiveGateway")
-            is BpmnSequenceFlow -> doc.createElement("sequenceFlow")
+
+            // Events
+            // Start
+            is BpmnStartEvent -> createStartEventWithType(doc, null)
+            is BpmnStartTimerEvent -> createStartEventWithType(doc, "timerEventDefinition")
+            is BpmnStartSignalEvent -> createStartEventWithType(doc, "signalEventDefinition")
+            is BpmnStartMessageEvent -> createStartEventWithType(doc, "messageEventDefinition")
+            is BpmnStartErrorEvent -> createStartEventWithType(doc, "errorEventDefinition")
+            is BpmnStartConditionalEvent -> createStartEventWithType(doc, "conditionalEventDefinition")
+            is BpmnStartEscalationEvent -> createStartEventWithType(doc, "escalationEventDefinition")
+            // End
+            is BpmnEndEvent -> createEndEventWithType(doc, null)
+            is BpmnEndTerminateEvent -> createEndEventWithType(doc, "terminateEventDefinition")
+            is BpmnEndEscalationEvent -> createEndEventWithType(doc, "escalationEventDefinition")
+            is BpmnEndCancelEvent -> createEndEventWithType(doc, "cancelEventDefinition")
+            is BpmnEndErrorEvent -> createEndEventWithType(doc, "errorEventDefinition")
+            // Boundary
+            is BpmnBoundaryCancelEvent -> createBoundaryEventWithType(doc, "cancelEventDefinition")
+            is BpmnBoundaryCompensationEvent -> createBoundaryEventWithType(doc, "conditionalEventDefinition")
+            is BpmnBoundaryConditionalEvent -> createBoundaryEventWithType(doc, "conditionalEventDefinition")
+            is BpmnBoundaryErrorEvent -> createBoundaryEventWithType(doc, "errorEventDefinition")
+            is BpmnBoundaryEscalationEvent -> createBoundaryEventWithType(doc, "escalationEventDefinition")
+            is BpmnBoundaryMessageEvent -> createBoundaryEventWithType(doc, "messageEventDefinition")
+            is BpmnBoundarySignalEvent -> createBoundaryEventWithType(doc, "signalEventDefinition")
+            is BpmnBoundaryTimerEvent -> createBoundaryEventWithType(doc, "timerEventDefinition")
+            // Intermediate events
+            // Catching
+            is BpmnIntermediateTimerCatchingEvent -> createIntermediateCatchEventWithType(doc, "timerEventDefinition")
+            is BpmnIntermediateMessageCatchingEvent -> createIntermediateCatchEventWithType(doc, "messageEventDefinition")
+            is BpmnIntermediateSignalCatchingEvent -> createIntermediateCatchEventWithType(doc, "signalEventDefinition")
+            is BpmnIntermediateConditionalCatchingEvent -> createIntermediateCatchEventWithType(doc, "conditionalEventDefinition")
+            // Throwing
+            is BpmnIntermediateNoneThrowingEvent -> createIntermediateThrowEventWithType(doc, null)
+            is BpmnIntermediateSignalThrowingEvent -> createIntermediateThrowEventWithType(doc, "signalEventDefinition")
+            is BpmnIntermediateEscalationThrowingEvent -> createIntermediateThrowEventWithType(doc, "escalationEventDefinition")
+
+            // Service tasks
             is BpmnUserTask -> doc.createElement("userTask")
             is BpmnScriptTask -> doc.createElement("scriptTask")
-            is BpmnServiceTask -> doc.createElement("serviceTask")
+            is BpmnServiceTask -> createServiceTask(doc)
             is BpmnBusinessRuleTask -> doc.createElement("businessRuleTask")
             is BpmnReceiveTask -> doc.createElement("receiveTask")
-            is BpmnEndEvent -> doc.createElement("endEvent")
+            is BpmnCamelTask -> createServiceTaskWithType(doc, "camel")
+            is BpmnHttpTask -> createServiceTaskWithType(doc, "http")
+            is BpmnMuleTask -> createServiceTaskWithType(doc, "mule")
+            is BpmnDecisionTask -> createServiceTaskWithType(doc, "dmn")
+            is BpmnShellTask -> createServiceTaskWithType(doc, "shell")
+
+            // Sub processes
+            is BpmnCallActivity -> doc.createElement("callActivity")
+            is BpmnSubProcess -> doc.createElement("subProcess")
+            is BpmnAdHocSubProcess -> doc.createElement("adHocSubProcess")
+            is BpmnTransactionalSubProcess -> doc.createElement("transaction")
+
+            // Gateways
+            is BpmnExclusiveGateway -> doc.createElement("exclusiveGateway")
+            is BpmnParallelGateway -> doc.createElement("parallelGateway")
+            is BpmnInclusiveGateway -> doc.createElement("inclusiveGateway")
+            is BpmnEventGateway -> doc.createElement("eventBasedGateway")
+
+            // Linking elements
+            is BpmnSequenceFlow -> doc.createElement("sequenceFlow")
+
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 
@@ -274,6 +348,57 @@ class FlowableParser : BpmnParser {
         newBounds.setAttribute("height", update.shape.bounds.height.toString())
         newShape.appendChild(newBounds)
         trimWhitespace(shapeParent, false)
+    }
+
+    private fun createServiceTask(doc: Document): Element {
+        return createServiceTaskWithType(doc)
+    }
+
+    private fun createBoundaryEventWithType(doc: Document, type: String): Element {
+        val elem = doc.createElement("boundaryEvent")
+        val elemType = doc.createElement(type)
+        elem.appendChild(elemType)
+        return elem
+    }
+
+    private fun createStartEventWithType(doc: Document, type: String?): Element {
+        val elem = doc.createElement("startEvent")
+        type?.let {
+            val elemType = doc.createElement(it)
+            elem.appendChild(elemType)
+        }
+        return elem
+    }
+
+    private fun createEndEventWithType(doc: Document, type: String?): Element {
+        val elem = doc.createElement("endEvent")
+        type?.let {
+            val elemType = doc.createElement(it)
+            elem.appendChild(elemType)
+        }
+        return elem
+    }
+
+    private fun createIntermediateCatchEventWithType(doc: Document, type: String): Element {
+        val elem = doc.createElement("intermediateCatchEvent")
+        val elemType = doc.createElement(type)
+        elem.appendChild(elemType)
+        return elem
+    }
+
+    private fun createIntermediateThrowEventWithType(doc: Document, type: String?): Element {
+        val elem = doc.createElement("intermediateThrowEvent")
+        type?.let {
+            val elemType = doc.createElement(it)
+            elem.appendChild(elemType)
+        }
+        return elem
+    }
+
+    private fun createServiceTaskWithType(doc: Document, type: String? = null): Element {
+        val elem = doc.createElement("serviceTask")
+        type?.let { elem.setAttribute("flowable:type", type) }
+        return elem
     }
 
     private fun applyBpmnEdgeObjectAdded(doc: Document, update: BpmnEdgeObjectAdded) {

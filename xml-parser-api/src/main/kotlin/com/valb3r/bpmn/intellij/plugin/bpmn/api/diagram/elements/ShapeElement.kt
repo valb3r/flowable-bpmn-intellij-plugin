@@ -14,6 +14,10 @@ data class ShapeElement(
     override fun copyAndTranslate(dx: Float, dy: Float): ShapeElement {
         return this.copy(bounds = BoundsElement(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height))
     }
+
+    fun wrapInto(margin: Float): ShapeElement {
+        return this.copy(bounds = BoundsElement(this.bounds.x + margin, this.bounds.y + margin, this.bounds.width - 2.0f * margin, this.bounds.height - 2.0f * margin))
+    }
 }
 
 @KotlinBuilder

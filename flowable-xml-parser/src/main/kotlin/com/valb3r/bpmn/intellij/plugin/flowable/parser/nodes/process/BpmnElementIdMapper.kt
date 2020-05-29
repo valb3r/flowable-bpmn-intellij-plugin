@@ -6,7 +6,11 @@ import org.mapstruct.Mapper
 @Mapper
 open class BpmnElementIdMapper {
 
-    fun map(value: String): BpmnElementId {
+    fun map(value: String?): BpmnElementId? {
+        if (null == value) {
+            return null
+        }
+
         return BpmnElementId(value)
     }
 }

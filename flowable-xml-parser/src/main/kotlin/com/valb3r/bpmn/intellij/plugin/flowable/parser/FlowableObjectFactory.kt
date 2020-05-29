@@ -4,7 +4,29 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnObjectFactory
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ConditionExpression
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateConditionalCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateTimerCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.CompletionCondition
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
@@ -22,15 +44,51 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithBpmnId> newBpmnObject(clazz: KClass<T>): T {
         val result: WithBpmnId = when(clazz) {
-            BpmnStartEvent::class -> BpmnStartEvent(generateBpmnId(), null, null)
-            BpmnUserTask::class -> BpmnUserTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null, null, null, null, null)
-            BpmnScriptTask::class -> BpmnScriptTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null)
+            BpmnStartEvent::class -> BpmnStartEvent(generateBpmnId(), null, null, null, null, null, null, null, null)
+            BpmnStartConditionalEvent::class -> BpmnStartConditionalEvent(generateBpmnId(), null, null)
+            BpmnStartEscalationEvent::class -> BpmnStartEscalationEvent(generateBpmnId(), null, null)
+            BpmnStartErrorEvent::class -> BpmnStartErrorEvent(generateBpmnId(), null, null)
+            BpmnStartMessageEvent::class -> BpmnStartMessageEvent(generateBpmnId(), null, null)
+            BpmnStartSignalEvent::class -> BpmnStartSignalEvent(generateBpmnId(), null, null)
+            BpmnStartTimerEvent::class -> BpmnStartTimerEvent(generateBpmnId(), null, null)
+            BpmnBoundaryCancelEvent::class -> BpmnBoundaryCancelEvent(generateBpmnId(), null, null, null)
+            BpmnBoundaryCompensationEvent::class -> BpmnBoundaryCompensationEvent(generateBpmnId(), null, null, null)
+            BpmnBoundaryConditionalEvent::class -> BpmnBoundaryConditionalEvent(generateBpmnId(), null, null, null)
+            BpmnBoundaryErrorEvent::class -> BpmnBoundaryErrorEvent(generateBpmnId(), null, null, null)
+            BpmnBoundaryEscalationEvent::class -> BpmnBoundaryEscalationEvent(generateBpmnId(), null, null, null)
+            BpmnBoundaryMessageEvent::class -> BpmnBoundaryMessageEvent(generateBpmnId(), null, null, null)
+            BpmnBoundarySignalEvent::class -> BpmnBoundarySignalEvent(generateBpmnId(), null, null, null)
+            BpmnBoundaryTimerEvent::class -> BpmnBoundaryTimerEvent(generateBpmnId(), null, null, null)
+            BpmnUserTask::class -> BpmnUserTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null)
+            BpmnScriptTask::class -> BpmnScriptTask(generateBpmnId(), null, null, null, null, null, null, null)
             BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null)
-            BpmnBusinessRuleTask::class -> BpmnBusinessRuleTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null, null, null, null, null)
-            BpmnReceiveTask::class -> BpmnReceiveTask(BpmnElementId(UUID.randomUUID().toString()), null, null, null, null)
+            BpmnBusinessRuleTask::class -> BpmnBusinessRuleTask(generateBpmnId(), null, null, null, null, null, null, null, null)
+            BpmnReceiveTask::class -> BpmnReceiveTask(generateBpmnId(), null, null, null, null)
+            BpmnCamelTask::class -> BpmnCamelTask(generateBpmnId(), null, null, null, null, null)
+            BpmnHttpTask::class -> BpmnHttpTask(generateBpmnId(), null, null, null, null, null)
+            BpmnMuleTask::class -> BpmnMuleTask(generateBpmnId(), null, null, null, null, null)
+            BpmnDecisionTask::class -> BpmnDecisionTask(generateBpmnId(), null, null, null, null, null)
+            BpmnShellTask::class -> BpmnShellTask(generateBpmnId(), null, null, null, null, null)
+            BpmnSubProcess::class -> BpmnSubProcess(generateBpmnId(), null, null, null, null)
+            BpmnTransactionalSubProcess::class -> BpmnTransactionalSubProcess(generateBpmnId(), null, null, null, null)
             BpmnCallActivity::class -> BpmnCallActivity(generateBpmnId(), null, null, null, "", null, null, null, null)
+            BpmnAdHocSubProcess::class -> BpmnAdHocSubProcess(generateBpmnId(), null, null, CompletionCondition(null))
             BpmnExclusiveGateway::class -> BpmnExclusiveGateway(generateBpmnId(), null, null, null)
-            BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId(), null, null)
+            BpmnParallelGateway::class -> BpmnParallelGateway(generateBpmnId(), null, null, null)
+            BpmnInclusiveGateway::class -> BpmnInclusiveGateway(generateBpmnId(), null, null, null)
+            BpmnEventGateway::class -> BpmnEventGateway(generateBpmnId(), null, null, null)
+            BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId(), null, null, null, null, null, null)
+            BpmnEndCancelEvent::class -> BpmnEndCancelEvent(generateBpmnId(), null, null)
+            BpmnEndErrorEvent::class -> BpmnEndErrorEvent(generateBpmnId(), null, null)
+            BpmnEndEscalationEvent::class -> BpmnEndEscalationEvent(generateBpmnId(), null, null)
+            BpmnEndTerminateEvent::class -> BpmnEndTerminateEvent(generateBpmnId(), null, null)
+            BpmnIntermediateTimerCatchingEvent::class -> BpmnIntermediateTimerCatchingEvent(generateBpmnId(), null, null)
+            BpmnIntermediateMessageCatchingEvent::class -> BpmnIntermediateMessageCatchingEvent(generateBpmnId(), null, null)
+            BpmnIntermediateSignalCatchingEvent::class -> BpmnIntermediateSignalCatchingEvent(generateBpmnId(), null, null)
+            BpmnIntermediateConditionalCatchingEvent::class -> BpmnIntermediateConditionalCatchingEvent(generateBpmnId(), null, null)
+            BpmnIntermediateNoneThrowingEvent::class -> BpmnIntermediateNoneThrowingEvent(generateBpmnId(), null, null)
+            BpmnIntermediateSignalThrowingEvent::class -> BpmnIntermediateSignalThrowingEvent(generateBpmnId(), null, null)
+            BpmnIntermediateEscalationThrowingEvent::class -> BpmnIntermediateEscalationThrowingEvent(generateBpmnId(), null, null)
             else -> throw IllegalArgumentException("Can't create class: " + clazz.qualifiedName)
         }
 
@@ -49,33 +107,28 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithBpmnId> newOutgoingSequence(obj: T): BpmnSequenceFlow {
         return when(obj) {
-            is BpmnExclusiveGateway -> BpmnSequenceFlow(generateBpmnId(), null, null, obj.id.id, "", ConditionExpression("tFormalExpression", ""))
+            is BpmnExclusiveGateway, is BpmnParallelGateway, is BpmnInclusiveGateway -> BpmnSequenceFlow(generateBpmnId(), null, null, obj.id.id, "", ConditionExpression("tFormalExpression", ""))
             else -> BpmnSequenceFlow(generateBpmnId(), null, null, obj.id.id, "", null)
         }
     }
 
     override fun <T : WithBpmnId> propertiesOf(obj: T): Map<PropertyType, Property> {
         return when(obj) {
-            is BpmnStartEvent -> fillForStartEvent(obj)
-            is BpmnEndEvent -> fillForEndEvent(obj)
+            is BpmnStartEvent, is BpmnStartTimerEvent, is BpmnStartSignalEvent, is BpmnStartMessageEvent,
+            is BpmnStartErrorEvent, is BpmnStartEscalationEvent, is BpmnStartConditionalEvent, is BpmnEndEvent,
+            is BpmnEndErrorEvent, is BpmnEndCancelEvent, is BpmnEndEscalationEvent,
+            is BpmnEndTerminateEvent, is BpmnBoundaryCancelEvent, is BpmnBoundaryCompensationEvent,
+            is BpmnBoundaryConditionalEvent, is BpmnBoundaryEscalationEvent, is BpmnBoundaryMessageEvent, is BpmnBoundaryErrorEvent,
+            is BpmnBoundarySignalEvent, is BpmnBoundaryTimerEvent, is BpmnUserTask,  is BpmnScriptTask, is BpmnServiceTask, is BpmnBusinessRuleTask,
+            is BpmnReceiveTask, is BpmnCamelTask, is BpmnHttpTask, is BpmnMuleTask, is BpmnDecisionTask, is BpmnShellTask,
+            is BpmnSubProcess, is BpmnTransactionalSubProcess, is BpmnAdHocSubProcess, is BpmnExclusiveGateway,
+            is BpmnParallelGateway, is BpmnInclusiveGateway, is BpmnEventGateway, is BpmnIntermediateTimerCatchingEvent,
+            is BpmnIntermediateMessageCatchingEvent, is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent,
+            is BpmnIntermediateNoneThrowingEvent, is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent -> processDtoToPropertyMap(obj)
             is BpmnCallActivity -> fillForCallActivity(obj)
-            is BpmnUserTask -> fillForUserTask(obj)
-            is BpmnScriptTask -> fillForScriptTask(obj)
-            is BpmnServiceTask -> fillForServiceTask(obj)
-            is BpmnBusinessRuleTask -> fillForBusinessRuleTask(obj)
-            is BpmnReceiveTask -> fillForReceiveTask(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
-            is BpmnExclusiveGateway -> fillForExclusiveGateway(obj)
             else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
         }
-    }
-
-    private fun fillForStartEvent(activity: BpmnStartEvent): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForEndEvent(activity: BpmnEndEvent): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
     }
 
     private fun fillForCallActivity(activity: BpmnCallActivity): Map<PropertyType, Property> {
@@ -84,35 +137,11 @@ class FlowableObjectFactory: BpmnObjectFactory {
         return properties
     }
 
-    private fun fillForServiceTask(activity: BpmnServiceTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForScriptTask(activity: BpmnScriptTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForReceiveTask(activity: BpmnReceiveTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForBusinessRuleTask(activity: BpmnBusinessRuleTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForUserTask(activity: BpmnUserTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
     private fun fillForSequenceFlow(activity: BpmnSequenceFlow): Map<PropertyType, Property> {
         if (null != activity.conditionExpression && activity.conditionExpression!!.type != "tFormalExpression") {
             throw IllegalArgumentException("Unknown type: ${activity.conditionExpression!!.type}")
         }
 
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForExclusiveGateway(activity: BpmnExclusiveGateway): Map<PropertyType, Property> {
         return processDtoToPropertyMap(activity)
     }
 
@@ -142,21 +171,42 @@ class FlowableObjectFactory: BpmnObjectFactory {
                 tryParseNestedValue(type, this, result)
             }
 
-            this[split[1]]?.parseValue(result, type)
+            val value = this[split[1]]
+            if (null != value) {
+                value.parseValue(result, type)
+            } else {
+                doParse(null, result, type)
+            }
         }
     }
 
     private fun JsonNode.parseValue(result: MutableMap<PropertyType, Property>, type: PropertyType) {
+       doParse(this, result, type)
+    }
+
+    private fun doParse(node: JsonNode?, result: MutableMap<PropertyType, Property>, type: PropertyType) {
+        if (null == node) {
+            result[type] = Property(null)
+            return
+        }
+
         result[type] = when (type.valueType) {
-            PropertyValueType.STRING, PropertyValueType.CLASS, PropertyValueType.EXPRESSION -> if (this.isNull) Property(null) else Property(this.asText())
-            PropertyValueType.BOOLEAN -> Property(this.asBoolean())
+            PropertyValueType.STRING, PropertyValueType.CLASS, PropertyValueType.EXPRESSION -> if (node.isNull) Property(null) else Property(node.asText())
+            PropertyValueType.BOOLEAN -> Property(node.asBoolean())
         }
     }
 
     private fun bounds(forBpmnObject: WithBpmnId): BoundsElement {
         return when(forBpmnObject) {
-            is BpmnStartEvent, is BpmnEndEvent -> BoundsElement(0.0f, 0.0f, 30.0f, 30.0f)
-            is BpmnExclusiveGateway -> BoundsElement(0.0f, 0.0f, 40.0f, 40.0f)
+            is BpmnStartEvent, is BpmnStartEscalationEvent, is BpmnStartConditionalEvent, is BpmnStartErrorEvent,
+            is BpmnStartMessageEvent, is BpmnStartSignalEvent, is BpmnStartTimerEvent, is BpmnEndEvent,
+            is BpmnEndTerminateEvent, is BpmnEndEscalationEvent, is BpmnBoundaryCancelEvent, is BpmnBoundaryCompensationEvent,
+            is BpmnBoundaryConditionalEvent, is BpmnBoundaryEscalationEvent, is BpmnBoundaryMessageEvent, is BpmnBoundaryErrorEvent,
+            is BpmnBoundarySignalEvent, is BpmnBoundaryTimerEvent, is BpmnEndErrorEvent,
+            is BpmnEndCancelEvent, is BpmnIntermediateTimerCatchingEvent, is BpmnIntermediateMessageCatchingEvent,
+            is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent, is BpmnIntermediateNoneThrowingEvent,
+            is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent -> BoundsElement(0.0f, 0.0f, 30.0f, 30.0f)
+            is BpmnExclusiveGateway, is BpmnParallelGateway, is BpmnInclusiveGateway, is BpmnEventGateway -> BoundsElement(0.0f, 0.0f, 40.0f, 40.0f)
             else -> BoundsElement(0.0f, 0.0f, 100.0f, 80.0f)
         }
     }
