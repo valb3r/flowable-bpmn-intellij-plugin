@@ -81,6 +81,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
         drawUndoRedo(ctx, state, renderMeta, areaByElement)
         drawSelectionRect(ctx)
+        drawMultiremovalRect(ctx, renderMeta, areaByElement)
         return areaByElement
     }
 
@@ -88,6 +89,40 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         ctx.interactionContext.dragSelectionRect?.let {
             val rect = it.toRect()
             ctx.canvas.drawRectNoCameraTransform(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
+        }
+    }
+
+    private fun drawMultiremovalRect(renderCtx: RenderContext, ctx: RenderMetadata, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>) {
+        if (null != ctx.interactionContext.dragSelectionRect || ctx.selectedIds.size <= 1) {
+            return
+        }
+
+        val parentChild = ctx.selectedIds.flatMap { setOf(it, areaByElement[it]?.parentToSelect) }.filterNotNull()
+
+        if (ctx.selectedIds.size == 2 && ctx.selectedIds.containsAll(parentChild)) {
+            return
+        }
+
+        val areas = ctx.selectedIds.map { areaByElement[it] }.filterNotNull()
+
+        val minX = areas.map { it.area.bounds2D.minX }.min()?.toFloat()
+        val minY = areas.map { it.area.bounds2D.minY }.min()?.toFloat()
+        val maxX = areas.map { it.area.bounds2D.maxX }.max()?.toFloat()
+        val maxY = areas.map { it.area.bounds2D.maxY }.max()?.toFloat()
+
+        if (null != minX && null != minY && null != maxX && null != maxY) {
+            val ownerId = ctx.selectedIds.joinToString { it.id }
+            renderCtx.canvas.drawRectNoCameraTransform(Point2D.Float(minX, minY), maxX - minX, maxY - minY, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
+            val delId = DiagramElementId("DEL:$ownerId")
+            val deleteIconArea = renderCtx.canvas.drawIconNoCameraTransform(BoundsElement(maxX, minY, actionsIcoSize, actionsIcoSize), icons.recycleBin)
+            ctx.interactionContext.clickCallbacks[delId] = { dest ->
+                val targetIds = ctx.selectedIds.filter { areaByElement[it]?.areaType == AreaType.SHAPE || areaByElement[it]?.areaType == AreaType.EDGE }
+                dest.addElementRemovedEvent(
+                        targetIds.map { DiagramElementRemovedEvent(it) },
+                        targetIds.mapNotNull { ctx.elementByDiagramId[it] }.map { BpmnElementRemovedEvent(it) }
+                )
+            }
+            areaByElement[delId] = AreaWithZindex(deleteIconArea, Point2D.Float(0.0f, 0.0f), AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, null)
         }
     }
 
@@ -241,7 +276,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             }
         }
 
-        return AreaWithZindex(area, Point2D.Float(0.0f, 0.0f), AreaType.POINT, if (active) mutableSetOf() else trueWaypoints.map { Point2D.Float(it.x, it.y) }.toMutableSet())
+        return AreaWithZindex(area, Point2D.Float(0.0f, 0.0f), AreaType.EDGE, if (active) mutableSetOf() else trueWaypoints.map { Point2D.Float(it.x, it.y) }.toMutableSet())
     }
 
     private fun drawWaypointElements(canvas: CanvasPainter, shape: EdgeWithIdentifiableWaypoints, meta: RenderMetadata): Map<DiagramElementId, AreaWithZindex> {

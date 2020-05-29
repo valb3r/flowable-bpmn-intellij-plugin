@@ -732,6 +732,48 @@ internal class UiEditorLightE2ETest {
         }
     }
 
+    @Test
+    fun `Removing with rectangle works`() {
+        prepareTwoServiceTaskView()
+
+        val begin = Point2D.Float(-10.0f, -10.0f)
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
+        canvas.startSelectionOrDrag(begin)
+        canvas.paintComponent(graphics)
+
+        canvas.startSelectionOrDrag(begin)
+        // Stepped selection to allow waypoints to reveal
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startElemX + serviceTaskSize + 10.0f, startElemX + serviceTaskSize + 10.0f))
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize + 10.0f, endElemY + serviceTaskSize + 10.0f))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+        val deleteElem = findExactlyOneDeleteElem().shouldNotBeNull()
+        clickOnId(deleteElem)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(7)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val diagramRemoved = lastValue.filterIsInstance<DiagramElementRemovedEvent>()
+            val bpmnRemoved = lastValue.filterIsInstance<BpmnElementRemovedEvent>()
+            lastValue.shouldContainSame(listOf(edgeBpmn) + diagramRemoved + bpmnRemoved)
+
+            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+
+            diagramRemoved.map { it.elementId.id }.shouldContainSame(
+                    listOf("DIAGRAM-startServiceTask", addedEdge.edge.id.id, "DIAGRAM-endServiceTask")
+            )
+            bpmnRemoved.map { it.elementId.id }.shouldContainSame(
+                    listOf("startServiceTask", addedEdge.bpmnObject.id.id, "endServiceTask")
+            )
+        }
+    }
+
     private fun changeIdViaPropertiesVisualizer(diagramElementId: DiagramElementId, elementId: BpmnElementId, newId: String) {
         val id = Pair(elementId, PropertyType.ID)
         clickOnId(diagramElementId)

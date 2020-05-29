@@ -260,6 +260,27 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(shape)
     }
 
+    fun drawIconNoCameraTransform(bounds: BoundsElement, svgIcon: String): Area {
+        val width = bounds.width.toInt()
+        val height = bounds.height.toInt()
+
+        if (0 == width || 0 == height) {
+            return Area()
+        }
+
+        val highlightedShape = Rectangle2D.Float(
+                bounds.x,
+                bounds.y,
+                width.toFloat(),
+                height.toFloat()
+        )
+
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
+        graphics2D.drawImage(resizedImg, bounds.x.toInt(), bounds.y.toInt(), width, height, null)
+
+        return Area(highlightedShape)
+    }
+
     fun drawIcon(bounds: BoundsElement, svgIcon: String): Area {
         val leftTop = camera.toCameraView(Point2D.Float(bounds.x, bounds.y))
 
