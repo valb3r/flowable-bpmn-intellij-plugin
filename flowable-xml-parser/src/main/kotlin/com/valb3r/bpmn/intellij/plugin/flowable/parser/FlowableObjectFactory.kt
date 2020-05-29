@@ -13,7 +13,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateTimerCatchingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
@@ -62,7 +62,11 @@ class FlowableObjectFactory: BpmnObjectFactory {
             BpmnParallelGateway::class -> BpmnParallelGateway(generateBpmnId(), null, null, null)
             BpmnInclusiveGateway::class -> BpmnInclusiveGateway(generateBpmnId(), null, null, null)
             BpmnEventGateway::class -> BpmnEventGateway(generateBpmnId(), null, null, null)
-            BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId(), null, null)
+            BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId(), null, null, null, null, null, null)
+            BpmnEndCancelEvent::class -> BpmnEndCancelEvent(generateBpmnId(), null, null)
+            BpmnEndErrorEvent::class -> BpmnEndErrorEvent(generateBpmnId(), null, null)
+            BpmnEndEscalationEvent::class -> BpmnEndEscalationEvent(generateBpmnId(), null, null)
+            BpmnEndTerminateEvent::class -> BpmnEndTerminateEvent(generateBpmnId(), null, null)
             BpmnIntermediateTimerCatchingEvent::class -> BpmnIntermediateTimerCatchingEvent(generateBpmnId(), null, null)
             BpmnIntermediateMessageCatchingEvent::class -> BpmnIntermediateMessageCatchingEvent(generateBpmnId(), null, null)
             BpmnIntermediateSignalCatchingEvent::class -> BpmnIntermediateSignalCatchingEvent(generateBpmnId(), null, null)
@@ -95,7 +99,8 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithBpmnId> propertiesOf(obj: T): Map<PropertyType, Property> {
         return when(obj) {
-            is BpmnStartEvent, is BpmnEndEvent, is BpmnUserTask,  is BpmnScriptTask, is BpmnServiceTask, is BpmnBusinessRuleTask,
+            is BpmnStartEvent, is BpmnEndEvent, is BpmnEndErrorEvent, is BpmnEndCancelEvent, is BpmnEndEscalationEvent,
+            is BpmnEndTerminateEvent, is BpmnUserTask,  is BpmnScriptTask, is BpmnServiceTask, is BpmnBusinessRuleTask,
             is BpmnReceiveTask, is BpmnCamelTask, is BpmnHttpTask, is BpmnMuleTask, is BpmnDecisionTask, is BpmnShellTask,
             is BpmnSubProcess, is BpmnTransactionalSubProcess, is BpmnAdHocSubProcess, is BpmnExclusiveGateway,
             is BpmnParallelGateway, is BpmnInclusiveGateway, is BpmnEventGateway, is BpmnIntermediateTimerCatchingEvent,
@@ -160,7 +165,8 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     private fun bounds(forBpmnObject: WithBpmnId): BoundsElement {
         return when(forBpmnObject) {
-            is BpmnStartEvent, is BpmnEndEvent, is BpmnIntermediateTimerCatchingEvent, is BpmnIntermediateMessageCatchingEvent,
+            is BpmnStartEvent, is BpmnEndEvent, is BpmnEndTerminateEvent, is BpmnEndEscalationEvent, is BpmnEndErrorEvent,
+            is BpmnEndCancelEvent, is BpmnIntermediateTimerCatchingEvent, is BpmnIntermediateMessageCatchingEvent,
             is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent, is BpmnIntermediateNoneThrowingEvent,
             is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent -> BoundsElement(0.0f, 0.0f, 30.0f, 30.0f)
             is BpmnExclusiveGateway, is BpmnParallelGateway, is BpmnInclusiveGateway, is BpmnEventGateway -> BoundsElement(0.0f, 0.0f, 40.0f, 40.0f)

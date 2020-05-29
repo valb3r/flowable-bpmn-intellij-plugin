@@ -10,7 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateTimerCatchingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
@@ -36,6 +36,7 @@ import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.geom.Area
+import java.awt.geom.Ellipse2D
 import java.awt.geom.Point2D
 import kotlin.math.min
 
@@ -378,6 +379,10 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             is BpmnInclusiveGateway -> drawInclusiveGateway(canvas, bpmnShape, shape, active)
             is BpmnEventGateway -> drawEventGateway(canvas, bpmnShape, shape, active)
             is BpmnEndEvent -> drawEndEvent(canvas, bpmnShape, shape, active)
+            is BpmnEndCancelEvent -> drawCancelEndEvent(canvas, bpmnShape, shape, active)
+            is BpmnEndErrorEvent -> drawErrorEndEvent(canvas, bpmnShape, shape, active)
+            is BpmnEndEscalationEvent -> drawEscalationEndEvent(canvas, bpmnShape, shape, active)
+            is BpmnEndTerminateEvent -> drawTerminateEndEvent(canvas, bpmnShape, shape, active)
             is BpmnIntermediateTimerCatchingEvent -> drawTimerCatchEvent(canvas, bpmnShape, shape, active)
             is BpmnIntermediateMessageCatchingEvent -> drawMessageCatchEvent(canvas, bpmnShape, shape, active)
             is BpmnIntermediateSignalCatchingEvent -> drawSignalCatchEvent(canvas, bpmnShape, shape, active)
@@ -404,7 +409,27 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             meta.interactionContext.draggedIds.contains(elemId) || meta.cascadedTransalationOf.map { it.waypointId }.contains(elemId)
 
     private fun drawEndEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
-        val area = canvas.drawCircle(shape, color(active, Colors.END_EVENT), Colors.ELEMENT_BORDER_COLOR.color)
+        val area = canvas.drawWrappedIconWithLayer(shape, icons.endEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.END_EVENT))
+        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+    }
+
+    private fun drawCancelEndEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+        val area = canvas.drawWrappedIconWithLayer(shape, icons.cancelEndEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.END_EVENT))
+        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+    }
+
+    private fun drawEscalationEndEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+        val area = canvas.drawWrappedIconWithLayer(shape, icons.escalationEndEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.END_EVENT))
+        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+    }
+
+    private fun drawErrorEndEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+        val area = canvas.drawWrappedIconWithLayer(shape, icons.errorEndEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.END_EVENT))
+        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+    }
+
+    private fun drawTerminateEndEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+        val area = canvas.drawWrappedIconWithLayer(shape, icons.terminateEndEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.END_EVENT))
         return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 

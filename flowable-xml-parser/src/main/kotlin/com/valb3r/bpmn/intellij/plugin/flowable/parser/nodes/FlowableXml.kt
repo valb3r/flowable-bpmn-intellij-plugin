@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
@@ -83,6 +84,7 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         result = applyServiceTaskCustomizationByType(result)
         result = applyIntermediateCatchEventCustomizationByType(result)
         result = applyIntermediateThrowingEventCustomizationByType(result)
+        result = applyEndEventCustomizationByType(result)
         return result
     }
 
@@ -110,6 +112,15 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         result = extractIntermediateThrowingEventsBasedOnType(result, { null == it.escalationEventDefinition && null == it.signalEventDefinition },  Mappers.getMapper(NoneThrowMapper::class.java)) { updates, target -> target.copy(intermediateNoneThrowingEvent = updates) }
         result = extractIntermediateThrowingEventsBasedOnType(result, { null != it.signalEventDefinition },  Mappers.getMapper(SignalThrowMapper::class.java)) { updates, target -> target.copy(intermediateSignalThrowingEvent = updates) }
         result = extractIntermediateThrowingEventsBasedOnType(result, { null != it.escalationEventDefinition },  Mappers.getMapper(EscalationThrowMapper::class.java)) { updates, target -> target.copy(intermediateEscalationThrowingEvent = updates) }
+        return result
+    }
+
+    private fun applyEndEventCustomizationByType(process: BpmnProcess): BpmnProcess {
+        var result = process
+        result = extractEndEventsBasedOnType(result, { null != it.errorEventDefinition },  Mappers.getMapper(EndErrorMapper::class.java)) { updates, target -> target.copy(errorEndEvent = updates) }
+        result = extractEndEventsBasedOnType(result, { null != it.escalationEventDefinition },  Mappers.getMapper(EndEscalationMapper::class.java)) { updates, target -> target.copy(escalationEndEvent = updates) }
+        result = extractEndEventsBasedOnType(result, { null != it.cancelEventDefinition },  Mappers.getMapper(EndCancelMapper::class.java)) { updates, target -> target.copy(cancelEndEvent = updates) }
+        result = extractEndEventsBasedOnType(result, { null != it.terminateEventDefinition },  Mappers.getMapper(EndTerminationMapper::class.java)) { updates, target -> target.copy(terminateEndEvent = updates) }
         return result
     }
 
@@ -142,6 +153,17 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
 
         return process
     }
+
+    private fun <T> extractEndEventsBasedOnType(process: BpmnProcess, filter: (BpmnEndEvent) -> Boolean, mapper: EndEventMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
+        process.endEvent?.apply {
+            val byTypeGroup = this.groupBy { filter(it) }
+            val newProcess = process.copy(endEvent = byTypeGroup[false])
+            return update(byTypeGroup[true]?.map { mapper.convertToDto(it) }, newProcess)
+        }
+
+        return process
+    }
+
 
     @Mapper(uses = [BpmnElementIdMapper::class])
     interface Mapping {
@@ -194,6 +216,22 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
 
     interface IntermediateThrowEventMapper<T> {
         fun convertToDto(input: BpmnIntermediateThrowingEvent): T
+    }
+
+    @Mapper
+    interface EndCancelMapper: EndEventMapper<BpmnEndCancelEvent>
+
+    @Mapper
+    interface EndErrorMapper: EndEventMapper<BpmnEndErrorEvent>
+
+    @Mapper
+    interface EndEscalationMapper: EndEventMapper<BpmnEndEscalationEvent>
+
+    @Mapper
+    interface EndTerminationMapper: EndEventMapper<BpmnEndTerminateEvent>
+
+    interface EndEventMapper<T> {
+        fun convertToDto(input: BpmnEndEvent): T
     }
 }
 

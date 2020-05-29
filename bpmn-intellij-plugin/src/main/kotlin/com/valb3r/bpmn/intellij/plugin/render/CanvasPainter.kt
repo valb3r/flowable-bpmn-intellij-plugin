@@ -283,6 +283,38 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(highlightedShape)
     }
 
+    fun drawWrappedIconWithLayer(shape: ShapeElement, svgIcon: String, selected: Boolean, selectedColor: Color, layer: (Rectangle2D.Float) -> Shape, layerColor: Color): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))
+
+        val width = (rightBottom.x - leftTop.x).toInt()
+        val height = (rightBottom.y - leftTop.y).toInt()
+
+        if (0 == width || 0 == height) {
+            return Area()
+        }
+
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
+        val iconRect = Rectangle2D.Float(
+                leftTop.x.toInt().toFloat(),
+                leftTop.y.toInt().toFloat(),
+                resizedImg.width.toFloat(),
+                resizedImg.height.toFloat()
+        )
+
+        if (selected) {
+            graphics2D.color = selectedColor
+            graphics2D.fill(iconRect)
+        } else {
+            graphics2D.color = layerColor
+            graphics2D.fill(layer(iconRect))
+        }
+
+        graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
+
+        return Area(iconRect)
+    }
+
     fun drawWrappedIcon(shape: ShapeElement, svgIcon: String, selected: Boolean, selectedColor: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.bounds.x, shape.bounds.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.bounds.x + shape.bounds.width, shape.bounds.y + shape.bounds.height))

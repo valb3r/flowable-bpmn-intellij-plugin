@@ -17,8 +17,14 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         val propertiesById = mutableMapOf<BpmnElementId, MutableMap<PropertyType, Property>>()
 
         // Events
+        // Start
         process.startEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        // End
         process.endEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.errorEndEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.escalationEndEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.cancelEndEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.terminateEndEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         // Catching
         process.intermediateTimerCatchingEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.intermediateMessageCatchingEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }

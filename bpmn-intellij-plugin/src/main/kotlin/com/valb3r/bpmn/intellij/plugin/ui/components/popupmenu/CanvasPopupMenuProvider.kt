@@ -10,7 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateTimerCatchingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
@@ -63,8 +63,14 @@ private fun <T: WithBpmnId> newShapeElement(sceneLocation: Point2D.Float, forObj
 class CanvasPopupMenuProvider {
 
     // Events
+    // Start
     private val START_EVENT = IconLoader.getIcon("/icons/popupmenu/start-event.png")
+    // End
     private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png")
+    private val CANCEL_END_EVENT = IconLoader.getIcon("/icons/popupmenu/cancel-end-event.png")
+    private val ERROR_END_EVENT = IconLoader.getIcon("/icons/popupmenu/error-end-event.png")
+    private val ESCALATION_END_EVENT = IconLoader.getIcon("/icons/popupmenu/escalation-end-event.png")
+    private val TERMINATE_END_EVENT = IconLoader.getIcon("/icons/popupmenu/terminate-end-event.png")
     // Intermediate events
     // Catch
     private val INTERMEDIATE_TIMER_CATCHING = IconLoader.getIcon("/icons/popupmenu/timer-catch-event.png")
@@ -169,6 +175,10 @@ class CanvasPopupMenuProvider {
     private fun endEvents(sceneLocation: Point2D.Float): JMenu {
         val menu = JMenu("End events")
         addItem(menu, "End event", END_EVENT, ShapeCreator(BpmnEndEvent::class, sceneLocation))
+        addItem(menu, "End error event", ERROR_END_EVENT, ShapeCreator(BpmnEndErrorEvent::class, sceneLocation))
+        addItem(menu, "End escalation event", ESCALATION_END_EVENT, ShapeCreator(BpmnEndEscalationEvent::class, sceneLocation))
+        addItem(menu, "End cancel event", CANCEL_END_EVENT, ShapeCreator(BpmnEndCancelEvent::class, sceneLocation))
+        addItem(menu, "End terminate event", TERMINATE_END_EVENT, ShapeCreator(BpmnEndTerminateEvent::class, sceneLocation))
         return menu
     }
 

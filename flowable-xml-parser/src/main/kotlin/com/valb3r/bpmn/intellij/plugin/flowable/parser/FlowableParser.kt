@@ -17,7 +17,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateTimerCatchingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
@@ -262,8 +262,14 @@ class FlowableParser : BpmnParser {
         val newNode = when(update.bpmnObject) {
 
             // Events
+            // Start
             is BpmnStartEvent -> doc.createElement("startEvent")
-            is BpmnEndEvent -> doc.createElement("endEvent")
+            // End
+            is BpmnEndEvent -> createEndEventWithType(doc, null)
+            is BpmnEndTerminateEvent -> createEndEventWithType(doc, "terminateEventDefinition")
+            is BpmnEndEscalationEvent -> createEndEventWithType(doc, "escalationEventDefinition")
+            is BpmnEndCancelEvent -> createEndEventWithType(doc, "cancelEventDefinition")
+            is BpmnEndErrorEvent -> createEndEventWithType(doc, "errorEventDefinition")
             // Intermediate events
             // Catching
             is BpmnIntermediateTimerCatchingEvent -> createIntermediateCatchEventWithType(doc, "timerEventDefinition")
@@ -329,6 +335,15 @@ class FlowableParser : BpmnParser {
 
     private fun createServiceTask(doc: Document): Element {
         return createServiceTaskWithType(doc)
+    }
+
+    private fun createEndEventWithType(doc: Document, type: String?): Element {
+        val elem = doc.createElement("endEvent")
+        type?.let {
+            val elemType = doc.createElement(it)
+            elem.appendChild(elemType)
+        }
+        return elem
     }
 
     private fun createIntermediateCatchEventWithType(doc: Document, type: String): Element {

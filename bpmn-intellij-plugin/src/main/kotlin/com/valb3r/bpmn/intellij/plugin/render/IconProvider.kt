@@ -29,6 +29,11 @@ interface IconProvider {
     val noneThrowEvent: String
     val signalThrowEvent: String
     val escalationThrowEvent: String
+    val endEvent: String
+    val errorEndEvent: String
+    val cancelEndEvent: String
+    val escalationEndEvent: String
+    val terminateEndEvent: String
     val sequence: String
     val recycleBin: String
 }
@@ -59,6 +64,11 @@ data class IconProviderImpl(
         override val conditionalCatchEvent: String = "/icons/ui-icons/svg/conditional-catch-event.svg".asResource()!!,
         override val noneThrowEvent: String = "/icons/ui-icons/svg/none-throw-event.svg".asResource()!!,
         override val signalThrowEvent: String = "/icons/ui-icons/svg/signal-throw-event.svg".asResource()!!,
+        override val endEvent: String = "/icons/ui-icons/svg/end-event.svg".asResource()!!,
+        override val errorEndEvent: String = "/icons/ui-icons/svg/error-end-event.svg".asResource()!!,
+        override val cancelEndEvent: String = "/icons/ui-icons/svg/cancel-end-event.svg".asResource()!!,
+        override val escalationEndEvent: String = "/icons/ui-icons/svg/escalation-end-event.svg".asResource()!!,
+        override val terminateEndEvent: String = "/icons/ui-icons/svg/terminate-end-event.svg".asResource()!!,
         override val escalationThrowEvent: String = "/icons/ui-icons/svg/escalation-throw-event.svg".asResource()!!,
         override val sequence: String = "/icons/ui-icons/svg/sequence.svg".asResource()!!,
         override val recycleBin: String = "/icons/ui-icons/svg/recycle-bin.svg".asResource()!!

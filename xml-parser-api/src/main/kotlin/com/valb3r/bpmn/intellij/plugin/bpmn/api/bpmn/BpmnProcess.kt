@@ -5,7 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
@@ -27,8 +27,14 @@ data class BpmnProcess(
         val isExecutable: Boolean?,
 
         // Events
+        // Start
         val startEvent: List<BpmnStartEvent>?,
+        // End
         val endEvent: List<BpmnEndEvent>?,
+        val errorEndEvent: List<BpmnEndErrorEvent>?,
+        val escalationEndEvent: List<BpmnEndEscalationEvent>?,
+        val cancelEndEvent: List<BpmnEndCancelEvent>?,
+        val terminateEndEvent: List<BpmnEndTerminateEvent>?,
         // Catching
         val intermediateCatchEvent: List<BpmnIntermediateCatchingEvent>?, // generic mapping point should be empty when processed
         val intermediateTimerCatchingEvent: List<BpmnIntermediateTimerCatchingEvent>?,
