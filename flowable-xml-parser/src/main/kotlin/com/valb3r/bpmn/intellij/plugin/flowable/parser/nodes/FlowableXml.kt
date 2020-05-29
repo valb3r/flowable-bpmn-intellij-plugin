@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonMerge
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
@@ -85,6 +86,7 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         result = applyIntermediateCatchEventCustomizationByType(result)
         result = applyIntermediateThrowingEventCustomizationByType(result)
         result = applyEndEventCustomizationByType(result)
+        result = applyStartEventCustomizationByType(result)
         return result
     }
 
@@ -124,6 +126,17 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         return result
     }
 
+    private fun applyStartEventCustomizationByType(process: BpmnProcess): BpmnProcess {
+        var result = process
+        result = extractStartEventsBasedOnType(result, { null != it.conditionalEventDefinition },  Mappers.getMapper(StartConditionalMapper::class.java)) { updates, target -> target.copy(conditionalStartEvent = updates) }
+        result = extractStartEventsBasedOnType(result, { null != it.errorEventDefinition },  Mappers.getMapper(StartErrorMapper::class.java)) { updates, target -> target.copy(errorStartEvent = updates) }
+        result = extractStartEventsBasedOnType(result, { null != it.escalationEventDefinition },  Mappers.getMapper(StartEscalationMapper::class.java)) { updates, target -> target.copy(escalationStartEvent = updates) }
+        result = extractStartEventsBasedOnType(result, { null != it.messageEventDefinition },  Mappers.getMapper(StartMessageMapper::class.java)) { updates, target -> target.copy(messageStartEvent = updates) }
+        result = extractStartEventsBasedOnType(result, { null != it.signalEventDefinition },  Mappers.getMapper(StartSignalMapper::class.java)) { updates, target -> target.copy(signalStartEvent = updates) }
+        result = extractStartEventsBasedOnType(result, { null != it.timerEventDefinition },  Mappers.getMapper(StartTimerMapper::class.java)) { updates, target -> target.copy(timerStartEvent = updates) }
+        return result
+    }
+
     private fun <T> extractTasksBasedOnType(process: BpmnProcess, type: String, mapper: ServiceTaskMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
         process.serviceTask?.apply {
             val byTypeGroup = this.groupBy { it.type == type }
@@ -158,6 +171,16 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         process.endEvent?.apply {
             val byTypeGroup = this.groupBy { filter(it) }
             val newProcess = process.copy(endEvent = byTypeGroup[false])
+            return update(byTypeGroup[true]?.map { mapper.convertToDto(it) }, newProcess)
+        }
+
+        return process
+    }
+
+    private fun <T> extractStartEventsBasedOnType(process: BpmnProcess, filter: (BpmnStartEvent) -> Boolean, mapper: StartEventMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
+        process.startEvent?.apply {
+            val byTypeGroup = this.groupBy { filter(it) }
+            val newProcess = process.copy(startEvent = byTypeGroup[false])
             return update(byTypeGroup[true]?.map { mapper.convertToDto(it) }, newProcess)
         }
 
@@ -232,6 +255,28 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
 
     interface EndEventMapper<T> {
         fun convertToDto(input: BpmnEndEvent): T
+    }
+
+    @Mapper
+    interface StartTimerMapper: StartEventMapper<BpmnStartTimerEvent>
+
+    @Mapper
+    interface StartSignalMapper: StartEventMapper<BpmnStartSignalEvent>
+
+    @Mapper
+    interface StartMessageMapper: StartEventMapper<BpmnStartMessageEvent>
+
+    @Mapper
+    interface StartErrorMapper: StartEventMapper<BpmnStartErrorEvent>
+
+    @Mapper
+    interface StartEscalationMapper: StartEventMapper<BpmnStartEscalationEvent>
+
+    @Mapper
+    interface StartConditionalMapper: StartEventMapper<BpmnStartConditionalEvent>
+
+    interface StartEventMapper<T> {
+        fun convertToDto(input: BpmnStartEvent): T
     }
 }
 

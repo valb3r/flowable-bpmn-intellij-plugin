@@ -19,6 +19,12 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         // Events
         // Start
         process.startEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.conditionalStartEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.errorStartEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.escalationStartEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.messageStartEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.signalStartEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.timerStartEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         // End
         process.endEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.errorEndEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }

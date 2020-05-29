@@ -5,7 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
 @KotlinBuilder
-data class BpmnStartErrorEvent(
+data class BpmnStartTimerEvent(
         override val id: BpmnElementId,
         val name: String?,
         val documentation: String?

@@ -8,7 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ConditionExpression
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateConditionalCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
@@ -43,7 +43,13 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithBpmnId> newBpmnObject(clazz: KClass<T>): T {
         val result: WithBpmnId = when(clazz) {
-            BpmnStartEvent::class -> BpmnStartEvent(generateBpmnId(), null, null)
+            BpmnStartEvent::class -> BpmnStartEvent(generateBpmnId(), null, null, null, null, null, null, null, null)
+            BpmnStartConditionalEvent::class -> BpmnStartConditionalEvent(generateBpmnId(), null, null)
+            BpmnStartEscalationEvent::class -> BpmnStartEscalationEvent(generateBpmnId(), null, null)
+            BpmnStartErrorEvent::class -> BpmnStartErrorEvent(generateBpmnId(), null, null)
+            BpmnStartMessageEvent::class -> BpmnStartMessageEvent(generateBpmnId(), null, null)
+            BpmnStartSignalEvent::class -> BpmnStartSignalEvent(generateBpmnId(), null, null)
+            BpmnStartTimerEvent::class -> BpmnStartTimerEvent(generateBpmnId(), null, null)
             BpmnUserTask::class -> BpmnUserTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null)
             BpmnScriptTask::class -> BpmnScriptTask(generateBpmnId(), null, null, null, null, null, null, null)
             BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null)
@@ -99,7 +105,9 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithBpmnId> propertiesOf(obj: T): Map<PropertyType, Property> {
         return when(obj) {
-            is BpmnStartEvent, is BpmnEndEvent, is BpmnEndErrorEvent, is BpmnEndCancelEvent, is BpmnEndEscalationEvent,
+            is BpmnStartEvent, is BpmnStartTimerEvent, is BpmnStartSignalEvent, is BpmnStartMessageEvent,
+            is BpmnStartErrorEvent, is BpmnStartEscalationEvent, is BpmnStartConditionalEvent, is BpmnEndEvent,
+            is BpmnEndErrorEvent, is BpmnEndCancelEvent, is BpmnEndEscalationEvent,
             is BpmnEndTerminateEvent, is BpmnUserTask,  is BpmnScriptTask, is BpmnServiceTask, is BpmnBusinessRuleTask,
             is BpmnReceiveTask, is BpmnCamelTask, is BpmnHttpTask, is BpmnMuleTask, is BpmnDecisionTask, is BpmnShellTask,
             is BpmnSubProcess, is BpmnTransactionalSubProcess, is BpmnAdHocSubProcess, is BpmnExclusiveGateway,
@@ -165,7 +173,9 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     private fun bounds(forBpmnObject: WithBpmnId): BoundsElement {
         return when(forBpmnObject) {
-            is BpmnStartEvent, is BpmnEndEvent, is BpmnEndTerminateEvent, is BpmnEndEscalationEvent, is BpmnEndErrorEvent,
+            is BpmnStartEvent, is BpmnStartEscalationEvent, is BpmnStartConditionalEvent, is BpmnStartErrorEvent,
+            is BpmnStartMessageEvent, is BpmnStartSignalEvent, is BpmnStartTimerEvent, is BpmnEndEvent,
+            is BpmnEndTerminateEvent, is BpmnEndEscalationEvent, is BpmnEndErrorEvent,
             is BpmnEndCancelEvent, is BpmnIntermediateTimerCatchingEvent, is BpmnIntermediateMessageCatchingEvent,
             is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent, is BpmnIntermediateNoneThrowingEvent,
             is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent -> BoundsElement(0.0f, 0.0f, 30.0f, 30.0f)

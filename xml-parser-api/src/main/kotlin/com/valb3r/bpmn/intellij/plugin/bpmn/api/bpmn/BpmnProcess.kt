@@ -3,7 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn
 import com.github.pozo.KotlinBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
@@ -29,6 +29,12 @@ data class BpmnProcess(
         // Events
         // Start
         val startEvent: List<BpmnStartEvent>?,
+        val timerStartEvent: List<BpmnStartTimerEvent>?,
+        val signalStartEvent: List<BpmnStartSignalEvent>?,
+        val messageStartEvent: List<BpmnStartMessageEvent>?,
+        val errorStartEvent: List<BpmnStartErrorEvent>?,
+        val escalationStartEvent: List<BpmnStartEscalationEvent>?,
+        val conditionalStartEvent: List<BpmnStartConditionalEvent>?,
         // End
         val endEvent: List<BpmnEndEvent>?,
         val errorEndEvent: List<BpmnEndErrorEvent>?,

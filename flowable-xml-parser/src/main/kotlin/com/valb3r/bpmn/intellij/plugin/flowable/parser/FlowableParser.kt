@@ -12,7 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateConditionalCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
@@ -263,7 +263,13 @@ class FlowableParser : BpmnParser {
 
             // Events
             // Start
-            is BpmnStartEvent -> doc.createElement("startEvent")
+            is BpmnStartEvent -> createStartEventWithType(doc, null)
+            is BpmnStartTimerEvent -> createStartEventWithType(doc, "timerEventDefinition")
+            is BpmnStartSignalEvent -> createStartEventWithType(doc, "signalEventDefinition")
+            is BpmnStartMessageEvent -> createStartEventWithType(doc, "messageEventDefinition")
+            is BpmnStartErrorEvent -> createStartEventWithType(doc, "errorEventDefinition")
+            is BpmnStartConditionalEvent -> createStartEventWithType(doc, "conditionalEventDefinition")
+            is BpmnStartEscalationEvent -> createStartEventWithType(doc, "escalationEventDefinition")
             // End
             is BpmnEndEvent -> createEndEventWithType(doc, null)
             is BpmnEndTerminateEvent -> createEndEventWithType(doc, "terminateEventDefinition")
@@ -335,6 +341,15 @@ class FlowableParser : BpmnParser {
 
     private fun createServiceTask(doc: Document): Element {
         return createServiceTaskWithType(doc)
+    }
+
+    private fun createStartEventWithType(doc: Document, type: String?): Element {
+        val elem = doc.createElement("startEvent")
+        type?.let {
+            val elemType = doc.createElement(it)
+            elem.appendChild(elemType)
+        }
+        return elem
     }
 
     private fun createEndEventWithType(doc: Document, type: String?): Element {
