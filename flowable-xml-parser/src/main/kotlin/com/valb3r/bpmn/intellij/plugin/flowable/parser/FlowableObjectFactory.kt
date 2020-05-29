@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCal
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
@@ -51,6 +52,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             BpmnAdHocSubProcess::class -> BpmnAdHocSubProcess(generateBpmnId(), null, null, CompletionCondition(null))
             BpmnExclusiveGateway::class -> BpmnExclusiveGateway(generateBpmnId(), null, null, null)
             BpmnParallelGateway::class -> BpmnParallelGateway(generateBpmnId(), null, null, null)
+            BpmnInclusiveGateway::class -> BpmnInclusiveGateway(generateBpmnId(), null, null, null)
             BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId(), null, null)
             else -> throw IllegalArgumentException("Can't create class: " + clazz.qualifiedName)
         }
@@ -70,7 +72,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithBpmnId> newOutgoingSequence(obj: T): BpmnSequenceFlow {
         return when(obj) {
-            is BpmnExclusiveGateway, is BpmnParallelGateway -> BpmnSequenceFlow(generateBpmnId(), null, null, obj.id.id, "", ConditionExpression("tFormalExpression", ""))
+            is BpmnExclusiveGateway, is BpmnParallelGateway, is BpmnInclusiveGateway -> BpmnSequenceFlow(generateBpmnId(), null, null, obj.id.id, "", ConditionExpression("tFormalExpression", ""))
             else -> BpmnSequenceFlow(generateBpmnId(), null, null, obj.id.id, "", null)
         }
     }
@@ -80,7 +82,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             is BpmnStartEvent, is BpmnEndEvent, is BpmnUserTask,  is BpmnScriptTask, is BpmnServiceTask, is BpmnBusinessRuleTask,
             is BpmnReceiveTask, is BpmnCamelTask, is BpmnHttpTask, is BpmnMuleTask, is BpmnDecisionTask, is BpmnShellTask,
             is BpmnSubProcess, is BpmnTransactionalSubProcess, is BpmnAdHocSubProcess, is BpmnExclusiveGateway,
-            is BpmnParallelGateway -> processDtoToPropertyMap(obj)
+            is BpmnParallelGateway, is BpmnInclusiveGateway -> processDtoToPropertyMap(obj)
             is BpmnCallActivity -> fillForCallActivity(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
             else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
@@ -141,7 +143,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
     private fun bounds(forBpmnObject: WithBpmnId): BoundsElement {
         return when(forBpmnObject) {
             is BpmnStartEvent, is BpmnEndEvent -> BoundsElement(0.0f, 0.0f, 30.0f, 30.0f)
-            is BpmnExclusiveGateway, is BpmnParallelGateway -> BoundsElement(0.0f, 0.0f, 40.0f, 40.0f)
+            is BpmnExclusiveGateway, is BpmnParallelGateway, is BpmnInclusiveGateway -> BoundsElement(0.0f, 0.0f, 40.0f, 40.0f)
             else -> BoundsElement(0.0f, 0.0f, 100.0f, 80.0f)
         }
     }

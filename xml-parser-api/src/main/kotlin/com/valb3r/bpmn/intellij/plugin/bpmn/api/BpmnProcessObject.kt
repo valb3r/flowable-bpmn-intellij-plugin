@@ -16,9 +16,11 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         val elementByStaticId = mutableMapOf<BpmnElementId, WithBpmnId>()
         val propertiesById = mutableMapOf<BpmnElementId, MutableMap<PropertyType, Property>>()
 
+        // Events
         process.startEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.endEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
-        process.callActivity?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+
+        // Service-task alike
         process.userTask?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.scriptTask?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.serviceTask?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
@@ -29,12 +31,20 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         process.muleTask?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.decisionTask?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.shellTask?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+
+        // Sub-process alike
+        process.callActivity?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.subProcess?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.transaction?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.adHocSubProcess?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
-        process.sequenceFlow?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+
+        // Gateways
         process.exclusiveGateway?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.parallelGateway?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.inclusiveGateway?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+
+        // Linking elements
+        process.sequenceFlow?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
 
         diagram.firstOrNull()
                 ?.bpmnPlane

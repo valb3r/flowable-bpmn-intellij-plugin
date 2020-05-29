@@ -6,6 +6,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCal
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
@@ -18,13 +19,18 @@ data class BpmnProcess(
         val name: String,
         val documentation: String?,
         val isExecutable: Boolean?,
+
+        // Events
         val startEvent: List<BpmnStartEvent>?,
-        val callActivity: List<BpmnCallActivity>?,
+        val endEvent: List<BpmnEndEvent>?,
+
+        // Service-task alike
         val userTask: List<BpmnUserTask>?,
         val scriptTask: List<BpmnScriptTask>?,
         val serviceTask: List<BpmnServiceTask>?,
         val businessRuleTask: List<BpmnBusinessRuleTask>?,
         val receiveTask: List<BpmnReceiveTask>?,
+
         // Customizations of ServiceTask
         val camelTask: List<BpmnCamelTask>?,
         val httpTask: List<BpmnHttpTask>?,
@@ -32,11 +38,18 @@ data class BpmnProcess(
         val decisionTask: List<BpmnDecisionTask>?,
         val shellTask: List<BpmnShellTask>?,
         // end customizations
+
+        // Sub-process alike
+        val callActivity: List<BpmnCallActivity>?,
         val subProcess: List<BpmnSubProcess>?,
         val transaction: List<BpmnTransactionalSubProcess>?,
         val adHocSubProcess: List<BpmnAdHocSubProcess>?,
-        val sequenceFlow: List<BpmnSequenceFlow>?,
+
+        // Gateways
         val exclusiveGateway: List<BpmnExclusiveGateway>?,
         val parallelGateway: List<BpmnParallelGateway>?,
-        val endEvent: List<BpmnEndEvent>?
+        val inclusiveGateway: List<BpmnInclusiveGateway>?,
+
+        // Linking elements
+        val sequenceFlow: List<BpmnSequenceFlow>?
 )

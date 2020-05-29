@@ -15,6 +15,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCal
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
@@ -251,11 +252,12 @@ class FlowableParser : BpmnParser {
         ) as Node
 
         val newNode = when(update.bpmnObject) {
+
+            // Events
             is BpmnStartEvent -> doc.createElement("startEvent")
-            is BpmnCallActivity -> doc.createElement("callActivity")
-            is BpmnExclusiveGateway -> doc.createElement("exclusiveGateway")
-            is BpmnParallelGateway -> doc.createElement("parallelGateway")
-            is BpmnSequenceFlow -> doc.createElement("sequenceFlow")
+            is BpmnEndEvent -> doc.createElement("endEvent")
+
+            // Service tasks
             is BpmnUserTask -> doc.createElement("userTask")
             is BpmnScriptTask -> doc.createElement("scriptTask")
             is BpmnServiceTask -> createServiceTask(doc)
@@ -266,10 +268,21 @@ class FlowableParser : BpmnParser {
             is BpmnMuleTask -> createServiceTaskWithType(doc, "mule")
             is BpmnDecisionTask -> createServiceTaskWithType(doc, "dmn")
             is BpmnShellTask -> createServiceTaskWithType(doc, "shell")
+
+            // Sub processes
+            is BpmnCallActivity -> doc.createElement("callActivity")
             is BpmnSubProcess -> doc.createElement("subProcess")
             is BpmnAdHocSubProcess -> doc.createElement("adHocSubProcess")
             is BpmnTransactionalSubProcess -> doc.createElement("transaction")
-            is BpmnEndEvent -> doc.createElement("endEvent")
+
+            // Gateways
+            is BpmnExclusiveGateway -> doc.createElement("exclusiveGateway")
+            is BpmnParallelGateway -> doc.createElement("parallelGateway")
+            is BpmnInclusiveGateway -> doc.createElement("inclusiveGateway")
+
+            // Linking elements
+            is BpmnSequenceFlow -> doc.createElement("sequenceFlow")
+
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 

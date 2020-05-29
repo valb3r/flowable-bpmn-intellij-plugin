@@ -44,20 +44,30 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
     var documentation: String? = null
     @JacksonXmlProperty(isAttribute = true) var isExecutable: Boolean? = null
 
+    // Events
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var startEvent: List<StartEventNode>? = null  // need to validate how there can be multiple, and - it is non-null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val endEvent: List<EndEventNode>? = null  // need to validate how there can be multiple, and - it is non-null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var callActivity: List<CallActivity>? = null
+
+    // Service task alike:
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var userTask: List<UserTask>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var scriptTask: List<ScriptTask>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var serviceTask: List<ServiceTask>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var businessRuleTask: List<BusinessRuleTask>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var receiveTask: List<ReceiveTask>? = null
+
+    // Sub process alike
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var callActivity: List<CallActivity>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var subProcess: List<SubProcess>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var transaction: List<Transaction>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var adHocSubProcess: List<AdHocSubProcess>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var sequenceFlow: List<SequenceFlow>? = null
+
+    // Gateways
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var exclusiveGateway: List<ExclusiveGateway>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var parallelGateway: List<ParallelGateway>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var inclusiveGateway: List<InclusiveGateway>? = null
+
+    // Linking elements
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var sequenceFlow: List<SequenceFlow>? = null
 
     override fun toElement(): BpmnProcess {
         var result = Mappers.getMapper(Mapping::class.java).convertToDto(this)
