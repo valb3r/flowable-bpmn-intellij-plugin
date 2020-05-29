@@ -8,6 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCal
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
@@ -21,6 +22,7 @@ import java.awt.geom.Point2D
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.Icon
 import javax.swing.JMenu
+import kotlin.reflect.KClass
 
 
 private val popupMenuProvider = AtomicReference<CanvasPopupMenuProvider>()
@@ -63,6 +65,7 @@ class CanvasPopupMenuProvider {
     private val SHELL_TASK = IconLoader.getIcon("/icons/popupmenu/shell-task.png")
     private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
     private val SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/subprocess.png")
+    private val ADHOC_SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/adhoc-subprocess.png")
     private val EXCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/exclusive-gateway.png")
     private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png")
 
@@ -78,41 +81,42 @@ class CanvasPopupMenuProvider {
 
     private fun startEvents(sceneLocation: Point2D.Float): JMenu {
         val menu = JMenu("Start events")
-        addItem(menu, "Start event", START_EVENT, NewStartEvent(sceneLocation))
+        addItem(menu, "Start event", START_EVENT, ShapeCreator(BpmnStartEvent::class, sceneLocation))
         return menu
     }
 
     private fun activities(sceneLocation: Point2D.Float): JMenu {
         val menu = JMenu("Activities")
-        addItem(menu, "User task", USER_TASK, NewUserTask(sceneLocation))
-        addItem(menu, "Service task", SERVICE_TASK, NewServiceTask(sceneLocation))
-        addItem(menu, "Script task", SCRIPT_TASK, NewScriptTask(sceneLocation))
-        addItem(menu, "Business rule task", BUSINESS_RULE_TASK, NewBusinessRuleTask(sceneLocation))
-        addItem(menu, "Receive task", RECEIVE_TASK, NewReceiveTask(sceneLocation))
-        addItem(menu, "Camel task", CAMEL_TASK, NewCamelTask(sceneLocation))
-        addItem(menu, "Http task", HTTP_TASK, NewHttpTask(sceneLocation))
-        addItem(menu, "Mule task", MULE_TASK, NewMuleTask(sceneLocation))
-        addItem(menu, "Decision task", DECISION_TASK, NewDecisionTask(sceneLocation))
-        addItem(menu, "Shell task", SHELL_TASK, NewShellTask(sceneLocation))
+        addItem(menu, "User task", USER_TASK, ShapeCreator(BpmnUserTask::class, sceneLocation))
+        addItem(menu, "Service task", SERVICE_TASK, ShapeCreator(BpmnServiceTask::class, sceneLocation))
+        addItem(menu, "Script task", SCRIPT_TASK, ShapeCreator(BpmnScriptTask::class, sceneLocation))
+        addItem(menu, "Business rule task", BUSINESS_RULE_TASK, ShapeCreator(BpmnBusinessRuleTask::class, sceneLocation))
+        addItem(menu, "Receive task", RECEIVE_TASK, ShapeCreator(BpmnReceiveTask::class, sceneLocation))
+        addItem(menu, "Camel task", CAMEL_TASK, ShapeCreator(BpmnCamelTask::class, sceneLocation))
+        addItem(menu, "Http task", HTTP_TASK, ShapeCreator(BpmnHttpTask::class, sceneLocation))
+        addItem(menu, "Mule task", MULE_TASK, ShapeCreator(BpmnMuleTask::class, sceneLocation))
+        addItem(menu, "Decision task", DECISION_TASK, ShapeCreator(BpmnDecisionTask::class, sceneLocation))
+        addItem(menu, "Shell task", SHELL_TASK, ShapeCreator(BpmnShellTask::class, sceneLocation))
         return menu
     }
 
     private fun structural(sceneLocation: Point2D.Float): JMenu {
         val menu = JMenu("Structural")
-        addItem(menu, "Sub process", SUB_PROCESS, NewSubProcess(sceneLocation))
-        addItem(menu, "Call activity", CALL_ACTIVITY, NewCallActivity(sceneLocation))
+        addItem(menu, "Sub process", SUB_PROCESS, ShapeCreator(BpmnSubProcess::class, sceneLocation))
+        addItem(menu, "Call activity", CALL_ACTIVITY, ShapeCreator(BpmnCallActivity::class, sceneLocation))
+        addItem(menu, "Adhoc sub process", ADHOC_SUB_PROCESS, ShapeCreator(BpmnAdHocSubProcess::class, sceneLocation))
         return menu
     }
 
     private fun gateways(sceneLocation: Point2D.Float): JMenu {
         val menu = JMenu("Gateways")
-        addItem(menu, "Exclusive gateway", EXCLUSIVE_GATEWAY, NewExclusiveGateway(sceneLocation))
+        addItem(menu, "Exclusive gateway", EXCLUSIVE_GATEWAY, ShapeCreator(BpmnExclusiveGateway::class, sceneLocation))
         return menu
     }
 
     private fun endEvents(sceneLocation: Point2D.Float): JMenu {
         val menu = JMenu("End events")
-        addItem(menu, "End event", END_EVENT, NewEndEvent(sceneLocation))
+        addItem(menu, "End event", END_EVENT, ShapeCreator(BpmnEndEvent::class, sceneLocation))
         return menu
     }
 
@@ -122,183 +126,14 @@ class CanvasPopupMenuProvider {
         menu.add(item)
     }
 
-    private class NewStartEvent(private val sceneLocation: Point2D.Float): ActionListener {
+    private class ShapeCreator<T : WithBpmnId> (private val clazz: KClass<T>, private val sceneLocation: Point2D.Float): ActionListener {
 
         override fun actionPerformed(e: ActionEvent?) {
-            val startEvent = newElementsFactory().newBpmnObject(BpmnStartEvent::class)
-            val shape = newShapeElement(sceneLocation, startEvent)
+            val newObject = newElementsFactory().newBpmnObject(clazz)
+            val shape = newShapeElement(sceneLocation, newObject)
 
             updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(startEvent, shape, newElementsFactory().propertiesOf(startEvent))
-            )
-        }
-    }
-
-    private class NewServiceTask(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val serviceTask = newElementsFactory().newBpmnObject(BpmnServiceTask::class)
-            val shape = newShapeElement(sceneLocation, serviceTask)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(serviceTask, shape, newElementsFactory().propertiesOf(serviceTask))
-            )
-        }
-    }
-
-    private class NewScriptTask(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val scriptTask = newElementsFactory().newBpmnObject(BpmnScriptTask::class)
-            val shape = newShapeElement(sceneLocation, scriptTask)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(scriptTask, shape, newElementsFactory().propertiesOf(scriptTask))
-            )
-        }
-    }
-
-    private class NewBusinessRuleTask(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val businessRuleTask = newElementsFactory().newBpmnObject(BpmnBusinessRuleTask::class)
-            val shape = newShapeElement(sceneLocation, businessRuleTask)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(businessRuleTask, shape, newElementsFactory().propertiesOf(businessRuleTask))
-            )
-        }
-    }
-
-    private class NewUserTask(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val userTask = newElementsFactory().newBpmnObject(BpmnUserTask::class)
-            val shape = newShapeElement(sceneLocation, userTask)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(userTask, shape, newElementsFactory().propertiesOf(userTask))
-            )
-        }
-    }
-
-    private class NewReceiveTask(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val receiveTask = newElementsFactory().newBpmnObject(BpmnReceiveTask::class)
-            val shape = newShapeElement(sceneLocation, receiveTask)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(receiveTask, shape, newElementsFactory().propertiesOf(receiveTask))
-            )
-        }
-    }
-
-    private class NewCamelTask(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val camelTask = newElementsFactory().newBpmnObject(BpmnCamelTask::class)
-            val shape = newShapeElement(sceneLocation, camelTask)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(camelTask, shape, newElementsFactory().propertiesOf(camelTask))
-            )
-        }
-    }
-
-    private class NewHttpTask(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val httpTask = newElementsFactory().newBpmnObject(BpmnHttpTask::class)
-            val shape = newShapeElement(sceneLocation, httpTask)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(httpTask, shape, newElementsFactory().propertiesOf(httpTask))
-            )
-        }
-    }
-
-    private class NewMuleTask(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val httpTask = newElementsFactory().newBpmnObject(BpmnMuleTask::class)
-            val shape = newShapeElement(sceneLocation, httpTask)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(httpTask, shape, newElementsFactory().propertiesOf(httpTask))
-            )
-        }
-    }
-
-    private class NewDecisionTask(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val httpTask = newElementsFactory().newBpmnObject(BpmnDecisionTask::class)
-            val shape = newShapeElement(sceneLocation, httpTask)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(httpTask, shape, newElementsFactory().propertiesOf(httpTask))
-            )
-        }
-    }
-
-    private class NewShellTask(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val httpTask = newElementsFactory().newBpmnObject(BpmnShellTask::class)
-            val shape = newShapeElement(sceneLocation, httpTask)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(httpTask, shape, newElementsFactory().propertiesOf(httpTask))
-            )
-        }
-    }
-
-    private class NewSubProcess(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val subProcess = newElementsFactory().newBpmnObject(BpmnSubProcess::class)
-            val shape = newShapeElement(sceneLocation, subProcess)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(subProcess, shape, newElementsFactory().propertiesOf(subProcess))
-            )
-        }
-    }
-
-    private class NewCallActivity(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val callActivity = newElementsFactory().newBpmnObject(BpmnCallActivity::class)
-            val shape = newShapeElement(sceneLocation, callActivity)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(callActivity, shape, newElementsFactory().propertiesOf(callActivity))
-            )
-        }
-    }
-
-
-    private class NewExclusiveGateway(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val exclusiveGateway = newElementsFactory().newBpmnObject(BpmnExclusiveGateway::class)
-            val shape = newShapeElement(sceneLocation, exclusiveGateway)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(exclusiveGateway, shape, newElementsFactory().propertiesOf(exclusiveGateway))
-            )
-        }
-    }
-
-    private class NewEndEvent(private val sceneLocation: Point2D.Float): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val endEvent = newElementsFactory().newBpmnObject(BpmnEndEvent::class)
-            val shape = newShapeElement(sceneLocation, endEvent)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(endEvent, shape, newElementsFactory().propertiesOf(endEvent))
+                    BpmnShapeObjectAddedEvent(newObject, shape, newElementsFactory().propertiesOf(newObject))
             )
         }
     }

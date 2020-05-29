@@ -17,6 +17,7 @@ interface IconProvider {
     val mule: Icon
     val decision: Icon
     val shell: Icon
+    val tilde: Icon
     val exclusiveGateway: String
     val sequence: String
     val recycleBin: String
@@ -37,6 +38,7 @@ data class IconProviderImpl(
         override val mule: Icon = IconLoader.getIcon("/icons/ui-icons/mule.png"),
         override val decision: Icon = IconLoader.getIcon("/icons/ui-icons/decision.png"),
         override val shell: Icon = IconLoader.getIcon("/icons/ui-icons/shell.png"),
+        override val tilde: Icon = IconLoader.getIcon("/icons/ui-icons/tilde.png"),
         override val exclusiveGateway: String = "/icons/ui-icons/svg/exclusive-gateway.svg".asResource()!!,
         override val sequence: String = "/icons/ui-icons/svg/sequence.svg".asResource()!!,
         override val recycleBin: String = "/icons/ui-icons/svg/recycle-bin.svg".asResource()!!

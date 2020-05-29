@@ -15,6 +15,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCal
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
@@ -78,6 +79,7 @@ enum class PropertyTypeDetails(
     TARGET_REF(PropertyType.TARGET_REF, "targetRef", XmlType.ATTRIBUTE),
     CONDITION_EXPR_VALUE(PropertyType.CONDITION_EXPR_VALUE, "conditionExpression.text", XmlType.CDATA),
     CONDITION_EXPR_TYPE(PropertyType.CONDITION_EXPR_TYPE, "conditionExpression.xsi:type", XmlType.ATTRIBUTE),
+    COMPLETION_CONDITION(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA),
     DEFAULT_FLOW(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE)
 }
 
@@ -263,6 +265,7 @@ class FlowableParser : BpmnParser {
             is BpmnDecisionTask -> createServiceTaskWithType(doc, "dmn")
             is BpmnShellTask -> createServiceTaskWithType(doc, "shell")
             is BpmnSubProcess -> doc.createElement("subProcess")
+            is BpmnAdHocSubProcess -> doc.createElement("adHocSubProcess")
             is BpmnTransactionalSubProcess -> doc.createElement("transaction")
             is BpmnEndEvent -> doc.createElement("endEvent")
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)

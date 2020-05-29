@@ -112,6 +112,9 @@ internal class UiEditorLightE2ETest {
                     null,
                     null,
                     null,
+                    null,
+                    null,
+                    null,
                     null
             ),
             mutableListOf()

@@ -31,6 +31,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         process.shellTask?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.subProcess?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.transaction?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.adHocSubProcess?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.sequenceFlow?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.exclusiveGateway?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
 

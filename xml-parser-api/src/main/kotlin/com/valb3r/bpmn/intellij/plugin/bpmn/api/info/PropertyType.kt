@@ -44,5 +44,6 @@ enum class PropertyType(
     TARGET_REF("targetRef", "Target reference", STRING, "targetRef", false, ID),
     CONDITION_EXPR_VALUE("conditionExpression.text", "Condition expression", PropertyValueType.EXPRESSION, "conditionExpression.text"),
     CONDITION_EXPR_TYPE("conditionExpression.type", "Condition expression type", STRING, "conditionExpression.type"),
+    COMPLETION_CONDITION("completionCondition.condition", "Completion condition", PropertyValueType.EXPRESSION, "completionCondition.condition"),
     DEFAULT_FLOW("defaultElement", "Default flow element", STRING, "defaultElement", false, ID)
 }

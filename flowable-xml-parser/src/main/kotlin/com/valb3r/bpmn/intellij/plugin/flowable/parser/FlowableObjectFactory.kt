@@ -11,8 +11,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCal
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.CompletionCondition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
@@ -45,6 +47,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             BpmnSubProcess::class -> BpmnSubProcess(generateBpmnId(), null, null, null, null)
             BpmnTransactionalSubProcess::class -> BpmnTransactionalSubProcess(generateBpmnId(), null, null, null, null)
             BpmnCallActivity::class -> BpmnCallActivity(generateBpmnId(), null, null, null, "", null, null, null, null)
+            BpmnAdHocSubProcess::class -> BpmnAdHocSubProcess(generateBpmnId(), null, null, CompletionCondition(null))
             BpmnExclusiveGateway::class -> BpmnExclusiveGateway(generateBpmnId(), null, null, null)
             BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId(), null, null)
             else -> throw IllegalArgumentException("Can't create class: " + clazz.qualifiedName)
@@ -87,6 +90,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             is BpmnShellTask -> processDtoToPropertyMap(obj)
             is BpmnSubProcess -> processDtoToPropertyMap(obj)
             is BpmnTransactionalSubProcess -> processDtoToPropertyMap(obj)
+            is BpmnAdHocSubProcess -> processDtoToPropertyMap(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
             is BpmnExclusiveGateway -> processDtoToPropertyMap(obj)
             else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
