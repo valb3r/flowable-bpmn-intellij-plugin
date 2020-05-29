@@ -13,6 +13,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateConditionalCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
@@ -87,6 +88,7 @@ enum class PropertyTypeDetails(
     EXCLUDE(PropertyType.EXCLUDE, "flowable:exclude", XmlType.ATTRIBUTE),
     SOURCE_REF(PropertyType.SOURCE_REF,"sourceRef", XmlType.ATTRIBUTE),
     TARGET_REF(PropertyType.TARGET_REF, "targetRef", XmlType.ATTRIBUTE),
+    ATTACHED_TO_REF(PropertyType.ATTACHED_TO_REF, "attachedToRef", XmlType.ATTRIBUTE),
     CONDITION_EXPR_VALUE(PropertyType.CONDITION_EXPR_VALUE, "conditionExpression.text", XmlType.CDATA),
     CONDITION_EXPR_TYPE(PropertyType.CONDITION_EXPR_TYPE, "conditionExpression.xsi:type", XmlType.ATTRIBUTE),
     COMPLETION_CONDITION(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA),
@@ -276,6 +278,15 @@ class FlowableParser : BpmnParser {
             is BpmnEndEscalationEvent -> createEndEventWithType(doc, "escalationEventDefinition")
             is BpmnEndCancelEvent -> createEndEventWithType(doc, "cancelEventDefinition")
             is BpmnEndErrorEvent -> createEndEventWithType(doc, "errorEventDefinition")
+            // Boundary
+            is BpmnBoundaryCancelEvent -> createBoundaryEventWithType(doc, "cancelEventDefinition")
+            is BpmnBoundaryCompensationEvent -> createBoundaryEventWithType(doc, "conditionalEventDefinition")
+            is BpmnBoundaryConditionalEvent -> createBoundaryEventWithType(doc, "conditionalEventDefinition")
+            is BpmnBoundaryErrorEvent -> createBoundaryEventWithType(doc, "errorEventDefinition")
+            is BpmnBoundaryEscalationEvent -> createBoundaryEventWithType(doc, "escalationEventDefinition")
+            is BpmnBoundaryMessageEvent -> createBoundaryEventWithType(doc, "messageEventDefinition")
+            is BpmnBoundarySignalEvent -> createBoundaryEventWithType(doc, "signalEventDefinition")
+            is BpmnBoundaryTimerEvent -> createBoundaryEventWithType(doc, "timerEventDefinition")
             // Intermediate events
             // Catching
             is BpmnIntermediateTimerCatchingEvent -> createIntermediateCatchEventWithType(doc, "timerEventDefinition")
@@ -341,6 +352,13 @@ class FlowableParser : BpmnParser {
 
     private fun createServiceTask(doc: Document): Element {
         return createServiceTaskWithType(doc)
+    }
+
+    private fun createBoundaryEventWithType(doc: Document, type: String): Element {
+        val elem = doc.createElement("boundaryEvent")
+        val elemType = doc.createElement(type)
+        elem.appendChild(elemType)
+        return elem
     }
 
     private fun createStartEventWithType(doc: Document, type: String?): Element {

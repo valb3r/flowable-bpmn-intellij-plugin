@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ConditionExpressio
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateConditionalCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
@@ -50,6 +51,14 @@ class FlowableObjectFactory: BpmnObjectFactory {
             BpmnStartMessageEvent::class -> BpmnStartMessageEvent(generateBpmnId(), null, null)
             BpmnStartSignalEvent::class -> BpmnStartSignalEvent(generateBpmnId(), null, null)
             BpmnStartTimerEvent::class -> BpmnStartTimerEvent(generateBpmnId(), null, null)
+            BpmnBoundaryCancelEvent::class -> BpmnBoundaryCancelEvent(generateBpmnId(), null, null, null)
+            BpmnBoundaryCompensationEvent::class -> BpmnBoundaryCompensationEvent(generateBpmnId(), null, null, null)
+            BpmnBoundaryConditionalEvent::class -> BpmnBoundaryConditionalEvent(generateBpmnId(), null, null, null)
+            BpmnBoundaryErrorEvent::class -> BpmnBoundaryErrorEvent(generateBpmnId(), null, null, null)
+            BpmnBoundaryEscalationEvent::class -> BpmnBoundaryEscalationEvent(generateBpmnId(), null, null, null)
+            BpmnBoundaryMessageEvent::class -> BpmnBoundaryMessageEvent(generateBpmnId(), null, null, null)
+            BpmnBoundarySignalEvent::class -> BpmnBoundarySignalEvent(generateBpmnId(), null, null, null)
+            BpmnBoundaryTimerEvent::class -> BpmnBoundaryTimerEvent(generateBpmnId(), null, null, null)
             BpmnUserTask::class -> BpmnUserTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null)
             BpmnScriptTask::class -> BpmnScriptTask(generateBpmnId(), null, null, null, null, null, null, null)
             BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null)
@@ -108,7 +117,9 @@ class FlowableObjectFactory: BpmnObjectFactory {
             is BpmnStartEvent, is BpmnStartTimerEvent, is BpmnStartSignalEvent, is BpmnStartMessageEvent,
             is BpmnStartErrorEvent, is BpmnStartEscalationEvent, is BpmnStartConditionalEvent, is BpmnEndEvent,
             is BpmnEndErrorEvent, is BpmnEndCancelEvent, is BpmnEndEscalationEvent,
-            is BpmnEndTerminateEvent, is BpmnUserTask,  is BpmnScriptTask, is BpmnServiceTask, is BpmnBusinessRuleTask,
+            is BpmnEndTerminateEvent, is BpmnBoundaryCancelEvent, is BpmnBoundaryCompensationEvent,
+            is BpmnBoundaryConditionalEvent, is BpmnBoundaryEscalationEvent, is BpmnBoundaryMessageEvent, is BpmnBoundaryErrorEvent,
+            is BpmnBoundarySignalEvent, is BpmnBoundaryTimerEvent, is BpmnUserTask,  is BpmnScriptTask, is BpmnServiceTask, is BpmnBusinessRuleTask,
             is BpmnReceiveTask, is BpmnCamelTask, is BpmnHttpTask, is BpmnMuleTask, is BpmnDecisionTask, is BpmnShellTask,
             is BpmnSubProcess, is BpmnTransactionalSubProcess, is BpmnAdHocSubProcess, is BpmnExclusiveGateway,
             is BpmnParallelGateway, is BpmnInclusiveGateway, is BpmnEventGateway, is BpmnIntermediateTimerCatchingEvent,
@@ -160,14 +171,28 @@ class FlowableObjectFactory: BpmnObjectFactory {
                 tryParseNestedValue(type, this, result)
             }
 
-            this[split[1]]?.parseValue(result, type)
+            val value = this[split[1]]
+            if (null != value) {
+                value.parseValue(result, type)
+            } else {
+                doParse(null, result, type)
+            }
         }
     }
 
     private fun JsonNode.parseValue(result: MutableMap<PropertyType, Property>, type: PropertyType) {
+       doParse(this, result, type)
+    }
+
+    private fun doParse(node: JsonNode?, result: MutableMap<PropertyType, Property>, type: PropertyType) {
+        if (null == node) {
+            result[type] = Property(null)
+            return
+        }
+
         result[type] = when (type.valueType) {
-            PropertyValueType.STRING, PropertyValueType.CLASS, PropertyValueType.EXPRESSION -> if (this.isNull) Property(null) else Property(this.asText())
-            PropertyValueType.BOOLEAN -> Property(this.asBoolean())
+            PropertyValueType.STRING, PropertyValueType.CLASS, PropertyValueType.EXPRESSION -> if (node.isNull) Property(null) else Property(node.asText())
+            PropertyValueType.BOOLEAN -> Property(node.asBoolean())
         }
     }
 
@@ -175,7 +200,9 @@ class FlowableObjectFactory: BpmnObjectFactory {
         return when(forBpmnObject) {
             is BpmnStartEvent, is BpmnStartEscalationEvent, is BpmnStartConditionalEvent, is BpmnStartErrorEvent,
             is BpmnStartMessageEvent, is BpmnStartSignalEvent, is BpmnStartTimerEvent, is BpmnEndEvent,
-            is BpmnEndTerminateEvent, is BpmnEndEscalationEvent, is BpmnEndErrorEvent,
+            is BpmnEndTerminateEvent, is BpmnEndEscalationEvent, is BpmnBoundaryCancelEvent, is BpmnBoundaryCompensationEvent,
+            is BpmnBoundaryConditionalEvent, is BpmnBoundaryEscalationEvent, is BpmnBoundaryMessageEvent, is BpmnBoundaryErrorEvent,
+            is BpmnBoundarySignalEvent, is BpmnBoundaryTimerEvent, is BpmnEndErrorEvent,
             is BpmnEndCancelEvent, is BpmnIntermediateTimerCatchingEvent, is BpmnIntermediateMessageCatchingEvent,
             is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent, is BpmnIntermediateNoneThrowingEvent,
             is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent -> BoundsElement(0.0f, 0.0f, 30.0f, 30.0f)

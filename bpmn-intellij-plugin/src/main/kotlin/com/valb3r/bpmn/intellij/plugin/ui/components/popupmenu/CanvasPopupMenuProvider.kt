@@ -6,6 +6,7 @@ import com.intellij.openapi.util.IconLoader
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateConditionalCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
@@ -77,6 +78,15 @@ class CanvasPopupMenuProvider {
     private val ERROR_END_EVENT = IconLoader.getIcon("/icons/popupmenu/error-end-event.png")
     private val ESCALATION_END_EVENT = IconLoader.getIcon("/icons/popupmenu/escalation-end-event.png")
     private val TERMINATE_END_EVENT = IconLoader.getIcon("/icons/popupmenu/terminate-end-event.png")
+    // Boundary
+    private val BOUNDARY_CANCEL_EVENT = IconLoader.getIcon("/icons/popupmenu/cancel-boundary-event.png")
+    private val BOUNDARY_COMPENSATION_EVENT = IconLoader.getIcon("/icons/popupmenu/compensation-boundary-event.png")
+    private val BOUNDARY_CONDITIONAL_EVENT = IconLoader.getIcon("/icons/popupmenu/conditional-boundary-event.png")
+    private val BOUNDARY_ERROR_EVENT = IconLoader.getIcon("/icons/popupmenu/error-boundary-event.png")
+    private val BOUNDARY_ESCALATION_EVENT = IconLoader.getIcon("/icons/popupmenu/escalation-boundary-event.png")
+    private val BOUNDARY_MESSAGE_EVENT = IconLoader.getIcon("/icons/popupmenu/message-boundary-event.png")
+    private val BOUNDARY_SIGNAL_EVENT = IconLoader.getIcon("/icons/popupmenu/signal-boundary-event.png")
+    private val BOUNDARY_TIMER_EVENT = IconLoader.getIcon("/icons/popupmenu/timer-boundary-event.png")
     // Intermediate events
     // Catch
     private val INTERMEDIATE_TIMER_CATCHING = IconLoader.getIcon("/icons/popupmenu/timer-catch-event.png")
@@ -117,6 +127,7 @@ class CanvasPopupMenuProvider {
         popup.add(activities(sceneLocation))
         popup.add(structural(sceneLocation))
         popup.add(gateways(sceneLocation))
+        popup.add(boundaryEvents(sceneLocation))
         popup.add(intermediateCatchingEvents(sceneLocation))
         popup.add(intermediateThrowingEvents(sceneLocation))
         popup.add(endEvents(sceneLocation))
@@ -164,6 +175,19 @@ class CanvasPopupMenuProvider {
         addItem(menu, "Parallel gateway", PARALLEL_GATEWAY, ShapeCreator(BpmnParallelGateway::class, sceneLocation))
         addItem(menu, "Inclusive gateway", INCLUSIVE_GATEWAY, ShapeCreator(BpmnInclusiveGateway::class, sceneLocation))
         addItem(menu, "Event gateway", EVENT_GATEWAY, ShapeCreator(BpmnEventGateway::class, sceneLocation))
+        return menu
+    }
+
+    private fun boundaryEvents(sceneLocation: Point2D.Float): JMenu {
+        val menu = JMenu("Boundary events")
+        addItem(menu, "Boundary cancel event", BOUNDARY_CANCEL_EVENT, ShapeCreator(BpmnBoundaryCancelEvent::class, sceneLocation))
+        addItem(menu, "Boundary compensation event", BOUNDARY_COMPENSATION_EVENT, ShapeCreator(BpmnBoundaryCompensationEvent::class, sceneLocation))
+        addItem(menu, "Boundary conditional event", BOUNDARY_CONDITIONAL_EVENT, ShapeCreator(BpmnBoundaryConditionalEvent::class, sceneLocation))
+        addItem(menu, "Boundary error event", BOUNDARY_ERROR_EVENT, ShapeCreator(BpmnBoundaryErrorEvent::class, sceneLocation))
+        addItem(menu, "Boundary escalation event", BOUNDARY_ESCALATION_EVENT, ShapeCreator(BpmnBoundaryEscalationEvent::class, sceneLocation))
+        addItem(menu, "Boundary message event", BOUNDARY_MESSAGE_EVENT, ShapeCreator(BpmnBoundaryMessageEvent::class, sceneLocation))
+        addItem(menu, "Boundary signal event", BOUNDARY_SIGNAL_EVENT, ShapeCreator(BpmnBoundarySignalEvent::class, sceneLocation))
+        addItem(menu, "Boundary timer event", BOUNDARY_TIMER_EVENT, ShapeCreator(BpmnBoundaryTimerEvent::class, sceneLocation))
         return menu
     }
 

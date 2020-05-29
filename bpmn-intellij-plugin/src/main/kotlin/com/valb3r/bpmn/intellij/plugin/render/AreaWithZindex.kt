@@ -4,6 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import java.awt.geom.Area
 import java.awt.geom.Point2D
 
+const val SUBPROCESS_Z_INDEX = 20000
 const val DEFAULT_Z_INDEX = 10000
 const val ANCHOR_Z_INDEX = 1000
 

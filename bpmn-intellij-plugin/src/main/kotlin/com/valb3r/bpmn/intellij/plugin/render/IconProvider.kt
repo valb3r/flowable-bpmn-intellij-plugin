@@ -41,6 +41,14 @@ interface IconProvider {
     val escalationStartEvent: String
     val timerStartEvent: String
     val signalStartEvent: String
+    val boundaryCancelEvent: String
+    val boundaryCompensationEvent: String
+    val boundaryConditionalEvent: String
+    val boundaryErrorEvent: String
+    val boundaryEscalationEvent: String
+    val boundaryMessageEvent: String
+    val boundarySignalEvent: String
+    val boundaryTimerEvent: String
     val sequence: String
     val recycleBin: String
 }
@@ -84,6 +92,14 @@ data class IconProviderImpl(
         override val escalationStartEvent: String = "/icons/ui-icons/svg/escalation-start-event.svg".asResource()!!,
         override val timerStartEvent: String = "/icons/ui-icons/svg/timer-start-event.svg".asResource()!!,
         override val signalStartEvent: String = "/icons/ui-icons/svg/signal-start-event.svg".asResource()!!,
+        override val boundaryCancelEvent: String = "/icons/ui-icons/svg/cancel-boundary-event.svg".asResource()!!,
+        override val boundaryCompensationEvent: String = "/icons/ui-icons/svg/compensation-boundary-event.svg".asResource()!!,
+        override val boundaryConditionalEvent: String = "/icons/ui-icons/svg/conditional-boundary-event.svg".asResource()!!,
+        override val boundaryErrorEvent: String = "/icons/ui-icons/svg/error-boundary-event.svg".asResource()!!,
+        override val boundaryEscalationEvent: String = "/icons/ui-icons/svg/escalation-boundary-event.svg".asResource()!!,
+        override val boundaryMessageEvent: String = "/icons/ui-icons/svg/message-boundary-event.svg".asResource()!!,
+        override val boundarySignalEvent: String = "/icons/ui-icons/svg/signal-boundary-event.svg".asResource()!!,
+        override val boundaryTimerEvent: String = "/icons/ui-icons/svg/timer-boundary-event.svg".asResource()!!,
         override val sequence: String = "/icons/ui-icons/svg/sequence.svg".asResource()!!,
         override val recycleBin: String = "/icons/ui-icons/svg/recycle-bin.svg".asResource()!!
 ): IconProvider

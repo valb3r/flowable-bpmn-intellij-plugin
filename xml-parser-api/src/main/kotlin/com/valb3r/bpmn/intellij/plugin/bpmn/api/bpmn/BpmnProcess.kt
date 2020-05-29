@@ -4,6 +4,7 @@ import com.github.pozo.KotlinBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
@@ -41,6 +42,16 @@ data class BpmnProcess(
         val escalationEndEvent: List<BpmnEndEscalationEvent>?,
         val cancelEndEvent: List<BpmnEndCancelEvent>?,
         val terminateEndEvent: List<BpmnEndTerminateEvent>?,
+        // Boundary
+        val boundaryEvent: List<BpmnBoundaryEvent>?,
+        val boundaryCancelEvent: List<BpmnBoundaryCancelEvent>?,
+        val boundaryCompensationEvent: List<BpmnBoundaryCompensationEvent>?,
+        val boundaryConditionalEvent: List<BpmnBoundaryConditionalEvent>?,
+        val boundaryErrorEvent: List<BpmnBoundaryErrorEvent>?,
+        val boundaryEscalationEvent: List<BpmnBoundaryEscalationEvent>?,
+        val boundaryMessageEvent: List<BpmnBoundaryMessageEvent>?,
+        val boundarySignalEvent: List<BpmnBoundarySignalEvent>?,
+        val boundaryTimerEvent: List<BpmnBoundaryTimerEvent>?,
         // Catching
         val intermediateCatchEvent: List<BpmnIntermediateCatchingEvent>?, // generic mapping point should be empty when processed
         val intermediateTimerCatchingEvent: List<BpmnIntermediateTimerCatchingEvent>?,

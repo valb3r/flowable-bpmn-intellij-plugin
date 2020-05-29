@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
@@ -52,8 +53,9 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
     @JacksonXmlProperty(isAttribute = true) var isExecutable: Boolean? = null
 
     // Events
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var startEvent: List<StartEventNode>? = null  // need to validate how there can be multiple, and - it is non-null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val endEvent: List<EndEventNode>? = null  // need to validate how there can be multiple, and - it is non-null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var startEvent: List<StartEventNode>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val endEvent: List<EndEventNode>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val boundaryEvent: List<BoundaryEvent>? = null
     // Events-intermediate
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val intermediateCatchEvent: List<IntermediateCatchEvent>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val intermediateThrowEvent: List<IntermediateThrowEvent>? = null
@@ -87,6 +89,7 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         result = applyIntermediateThrowingEventCustomizationByType(result)
         result = applyEndEventCustomizationByType(result)
         result = applyStartEventCustomizationByType(result)
+        result = applyBoundaryEventCustomizationByType(result)
         return result
     }
 
@@ -137,6 +140,19 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         return result
     }
 
+    private fun applyBoundaryEventCustomizationByType(process: BpmnProcess): BpmnProcess {
+        var result = process
+        result = extractBoundaryEventsBasedOnType(result, { null != it.cancelEventDefinition },  Mappers.getMapper(BoundaryCancelMapper::class.java)) { updates, target -> target.copy(boundaryCancelEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.compensateEventDefinition },  Mappers.getMapper(BoundaryCompensationMapper::class.java)) { updates, target -> target.copy(boundaryCompensationEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.conditionalEventDefinition },  Mappers.getMapper(BoundaryConditionalMapper::class.java)) { updates, target -> target.copy(boundaryConditionalEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.errorEventDefinition },  Mappers.getMapper(BoundaryErrorMapper::class.java)) { updates, target -> target.copy(boundaryErrorEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.escalationEventDefinition },  Mappers.getMapper(BoundaryEscalationMapper::class.java)) { updates, target -> target.copy(boundaryEscalationEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.messageEventDefinition },  Mappers.getMapper(BoundaryMessageMapper::class.java)) { updates, target -> target.copy(boundaryMessageEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.signalEventDefinition },  Mappers.getMapper(BoundarySignalMapper::class.java)) { updates, target -> target.copy(boundarySignalEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.timerEventDefinition },  Mappers.getMapper(BoundaryTimerMapper::class.java)) { updates, target -> target.copy(boundaryTimerEvent = updates) }
+        return result
+    }
+
     private fun <T> extractTasksBasedOnType(process: BpmnProcess, type: String, mapper: ServiceTaskMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
         process.serviceTask?.apply {
             val byTypeGroup = this.groupBy { it.type == type }
@@ -181,6 +197,16 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
         process.startEvent?.apply {
             val byTypeGroup = this.groupBy { filter(it) }
             val newProcess = process.copy(startEvent = byTypeGroup[false])
+            return update(byTypeGroup[true]?.map { mapper.convertToDto(it) }, newProcess)
+        }
+
+        return process
+    }
+
+    private fun <T> extractBoundaryEventsBasedOnType(process: BpmnProcess, filter: (BpmnBoundaryEvent) -> Boolean, mapper: BoundaryEventMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
+        process.boundaryEvent?.apply {
+            val byTypeGroup = this.groupBy { filter(it) }
+            val newProcess = process.copy(boundaryEvent = byTypeGroup[false])
             return update(byTypeGroup[true]?.map { mapper.convertToDto(it) }, newProcess)
         }
 
@@ -277,6 +303,34 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
 
     interface StartEventMapper<T> {
         fun convertToDto(input: BpmnStartEvent): T
+    }
+
+    @Mapper
+    interface BoundaryCancelMapper: BoundaryEventMapper<BpmnBoundaryCancelEvent>
+
+    @Mapper
+    interface BoundaryCompensationMapper: BoundaryEventMapper<BpmnBoundaryCompensationEvent>
+
+    @Mapper
+    interface BoundaryConditionalMapper: BoundaryEventMapper<BpmnBoundaryConditionalEvent>
+
+    @Mapper
+    interface BoundaryErrorMapper: BoundaryEventMapper<BpmnBoundaryErrorEvent>
+
+    @Mapper
+    interface BoundaryEscalationMapper: BoundaryEventMapper<BpmnBoundaryEscalationEvent>
+
+    @Mapper
+    interface BoundaryMessageMapper: BoundaryEventMapper<BpmnBoundaryMessageEvent>
+
+    @Mapper
+    interface BoundarySignalMapper: BoundaryEventMapper<BpmnBoundarySignalEvent>
+
+    @Mapper
+    interface BoundaryTimerMapper: BoundaryEventMapper<BpmnBoundaryTimerEvent>
+
+    interface BoundaryEventMapper<T> {
+        fun convertToDto(input: BpmnBoundaryEvent): T
     }
 }
 

@@ -42,6 +42,7 @@ enum class PropertyType(
     EXCLUDE("exclude", "Exclude", BOOLEAN),
     SOURCE_REF("sourceRef","Source reference", STRING, "sourceRef", false, ID),
     TARGET_REF("targetRef", "Target reference", STRING, "targetRef", false, ID),
+    ATTACHED_TO_REF("attachedToRef", "Attached to", STRING, "attachedToRef.id", false, ID),
     CONDITION_EXPR_VALUE("conditionExpression.text", "Condition expression", PropertyValueType.EXPRESSION, "conditionExpression.text"),
     CONDITION_EXPR_TYPE("conditionExpression.type", "Condition expression type", STRING, "conditionExpression.type"),
     COMPLETION_CONDITION("completionCondition.condition", "Completion condition", PropertyValueType.EXPRESSION, "completionCondition.condition"),

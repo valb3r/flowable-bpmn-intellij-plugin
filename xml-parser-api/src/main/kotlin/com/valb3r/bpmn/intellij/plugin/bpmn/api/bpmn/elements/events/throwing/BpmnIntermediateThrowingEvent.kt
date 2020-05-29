@@ -16,12 +16,12 @@ data class BpmnIntermediateThrowingEvent(
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)
     }
+
+    data class SignalEventDefinition(
+            val signalRef: String? = null
+    )
+
+    data class EscalationEventDefinition(
+            val escalationRef: String? = null
+    )
 }
-
-data class SignalEventDefinition(
-        val signalRef: String? = null
-)
-
-data class EscalationEventDefinition(
-        val escalationRef: String? = null
-)

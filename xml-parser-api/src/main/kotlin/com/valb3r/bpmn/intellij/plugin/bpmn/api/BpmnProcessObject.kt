@@ -31,6 +31,16 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         process.escalationEndEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.cancelEndEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.terminateEndEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        // Boundary
+        process.boundaryEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.boundaryCancelEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.boundaryCompensationEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.boundaryConditionalEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.boundaryErrorEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.boundaryEscalationEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.boundaryMessageEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.boundarySignalEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.boundaryTimerEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         // Catching
         process.intermediateTimerCatchingEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.intermediateMessageCatchingEvent?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
