@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnS
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.*
@@ -33,6 +34,7 @@ interface BpmnProcessRenderer {
 
 class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer {
 
+    private val transactionalBoundaryMargin = 5.0f
     private val undoRedoStartMargin = 20.0f
     private val waypointLen = 40.0f
     private val activityToolBoxGap = 8.0f
@@ -357,6 +359,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             is BpmnDecisionTask -> drawDecisionTask(canvas, bpmnShape, shape, name, active)
             is BpmnShellTask -> drawShellTask(canvas, bpmnShape, shape, name, active)
             is BpmnSubProcess -> drawSubProcess(canvas, bpmnShape, shape, name, active)
+            is BpmnTransactionalSubProcess -> drawTransactionSubProcess(canvas, bpmnShape, shape, name, active)
             is BpmnCallActivity -> drawCallActivity(canvas, bpmnShape, shape, name, active)
             is BpmnExclusiveGateway -> drawExclusiveGateway(canvas, bpmnShape, shape, active)
             is BpmnEndEvent -> drawEndEvent(canvas, bpmnShape, shape, active)
@@ -445,6 +448,12 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
     private fun drawSubProcess(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRect(shape, name, color(active, Colors.PROCESS_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
+        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+    }
+
+    private fun drawTransactionSubProcess(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+        val area = canvas.drawRoundedRect(shape, null, color(active, Colors.PROCESS_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
+        canvas.drawRoundedRect(shape.wrapInto(transactionalBoundaryMargin), name, color(active, Colors.TRANSACTION_COLOR), Colors.TRANSACTION_ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
         return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 

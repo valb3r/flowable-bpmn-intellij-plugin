@@ -12,6 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnS
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
@@ -42,6 +43,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             BpmnDecisionTask::class -> BpmnDecisionTask(generateBpmnId(), null, null, null, null, null)
             BpmnShellTask::class -> BpmnShellTask(generateBpmnId(), null, null, null, null, null)
             BpmnSubProcess::class -> BpmnSubProcess(generateBpmnId(), null, null, null, null)
+            BpmnTransactionalSubProcess::class -> BpmnTransactionalSubProcess(generateBpmnId(), null, null, null, null)
             BpmnCallActivity::class -> BpmnCallActivity(generateBpmnId(), null, null, null, "", null, null, null, null)
             BpmnExclusiveGateway::class -> BpmnExclusiveGateway(generateBpmnId(), null, null, null)
             BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId(), null, null)
@@ -70,32 +72,25 @@ class FlowableObjectFactory: BpmnObjectFactory {
 
     override fun <T : WithBpmnId> propertiesOf(obj: T): Map<PropertyType, Property> {
         return when(obj) {
-            is BpmnStartEvent -> fillForStartEvent(obj)
-            is BpmnEndEvent -> fillForEndEvent(obj)
+            is BpmnStartEvent -> processDtoToPropertyMap(obj)
+            is BpmnEndEvent -> processDtoToPropertyMap(obj)
             is BpmnCallActivity -> fillForCallActivity(obj)
-            is BpmnUserTask -> fillForUserTask(obj)
-            is BpmnScriptTask -> fillForScriptTask(obj)
-            is BpmnServiceTask -> fillForServiceTask(obj)
-            is BpmnBusinessRuleTask -> fillForBusinessRuleTask(obj)
-            is BpmnReceiveTask -> fillForReceiveTask(obj)
-            is BpmnCamelTask -> fillForCamelTask(obj)
-            is BpmnHttpTask -> fillForHttpTask(obj)
-            is BpmnMuleTask -> fillForMuleTask(obj)
-            is BpmnDecisionTask -> fillForDecisionTask(obj)
-            is BpmnShellTask -> fillForShellTask(obj)
-            is BpmnSubProcess -> fillForSubProcess(obj)
+            is BpmnUserTask -> processDtoToPropertyMap(obj)
+            is BpmnScriptTask -> processDtoToPropertyMap(obj)
+            is BpmnServiceTask -> processDtoToPropertyMap(obj)
+            is BpmnBusinessRuleTask -> processDtoToPropertyMap(obj)
+            is BpmnReceiveTask -> processDtoToPropertyMap(obj)
+            is BpmnCamelTask -> processDtoToPropertyMap(obj)
+            is BpmnHttpTask -> processDtoToPropertyMap(obj)
+            is BpmnMuleTask -> processDtoToPropertyMap(obj)
+            is BpmnDecisionTask -> processDtoToPropertyMap(obj)
+            is BpmnShellTask -> processDtoToPropertyMap(obj)
+            is BpmnSubProcess -> processDtoToPropertyMap(obj)
+            is BpmnTransactionalSubProcess -> processDtoToPropertyMap(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
-            is BpmnExclusiveGateway -> fillForExclusiveGateway(obj)
+            is BpmnExclusiveGateway -> processDtoToPropertyMap(obj)
             else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
         }
-    }
-
-    private fun fillForStartEvent(activity: BpmnStartEvent): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForEndEvent(activity: BpmnEndEvent): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
     }
 
     private fun fillForCallActivity(activity: BpmnCallActivity): Map<PropertyType, Property> {
@@ -104,59 +99,11 @@ class FlowableObjectFactory: BpmnObjectFactory {
         return properties
     }
 
-    private fun fillForServiceTask(activity: BpmnServiceTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForScriptTask(activity: BpmnScriptTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForReceiveTask(activity: BpmnReceiveTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForBusinessRuleTask(activity: BpmnBusinessRuleTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForUserTask(activity: BpmnUserTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForCamelTask(activity: BpmnCamelTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForHttpTask(activity: BpmnHttpTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForMuleTask(activity: BpmnMuleTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForDecisionTask(activity: BpmnDecisionTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForShellTask(activity: BpmnShellTask): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForSubProcess(activity: BpmnSubProcess): Map<PropertyType, Property> {
-        return processDtoToPropertyMap(activity)
-    }
-
     private fun fillForSequenceFlow(activity: BpmnSequenceFlow): Map<PropertyType, Property> {
         if (null != activity.conditionExpression && activity.conditionExpression!!.type != "tFormalExpression") {
             throw IllegalArgumentException("Unknown type: ${activity.conditionExpression!!.type}")
         }
 
-        return processDtoToPropertyMap(activity)
-    }
-
-    private fun fillForExclusiveGateway(activity: BpmnExclusiveGateway): Map<PropertyType, Property> {
         return processDtoToPropertyMap(activity)
     }
 

@@ -16,6 +16,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnS
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -262,6 +263,7 @@ class FlowableParser : BpmnParser {
             is BpmnDecisionTask -> createServiceTaskWithType(doc, "dmn")
             is BpmnShellTask -> createServiceTaskWithType(doc, "shell")
             is BpmnSubProcess -> doc.createElement("subProcess")
+            is BpmnTransactionalSubProcess -> doc.createElement("transaction")
             is BpmnEndEvent -> doc.createElement("endEvent")
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }

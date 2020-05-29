@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnS
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 
 @KotlinBuilder
@@ -30,6 +31,7 @@ data class BpmnProcess(
         val shellTask: List<BpmnShellTask>?,
         // end customizations
         val subProcess: List<BpmnSubProcess>?,
+        val transaction: List<BpmnTransactionalSubProcess>?,
         val sequenceFlow: List<BpmnSequenceFlow>?,
         val exclusiveGateway: List<BpmnExclusiveGateway>?,
         val endEvent: List<BpmnEndEvent>?
