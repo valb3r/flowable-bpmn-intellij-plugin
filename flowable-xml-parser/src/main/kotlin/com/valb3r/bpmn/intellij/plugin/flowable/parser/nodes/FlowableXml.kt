@@ -65,6 +65,7 @@ class ProcessNode: BpmnMappable<BpmnProcess> {
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var exclusiveGateway: List<ExclusiveGateway>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var parallelGateway: List<ParallelGateway>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var inclusiveGateway: List<InclusiveGateway>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var eventBasedGateway: List<EventBasedGateway>? = null
 
     // Linking elements
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var sequenceFlow: List<SequenceFlow>? = null

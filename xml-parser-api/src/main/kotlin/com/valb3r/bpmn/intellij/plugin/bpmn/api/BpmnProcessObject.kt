@@ -42,6 +42,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         process.exclusiveGateway?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.parallelGateway?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
         process.inclusiveGateway?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
+        process.eventBasedGateway?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }
 
         // Linking elements
         process.sequenceFlow?.forEach { fillFor(factory, it, elementByStaticId, propertiesById) }

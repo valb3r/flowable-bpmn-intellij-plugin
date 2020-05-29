@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
@@ -49,6 +50,7 @@ data class BpmnProcess(
         val exclusiveGateway: List<BpmnExclusiveGateway>?,
         val parallelGateway: List<BpmnParallelGateway>?,
         val inclusiveGateway: List<BpmnInclusiveGateway>?,
+        val eventBasedGateway: List<BpmnEventGateway>?,
 
         // Linking elements
         val sequenceFlow: List<BpmnSequenceFlow>?

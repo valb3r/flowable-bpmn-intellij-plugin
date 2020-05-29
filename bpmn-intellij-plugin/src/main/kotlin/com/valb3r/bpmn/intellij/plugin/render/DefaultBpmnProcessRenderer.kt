@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
@@ -368,6 +369,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             is BpmnExclusiveGateway -> drawExclusiveGateway(canvas, bpmnShape, shape, active)
             is BpmnParallelGateway -> drawParallelGateway(canvas, bpmnShape, shape, active)
             is BpmnInclusiveGateway -> drawInclusiveGateway(canvas, bpmnShape, shape, active)
+            is BpmnEventGateway -> drawEventGateway(canvas, bpmnShape, shape, active)
             is BpmnEndEvent -> drawEndEvent(canvas, bpmnShape, shape, active)
             else -> AreaWithZindex(Area(), Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
         }
@@ -399,6 +401,11 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
     private fun drawParallelGateway(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.parallelGateway, active, Colors.SELECTED_COLOR.color)
+        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+    }
+
+    private fun drawEventGateway(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+        val area = canvas.drawWrappedIcon(shape, icons.eventGateway, active, Colors.SELECTED_COLOR.color)
         return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 

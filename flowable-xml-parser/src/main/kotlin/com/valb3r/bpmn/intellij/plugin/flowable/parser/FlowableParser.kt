@@ -14,6 +14,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
@@ -279,6 +280,7 @@ class FlowableParser : BpmnParser {
             is BpmnExclusiveGateway -> doc.createElement("exclusiveGateway")
             is BpmnParallelGateway -> doc.createElement("parallelGateway")
             is BpmnInclusiveGateway -> doc.createElement("inclusiveGateway")
+            is BpmnEventGateway -> doc.createElement("eventBasedGateway")
 
             // Linking elements
             is BpmnSequenceFlow -> doc.createElement("sequenceFlow")

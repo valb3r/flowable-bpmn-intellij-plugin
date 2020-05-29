@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
@@ -71,6 +72,7 @@ class CanvasPopupMenuProvider {
     private val EXCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/exclusive-gateway.png")
     private val PARALLEL_GATEWAY = IconLoader.getIcon("/icons/popupmenu/parallel-gateway.png")
     private val INCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/inclusive-gateway.png")
+    private val EVENT_GATEWAY = IconLoader.getIcon("/icons/popupmenu/event-gateway.png")
     private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png")
 
     fun popupMenu(sceneLocation: Point2D.Float): JBPopupMenu {
@@ -117,6 +119,7 @@ class CanvasPopupMenuProvider {
         addItem(menu, "Exclusive gateway", EXCLUSIVE_GATEWAY, ShapeCreator(BpmnExclusiveGateway::class, sceneLocation))
         addItem(menu, "Parallel gateway", PARALLEL_GATEWAY, ShapeCreator(BpmnParallelGateway::class, sceneLocation))
         addItem(menu, "Inclusive gateway", INCLUSIVE_GATEWAY, ShapeCreator(BpmnInclusiveGateway::class, sceneLocation))
+        addItem(menu, "Event gateway", EVENT_GATEWAY, ShapeCreator(BpmnEventGateway::class, sceneLocation))
         return menu
     }
 
