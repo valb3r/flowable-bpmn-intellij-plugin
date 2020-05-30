@@ -31,6 +31,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.IdentifiableWaypoint
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.*
+import com.valb3r.bpmn.intellij.plugin.debugger.currentDebugger
 import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
@@ -82,7 +83,22 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         drawUndoRedo(ctx, state, renderMeta, areaByElement)
         drawSelectionRect(ctx)
         drawMultiremovalRect(ctx, renderMeta, areaByElement)
+        drawDebugElements(state, ctx, areaByElement)
         return areaByElement
+    }
+
+    private fun drawDebugElements(ctx: CurrentState, renderCtx: RenderContext, renderedArea: Map<DiagramElementId, AreaWithZindex>) {
+        currentDebugger()?.executionSequence(ctx.processId.id)?.history?.let { history ->
+            val elemToDiagramId = mutableMapOf<BpmnElementId, MutableSet<DiagramElementId>>()
+            ctx.elementByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
+            history.forEachIndexed { index, elem ->
+                val targetElem = elemToDiagramId[elem]?.firstOrNull()
+                renderedArea[targetElem]?.apply {
+                    val bounds = this.area.bounds2D
+                    renderCtx.canvas.drawTextNoCameraTransform(Point2D.Float(bounds.x.toFloat(), bounds.y.toFloat()), "$index", Colors.INNER_TEXT_COLOR.color)
+                }
+            }
+        }
     }
 
     private fun drawSelectionRect(ctx: RenderContext) {
