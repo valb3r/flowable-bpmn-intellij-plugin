@@ -4,6 +4,9 @@ import com.intellij.database.dataSource.connection.DGDepartment
 import com.intellij.database.psi.DbElement
 import com.intellij.database.util.DbImplUtil
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import java.sql.Connection
 import java.time.Duration
 import java.time.Instant
@@ -28,7 +31,6 @@ fun currentDebugger(): BpmnDebugger? {
 }
 
 interface BpmnDebugger {
-
     fun executionSequence(processId: String): ExecutedElements?
 }
 
@@ -38,6 +40,7 @@ class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger {
 
     private var cachedResult: ExecutedElements? = null
     private var cachedAtTime: Instant? = null
+    private var result: Deferred<ExecutedElements?>? = null
 
     override fun executionSequence(processId: String): ExecutedElements? {
         val cachedExpiry = cachedAtTime?.plus(cacheTTL)
@@ -45,35 +48,40 @@ class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger {
             return cachedResult
         }
 
-        cachedResult = null
-        cachedAtTime = null
-
-        try {
-            val conn = DbImplUtil.getDatabaseConnection(schema, DGDepartment.INTROSPECTION)?.get()
-            conn?.jdbcConnection?.use { jdbcConn ->
-                val ruIds = listIds(processId, statementForRuntimeSelection(schema.name), jdbcConn)
-                if (ruIds.isNotEmpty()) {
-                    cachedResult = ExecutedElements(ruIds.map { BpmnElementId(it) })
-                    cachedAtTime = Instant.now()
-                    return cachedResult
-                }
-
-                val hiIds = listIds(processId, statementForHistoricalSelection(schema.name), jdbcConn)
-                if (hiIds.isNotEmpty()) {
-                    cachedResult = ExecutedElements(hiIds.map { BpmnElementId(it) })
-                    cachedAtTime = Instant.now()
-                    return cachedResult
-                }
-
-                cachedAtTime = Instant.now()
-                cachedResult = null
-                return cachedResult
-            }
-        } catch (ex: Exception) {
-            bpmnDebugger.set(null)
+        if (true == result?.isCompleted) {
+            cachedResult = result!!.getCompleted()
+            cachedAtTime = Instant.now()
+            result = null
+            return cachedResult
         }
 
-        return null
+        if (true == result?.isActive) {
+            return cachedResult
+        }
+
+        result?.cancel()
+        result = GlobalScope.async {
+            try {
+                val conn = DbImplUtil.getDatabaseConnection(schema, DGDepartment.INTROSPECTION)?.get()
+                conn?.jdbcConnection?.use { jdbcConn ->
+                    val ruIds = listIds(processId, statementForRuntimeSelection(schema.name), jdbcConn)
+                    if (ruIds.isNotEmpty()) {
+                        return@async ExecutedElements(ruIds.map { BpmnElementId(it) })
+                    }
+
+                    val hiIds = listIds(processId, statementForHistoricalSelection(schema.name), jdbcConn)
+                    if (hiIds.isNotEmpty()) {
+                        return@async ExecutedElements(hiIds.map { BpmnElementId(it) })
+                    }
+
+                    return@async null
+                }
+            } catch (ex: Exception) {
+                bpmnDebugger.set(null)
+            }
+            return@async null
+        }
+        return cachedResult
     }
 
     private fun listIds(processId: String, statement: String, conn: Connection): List<String> {
