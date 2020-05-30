@@ -93,7 +93,7 @@ class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger {
                               SELECT MAX(re.start_time_) FROM ${"$schema."}act_ru_actinst re JOIN ${"$schema."}act_re_procdef def ON re.proc_def_id_ = def.id_ WHERE def.key_ = ?
                           )
                     LIMIT 1
-                )
+                ) ORDER BY re.start_time_, re.id_
 
             """.trimIndent()
     }
@@ -108,7 +108,7 @@ class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger {
                               SELECT MAX(re.start_time_) FROM ${"$schema."}act_hi_actinst re JOIN ${"$schema."}act_re_procdef def ON re.proc_def_id_ = def.id_ WHERE def.key_ = ?
                           )
                     LIMIT 1
-                )
+                ) ORDER BY re.start_time_, re.id_
 
             """.trimIndent()
     }

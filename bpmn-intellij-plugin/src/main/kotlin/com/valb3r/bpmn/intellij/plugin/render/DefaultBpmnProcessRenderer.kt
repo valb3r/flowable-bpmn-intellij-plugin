@@ -91,13 +91,17 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         currentDebugger()?.executionSequence(ctx.processId.id)?.history?.let { history ->
             val elemToDiagramId = mutableMapOf<BpmnElementId, MutableSet<DiagramElementId>>()
             ctx.elementByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
-            history.forEachIndexed { index, elem ->
+            val elemOccurs = mutableMapOf<BpmnElementId, MutableList<Int>>()
+            history.forEachIndexed { index, elem -> elemOccurs.computeIfAbsent(elem) { mutableListOf() }.add(index) }
+
+            elemOccurs.forEach { (elem, indexes) ->
                 val targetElem = elemToDiagramId[elem]?.firstOrNull()
                 renderedArea[targetElem]?.apply {
                     val bounds = this.area.bounds2D
-                    renderCtx.canvas.drawTextNoCameraTransform(Point2D.Float(bounds.x.toFloat(), bounds.y.toFloat()), "$index", Colors.INNER_TEXT_COLOR.color)
+                    renderCtx.canvas.drawTextNoCameraTransform(Point2D.Float(bounds.x.toFloat(), bounds.y.toFloat()), indexes.toString(), Colors.INNER_TEXT_COLOR.color)
                 }
             }
+
         }
     }
 
