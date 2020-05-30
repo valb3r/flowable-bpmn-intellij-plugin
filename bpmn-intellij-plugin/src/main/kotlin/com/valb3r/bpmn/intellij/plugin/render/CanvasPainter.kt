@@ -463,7 +463,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
     }
 
     fun rasterizeSvg(svgFile: String, width: Float, height: Float, invertColors: Boolean): BufferedImage {
-        val cacheKey = Hashing.goodFastHash(32).hashString(svgFile + ":" + width.toInt() + "@" + height.toInt(), UTF_8).toString()
+        val cacheKey = Hashing.goodFastHash(32).hashString(svgFile + ":" + width.toInt() + "@" + height.toInt() + "@" + invertColors, UTF_8).toString()
 
         return svgCachedIcons.get(cacheKey) {
             val imageTranscoder = BufferedImageTranscoder()
