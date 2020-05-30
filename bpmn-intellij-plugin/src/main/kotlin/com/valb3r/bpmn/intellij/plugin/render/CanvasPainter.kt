@@ -365,6 +365,16 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(highlightedShape)
     }
 
+    fun drawTextNoCameraTransform(location: Point2D.Float, text: String, textColor: Color) {
+        if ("" == text) {
+            return
+        }
+
+        graphics2D.font = font // for ellipsis
+        graphics2D.color = textColor
+        graphics2D.drawString(text, location.x.toInt(), location.y.toInt())
+    }
+
     fun drawWrappedText(shape: ShapeElement, text: String) {
         if ("" == text) {
             return
