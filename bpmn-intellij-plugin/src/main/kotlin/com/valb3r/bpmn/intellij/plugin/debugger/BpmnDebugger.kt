@@ -2,14 +2,13 @@ package com.valb3r.bpmn.intellij.plugin.debugger
 
 import com.intellij.database.dataSource.connection.DGDepartment
 import com.intellij.database.psi.DbElement
+import com.intellij.database.remote.jdbc.RemoteConnection
 import com.intellij.database.util.DbImplUtil
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import java.sql.Connection
 import java.time.Duration
 import java.time.Instant
+import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.atomic.AtomicReference
 
 
@@ -37,58 +36,83 @@ interface BpmnDebugger {
 class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger {
 
     private val cacheTTL = Duration.ofSeconds(1)
+    private val worker: ForkJoinPool = ForkJoinPool(1)
 
-    private var cachedResult: ExecutedElements? = null
-    private var cachedAtTime: Instant? = null
-    private var result: Deferred<ExecutedElements?>? = null
+    private var cachedResult: AtomicReference<ExecutedElements?> = AtomicReference()
+    private var cachedAtTime: AtomicReference<Instant?> = AtomicReference()
 
     override fun executionSequence(processId: String): ExecutedElements? {
-        val cachedExpiry = cachedAtTime?.plus(cacheTTL)
+        val cachedExpiry = cachedAtTime.get()?.plus(cacheTTL)
         if (cachedExpiry?.isAfter(Instant.now()) == true) {
-            return cachedResult
+            return cachedResult.get()
         }
 
-        if (true == result?.isCompleted) {
-            cachedResult = result!!.getCompleted()
-            cachedAtTime = Instant.now()
-            result = null
-            return cachedResult
+        worker.submit {
+            cachedResult.set(fetchFromDb(processId))
+            cachedAtTime.set(Instant.now())
         }
 
-        if (true == result?.isActive) {
-            return cachedResult
-        }
+        return cachedResult.get()
+    }
 
-        result?.cancel()
-        result = GlobalScope.async {
+    private fun fetchFromDb(processId: String): ExecutedElements? {
+        try {
+            val connProvider = DbImplUtil.getDatabaseConnection(schema, DGDepartment.INTROSPECTION)?.get()
+            // Old IntelliJ provides only getJdbcConnection
             try {
-                val conn = DbImplUtil.getDatabaseConnection(schema, DGDepartment.INTROSPECTION)?.get()
-                conn?.jdbcConnection?.use { jdbcConn ->
-                    val ruIds = listIds(processId, statementForRuntimeSelection(schema.name), jdbcConn)
-                    if (ruIds.isNotEmpty()) {
-                        return@async ExecutedElements(ruIds.map { BpmnElementId(it) })
-                    }
-
-                    val hiIds = listIds(processId, statementForHistoricalSelection(schema.name), jdbcConn)
-                    if (hiIds.isNotEmpty()) {
-                        return@async ExecutedElements(hiIds.map { BpmnElementId(it) })
-                    }
-
-                    return@async null
+                val jdbcSupplier = connProvider?.javaClass?.getMethod("getJdbcConnection")
+                if (true != jdbcSupplier?.isAccessible) {
+                    jdbcSupplier?.isAccessible = true
                 }
-            } catch (ex: Exception) {
-                bpmnDebugger.set(null)
+                (jdbcSupplier?.invoke(connProvider) as Connection?)?.use {
+                    return readExecutionIds { stmt -> listIds(processId, stmt, it) }
+                }
+            } catch (ex: NoSuchMethodException) {
+                // New IntelliJ provides only getRemoteConnection
+                val connSupplier = connProvider?.javaClass?.getMethod("getRemoteConnection")
+                if (true != connSupplier?.isAccessible) {
+                    connSupplier?.isAccessible = true
+                }
+                val remoteConn = (connSupplier?.invoke(connProvider) as RemoteConnection?)
+                try {
+                    remoteConn?.let {return readExecutionIds { stmt -> listIds(processId, stmt, it) }}
+                } catch (ex: RuntimeException) {
+                    remoteConn?.close()
+                }
             }
-            return@async null
+        } catch (ex: RuntimeException) {
+            bpmnDebugger.set(null)
         }
-        return cachedResult
+
+        return null
+    }
+
+    private fun readExecutionIds(idsFetch: (statement: String) -> List<String>): ExecutedElements? {
+        val ruIds = idsFetch(statementForRuntimeSelection(schema.name))
+        if (ruIds.isNotEmpty()) {
+            return ExecutedElements(ruIds.map { BpmnElementId(it) })
+        }
+
+        val hiIds = idsFetch(statementForHistoricalSelection(schema.name))
+        if (hiIds.isNotEmpty()) {
+            return ExecutedElements(hiIds.map { BpmnElementId(it) })
+        }
+
+        return null
     }
 
     private fun listIds(processId: String, statement: String, conn: Connection): List<String> {
         val ruQuery = conn.prepareStatement(statement)
         ruQuery.setString(1, processId)
         val result = ruQuery.executeQuery()
-        return result.use { generateSequence { if (result.next()) result.getString(1) else null }.toList() }
+        return result.use {generateSequence { if (result.next()) result.getString(1) else null }.toList()}
+    }
+
+    private fun listIds(processId: String, statement: String, conn: RemoteConnection): List<String> {
+        val ruQuery = conn.prepareStatement(statement)
+        ruQuery.setString(1, processId)
+        val result = ruQuery.executeQuery()
+        return generateSequence { if (result.next()) result.getString(1) else null }.toList()
     }
 
     private fun statementForRuntimeSelection(schema: String): String {
