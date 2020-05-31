@@ -41,7 +41,7 @@ IntelliJ docs on this topic:
 
 ## Plugin usage:
 
-[![Work with plugin](https://img.youtube.com/vi/-c9FmQrsujM/0.jpg)](https://youtu.be/-c9FmQrsujM)
+[![Work with plugin](https://img.youtube.com/vi/4kCLCzj4gpg/0.jpg)](https://youtu.be/-c9FmQrsujM)
 
 
 ## Debugging BPMN process with the plugin
