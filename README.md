@@ -38,9 +38,15 @@ IntelliJ docs on this topic:
 
 # Workflow
 
-MVP workflow demo:
 
-[![Work with plugin](https://img.youtube.com/vi/b0swfexfiMg/0.jpg)](https://youtu.be/b0swfexfiMg)
+## Plugin usage:
+
+[![Work with plugin](https://img.youtube.com/vi/-c9FmQrsujM/0.jpg)](https://youtu.be/-c9FmQrsujM)
+
+
+## Debugging BPMN process with the plugin
+
+[![Debug BPMN with plugin](https://img.youtube.com/vi/_zQ1zy_0Qfc/0.jpg)](https://youtu.be/_zQ1zy_0Qfc)
 
 
 # Navigation guideline
