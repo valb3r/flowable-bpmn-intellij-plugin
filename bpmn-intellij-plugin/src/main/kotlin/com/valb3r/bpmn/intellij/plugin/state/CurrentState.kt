@@ -26,6 +26,7 @@ fun currentStateProvider(): CurrentStateProvider {
 }
 
 data class CurrentState(
+        var processId: BpmnElementId,
         val shapes: List<ShapeElement>,
         val edges: List<EdgeWithIdentifiableWaypoints>,
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
@@ -36,11 +37,12 @@ data class CurrentState(
 
 // Global singleton
 class CurrentStateProvider {
-    private var fileState = CurrentState(emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptySet())
-    private var currentState = CurrentState(emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptySet())
+    private var fileState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptySet())
+    private var currentState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptySet())
 
     fun resetStateTo(fileContent: String, processObject: BpmnProcessObjectView) {
         fileState = CurrentState(
+                processObject.processId,
                 processObject.diagram.firstOrNull()?.bpmnPlane?.bpmnShape ?: emptyList(),
                 processObject.diagram.firstOrNull()?.bpmnPlane?.bpmnEdge?.map { EdgeElementState(it) } ?: emptyList(),
                 processObject.elementByDiagramId,
@@ -104,6 +106,7 @@ class CurrentStateProvider {
         }
 
         return CurrentState(
+                state.processId,
                 updatedShapes,
                 updatedEdges,
                 updatedElementByDiagramId,

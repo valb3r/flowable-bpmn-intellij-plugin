@@ -34,6 +34,7 @@ dependencies {
     implementation project(":flowable-xml-parser")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7"
 
     // Tests
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
@@ -52,8 +53,9 @@ intellij {
     version 'IU-2018.3'
     pluginName 'flowable-bpmn-plugin'
     intellij.updateSinceUntilBuild false
-    // Build target 2020+ requires this:
-    // plugins = ['java']
+    // Build target 2020+ requires this - 2018 does not have 'java' plugin:
+    // plugins = ['java', 'DatabaseTools']
+    plugins = ['DatabaseTools'] // DatabaseTools is for BPMN process 'debugging'
 }
 
 publishPlugin {

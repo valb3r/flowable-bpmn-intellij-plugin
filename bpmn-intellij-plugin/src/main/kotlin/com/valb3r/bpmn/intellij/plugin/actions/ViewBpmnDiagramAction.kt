@@ -1,10 +1,12 @@
-package com.valb3r.bpmn.intellij.plugin
+package com.valb3r.bpmn.intellij.plugin.actions
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.wm.ToolWindowManager
+import com.valb3r.bpmn.intellij.plugin.BpmnActionContext
+import com.valb3r.bpmn.intellij.plugin.BpmnPluginToolWindowProjectService
 
 class ViewBpmnDiagramAction : AnAction() {
 
