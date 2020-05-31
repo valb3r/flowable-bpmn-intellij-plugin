@@ -76,7 +76,7 @@ class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger {
                 val remoteConn = (connSupplier?.invoke(connProvider) as RemoteConnection?)
                 try {
                     remoteConn?.let {return readExecutionIds { stmt -> listIds(processId, stmt, it) }}
-                } catch (ex: RuntimeException) {
+                } finally {
                     remoteConn?.close()
                 }
             }
