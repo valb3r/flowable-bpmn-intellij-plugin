@@ -128,6 +128,8 @@ class FlowableParser : BpmnParser {
         doUpdate(doc, events)
 
         val format = OutputFormat.createPrettyPrint()
+        format.isPadText = false
+        format.isNewLineAfterDeclaration = false
         val writer = XMLWriter(os, format)
         writer.write(doc)
     }
@@ -321,11 +323,10 @@ class FlowableParser : BpmnParser {
         return createServiceTaskWithType(elem)
     }
 
-    private fun createBoundaryEventWithType(doc: Element, type: String): Element {
-        val elem = doc.addElement("boundaryEvent")
-        val elemType = doc.addElement(type)
-        elem.add(elemType)
-        return elem
+    private fun createBoundaryEventWithType(elem: Element, type: String): Element {
+        val newElem = elem.addElement("boundaryEvent")
+        newElem.addElement(type)
+        return newElem
     }
 
     private fun createStartEventWithType(elem: Element, type: String?): Element {

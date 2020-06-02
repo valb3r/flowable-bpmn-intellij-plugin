@@ -64,7 +64,7 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
     }
 
     fun click(location: Point2D.Float) {
-        val clickedElements = elemsUnderCursor(location)
+        val clickedElements = elemUnderCursor(location)
         clickedElements.forEach { interactionCtx.clickCallbacks[it]?.invoke(updateEventsRegistry()) }
 
         this.selectedElements.clear()
@@ -93,7 +93,7 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
 
     fun startCanvasDragWithButton(current: Point2D.Float) {
         val point = camera.fromCameraView(current)
-        val elemsUnderCursor = elemsUnderCursor(current)
+        val elemsUnderCursor = elemUnderCursor(current)
         if (selectedElements.intersect(elemsUnderCursor).isEmpty()) {
             interactionCtx = ElementInteractionContext(emptySet(), mutableMapOf(), null, mutableMapOf(), null, point, point)
             return
@@ -102,7 +102,7 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
 
     fun startSelectionOrDrag(current: Point2D.Float) {
         val point = camera.fromCameraView(current)
-        val elemsUnderCursor = elemsUnderCursor(current)
+        val elemsUnderCursor = elemUnderCursor(current)
 
         if (elemsUnderCursor.isEmpty()) {
             interactionCtx = ElementInteractionContext(emptySet(), mutableMapOf(), SelectionRect(current, current), mutableMapOf(), null, point, point)
@@ -178,7 +178,7 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
                     current
             ))
 
-            this.selectedElements.addAll(elemsUnderRect(interactionCtx.dragSelectionRect!!.toRect(), true))
+            this.selectedElements.addAll(elemsUnderRect(interactionCtx.dragSelectionRect!!.toRect()))
             repaint()
             return
         }
@@ -264,17 +264,26 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
                 ?.firstOrNull()
     }
 
-    private fun elemsUnderCursor(cursorPoint: Point2D.Float): List<DiagramElementId> {
-        return elemsUnderRect(cursorRect(cursorPoint))
+    private fun elemUnderCursor(cursorPoint: Point2D.Float): List<DiagramElementId> {
+        val withinRect = cursorRect(cursorPoint)
+        val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
+        val minZindex = intersection?.minBy { it.value.index }
+        val result = mutableListOf<DiagramElementId>()
+        val centerRect = Point2D.Float(withinRect.centerX.toFloat(), withinRect.centerY.toFloat())
+        intersection
+                ?.filter { it.value.index == minZindex?.value?.index }
+                ?.minBy { Point2D.Float(it.value.area.bounds2D.centerX.toFloat(), it.value.area.bounds2D.centerY.toFloat()).distance(centerRect) }
+                ?.let { result += it.key; it.value.parentToSelect?.apply { result += this }  }
+        return result
     }
 
-    private fun elemsUnderRect(withinRect: Rectangle2D, withoutZFilter: Boolean = false): List<DiagramElementId> {
+    private fun elemsUnderRect(withinRect: Rectangle2D): List<DiagramElementId> {
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
         val minZindex = intersection?.minBy { it.value.index }
         val result = mutableListOf<DiagramElementId>()
         // Force elements of only one dominating Z-Index and their parents
         intersection
-                ?.filter { withoutZFilter || (it.value.index == minZindex?.value?.index) }
+                ?.filter { it.value.index == minZindex?.value?.index }
                 ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this }  }
         return result
     }
@@ -296,12 +305,14 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
     private fun cursorRect(location: Point2D.Float): Rectangle2D {
         val left = Point2D.Float(location.x - settings.cursorSize, location.y - settings.cursorSize)
         val right = Point2D.Float(location.x + settings.cursorSize, location.y + settings.cursorSize)
+        val scaledLeft = camera.fromCameraView(left)
+        val scaledRight = camera.fromCameraView(right)
 
         return Rectangle2D.Float(
                 left.x,
                 left.y,
-                right.x - left.x,
-                right.y - left.y
+                scaledRight.x - scaledLeft.x,
+                scaledRight.y - scaledLeft.y
         )
     }
 
