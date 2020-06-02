@@ -515,7 +515,8 @@ class FlowableParser : BpmnParser {
         OMGDI("omgdi", "http://www.omg.org/spec/DD/20100524/DI"),
         BPMDI("bpmdi", "http://www.omg.org/spec/BPMN/20100524/DI"),
         OMGDC("omgdc", "http://www.omg.org/spec/DD/20100524/DC"),
-        FLOWABLE("flowable", "http://flowable.org/bpmn");
+        FLOWABLE("flowable", "http://flowable.org/bpmn"),
+        XSI("xsi", "http://www.w3.org/2001/XMLSchema-instance");
 
         fun named(name: String): QName {
             return QName(name, Namespace(namePrefix, url))
@@ -523,6 +524,6 @@ class FlowableParser : BpmnParser {
     }
 
     private fun byPrefix(prefix: String): NS {
-        return NS.values().filter { it.namePrefix == prefix }.firstOrNull()!!
+        return NS.values().firstOrNull { it.namePrefix == prefix }!!
     }
 }
