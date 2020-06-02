@@ -319,8 +319,8 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         val iconRect = Rectangle2D.Float(
                 leftTop.x.toInt().toFloat(),
                 leftTop.y.toInt().toFloat(),
-                resizedImg.width.toFloat(),
-                resizedImg.height.toFloat()
+                width.toFloat(),
+                height.toFloat()
         )
 
         if (selected) {

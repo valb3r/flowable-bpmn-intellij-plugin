@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.render
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.cache.CacheBuilder
+import com.intellij.util.ui.UIUtil
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -28,7 +29,7 @@ class Canvas: JPanel() {
     private val epsilon = 0.1f
     private val anchorAttractionThreshold = 5.0f
     private val zoomFactor = 1.2f
-    private val cursorSize = 3
+    private val cursorSize = if (UIUtil.isJreHiDPIEnabled()) 12 else 8
     private val defaultCameraOrigin = Point2D.Float(0f, 0f)
     private val defaultZoomRatio = 1f
     private val stateProvider = currentStateProvider()
