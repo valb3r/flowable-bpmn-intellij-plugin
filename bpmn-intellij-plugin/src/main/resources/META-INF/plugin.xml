@@ -19,6 +19,15 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+     <p>0.2.2:</p>
+      <ul>
+        <li>
+          MacOS and HiDPI diagram rendering fix
+        </li>
+        <li>
+          More stable XML persistence that is independent from Java Runtime
+        </li>
+      </ul>
     <p>0.2.1:</p>
       <ul>
         <li>
