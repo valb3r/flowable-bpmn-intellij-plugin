@@ -40,13 +40,14 @@ import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.io.ByteArrayInputStream
 import java.io.StringWriter
-import java.io.Writer
 import java.nio.charset.StandardCharsets
 import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.stream.XMLOutputFactory
+import javax.xml.stream.XMLStreamWriter
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
+import javax.xml.transform.stax.StAXResult
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
@@ -111,6 +112,7 @@ class FlowableParser : BpmnParser {
     private val dbFactory = DocumentBuilderFactory.newInstance()
     private val transformer = TransformerFactory.newInstance()
     private val xpathFactory = XPathFactory.newInstance()
+    private val outputFactory = XMLOutputFactory.newInstance();
 
 
     override fun parse(input: String): BpmnProcessObject {
@@ -126,12 +128,13 @@ class FlowableParser : BpmnParser {
         val dBuilder = dbFactory.newDocumentBuilder()
         val doc = dBuilder.parse(ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8)))
 
-        val writer = StringWriter()
+        val stringWriter = StringWriter()
+        val writer = outputFactory.createXMLStreamWriter(stringWriter)
         parseAndWrite(doc, writer, events)
-        return writer.buffer.toString()
+        return stringWriter.buffer.toString()
     }
 
-    private fun <T: Writer> parseAndWrite(doc: Document, writer: T, events: List<Event>): T {
+    private fun <T: XMLStreamWriter> parseAndWrite(doc: Document, writer: T, events: List<Event>): T {
         doc.documentElement.normalize()
 
         doUpdate(doc, events)
@@ -139,7 +142,7 @@ class FlowableParser : BpmnParser {
         val transformer = transformer.newTransformer()
         transformer.setOutputProperty(OutputKeys.INDENT, "yes")
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4")
-        transformer.transform(DOMSource(doc), StreamResult(writer))
+        transformer.transform(DOMSource(doc), StAXResult(writer))
         return writer
     }
 
