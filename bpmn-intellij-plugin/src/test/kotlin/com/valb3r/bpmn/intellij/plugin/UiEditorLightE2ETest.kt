@@ -25,10 +25,7 @@ import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.properties.propertiesVisualizer
-import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
-import com.valb3r.bpmn.intellij.plugin.render.Canvas
-import com.valb3r.bpmn.intellij.plugin.render.DefaultBpmnProcessRenderer
-import com.valb3r.bpmn.intellij.plugin.render.IconProvider
+import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.state.currentStateProvider
 import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
@@ -89,7 +86,7 @@ internal class UiEditorLightE2ETest {
     private val icons = mock<IconProvider>()
     private val renderer = spy(DefaultBpmnProcessRenderer(icons))
     private val canvasBuilder = CanvasBuilder(renderer)
-    private val canvas = Canvas()
+    private val canvas = Canvas(DefaultCanvasConstants().copy(cursorSize = 3.0f)) // Using small cursor size for clarity
     private var renderResult: Map<DiagramElementId, AreaWithZindex>? = null
 
     private val basicProcess = BpmnProcessObject(

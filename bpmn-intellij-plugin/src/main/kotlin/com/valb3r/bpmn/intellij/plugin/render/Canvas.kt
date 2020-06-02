@@ -2,7 +2,6 @@ package com.valb3r.bpmn.intellij.plugin.render
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.cache.CacheBuilder
-import com.intellij.util.ui.UIUtil
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -24,18 +23,11 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class Canvas: JPanel() {
-
-    private val epsilon = 0.1f
-    private val anchorAttractionThreshold = 5.0f
-    private val zoomFactor = 1.2f
-    private val cursorSize = if (UIUtil.isJreHiDPIEnabled()) 12 else 8
-    private val defaultCameraOrigin = Point2D.Float(0f, 0f)
-    private val defaultZoomRatio = 1f
+class Canvas(private val settings: CanvasConstants): JPanel() {
     private val stateProvider = currentStateProvider()
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
-    private var camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
+    private var camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
     private var interactionCtx: ElementInteractionContext = ElementInteractionContext(mutableSetOf(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
     private var renderer: BpmnProcessRenderer? = null
     private var areaByElement: Map<DiagramElementId, AreaWithZindex>? = null
@@ -63,7 +55,7 @@ class Canvas: JPanel() {
 
     fun reset(fileContent: String, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
         this.renderer = renderer
-        this.camera = Camera(defaultCameraOrigin, Point2D.Float(defaultZoomRatio, defaultZoomRatio))
+        this.camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
         this.propsVisualizer = propertiesVisualizer()
         this.propsVisualizer?.clear()
         this.stateProvider.resetStateTo(fileContent, processObject)
@@ -148,8 +140,8 @@ class Canvas: JPanel() {
             for (draggedAnchor in draggedAnchors) {
                 val targetAnchors = if (AreaType.SHAPE == draggedType) searchIn.anchorsForShape else searchIn.anchorsForWaypoints
                 for (anchor in targetAnchors) {
-                    val attractsX = abs(draggedAnchor.x - anchor.x) < anchorAttractionThreshold
-                    val attractsY = abs(draggedAnchor.y - anchor.y) < anchorAttractionThreshold
+                    val attractsX = abs(draggedAnchor.x - anchor.x) < settings.anchorAttractionThreshold
+                    val attractsY = abs(draggedAnchor.y - anchor.y) < settings.anchorAttractionThreshold
 
                     if (attractsX && attractsY) {
                         anchors += AnchorDetails(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), AnchorType.POINT)
@@ -208,7 +200,7 @@ class Canvas: JPanel() {
             return
         }
 
-        if (interactionCtx.draggedIds.isNotEmpty() && (interactionCtx.current.distance(interactionCtx.start) > epsilon)) {
+        if (interactionCtx.draggedIds.isNotEmpty() && (interactionCtx.current.distance(interactionCtx.start) > settings.epsilon)) {
             interactionCtx = attractToAnchors(interactionCtx)
             val dx = interactionCtx.current.x - interactionCtx.start.x
             val dy = interactionCtx.current.y - interactionCtx.start.y
@@ -220,7 +212,7 @@ class Canvas: JPanel() {
     }
 
     fun zoom(anchor: Point2D.Float, factor: Int) {
-        val scale = Math.pow(zoomFactor.toDouble(), factor.toDouble()).toFloat()
+        val scale = Math.pow(settings.zoomFactor.toDouble(), factor.toDouble()).toFloat()
 
         if (min(camera.zoom.x, camera.zoom.y) * scale < 0.3f || max(camera.zoom.x, camera.zoom.y) * scale > 2.0f) {
             return
@@ -302,8 +294,8 @@ class Canvas: JPanel() {
 
     // to handle small area shapes
     private fun cursorRect(location: Point2D.Float): Rectangle2D {
-        val left = Point2D.Float(location.x - cursorSize, location.y - cursorSize)
-        val right = Point2D.Float(location.x + cursorSize, location.y + cursorSize)
+        val left = Point2D.Float(location.x - settings.cursorSize, location.y - settings.cursorSize)
+        val right = Point2D.Float(location.x + settings.cursorSize, location.y + settings.cursorSize)
 
         return Rectangle2D.Float(
                 left.x,
