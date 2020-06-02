@@ -279,11 +279,8 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
 
     private fun elemsUnderRect(withinRect: Rectangle2D): List<DiagramElementId> {
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
-        val minZindex = intersection?.minBy { it.value.index }
         val result = mutableListOf<DiagramElementId>()
-        // Force elements of only one dominating Z-Index and their parents
         intersection
-                ?.filter { it.value.index == minZindex?.value?.index }
                 ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this }  }
         return result
     }
