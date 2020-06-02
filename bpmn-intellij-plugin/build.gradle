@@ -54,7 +54,7 @@ intellij {
     pluginName 'flowable-bpmn-plugin'
     intellij.updateSinceUntilBuild false
     // Build target 2020+ requires this - 2018 does not have 'java' plugin:
-    // plugins = ['java', 'DatabaseTools']
+    //plugins = ['java', 'DatabaseTools']
     plugins = ['DatabaseTools'] // DatabaseTools is for BPMN process 'debugging'
 }
 
