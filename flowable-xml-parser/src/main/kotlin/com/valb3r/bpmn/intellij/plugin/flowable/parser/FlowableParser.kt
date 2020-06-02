@@ -35,20 +35,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnFile
-import org.w3c.dom.Document
-import org.w3c.dom.Element
-import org.w3c.dom.Node
+import org.dom4j.*
+import org.dom4j.io.OutputFormat
+import org.dom4j.io.SAXReader
+import org.dom4j.io.XMLWriter
 import java.io.ByteArrayInputStream
-import java.io.StringWriter
-import java.io.Writer
+import java.io.ByteArrayOutputStream
+import java.io.OutputStream
 import java.nio.charset.StandardCharsets
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.OutputKeys
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
-import javax.xml.xpath.XPathConstants
-import javax.xml.xpath.XPathFactory
 
 
 const val CDATA_FIELD = "CDATA"
@@ -103,15 +97,7 @@ enum class XmlType {
 
 class FlowableParser : BpmnParser {
 
-    val OMGDI_NS = "http://www.omg.org/spec/DD/20100524/DI"
-    val BPMDI_NS = "http://www.omg.org/spec/BPMN/20100524/DI"
-    val OMGDC_NS = "http://www.omg.org/spec/DD/20100524/DC"
-
     private val mapper: XmlMapper = mapper()
-    private val dbFactory = DocumentBuilderFactory.newInstance()
-    private val transformer = TransformerFactory.newInstance()
-    private val xpathFactory = XPathFactory.newInstance()
-
 
     override fun parse(input: String): BpmnProcessObject {
         val dto = mapper.readValue<BpmnFile>(input)
@@ -123,24 +109,23 @@ class FlowableParser : BpmnParser {
      * https://github.com/FasterXML/jackson-dataformat-xml/issues/205
      */
     override fun update(input: String, events: List<Event>): String {
-        val dBuilder = dbFactory.newDocumentBuilder()
-        val doc = dBuilder.parse(ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8)))
+        val reader = SAXReader()
+        val doc = reader.read(ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8)))
 
-        val writer = StringWriter()
-        parseAndWrite(doc, writer, events)
-        return writer.buffer.toString()
+        val os = ByteArrayOutputStream()
+        parseAndWrite(doc, os, events)
+
+        return os.toString()
     }
 
-    private fun <T: Writer> parseAndWrite(doc: Document, writer: T, events: List<Event>): T {
-        doc.documentElement.normalize()
-
+    private fun parseAndWrite(doc: Document, os: OutputStream, events: List<Event>) {
         doUpdate(doc, events)
 
-        val transformer = transformer.newTransformer()
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes")
-        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4")
-        transformer.transform(DOMSource(doc), StreamResult(writer))
-        return writer
+        val format = OutputFormat.createPrettyPrint()
+        format.isPadText = false
+        format.isNewLineAfterDeclaration = false
+        val writer = XMLWriter(os, format)
+        writer.write(doc)
     }
 
     private fun doUpdate(doc: Document, events: List<Event>) {
@@ -158,312 +143,267 @@ class FlowableParser : BpmnParser {
     }
 
     fun trimWhitespace(node: Node, recurse: Boolean = true) {
-        val children = node.childNodes
+        val children = node.selectNodes("*")
         val toRemove = mutableListOf<Node>()
-        for (i in 0 until children.length) {
-            val child = children.item(i)
-            if (child.nodeType == Node.TEXT_NODE && child.textContent.trim().isBlank()) {
+        for (i in 0 until children.size) {
+            val child = children[i]
+            if (child.nodeType == Node.TEXT_NODE && child.text.trim().isBlank()) {
                 toRemove.add(child)
             } else if (recurse) {
                 trimWhitespace(child)
             }
         }
-        toRemove.forEach { it.parentNode.removeChild(it) }
+        toRemove.forEach { it.parent.remove(it) }
     }
 
     private fun applyLocationUpdate(doc: Document, update: LocationUpdateWithId) {
-        val xpath = xpathFactory.newXPath()
         val node = if (null != update.internalPos) {
             // Internal waypoint update
-            xpath.evaluate(
-                    "//*[local-name()='BPMNEdge'][@id='${update.parentElementId!!.id}']/*[@x][@y][${update.internalPos!! + 1}]",
-                    doc,
-                    XPathConstants.NODE
-            ) as Node
+            doc.selectSingleNode(
+                    "//*[local-name()='BPMNEdge'][@id='${update.parentElementId!!.id}']/*[@x][@y][${update.internalPos!! + 1}]"
+            ) as Element
         } else {
-            xpath.evaluate(
-                    "//*[local-name()='BPMNShape'][@id='${update.diagramElementId.id}']/*[@x][@y]",
-                    doc,
-                    XPathConstants.NODE
-            ) as Node
+            doc.selectSingleNode(
+                    "//*[local-name()='BPMNShape'][@id='${update.diagramElementId.id}']/*[@x][@y]"
+            ) as Element
         }
 
-        val nx = node.attributes.getNamedItem("x")
-        val ny = node.attributes.getNamedItem("y")
+        val nx = node.attribute("x")
+        val ny = node.attribute("y")
 
-        nx.nodeValue = (nx.nodeValue.toFloat() + update.dx).toString()
-        ny.nodeValue = (ny.nodeValue.toFloat() + update.dy).toString()
+        nx.value = (nx.value.toFloat() + update.dx).toString()
+        ny.value = (ny.value.toFloat() + update.dy).toString()
     }
 
     private fun applyNewWaypoints(doc: Document, update: NewWaypoints) {
-        val xpath = xpathFactory.newXPath()
-        val node = xpath.evaluate(
-                "//*[local-name()='BPMNEdge'][@id='${update.edgeElementId.id}'][1]",
-                doc,
-                XPathConstants.NODE
-        ) as Node
+        val node = doc.selectSingleNode(
+                "//*[local-name()='BPMNEdge'][@id='${update.edgeElementId.id}'][1]"
+        ) as Element
 
         val toRemove = mutableListOf<Node>()
-        for (pos in 0 until node.childNodes.length) {
-            val target = node.childNodes.item(pos)
-            if (target.nodeName.contains("waypoint")) {
+        val children = node.selectNodes("*")
+        for (pos in 0 until children.size) {
+            val target = children[pos]
+            if (target.name.contains("waypoint")) {
                 toRemove.add(target)
                 continue
             }
         }
 
-        toRemove.forEach { node.removeChild(it) }
+        toRemove.forEach { node.remove(it) }
         trimWhitespace(node)
 
         update.waypoints.filter { it.physical }.sortedBy { it.internalPhysicalPos }.forEach {
-            newWaypoint(doc, it, node)
+            newWaypoint(it, node)
         }
     }
 
-    private fun newWaypoint(doc: Document, it: IdentifiableWaypoint, parentEdgeElem: Node) {
-        val elem = doc.createElementNS(OMGDI_NS, "omgdi:waypoint")
-        elem.setAttribute("x", it.x.toString())
-        elem.setAttribute("y", it.y.toString())
-        parentEdgeElem.appendChild(elem)
+    private fun newWaypoint(it: IdentifiableWaypoint, parentEdgeElem: Element) {
+        val elem = parentEdgeElem.addElement(NS.OMGDI.named("waypoint"))
+        elem.addAttribute("x", it.x.toString())
+        elem.addAttribute("y", it.y.toString())
     }
 
     private fun applyDiagramElementRemoved(doc: Document, update: DiagramElementRemoved) {
-        val xpath = xpathFactory.newXPath()
-        val node = xpath.evaluate(
-                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane']/*[@id='${update.elementId.id}'][1]",
-                doc,
-                XPathConstants.NODE
+        val node = doc.selectSingleNode(
+                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane']/*[@id='${update.elementId.id}'][1]"
         ) as Node
 
-        val parent = node.parentNode
-        node.parentNode.removeChild(node)
+        val parent = node.parent
+        node.parent.remove(node)
         trimWhitespace(parent, false)
     }
 
     private fun applyBpmnElementRemoved(doc: Document, update: BpmnElementRemoved) {
-        val xpath = xpathFactory.newXPath()
-        val node = xpath.evaluate(
-                "//process/*[@id='${update.elementId.id}'][1]",
-                doc,
-                XPathConstants.NODE
+        val node = doc.selectSingleNode(
+                "//*[local-name()='process']/*[@id='${update.elementId.id}'][1]"
         ) as Node
 
-        val parent = node.parentNode
-        node.parentNode.removeChild(node)
+        val parent = node.parent
+        node.parent.remove(node)
         trimWhitespace(parent, false)
     }
 
     private fun applyBpmnShapeObjectAdded(doc: Document, update: BpmnShapeObjectAdded) {
-        val xpath = xpathFactory.newXPath()
-        val diagramParent = xpath.evaluate(
-                "//process[1]",
-                doc,
-                XPathConstants.NODE
-        ) as Node
+        val diagramParent = doc.selectSingleNode(
+                "//*[local-name()='process'][1]"
+        ) as Element
 
         val newNode = when(update.bpmnObject) {
 
             // Events
             // Start
-            is BpmnStartEvent -> createStartEventWithType(doc, null)
-            is BpmnStartTimerEvent -> createStartEventWithType(doc, "timerEventDefinition")
-            is BpmnStartSignalEvent -> createStartEventWithType(doc, "signalEventDefinition")
-            is BpmnStartMessageEvent -> createStartEventWithType(doc, "messageEventDefinition")
-            is BpmnStartErrorEvent -> createStartEventWithType(doc, "errorEventDefinition")
-            is BpmnStartConditionalEvent -> createStartEventWithType(doc, "conditionalEventDefinition")
-            is BpmnStartEscalationEvent -> createStartEventWithType(doc, "escalationEventDefinition")
+            is BpmnStartEvent -> createStartEventWithType(diagramParent, null)
+            is BpmnStartTimerEvent -> createStartEventWithType(diagramParent, "timerEventDefinition")
+            is BpmnStartSignalEvent -> createStartEventWithType(diagramParent, "signalEventDefinition")
+            is BpmnStartMessageEvent -> createStartEventWithType(diagramParent, "messageEventDefinition")
+            is BpmnStartErrorEvent -> createStartEventWithType(diagramParent, "errorEventDefinition")
+            is BpmnStartConditionalEvent -> createStartEventWithType(diagramParent, "conditionalEventDefinition")
+            is BpmnStartEscalationEvent -> createStartEventWithType(diagramParent, "escalationEventDefinition")
             // End
-            is BpmnEndEvent -> createEndEventWithType(doc, null)
-            is BpmnEndTerminateEvent -> createEndEventWithType(doc, "terminateEventDefinition")
-            is BpmnEndEscalationEvent -> createEndEventWithType(doc, "escalationEventDefinition")
-            is BpmnEndCancelEvent -> createEndEventWithType(doc, "cancelEventDefinition")
-            is BpmnEndErrorEvent -> createEndEventWithType(doc, "errorEventDefinition")
+            is BpmnEndEvent -> createEndEventWithType(diagramParent, null)
+            is BpmnEndTerminateEvent -> createEndEventWithType(diagramParent, "terminateEventDefinition")
+            is BpmnEndEscalationEvent -> createEndEventWithType(diagramParent, "escalationEventDefinition")
+            is BpmnEndCancelEvent -> createEndEventWithType(diagramParent, "cancelEventDefinition")
+            is BpmnEndErrorEvent -> createEndEventWithType(diagramParent, "errorEventDefinition")
             // Boundary
-            is BpmnBoundaryCancelEvent -> createBoundaryEventWithType(doc, "cancelEventDefinition")
-            is BpmnBoundaryCompensationEvent -> createBoundaryEventWithType(doc, "conditionalEventDefinition")
-            is BpmnBoundaryConditionalEvent -> createBoundaryEventWithType(doc, "conditionalEventDefinition")
-            is BpmnBoundaryErrorEvent -> createBoundaryEventWithType(doc, "errorEventDefinition")
-            is BpmnBoundaryEscalationEvent -> createBoundaryEventWithType(doc, "escalationEventDefinition")
-            is BpmnBoundaryMessageEvent -> createBoundaryEventWithType(doc, "messageEventDefinition")
-            is BpmnBoundarySignalEvent -> createBoundaryEventWithType(doc, "signalEventDefinition")
-            is BpmnBoundaryTimerEvent -> createBoundaryEventWithType(doc, "timerEventDefinition")
+            is BpmnBoundaryCancelEvent -> createBoundaryEventWithType(diagramParent, "cancelEventDefinition")
+            is BpmnBoundaryCompensationEvent -> createBoundaryEventWithType(diagramParent, "conditionalEventDefinition")
+            is BpmnBoundaryConditionalEvent -> createBoundaryEventWithType(diagramParent, "conditionalEventDefinition")
+            is BpmnBoundaryErrorEvent -> createBoundaryEventWithType(diagramParent, "errorEventDefinition")
+            is BpmnBoundaryEscalationEvent -> createBoundaryEventWithType(diagramParent, "escalationEventDefinition")
+            is BpmnBoundaryMessageEvent -> createBoundaryEventWithType(diagramParent, "messageEventDefinition")
+            is BpmnBoundarySignalEvent -> createBoundaryEventWithType(diagramParent, "signalEventDefinition")
+            is BpmnBoundaryTimerEvent -> createBoundaryEventWithType(diagramParent, "timerEventDefinition")
             // Intermediate events
             // Catching
-            is BpmnIntermediateTimerCatchingEvent -> createIntermediateCatchEventWithType(doc, "timerEventDefinition")
-            is BpmnIntermediateMessageCatchingEvent -> createIntermediateCatchEventWithType(doc, "messageEventDefinition")
-            is BpmnIntermediateSignalCatchingEvent -> createIntermediateCatchEventWithType(doc, "signalEventDefinition")
-            is BpmnIntermediateConditionalCatchingEvent -> createIntermediateCatchEventWithType(doc, "conditionalEventDefinition")
+            is BpmnIntermediateTimerCatchingEvent -> createIntermediateCatchEventWithType(diagramParent, "timerEventDefinition")
+            is BpmnIntermediateMessageCatchingEvent -> createIntermediateCatchEventWithType(diagramParent, "messageEventDefinition")
+            is BpmnIntermediateSignalCatchingEvent -> createIntermediateCatchEventWithType(diagramParent, "signalEventDefinition")
+            is BpmnIntermediateConditionalCatchingEvent -> createIntermediateCatchEventWithType(diagramParent, "conditionalEventDefinition")
             // Throwing
-            is BpmnIntermediateNoneThrowingEvent -> createIntermediateThrowEventWithType(doc, null)
-            is BpmnIntermediateSignalThrowingEvent -> createIntermediateThrowEventWithType(doc, "signalEventDefinition")
-            is BpmnIntermediateEscalationThrowingEvent -> createIntermediateThrowEventWithType(doc, "escalationEventDefinition")
+            is BpmnIntermediateNoneThrowingEvent -> createIntermediateThrowEventWithType(diagramParent, null)
+            is BpmnIntermediateSignalThrowingEvent -> createIntermediateThrowEventWithType(diagramParent, "signalEventDefinition")
+            is BpmnIntermediateEscalationThrowingEvent -> createIntermediateThrowEventWithType(diagramParent, "escalationEventDefinition")
 
             // Service tasks
-            is BpmnUserTask -> doc.createElement("userTask")
-            is BpmnScriptTask -> doc.createElement("scriptTask")
-            is BpmnServiceTask -> createServiceTask(doc)
-            is BpmnBusinessRuleTask -> doc.createElement("businessRuleTask")
-            is BpmnReceiveTask -> doc.createElement("receiveTask")
-            is BpmnCamelTask -> createServiceTaskWithType(doc, "camel")
-            is BpmnHttpTask -> createServiceTaskWithType(doc, "http")
-            is BpmnMuleTask -> createServiceTaskWithType(doc, "mule")
-            is BpmnDecisionTask -> createServiceTaskWithType(doc, "dmn")
-            is BpmnShellTask -> createServiceTaskWithType(doc, "shell")
+            is BpmnUserTask -> diagramParent.addElement("userTask")
+            is BpmnScriptTask -> diagramParent.addElement("scriptTask")
+            is BpmnServiceTask -> createServiceTask(diagramParent)
+            is BpmnBusinessRuleTask -> diagramParent.addElement("businessRuleTask")
+            is BpmnReceiveTask -> diagramParent.addElement("receiveTask")
+            is BpmnCamelTask -> createServiceTaskWithType(diagramParent, "camel")
+            is BpmnHttpTask -> createServiceTaskWithType(diagramParent, "http")
+            is BpmnMuleTask -> createServiceTaskWithType(diagramParent, "mule")
+            is BpmnDecisionTask -> createServiceTaskWithType(diagramParent, "dmn")
+            is BpmnShellTask -> createServiceTaskWithType(diagramParent, "shell")
 
             // Sub processes
-            is BpmnCallActivity -> doc.createElement("callActivity")
-            is BpmnSubProcess -> doc.createElement("subProcess")
-            is BpmnAdHocSubProcess -> doc.createElement("adHocSubProcess")
-            is BpmnTransactionalSubProcess -> doc.createElement("transaction")
+            is BpmnCallActivity -> diagramParent.addElement("callActivity")
+            is BpmnSubProcess -> diagramParent.addElement("subProcess")
+            is BpmnAdHocSubProcess -> diagramParent.addElement("adHocSubProcess")
+            is BpmnTransactionalSubProcess -> diagramParent.addElement("transaction")
 
             // Gateways
-            is BpmnExclusiveGateway -> doc.createElement("exclusiveGateway")
-            is BpmnParallelGateway -> doc.createElement("parallelGateway")
-            is BpmnInclusiveGateway -> doc.createElement("inclusiveGateway")
-            is BpmnEventGateway -> doc.createElement("eventBasedGateway")
+            is BpmnExclusiveGateway -> diagramParent.addElement("exclusiveGateway")
+            is BpmnParallelGateway -> diagramParent.addElement("parallelGateway")
+            is BpmnInclusiveGateway -> diagramParent.addElement("inclusiveGateway")
+            is BpmnEventGateway -> diagramParent.addElement("eventBasedGateway")
 
             // Linking elements
-            is BpmnSequenceFlow -> doc.createElement("sequenceFlow")
+            is BpmnSequenceFlow -> diagramParent.addElement("sequenceFlow")
 
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 
-        update.props.forEach { setToNode(doc, newNode, it.key, it.value.value) }
+        update.props.forEach { setToNode(newNode, it.key, it.value.value) }
         trimWhitespace(diagramParent, false)
-        diagramParent.appendChild(newNode)
 
-        val shapeParent = xpath.evaluate(
-                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]",
-                doc,
-                XPathConstants.NODE
-        ) as Node
-        val newShape = doc.createElementNS(BPMDI_NS, "bpmndi:BPMNShape")
-        newShape.setAttribute("id", update.shape.id.id)
-        newShape.setAttribute("bpmnElement", update.bpmnObject.id.id)
-        shapeParent.appendChild(newShape)
-        val newBounds = doc.createElementNS(OMGDC_NS, "omgdc:Bounds")
-        newBounds.setAttribute("x", update.shape.bounds.x.toString())
-        newBounds.setAttribute("y", update.shape.bounds.y.toString())
-        newBounds.setAttribute("width", update.shape.bounds.width.toString())
-        newBounds.setAttribute("height", update.shape.bounds.height.toString())
-        newShape.appendChild(newBounds)
+        val shapeParent = doc.selectSingleNode(
+                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]"
+        ) as Element
+        val newShape = shapeParent.addElement( NS.BPMDI.named("BPMNShape"))
+        newShape.addAttribute("id", update.shape.id.id)
+        newShape.addAttribute("bpmnElement", update.bpmnObject.id.id)
+        val newBounds = newShape.addElement(NS.OMGDC.named("Bounds"))
+        newBounds.addAttribute("x", update.shape.bounds.x.toString())
+        newBounds.addAttribute("y", update.shape.bounds.y.toString())
+        newBounds.addAttribute("width", update.shape.bounds.width.toString())
+        newBounds.addAttribute("height", update.shape.bounds.height.toString())
         trimWhitespace(shapeParent, false)
     }
 
-    private fun createServiceTask(doc: Document): Element {
-        return createServiceTaskWithType(doc)
+    private fun createServiceTask(elem: Element): Element {
+        return createServiceTaskWithType(elem)
     }
 
-    private fun createBoundaryEventWithType(doc: Document, type: String): Element {
-        val elem = doc.createElement("boundaryEvent")
-        val elemType = doc.createElement(type)
-        elem.appendChild(elemType)
-        return elem
+    private fun createBoundaryEventWithType(elem: Element, type: String): Element {
+        val newElem = elem.addElement("boundaryEvent")
+        newElem.addElement(type)
+        return newElem
     }
 
-    private fun createStartEventWithType(doc: Document, type: String?): Element {
-        val elem = doc.createElement("startEvent")
-        type?.let {
-            val elemType = doc.createElement(it)
-            elem.appendChild(elemType)
-        }
-        return elem
+    private fun createStartEventWithType(elem: Element, type: String?): Element {
+        val newElem = elem.addElement("startEvent")
+        type?.let { newElem.addElement(it) }
+        return newElem
     }
 
-    private fun createEndEventWithType(doc: Document, type: String?): Element {
-        val elem = doc.createElement("endEvent")
-        type?.let {
-            val elemType = doc.createElement(it)
-            elem.appendChild(elemType)
-        }
-        return elem
+    private fun createEndEventWithType(elem: Element, type: String?): Element {
+        val newElem = elem.addElement("endEvent")
+        type?.let { newElem.addElement(it) }
+        return newElem
     }
 
-    private fun createIntermediateCatchEventWithType(doc: Document, type: String): Element {
-        val elem = doc.createElement("intermediateCatchEvent")
-        val elemType = doc.createElement(type)
-        elem.appendChild(elemType)
-        return elem
+    private fun createIntermediateCatchEventWithType(elem: Element, type: String): Element {
+        val newElem = elem.addElement("intermediateCatchEvent")
+        newElem.addElement(type)
+        return newElem
     }
 
-    private fun createIntermediateThrowEventWithType(doc: Document, type: String?): Element {
-        val elem = doc.createElement("intermediateThrowEvent")
-        type?.let {
-            val elemType = doc.createElement(it)
-            elem.appendChild(elemType)
-        }
-        return elem
+    private fun createIntermediateThrowEventWithType(elem: Element, type: String?): Element {
+        val newElem = elem.addElement("intermediateThrowEvent")
+        type?.let { newElem.addElement(it) }
+        return newElem
     }
 
-    private fun createServiceTaskWithType(doc: Document, type: String? = null): Element {
-        val elem = doc.createElement("serviceTask")
-        type?.let { elem.setAttribute("flowable:type", type) }
-        return elem
+    private fun createServiceTaskWithType(elem: Element, type: String? = null): Element {
+        val newElem = elem.addElement("serviceTask")
+        type?.let { newElem.addAttribute(NS.FLOWABLE.named("type"), type) }
+        return newElem
     }
 
     private fun applyBpmnEdgeObjectAdded(doc: Document, update: BpmnEdgeObjectAdded) {
-        val xpath = xpathFactory.newXPath()
-        val diagramParent = xpath.evaluate(
-                "//process[1]",
-                doc,
-                XPathConstants.NODE
-        ) as Node
+        val diagramParent = doc.selectSingleNode(
+                "//*[local-name()='process'][1]"
+        ) as Element
 
         val newNode = when(update.bpmnObject) {
-            is BpmnSequenceFlow -> doc.createElement("sequenceFlow")
+            is BpmnSequenceFlow -> diagramParent.addElement("sequenceFlow")
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 
-        update.props.forEach { setToNode(doc, newNode, it.key, it.value.value) }
+        update.props.forEach { setToNode(newNode, it.key, it.value.value) }
         trimWhitespace(diagramParent, false)
-        diagramParent.appendChild(newNode)
 
-        val shapeParent = xpath.evaluate(
-                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]",
-                doc,
-                XPathConstants.NODE
-        ) as Node
-        val newShape = doc.createElementNS(BPMDI_NS, "bpmndi:BPMNEdge")
-        newShape.setAttribute("id", update.edge.id.id)
-        newShape.setAttribute("bpmnElement", update.bpmnObject.id.id)
-        shapeParent.appendChild(newShape)
-        update.edge.waypoint.filter { it.physical }.forEach { newWaypoint(doc, it, newShape) }
+        val shapeParent = doc.selectSingleNode(
+                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]"
+        ) as Element
+        val newShape = shapeParent.addElement( NS.BPMDI.named("BPMNEdge"))
+        newShape.addAttribute("id", update.edge.id.id)
+        newShape.addAttribute("bpmnElement", update.bpmnObject.id.id)
+        update.edge.waypoint.filter { it.physical }.forEach { newWaypoint(it, newShape) }
         trimWhitespace(shapeParent, false)
     }
 
     private fun applyPropertyUpdateWithId(doc: Document, update: PropertyUpdateWithId) {
-        val xpath = xpathFactory.newXPath()
-        val node = xpath.evaluate(
-                "//process/*[@id='${update.bpmnElementId.id}'][1]",
-                doc,
-                XPathConstants.NODE
+        val node = doc.selectSingleNode(
+                "//*[local-name()='process'][1]/*[@id='${update.bpmnElementId.id}'][1]"
         ) as Element
 
-        setToNode(doc, node, update.property, update.newValue)
+        setToNode(node, update.property, update.newValue)
 
         if (null == update.newIdValue) {
             return
         }
 
-        val diagramElement = xpath.evaluate(
-                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]/*[@bpmnElement='${update.bpmnElementId.id}']",
-                doc,
-                XPathConstants.NODE
+        val diagramElement = doc.selectSingleNode(
+                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]/*[@bpmnElement='${update.bpmnElementId.id}']"
         ) as Element
 
-        diagramElement.setAttribute("bpmnElement", update.newIdValue!!.id)
+        diagramElement.addAttribute("bpmnElement", update.newIdValue!!.id)
     }
 
 
-    private fun setToNode(doc: Document, node: Element, type: PropertyType, value: Any?) {
-        val details = PropertyTypeDetails.values().filter { it.propertyType == type }.firstOrNull()!!
+    private fun setToNode(node: Element, type: PropertyType, value: Any?) {
+        val details = PropertyTypeDetails.values().firstOrNull { it.propertyType == type }!!
         when {
-            details.xmlPath.contains(".") -> setNestedToNode(doc, node, type, details, value)
+            details.xmlPath.contains(".") -> setNestedToNode(node, type, details, value)
             else -> setAttributeOrValueOrCdataOrRemoveIfNull(node, details.xmlPath, details, asString(type.valueType, value))
         }
     }
 
-    private fun setNestedToNode(doc: Document, node: Element, type: PropertyType, details: PropertyTypeDetails, value: Any?) {
+    private fun setNestedToNode(node: Element, type: PropertyType, details: PropertyTypeDetails, value: Any?) {
         val segments = details.xmlPath.split(".")
         val childOf: ((Element, String) -> Element?) = {target, name -> nodeChildByName(target, name)}
 
@@ -481,8 +421,7 @@ class FlowableParser : BpmnParser {
                     return
                 }
 
-                val newElem = doc.createElement(name)
-                currentNode.appendChild(newElem)
+                val newElem = node.addElement(name)
                 currentNode = newElem
             } else {
                 currentNode = child
@@ -493,9 +432,10 @@ class FlowableParser : BpmnParser {
     }
 
     private fun nodeChildByName(target: Element, name: String): Element? {
-        for (pos in 0 until target.childNodes.length) {
-            if (target.childNodes.item(pos).nodeName.contains(name)) {
-                return target.childNodes.item(pos) as Element
+        val children = target.selectNodes("*")
+        for (pos in 0 until children.size) {
+            if (children[pos].name.contains(name)) {
+                return children[pos] as Element
             }
         }
         return null
@@ -510,24 +450,33 @@ class FlowableParser : BpmnParser {
 
     private fun setAttribute(node: Element, name: String, value: String?) {
         if (value.isNullOrEmpty()) {
-            if (node.hasAttribute(name)) {
-                node.removeAttribute(name)
+            val attr = node.attribute(name)
+            if (null != attr) {
+                node.remove(attr)
             }
             return
         }
 
-        node.setAttribute(name, value)
+        if (name.contains(":")) {
+            val parts = name.split(":")
+            val ns = parts[0]
+            val localName = parts[1]
+
+            node.addAttribute(byPrefix(ns).named(localName), value)
+        } else {
+            node.addAttribute(name, value)
+        }
     }
 
     private fun setCdata(node: Element, name: String, value: String?) {
         if (value.isNullOrEmpty()) {
-            if (node.textContent.isNotBlank()) {
-                node.textContent = null
+            if (node.text.isNotBlank()) {
+                node.text = null
             }
             return
         }
 
-        node.textContent = value
+        node.text = value
     }
 
     private fun asString(type: PropertyValueType, value: Any?): String? {
@@ -560,5 +509,21 @@ class FlowableParser : BpmnParser {
         mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         return mapper as XmlMapper
+    }
+
+    enum class NS(val namePrefix: String, val url: String) {
+        OMGDI("omgdi", "http://www.omg.org/spec/DD/20100524/DI"),
+        BPMDI("bpmdi", "http://www.omg.org/spec/BPMN/20100524/DI"),
+        OMGDC("omgdc", "http://www.omg.org/spec/DD/20100524/DC"),
+        FLOWABLE("flowable", "http://flowable.org/bpmn"),
+        XSI("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+
+        fun named(name: String): QName {
+            return QName(name, Namespace(namePrefix, url))
+        }
+    }
+
+    private fun byPrefix(prefix: String): NS {
+        return NS.values().firstOrNull { it.namePrefix == prefix }!!
     }
 }

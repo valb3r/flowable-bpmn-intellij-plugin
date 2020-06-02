@@ -16,7 +16,7 @@ data class DefaultCanvasConstants(
         override val epsilon: Float = 0.1f,
         override val anchorAttractionThreshold: Float = 5.0f,
         override val zoomFactor: Float = 1.2f,
-        override val cursorSize: Float = if (UIUtil.isJreHiDPIEnabled()) 12.0f else 8.0f,
+        override val cursorSize: Float = if (UIUtil.isJreHiDPIEnabled()) 6.0f else 3.0f,
         override val defaultCameraOrigin: Point2D.Float = Point2D.Float(0f, 0f),
         override val defaultZoomRatio: Float = 1f
 ): CanvasConstants
