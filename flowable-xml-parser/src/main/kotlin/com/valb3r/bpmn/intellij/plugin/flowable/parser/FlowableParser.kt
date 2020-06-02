@@ -35,9 +35,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnFile
-import org.dom4j.Document
-import org.dom4j.Element
-import org.dom4j.Node
+import org.dom4j.*
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.SAXReader
 import org.dom4j.io.XMLWriter
@@ -98,10 +96,6 @@ enum class XmlType {
 }
 
 class FlowableParser : BpmnParser {
-
-    val OMGDI_NS = "http://www.omg.org/spec/DD/20100524/DI"
-    val BPMDI_NS = "http://www.omg.org/spec/BPMN/20100524/DI"
-    val OMGDC_NS = "http://www.omg.org/spec/DD/20100524/DC"
 
     private val mapper: XmlMapper = mapper()
 
@@ -205,7 +199,7 @@ class FlowableParser : BpmnParser {
     }
 
     private fun newWaypoint(it: IdentifiableWaypoint, parentEdgeElem: Element) {
-        val elem = parentEdgeElem.addElement( "omgdi:waypoint", OMGDI_NS)
+        val elem = parentEdgeElem.addElement(NS.OMGDI.named("waypoint"))
         elem.addAttribute("x", it.x.toString())
         elem.addAttribute("y", it.y.toString())
     }
@@ -308,10 +302,10 @@ class FlowableParser : BpmnParser {
         val shapeParent = doc.selectSingleNode(
                 "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]"
         ) as Element
-        val newShape = shapeParent.addElement( "bpmndi:BPMNShape", BPMDI_NS)
+        val newShape = shapeParent.addElement( NS.BPMDI.named("BPMNShape"))
         newShape.addAttribute("id", update.shape.id.id)
         newShape.addAttribute("bpmnElement", update.bpmnObject.id.id)
-        val newBounds = newShape.addElement("omgdc:Bounds", OMGDC_NS)
+        val newBounds = newShape.addElement(NS.OMGDC.named("Bounds"))
         newBounds.addAttribute("x", update.shape.bounds.x.toString())
         newBounds.addAttribute("y", update.shape.bounds.y.toString())
         newBounds.addAttribute("width", update.shape.bounds.width.toString())
@@ -355,7 +349,7 @@ class FlowableParser : BpmnParser {
 
     private fun createServiceTaskWithType(elem: Element, type: String? = null): Element {
         val newElem = elem.addElement("serviceTask")
-        type?.let { newElem.addAttribute("flowable:type", type) }
+        type?.let { newElem.addAttribute(NS.FLOWABLE.named("type"), type) }
         return newElem
     }
 
@@ -375,7 +369,7 @@ class FlowableParser : BpmnParser {
         val shapeParent = doc.selectSingleNode(
                 "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]"
         ) as Element
-        val newShape = shapeParent.addElement( "bpmndi:BPMNEdge", BPMDI_NS)
+        val newShape = shapeParent.addElement( NS.BPMDI.named("BPMNEdge"))
         newShape.addAttribute("id", update.edge.id.id)
         newShape.addAttribute("bpmnElement", update.bpmnObject.id.id)
         update.edge.waypoint.filter { it.physical }.forEach { newWaypoint(it, newShape) }
@@ -402,7 +396,7 @@ class FlowableParser : BpmnParser {
 
 
     private fun setToNode(node: Element, type: PropertyType, value: Any?) {
-        val details = PropertyTypeDetails.values().filter { it.propertyType == type }.firstOrNull()!!
+        val details = PropertyTypeDetails.values().firstOrNull { it.propertyType == type }!!
         when {
             details.xmlPath.contains(".") -> setNestedToNode(node, type, details, value)
             else -> setAttributeOrValueOrCdataOrRemoveIfNull(node, details.xmlPath, details, asString(type.valueType, value))
@@ -463,7 +457,15 @@ class FlowableParser : BpmnParser {
             return
         }
 
-        node.addAttribute(name, value)
+        if (name.contains(":")) {
+            val parts = name.split(":")
+            val ns = parts[0]
+            val localName = parts[1]
+
+            node.addAttribute(byPrefix(ns).named(localName), value)
+        } else {
+            node.addAttribute(name, value)
+        }
     }
 
     private fun setCdata(node: Element, name: String, value: String?) {
@@ -507,5 +509,20 @@ class FlowableParser : BpmnParser {
         mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         return mapper as XmlMapper
+    }
+
+    enum class NS(val namePrefix: String, val url: String) {
+        OMGDI("omgdi", "http://www.omg.org/spec/DD/20100524/DI"),
+        BPMDI("bpmdi", "http://www.omg.org/spec/BPMN/20100524/DI"),
+        OMGDC("omgdc", "http://www.omg.org/spec/DD/20100524/DC"),
+        FLOWABLE("flowable", "http://flowable.org/bpmn");
+
+        fun named(name: String): QName {
+            return QName(name, Namespace(namePrefix, url))
+        }
+    }
+
+    private fun byPrefix(prefix: String): NS {
+        return NS.values().filter { it.namePrefix == prefix }.firstOrNull()!!
     }
 }
