@@ -308,8 +308,8 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
         return Rectangle2D.Float(
                 left.x,
                 left.y,
-                scaledRight.x - scaledLeft.x,
-                scaledRight.y - scaledLeft.y
+                max(scaledRight.x - scaledLeft.x, settings.cursorSize), // avoid possibly too small attraction region
+                max(scaledRight.y - scaledLeft.y, settings.cursorSize)  // avoid possibly too small attraction region
         )
     }
 
