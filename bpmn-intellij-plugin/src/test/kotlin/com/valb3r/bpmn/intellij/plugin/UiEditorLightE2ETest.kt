@@ -86,7 +86,7 @@ internal class UiEditorLightE2ETest {
     private val icons = mock<IconProvider>()
     private val renderer = spy(DefaultBpmnProcessRenderer(icons))
     private val canvasBuilder = CanvasBuilder(renderer)
-    private val canvas = Canvas(DefaultCanvasConstants().copy(cursorSize = 3.0f)) // Using small cursor size for clarity
+    private val canvas = Canvas(DefaultCanvasConstants().copy(baseCursorSize = 3.0f)) // Using small cursor size for clarity
     private var renderResult: Map<DiagramElementId, AreaWithZindex>? = null
 
     private val basicProcess = BpmnProcessObject(
@@ -575,7 +575,7 @@ internal class UiEditorLightE2ETest {
     fun `Selecting with rectangle of all elements and dragging them works`() {
         prepareTwoServiceTaskView()
 
-        val begin = Point2D.Float(startElemX, startElemY)
+        val begin = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
         canvas.paintComponent(graphics)
         canvas.startSelectionOrDrag(begin)
         canvas.paintComponent(graphics)
@@ -617,7 +617,7 @@ internal class UiEditorLightE2ETest {
 
         val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
 
-        val begin = Point2D.Float(startElemX, startElemY)
+        val begin = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
         canvas.paintComponent(graphics)
         canvas.startSelectionOrDrag(begin)
         canvas.paintComponent(graphics)

@@ -300,16 +300,11 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
 
     // to handle small area shapes
     private fun cursorRect(location: Point2D.Float): Rectangle2D {
-        val left = Point2D.Float(location.x - settings.cursorSize, location.y - settings.cursorSize)
-        val right = Point2D.Float(location.x + settings.cursorSize, location.y + settings.cursorSize)
-        val scaledLeft = camera.fromCameraView(left)
-        val scaledRight = camera.fromCameraView(right)
-
         return Rectangle2D.Float(
-                left.x,
-                left.y,
-                max(scaledRight.x - scaledLeft.x, settings.cursorSize), // avoid possibly too small attraction region
-                max(scaledRight.y - scaledLeft.y, settings.cursorSize)  // avoid possibly too small attraction region
+                location.x - settings.baseCursorSize / 2.0f,
+                location.y - settings.baseCursorSize / 2.0f,
+                settings.baseCursorSize,
+                settings.baseCursorSize
         )
     }
 
