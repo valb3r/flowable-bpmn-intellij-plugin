@@ -24,7 +24,7 @@ plugin repository.
 ## From GitHub releases
 
 Install the latest plugin version plugin from the releases page:
-[Releases page](https://github.com/valb3r/flowable-bpmn-intellij-plugin/releases/) release page
+[Releases page](https://github.com/valb3r/flowable-bpmn-intellij-plugin/releases/)
 
 **NOTE: The plugin requires 'Ultimate Edition' of IntelliJ for code navigation**
 
