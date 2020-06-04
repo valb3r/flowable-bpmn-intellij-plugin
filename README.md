@@ -80,28 +80,28 @@ IntelliJ docs on this topic:
 
 |            XML element           | Supported |
 |:--------------------------------:|:---------:|
-|          adHocSubProcess         |           |
+|          adHocSubProcess         |     P     |
 |            association           |           |
-|           boundaryEvent          |           |
+|           boundaryEvent          |     P     |
 |        bpmndi:BPMNDiagram        |     Y     |
 |          bpmndi:BPMNEdge         |     Y     |
 |         bpmndi:BPMNPlane         |     Y     |
 |         bpmndi:BPMNShape         |     Y     |
 |         businessRuleTask         |     Y     |
 |           callActivity           |     Y     |
-|       cancelEventDefinition      |           |
-|     compensateEventDefinition    |           |
-|        completionCondition       |           |
-|             condition            |           |
-|    conditionalEventDefinition    |           |
+|       cancelEventDefinition      |     P     |
+|     compensateEventDefinition    |     P     |
+|        completionCondition       |     P     |
+|             condition            |     P     |
+|    conditionalEventDefinition    |     P     |
 |        conditionExpression       |     Y     |
 |            dataObject            |           |
 |            definitions           |           |
 |           documentation          |     Y     |
 |             endEvent             |     Y     |
-|       errorEventDefinition       |           |
-|     escalationEventDefinition    |           |
-|         eventBasedGateway        |           |
+|       errorEventDefinition       |     P     |
+|     escalationEventDefinition    |     P     |
+|         eventBasedGateway        |     P     |
 |         exclusiveGateway         |     Y     |
 |         extensionElements        |           |
 |      flowable:eventListener      |           |
@@ -111,31 +111,39 @@ IntelliJ docs on this topic:
 |           flowable:out           |           |
 |          flowable:string         |           |
 |          flowable:value          |           |
-|         inclusiveGateway         |           |
-|      intermediateCatchEvent      |           |
-|      intermediateThrowEvent      |           |
+|         inclusiveGateway         |     Y     |
+|      intermediateCatchEvent      |     P     |
+|      intermediateThrowEvent      |     P     |
 |          loopCardinality         |           |
 |              message             |           |
 |      messageEventDefinition      |           |
 | multiInstanceLoopCharacteristics |           |
 |           omgdc:Bounds           |     Y     |
 |          omgdi:waypoint          |     Y     |
-|          parallelGateway         |           |
-|              process             |           |
-|            receiveTask           |           |
+|          parallelGateway         |     P     |
+|              process             |     P     |
+|            receiveTask           |     P     |
 |              script              |     Y     |
 |            scriptTask            |     Y     |
 |           sequenceFlow           |     Y     |
 |            serviceTask           |     Y     |
-|       signalEventDefinition      |           |
+|       signalEventDefinition      |     P     |
 |            startEvent            |     Y     |
-|            subProcess            |           |
-|     terminateEventDefinition     |           |
-|               text               |           |
-|          textAnnotation          |           |
-|             timeDate             |           |
-|       timerEventDefinition       |           |
-|            transaction           |           |
+|            subProcess            |     P     |
+|     terminateEventDefinition     |     P     |
+|               text               |     P     |
+|          textAnnotation          |     P     |
+|             timeDate             |     P     |
+|       timerEventDefinition       |     P     |
+|            transaction           |     P     |
 |             userTask             |     Y     |
+
+**Legend**:
+
+**Y** - Mostly or fully supported
+
+**P** - Partially supported
+
+**Blank** - Mostly unsupported
 
 </details>
