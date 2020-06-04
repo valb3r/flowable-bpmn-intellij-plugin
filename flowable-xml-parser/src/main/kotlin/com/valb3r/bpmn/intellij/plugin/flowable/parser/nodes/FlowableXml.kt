@@ -42,45 +42,67 @@ class BpmnFile(
 
 data class MessageNode(val id: String, var name: String?)
 
+open class ProcessBody {
+    
+    // Events
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var startEvent: List<StartEventNode>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var endEvent: List<EndEventNode>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var boundaryEvent: List<BoundaryEvent>? = null
+    // Events-intermediate
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var intermediateCatchEvent: List<IntermediateCatchEvent>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var intermediateThrowEvent: List<IntermediateThrowEvent>? = null
+
+    // Service task alike:
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var userTask: List<UserTask>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var scriptTask: List<ScriptTask>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var serviceTask: List<ServiceTask>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var businessRuleTask: List<BusinessRuleTask>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var receiveTask: List<ReceiveTask>? = null
+
+    // Sub process alike
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var callActivity: List<CallActivity>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var subProcess: List<SubProcess>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var transaction: List<Transaction>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var adHocSubProcess: List<AdHocSubProcess>? = null
+
+    // Gateways
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var exclusiveGateway: List<ExclusiveGateway>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var parallelGateway: List<ParallelGateway>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var inclusiveGateway: List<InclusiveGateway>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var eventBasedGateway: List<EventBasedGateway>? = null
+
+    // Linking elements
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var sequenceFlow: List<SequenceFlow>? = null
+}
+
 // For mixed lists in XML we need to have JsonSetter/JsonMerge on field
 // https://github.com/FasterXML/jackson-dataformat-xml/issues/363
 // unfortunately this has failed with Kotlin 'data' classes
-class ProcessNode: BpmnMappable<BpmnProcess> {
+class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
     @JacksonXmlProperty(isAttribute = true) var id: String? = null // it is false - it is non-null
     @JacksonXmlProperty(isAttribute = true) var name: String? = null // it is false - it is non-null
     var documentation: String? = null
     @JacksonXmlProperty(isAttribute = true) var isExecutable: Boolean? = null
-
-    // Events
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var startEvent: List<StartEventNode>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val endEvent: List<EndEventNode>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val boundaryEvent: List<BoundaryEvent>? = null
-    // Events-intermediate
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val intermediateCatchEvent: List<IntermediateCatchEvent>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val intermediateThrowEvent: List<IntermediateThrowEvent>? = null
-
-    // Service task alike:
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var userTask: List<UserTask>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var scriptTask: List<ScriptTask>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var serviceTask: List<ServiceTask>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var businessRuleTask: List<BusinessRuleTask>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var receiveTask: List<ReceiveTask>? = null
-
-    // Sub process alike
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var callActivity: List<CallActivity>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var subProcess: List<SubProcess>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var transaction: List<Transaction>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var adHocSubProcess: List<AdHocSubProcess>? = null
-
-    // Gateways
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var exclusiveGateway: List<ExclusiveGateway>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var parallelGateway: List<ParallelGateway>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var inclusiveGateway: List<InclusiveGateway>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var eventBasedGateway: List<EventBasedGateway>? = null
-
-    // Linking elements
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var sequenceFlow: List<SequenceFlow>? = null
 
     override fun toElement(): BpmnProcess {
         var result = Mappers.getMapper(Mapping::class.java).convertToDto(this)

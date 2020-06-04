@@ -2,9 +2,9 @@ package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
@@ -37,6 +37,15 @@ internal class FlowableParserTest {
         val processObject: BpmnProcessObject?
 
         processObject = FlowableParser().parse("duplicates.bpmn20.xml".asResource()!!)
+
+        processObject.shouldNotBeNull()
+    }
+
+    @Test
+    fun `XML process with nested subprocess elements of same type should be parseable without error`() {
+        val processObject: BpmnProcessObject?
+
+        processObject = FlowableParser().parse("nested.bpmn20.xml".asResource()!!)
 
         processObject.shouldNotBeNull()
     }
