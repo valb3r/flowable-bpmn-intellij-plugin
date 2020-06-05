@@ -3,7 +3,9 @@ package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes
 import com.fasterxml.jackson.annotation.JsonMerge
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
@@ -105,17 +107,50 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     @JacksonXmlProperty(isAttribute = true) var isExecutable: Boolean? = null
 
     override fun toElement(): BpmnProcess {
-        var result = Mappers.getMapper(Mapping::class.java).convertToDto(this)
-        result = applyServiceTaskCustomizationByType(result)
-        result = applyIntermediateCatchEventCustomizationByType(result)
-        result = applyIntermediateThrowingEventCustomizationByType(result)
-        result = applyEndEventCustomizationByType(result)
-        result = applyStartEventCustomizationByType(result)
-        result = applyBoundaryEventCustomizationByType(result)
-        return result
+        val result = Mappers.getMapper(Mapping::class.java).convertToDto(this)
+        val mappedBody = mapBody(this)
+
+        return result.copy(
+                body = mappedBody,
+                children = extractNestedProcesses(this)
+        )
     }
 
-    private fun applyServiceTaskCustomizationByType(process: BpmnProcess): BpmnProcess {
+    private fun extractNestedProcesses(body: ProcessBody): Map<BpmnElementId, BpmnProcessBody>? {
+        val children = mutableMapOf<BpmnElementId, BpmnProcessBody>()
+
+        body.adHocSubProcess?.forEach { mapChildren(BpmnElementId(it.id), it, children) }
+        body.subProcess?.forEach { mapChildren(BpmnElementId(it.id), it, children) }
+        body.transaction?.forEach { mapChildren(BpmnElementId(it.id), it, children) }
+
+        if (children.isNotEmpty()) {
+            return children
+        }
+
+        return null
+    }
+
+    private fun mapChildren(id: BpmnElementId, body: ProcessBody, children: MutableMap<BpmnElementId, BpmnProcessBody>) {
+        children[id] = mapBody(body)
+        extractNestedProcesses(body)?.let { nested -> children += nested }
+    }
+
+    private fun mapBody(body: ProcessBody): BpmnProcessBody {
+        val bodyMapper = Mappers.getMapper(BodyMapping::class.java)
+        return fillBodyWithDedicatedElements(bodyMapper.convertToDto(body))
+    }
+
+    private fun fillBodyWithDedicatedElements(processBody: BpmnProcessBody): BpmnProcessBody {
+        var body = processBody
+        body = applyServiceTaskCustomizationByType(body)
+        body = applyIntermediateCatchEventCustomizationByType(body)
+        body = applyIntermediateThrowingEventCustomizationByType(body)
+        body = applyEndEventCustomizationByType(body)
+        body = applyStartEventCustomizationByType(body)
+        return applyBoundaryEventCustomizationByType(body)
+    }
+
+    private fun applyServiceTaskCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
         result = extractTasksBasedOnType(result, "camel",  Mappers.getMapper(CamelMapper::class.java)) { updates, target -> target.copy(camelTask = updates) }
         result = extractTasksBasedOnType(result, "http",  Mappers.getMapper(HttpMapper::class.java)) { updates, target -> target.copy(httpTask = updates) }
@@ -125,7 +160,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return result
     }
 
-    private fun applyIntermediateCatchEventCustomizationByType(process: BpmnProcess): BpmnProcess {
+    private fun applyIntermediateCatchEventCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
         result = extractIntermediateCatchEventsBasedOnType(result, { null != it.timerEventDefinition },  Mappers.getMapper(TimerCatchingMapper::class.java)) { updates, target -> target.copy(intermediateTimerCatchingEvent = updates) }
         result = extractIntermediateCatchEventsBasedOnType(result, { null != it.signalEventDefinition },  Mappers.getMapper(SignalCatchingMapper::class.java)) { updates, target -> target.copy(intermediateSignalCatchingEvent = updates) }
@@ -134,7 +169,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return result
     }
 
-    private fun applyIntermediateThrowingEventCustomizationByType(process: BpmnProcess): BpmnProcess {
+    private fun applyIntermediateThrowingEventCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
         result = extractIntermediateThrowingEventsBasedOnType(result, { null == it.escalationEventDefinition && null == it.signalEventDefinition },  Mappers.getMapper(NoneThrowMapper::class.java)) { updates, target -> target.copy(intermediateNoneThrowingEvent = updates) }
         result = extractIntermediateThrowingEventsBasedOnType(result, { null != it.signalEventDefinition },  Mappers.getMapper(SignalThrowMapper::class.java)) { updates, target -> target.copy(intermediateSignalThrowingEvent = updates) }
@@ -142,7 +177,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return result
     }
 
-    private fun applyEndEventCustomizationByType(process: BpmnProcess): BpmnProcess {
+    private fun applyEndEventCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
         result = extractEndEventsBasedOnType(result, { null != it.errorEventDefinition },  Mappers.getMapper(EndErrorMapper::class.java)) { updates, target -> target.copy(errorEndEvent = updates) }
         result = extractEndEventsBasedOnType(result, { null != it.escalationEventDefinition },  Mappers.getMapper(EndEscalationMapper::class.java)) { updates, target -> target.copy(escalationEndEvent = updates) }
@@ -151,7 +186,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return result
     }
 
-    private fun applyStartEventCustomizationByType(process: BpmnProcess): BpmnProcess {
+    private fun applyStartEventCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
         result = extractStartEventsBasedOnType(result, { null != it.conditionalEventDefinition },  Mappers.getMapper(StartConditionalMapper::class.java)) { updates, target -> target.copy(conditionalStartEvent = updates) }
         result = extractStartEventsBasedOnType(result, { null != it.errorEventDefinition },  Mappers.getMapper(StartErrorMapper::class.java)) { updates, target -> target.copy(errorStartEvent = updates) }
@@ -162,7 +197,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return result
     }
 
-    private fun applyBoundaryEventCustomizationByType(process: BpmnProcess): BpmnProcess {
+    private fun applyBoundaryEventCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
         result = extractBoundaryEventsBasedOnType(result, { null != it.cancelEventDefinition },  Mappers.getMapper(BoundaryCancelMapper::class.java)) { updates, target -> target.copy(boundaryCancelEvent = updates) }
         result = extractBoundaryEventsBasedOnType(result, { null != it.compensateEventDefinition },  Mappers.getMapper(BoundaryCompensationMapper::class.java)) { updates, target -> target.copy(boundaryCompensationEvent = updates) }
@@ -175,7 +210,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return result
     }
 
-    private fun <T> extractTasksBasedOnType(process: BpmnProcess, type: String, mapper: ServiceTaskMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
+    private fun <T> extractTasksBasedOnType(process: BpmnProcessBody, type: String, mapper: ServiceTaskMapper<T>, update: (List<T>?, BpmnProcessBody) -> BpmnProcessBody): BpmnProcessBody {
         process.serviceTask?.apply {
             val byTypeGroup = this.groupBy { it.type == type }
             val newProcess = process.copy(serviceTask = byTypeGroup[false])
@@ -185,7 +220,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return process
     }
 
-    private fun <T> extractIntermediateCatchEventsBasedOnType(process: BpmnProcess, filter: (BpmnIntermediateCatchingEvent) -> Boolean, mapper: IntermediateCatchEventMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
+    private fun <T> extractIntermediateCatchEventsBasedOnType(process: BpmnProcessBody, filter: (BpmnIntermediateCatchingEvent) -> Boolean, mapper: IntermediateCatchEventMapper<T>, update: (List<T>?, BpmnProcessBody) -> BpmnProcessBody): BpmnProcessBody {
         process.intermediateCatchEvent?.apply {
             val byTypeGroup = this.groupBy { filter(it) }
             val newProcess = process.copy(intermediateCatchEvent = byTypeGroup[false])
@@ -195,7 +230,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return process
     }
 
-    private fun <T> extractIntermediateThrowingEventsBasedOnType(process: BpmnProcess, filter: (BpmnIntermediateThrowingEvent) -> Boolean, mapper: IntermediateThrowEventMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
+    private fun <T> extractIntermediateThrowingEventsBasedOnType(process: BpmnProcessBody, filter: (BpmnIntermediateThrowingEvent) -> Boolean, mapper: IntermediateThrowEventMapper<T>, update: (List<T>?, BpmnProcessBody) -> BpmnProcessBody): BpmnProcessBody {
         process.intermediateThrowEvent?.apply {
             val byTypeGroup = this.groupBy { filter(it) }
             val newProcess = process.copy(intermediateThrowEvent = byTypeGroup[false])
@@ -205,7 +240,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return process
     }
 
-    private fun <T> extractEndEventsBasedOnType(process: BpmnProcess, filter: (BpmnEndEvent) -> Boolean, mapper: EndEventMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
+    private fun <T> extractEndEventsBasedOnType(process: BpmnProcessBody, filter: (BpmnEndEvent) -> Boolean, mapper: EndEventMapper<T>, update: (List<T>?, BpmnProcessBody) -> BpmnProcessBody): BpmnProcessBody {
         process.endEvent?.apply {
             val byTypeGroup = this.groupBy { filter(it) }
             val newProcess = process.copy(endEvent = byTypeGroup[false])
@@ -215,7 +250,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return process
     }
 
-    private fun <T> extractStartEventsBasedOnType(process: BpmnProcess, filter: (BpmnStartEvent) -> Boolean, mapper: StartEventMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
+    private fun <T> extractStartEventsBasedOnType(process: BpmnProcessBody, filter: (BpmnStartEvent) -> Boolean, mapper: StartEventMapper<T>, update: (List<T>?, BpmnProcessBody) -> BpmnProcessBody): BpmnProcessBody {
         process.startEvent?.apply {
             val byTypeGroup = this.groupBy { filter(it) }
             val newProcess = process.copy(startEvent = byTypeGroup[false])
@@ -225,7 +260,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return process
     }
 
-    private fun <T> extractBoundaryEventsBasedOnType(process: BpmnProcess, filter: (BpmnBoundaryEvent) -> Boolean, mapper: BoundaryEventMapper<T>, update: (List<T>?, BpmnProcess) -> BpmnProcess): BpmnProcess {
+    private fun <T> extractBoundaryEventsBasedOnType(process: BpmnProcessBody, filter: (BpmnBoundaryEvent) -> Boolean, mapper: BoundaryEventMapper<T>, update: (List<T>?, BpmnProcessBody) -> BpmnProcessBody): BpmnProcessBody {
         process.boundaryEvent?.apply {
             val byTypeGroup = this.groupBy { filter(it) }
             val newProcess = process.copy(boundaryEvent = byTypeGroup[false])
@@ -236,9 +271,14 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     }
 
 
-    @Mapper(uses = [BpmnElementIdMapper::class])
+    @Mapper(uses = [BpmnElementIdMapper::class, BodyMapping::class])
     interface Mapping {
         fun convertToDto(input: ProcessNode): BpmnProcess
+    }
+
+    @Mapper(uses = [BpmnElementIdMapper::class])
+    interface BodyMapping {
+        fun convertToDto(input: ProcessBody): BpmnProcessBody
     }
 
     @Mapper
