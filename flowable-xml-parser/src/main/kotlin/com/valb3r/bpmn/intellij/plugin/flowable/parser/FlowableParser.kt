@@ -216,7 +216,7 @@ class FlowableParser : BpmnParser {
 
     private fun applyBpmnElementRemoved(doc: Document, update: BpmnElementRemoved) {
         val node = doc.selectSingleNode(
-                "//*[local-name()='process']/*[@id='${update.elementId.id}'][1]"
+                "//*[local-name()='process']//*[@id='${update.elementId.id}'][1]"
         ) as Node
 
         val parent = node.parent
@@ -378,7 +378,7 @@ class FlowableParser : BpmnParser {
 
     private fun applyPropertyUpdateWithId(doc: Document, update: PropertyUpdateWithId) {
         val node = doc.selectSingleNode(
-                "//*[local-name()='process'][1]/*[@id='${update.bpmnElementId.id}'][1]"
+                "//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]"
         ) as Element
 
         setToNode(node, update.property, update.newValue)
