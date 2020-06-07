@@ -23,7 +23,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class Canvas(private val settings: CanvasConstants): JPanel() {
+class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstants): JPanel() {
     private val stateProvider = currentStateProvider()
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
@@ -58,7 +58,7 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
         this.camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
         this.propsVisualizer = propertiesVisualizer()
         this.propsVisualizer?.clear()
-        this.stateProvider.resetStateTo(fileContent, processObject)
+        this.stateProvider.resetStateTo(fileContent, iconProvider, processObject)
         selectedElements = mutableSetOf()
         repaint()
     }
