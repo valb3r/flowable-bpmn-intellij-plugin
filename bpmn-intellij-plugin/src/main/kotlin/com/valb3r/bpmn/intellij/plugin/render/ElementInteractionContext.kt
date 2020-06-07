@@ -19,7 +19,7 @@ data class ElementInteractionContext(
         val current: Point2D.Float
 )
 
-data class AnchorHit(val dragged: Point2D.Float, val anchors: Map<AnchorType, Point2D.Float>)
+data class AnchorHit(val dragged: Point2D.Float, val objectAnchor: Point2D.Float, val anchors: Map<AnchorType, Point2D.Float>)
 
 enum class AnchorType {
     VERTICAL,

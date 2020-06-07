@@ -237,9 +237,11 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
         val selectedAnchors: MutableMap<AnchorType, Point2D.Float> = mutableMapOf()
         val targetX = anchorX?.let { ctx.current.x + it.anchor.x - it.objectAnchor.x } ?: ctx.current.x
         val targetY = anchorY?.let { ctx.current.y + it.anchor.y - it.objectAnchor.y } ?: ctx.current.y
+        val objectAnchorX = anchorX?.objectAnchor?.x ?: ctx.current.x
+        val objectAnchorY = anchorY?.objectAnchor?.y ?: ctx.current.y
         anchorX?.apply { selectedAnchors[AnchorType.HORIZONTAL] = this.anchor }
         anchorY?.apply { selectedAnchors[AnchorType.VERTICAL] = this.anchor }
-        return AnchorHit(Point2D.Float(targetX, targetY), selectedAnchors)
+        return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(objectAnchorX, objectAnchorY), selectedAnchors)
     }
 
     private fun applyPointAnchor(anchor: AnchorDetails, ctx: ElementInteractionContext): AnchorHit {
@@ -247,7 +249,7 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
         val targetX = ctx.current.x + anchor.anchor.x - anchor.objectAnchor.x
         val targetY = ctx.current.y + anchor.anchor.y - anchor.objectAnchor.y
         selectedAnchors[AnchorType.POINT] = anchor.anchor
-        return AnchorHit(Point2D.Float(targetX, targetY), selectedAnchors)
+        return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(targetX, targetY), selectedAnchors)
     }
 
     private fun bpmnElemsUnderDragCurrent(): BpmnElementId? {

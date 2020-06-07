@@ -3,20 +3,28 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements
 import com.github.pozo.KotlinBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import java.awt.geom.Rectangle2D
 
 @KotlinBuilder
 data class ShapeElement(
         override val id: DiagramElementId,
         val bpmnElement: BpmnElementId,
-        val bounds: BoundsElement
+        private val bounds: BoundsElement
 ): Translatable<ShapeElement>, WithDiagramId {
 
     override fun copyAndTranslate(dx: Float, dy: Float): ShapeElement {
         return this.copy(bounds = BoundsElement(this.bounds.x + dx, this.bounds.y + dy, this.bounds.width, this.bounds.height))
     }
 
-    fun wrapInto(margin: Float): ShapeElement {
-        return this.copy(bounds = BoundsElement(this.bounds.x + margin, this.bounds.y + margin, this.bounds.width - 2.0f * margin, this.bounds.height - 2.0f * margin))
+    fun bounds(): Pair<ShapeBoundsAnchorElement, ShapeBoundsAnchorElement> {
+        return Pair(
+                ShapeBoundsAnchorElement(DiagramElementId("0:" + id.id), this.bounds.x, this.bounds.y),
+                ShapeBoundsAnchorElement(DiagramElementId("1:" + id.id), this.bounds.x + this.bounds.width, this.bounds.y + this.bounds.height)
+        )
+    }
+
+    fun rectBounds(): Rectangle2D.Float {
+        return Rectangle2D.Float(this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height)
     }
 }
 
@@ -27,3 +35,15 @@ data class BoundsElement(
         val width: Float,
         val height: Float
 )
+
+@KotlinBuilder
+data class ShapeBoundsAnchorElement(
+        override val id: DiagramElementId,
+        val x: Float,
+        val y: Float
+): Translatable<ShapeBoundsAnchorElement>, WithDiagramId {
+
+    override fun copyAndTranslate(dx: Float, dy: Float): ShapeBoundsAnchorElement {
+        return this.copy(x = this.x + dx, y = this.y + dy)
+    }
+}

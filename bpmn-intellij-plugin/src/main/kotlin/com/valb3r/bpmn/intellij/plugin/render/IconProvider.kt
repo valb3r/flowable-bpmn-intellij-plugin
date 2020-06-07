@@ -18,6 +18,7 @@ interface IconProvider {
     val decision: Icon
     val shell: Icon
     val tilde: Icon
+    val dragToResize: Icon
     val exclusiveGateway: String
     val parallelGateway: String
     val inclusiveGateway: String
@@ -69,6 +70,7 @@ data class IconProviderImpl(
         override val decision: Icon = IconLoader.getIcon("/icons/ui-icons/decision.png"),
         override val shell: Icon = IconLoader.getIcon("/icons/ui-icons/shell.png"),
         override val tilde: Icon = IconLoader.getIcon("/icons/ui-icons/tilde.png"),
+        override val dragToResize: Icon = IconLoader.getIcon("/icons/ui-icons/drag-to-resize.png"),
         override val exclusiveGateway: String = "/icons/ui-icons/svg/exclusive-gateway.svg".asResource()!!,
         override val parallelGateway: String = "/icons/ui-icons/svg/parallel-gateway.svg".asResource()!!,
         override val inclusiveGateway: String = "/icons/ui-icons/svg/inclusive-gateway.svg".asResource()!!,

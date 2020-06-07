@@ -306,10 +306,11 @@ class FlowableParser : BpmnParser {
         newShape.addAttribute("id", update.shape.id.id)
         newShape.addAttribute("bpmnElement", update.bpmnObject.id.id)
         val newBounds = newShape.addElement(NS.OMGDC.named("Bounds"))
-        newBounds.addAttribute("x", update.shape.bounds.x.toString())
-        newBounds.addAttribute("y", update.shape.bounds.y.toString())
-        newBounds.addAttribute("width", update.shape.bounds.width.toString())
-        newBounds.addAttribute("height", update.shape.bounds.height.toString())
+        val bounds = update.shape.rectBounds()
+        newBounds.addAttribute("x", bounds.x.toString())
+        newBounds.addAttribute("y", bounds.y.toString())
+        newBounds.addAttribute("width", bounds.width.toString())
+        newBounds.addAttribute("height", bounds.height.toString())
         trimWhitespace(shapeParent, false)
     }
 

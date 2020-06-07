@@ -40,6 +40,7 @@ import java.awt.Color
 import java.awt.geom.Area
 import java.awt.geom.Ellipse2D
 import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
 import kotlin.math.min
 
 interface BpmnProcessRenderer {
@@ -142,7 +143,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
                         targetIds.mapNotNull { ctx.elementByDiagramId[it] }.map { BpmnElementRemovedEvent(it) }
                 )
             }
-            areaByElement[delId] = AreaWithZindex(deleteIconArea, Point2D.Float(0.0f, 0.0f), AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, null)
+            areaByElement[delId] = AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, null)
         }
     }
 
@@ -155,7 +156,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             val color = if (isActive(undoId, meta)) Colors.SELECTED_COLOR else null
             val areaUndo = color?.let { ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo, it.color) }
                     ?: ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo)
-            areaByElement[undoId] = AreaWithZindex(areaUndo, Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
+            areaByElement[undoId] = AreaWithZindex(areaUndo, AreaType.SHAPE)
             locationX += icons.undo.iconWidth + undoRedoStartMargin
             ctx.interactionContext.clickCallbacks[undoId] = { dest -> dest.undo() }
         }
@@ -164,7 +165,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             val color = if (isActive(redoId, meta)) Colors.SELECTED_COLOR else null
             val areaRedo = color?.let { ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo, it.color) }
                     ?: ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo)
-            areaByElement[redoId] = AreaWithZindex(areaRedo, Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
+            areaByElement[redoId] = AreaWithZindex(areaRedo, AreaType.SHAPE)
             locationX += icons.redo.iconWidth + undoRedoStartMargin
             ctx.interactionContext.clickCallbacks[redoId] = { dest -> dest.redo() }
         }
@@ -239,16 +240,20 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
                     val elem = renderMeta.elementById[it.bpmnElement]
                     if (null != elem) {
                         val newSequenceBpmn = newElementsFactory().newOutgoingSequence(elem)
+                        val bounds = it.bounds()
+                        val width = bounds.second.x - bounds.first.x
+                        val height = bounds.second.y - bounds.first.y
+
                         val newSequenceDiagram = newElementsFactory().newDiagramObject(EdgeElement::class, newSequenceBpmn)
                                 .copy(waypoint = listOf(
-                                        WaypointElement(it.bounds.x + it.bounds.width, it.bounds.y + it.bounds.height / 2.0f),
-                                        WaypointElement(it.bounds.x + it.bounds.width + waypointLen, it.bounds.y + it.bounds.height / 2.0f)
+                                        WaypointElement(bounds.first.x + width, bounds.first.y + height / 2.0f),
+                                        WaypointElement(bounds.first.x + width + waypointLen, bounds.first.y + height / 2.0f)
                                 ))
                         dest.addObjectEvent(BpmnEdgeObjectAddedEvent(newSequenceBpmn, EdgeElementState(newSequenceDiagram), newElementsFactory().propertiesOf(newSequenceBpmn)))
                     }
                 }
                 if (isDeepStructureWithActions(renderMeta)) {
-                    val actionsElem = drawActionsElement(canvas, it, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
+                    val actionsElem = drawActionsElement(canvas, it.id, it.rectBounds(), renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
                     areaByElement += actionsElem
                 }
 
@@ -269,18 +274,18 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     private fun drawAnchorsHit(canvas: CanvasPainter, anchors: AnchorHit) {
         anchors.anchors.forEach {
             when (it.key) {
-                AnchorType.VERTICAL, AnchorType.HORIZONTAL -> canvas.drawZeroAreaLine(it.value, anchors.dragged, ANCHOR_STROKE, Colors.ANCHOR_COLOR.color)
+                AnchorType.VERTICAL, AnchorType.HORIZONTAL -> canvas.drawZeroAreaLine(it.value, anchors.objectAnchor, ANCHOR_STROKE, Colors.ANCHOR_COLOR.color)
                 AnchorType.POINT -> canvas.drawCircle(it.value, anchorRadius, Colors.ANCHOR_COLOR.color)
             }
         }
     }
 
     private fun mergeArea(id: DiagramElementId, areas: MutableMap<DiagramElementId, AreaWithZindex>, area: AreaWithZindex) {
-        val target = areas[id] ?: AreaWithZindex(Area(), area.dragCenter, area.areaType)
+        val target = areas[id] ?: AreaWithZindex(Area(), area.areaType)
         target.area.add(area.area)
         target.anchorsForShape += area.anchorsForShape
         target.anchorsForWaypoints += area.anchorsForWaypoints
-        areas[id] = AreaWithZindex(target.area, area.dragCenter, target.areaType, target.anchorsForWaypoints, target.anchorsForShape, min(target.index, area.index), target.parentToSelect ?: area.parentToSelect)
+        areas[id] = AreaWithZindex(target.area, target.areaType, target.anchorsForWaypoints, target.anchorsForShape, min(target.index, area.index), target.parentToSelect ?: area.parentToSelect)
     }
 
     private fun drawEdgeElement(canvas: CanvasPainter, shape: EdgeWithIdentifiableWaypoints, meta: RenderMetadata): AreaWithZindex {
@@ -296,7 +301,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             }
         }
 
-        return AreaWithZindex(area, Point2D.Float(0.0f, 0.0f), AreaType.EDGE, if (active) mutableSetOf() else trueWaypoints.map { Point2D.Float(it.x, it.y) }.toMutableSet())
+        return AreaWithZindex(area, AreaType.EDGE, if (active) mutableSetOf() else trueWaypoints.map { Point2D.Float(it.x, it.y) }.toMutableSet())
     }
 
     private fun drawWaypointElements(canvas: CanvasPainter, shape: EdgeWithIdentifiableWaypoints, meta: RenderMetadata): Map<DiagramElementId, AreaWithZindex> {
@@ -352,7 +357,6 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             val color = color(active, if (node.physical) Colors.WAYPOINT_COLOR else Colors.MID_WAYPOINT_COLOR)
             result[node.id] = AreaWithZindex(
                     canvas.drawCircle(translatedNode.asWaypointElement(), nodeRadius, color),
-                    Point2D.Float(node.x, node.y),
                     AreaType.POINT,
                     mutableSetOf(Point2D.Float(translatedNode.x, translatedNode.y)),
                     mutableSetOf(),
@@ -412,60 +416,64 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         val active = isActive(bpmnShape.id, meta)
 
         val shape = translateElementIfNeeded(meta, bpmnShape)
+        val bounds = shape.bounds()
+        val left = translateElementIfNeeded(meta, bounds.first)
+        val right = translateElementIfNeeded(meta, bounds.second)
+        val targetRect = Rectangle2D.Float(left.x, left.y, right.x - left.x, right.y - left.y)
 
         return when (elem) {
-            null -> defaultElementRender(canvas, bpmnShape, shape, name, active)
-            is BpmnStartEvent -> drawStartEvent(canvas, bpmnShape, shape, active)
-            is BpmnStartEscalationEvent -> drawStartEscalationEvent(canvas, bpmnShape, shape, active)
-            is BpmnStartConditionalEvent -> drawStartConditionalEvent(canvas, bpmnShape, shape, active)
-            is BpmnStartErrorEvent -> drawStartErrorEvent(canvas, bpmnShape, shape, active)
-            is BpmnStartMessageEvent -> drawStartMessageEvent(canvas, bpmnShape, shape, active)
-            is BpmnStartSignalEvent -> drawStartSignalEvent(canvas, bpmnShape, shape, active)
-            is BpmnStartTimerEvent -> drawStartTimerEvent(canvas, bpmnShape, shape, active)
-            is BpmnBoundaryCancelEvent -> drawBoundaryCancelEvent(canvas, bpmnShape, shape, active)
-            is BpmnBoundaryCompensationEvent -> drawBoundaryCompensationEvent(canvas, bpmnShape, shape, active)
-            is BpmnBoundaryConditionalEvent -> drawBoundaryConditionalEvent(canvas, bpmnShape, shape, active)
-            is BpmnBoundaryErrorEvent -> drawBoundaryErrorEvent(canvas, bpmnShape, shape, active)
-            is BpmnBoundaryEscalationEvent -> drawBoundaryEscalationEvent(canvas, bpmnShape, shape, active)
-            is BpmnBoundaryMessageEvent -> drawBoundaryMessageEvent(canvas, bpmnShape, shape, active)
-            is BpmnBoundarySignalEvent -> drawBoundarySignalEvent(canvas, bpmnShape, shape, active)
-            is BpmnBoundaryTimerEvent -> drawBoundaryTimerEvent(canvas, bpmnShape, shape, active)
-            is BpmnUserTask -> drawUserTask(canvas, bpmnShape, shape, name, active)
-            is BpmnScriptTask -> drawScriptTask(canvas, bpmnShape, shape, name, active)
-            is BpmnServiceTask -> drawServiceTask(canvas, bpmnShape, shape, name, active)
-            is BpmnBusinessRuleTask -> drawBusinessRuleTask(canvas, bpmnShape, shape, name, active)
-            is BpmnReceiveTask -> drawReceiveRuleTask(canvas, bpmnShape, shape, name, active)
-            is BpmnCamelTask -> drawCamelTask(canvas, bpmnShape, shape, name, active)
-            is BpmnHttpTask -> drawHttpTask(canvas, bpmnShape, shape, name, active)
-            is BpmnMuleTask -> drawMuleTask(canvas, bpmnShape, shape, name, active)
-            is BpmnDecisionTask -> drawDecisionTask(canvas, bpmnShape, shape, name, active)
-            is BpmnShellTask -> drawShellTask(canvas, bpmnShape, shape, name, active)
-            is BpmnSubProcess -> drawSubProcess(canvas, bpmnShape, shape, name, active)
-            is BpmnTransactionalSubProcess -> drawTransactionSubProcess(canvas, bpmnShape, shape, name, active)
-            is BpmnCallActivity -> drawCallActivity(canvas, bpmnShape, shape, name, active)
-            is BpmnAdHocSubProcess -> drawAdHocSubProcess(canvas, bpmnShape, shape, name, active)
-            is BpmnExclusiveGateway -> drawExclusiveGateway(canvas, bpmnShape, shape, active)
-            is BpmnParallelGateway -> drawParallelGateway(canvas, bpmnShape, shape, active)
-            is BpmnInclusiveGateway -> drawInclusiveGateway(canvas, bpmnShape, shape, active)
-            is BpmnEventGateway -> drawEventGateway(canvas, bpmnShape, shape, active)
-            is BpmnEndEvent -> drawEndEvent(canvas, bpmnShape, shape, active)
-            is BpmnEndCancelEvent -> drawCancelEndEvent(canvas, bpmnShape, shape, active)
-            is BpmnEndErrorEvent -> drawErrorEndEvent(canvas, bpmnShape, shape, active)
-            is BpmnEndEscalationEvent -> drawEscalationEndEvent(canvas, bpmnShape, shape, active)
-            is BpmnEndTerminateEvent -> drawTerminateEndEvent(canvas, bpmnShape, shape, active)
-            is BpmnIntermediateTimerCatchingEvent -> drawTimerCatchEvent(canvas, bpmnShape, shape, active)
-            is BpmnIntermediateMessageCatchingEvent -> drawMessageCatchEvent(canvas, bpmnShape, shape, active)
-            is BpmnIntermediateSignalCatchingEvent -> drawSignalCatchEvent(canvas, bpmnShape, shape, active)
-            is BpmnIntermediateConditionalCatchingEvent -> drawConditionalCatchEvent(canvas, bpmnShape, shape, active)
-            is BpmnIntermediateNoneThrowingEvent -> drawNoneThrowEvent(canvas, bpmnShape, shape, active)
-            is BpmnIntermediateSignalThrowingEvent -> drawSignalThrowEvent(canvas, bpmnShape, shape, active)
-            is BpmnIntermediateEscalationThrowingEvent -> drawEscalationThrowEvent(canvas, bpmnShape, shape, active)
-            else -> AreaWithZindex(Area(), Point2D.Float(0.0f, 0.0f), AreaType.SHAPE)
+            null -> defaultElementRender(canvas, targetRect, name, active)
+            is BpmnStartEvent -> drawStartEvent(canvas, targetRect, active)
+            is BpmnStartEscalationEvent -> drawStartEscalationEvent(canvas, targetRect, active)
+            is BpmnStartConditionalEvent -> drawStartConditionalEvent(canvas, targetRect, active)
+            is BpmnStartErrorEvent -> drawStartErrorEvent(canvas, targetRect, active)
+            is BpmnStartMessageEvent -> drawStartMessageEvent(canvas, targetRect, active)
+            is BpmnStartSignalEvent -> drawStartSignalEvent(canvas, targetRect, active)
+            is BpmnStartTimerEvent -> drawStartTimerEvent(canvas, targetRect, active)
+            is BpmnBoundaryCancelEvent -> drawBoundaryCancelEvent(canvas, targetRect, active)
+            is BpmnBoundaryCompensationEvent -> drawBoundaryCompensationEvent(canvas, targetRect, active)
+            is BpmnBoundaryConditionalEvent -> drawBoundaryConditionalEvent(canvas, targetRect, active)
+            is BpmnBoundaryErrorEvent -> drawBoundaryErrorEvent(canvas, targetRect, active)
+            is BpmnBoundaryEscalationEvent -> drawBoundaryEscalationEvent(canvas, targetRect, active)
+            is BpmnBoundaryMessageEvent -> drawBoundaryMessageEvent(canvas, targetRect, active)
+            is BpmnBoundarySignalEvent -> drawBoundarySignalEvent(canvas, targetRect, active)
+            is BpmnBoundaryTimerEvent -> drawBoundaryTimerEvent(canvas, targetRect, active)
+            is BpmnUserTask -> drawUserTask(canvas, targetRect, name, active)
+            is BpmnScriptTask -> drawScriptTask(canvas, targetRect, name, active)
+            is BpmnServiceTask -> drawServiceTask(canvas, targetRect, name, active)
+            is BpmnBusinessRuleTask -> drawBusinessRuleTask(canvas, targetRect, name, active)
+            is BpmnReceiveTask -> drawReceiveRuleTask(canvas, targetRect, name, active)
+            is BpmnCamelTask -> drawCamelTask(canvas, targetRect, name, active)
+            is BpmnHttpTask -> drawHttpTask(canvas, targetRect, name, active)
+            is BpmnMuleTask -> drawMuleTask(canvas, targetRect, name, active)
+            is BpmnDecisionTask -> drawDecisionTask(canvas, targetRect, name, active)
+            is BpmnShellTask -> drawShellTask(canvas, targetRect, name, active)
+            is BpmnSubProcess -> drawSubProcess(canvas, targetRect, name, active)
+            is BpmnTransactionalSubProcess -> drawTransactionSubProcess(canvas, targetRect, name, active)
+            is BpmnCallActivity -> drawCallActivity(canvas, targetRect, name, active)
+            is BpmnAdHocSubProcess -> drawAdHocSubProcess(canvas, targetRect, name, active)
+            is BpmnExclusiveGateway -> drawExclusiveGateway(canvas, targetRect, active)
+            is BpmnParallelGateway -> drawParallelGateway(canvas, targetRect, active)
+            is BpmnInclusiveGateway -> drawInclusiveGateway(canvas, targetRect, active)
+            is BpmnEventGateway -> drawEventGateway(canvas, targetRect, active)
+            is BpmnEndEvent -> drawEndEvent(canvas, targetRect, active)
+            is BpmnEndCancelEvent -> drawCancelEndEvent(canvas, targetRect, active)
+            is BpmnEndErrorEvent -> drawErrorEndEvent(canvas, targetRect, active)
+            is BpmnEndEscalationEvent -> drawEscalationEndEvent(canvas, targetRect, active)
+            is BpmnEndTerminateEvent -> drawTerminateEndEvent(canvas, targetRect, active)
+            is BpmnIntermediateTimerCatchingEvent -> drawTimerCatchEvent(canvas, targetRect, active)
+            is BpmnIntermediateMessageCatchingEvent -> drawMessageCatchEvent(canvas, targetRect, active)
+            is BpmnIntermediateSignalCatchingEvent -> drawSignalCatchEvent(canvas, targetRect, active)
+            is BpmnIntermediateConditionalCatchingEvent -> drawConditionalCatchEvent(canvas, targetRect, active)
+            is BpmnIntermediateNoneThrowingEvent -> drawNoneThrowEvent(canvas, targetRect, active)
+            is BpmnIntermediateSignalThrowingEvent -> drawSignalThrowEvent(canvas, targetRect, active)
+            is BpmnIntermediateEscalationThrowingEvent -> drawEscalationThrowEvent(canvas, targetRect, active)
+            else -> AreaWithZindex(Area(), AreaType.SHAPE)
         }
     }
 
     private fun <T> translateElementIfNeeded(meta: RenderMetadata, elem: T): T where T : Translatable<T>, T: WithDiagramId {
-        return if (canTranslate(meta, elem.id)) {
+        return if (shouldTranslate(meta, elem.id)) {
             elem.copyAndTranslate(
                     meta.interactionContext.current.x - meta.interactionContext.start.x,
                     meta.interactionContext.current.y - meta.interactionContext.start.y
@@ -475,241 +483,245 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         }
     }
 
-    private fun canTranslate(meta: RenderMetadata, elemId: DiagramElementId) =
+    private fun shouldTranslate(meta: RenderMetadata, elemId: DiagramElementId) =
             meta.interactionContext.draggedIds.contains(elemId) || meta.cascadedTransalationOf.map { it.waypointId }.contains(elemId)
 
-    private fun drawBoundaryCancelEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawBoundaryCancelEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.boundaryCancelEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawBoundaryCompensationEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawBoundaryCompensationEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.boundaryCompensationEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawBoundaryConditionalEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawBoundaryConditionalEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.boundaryConditionalEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawBoundaryErrorEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawBoundaryErrorEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.boundaryErrorEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawBoundaryEscalationEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawBoundaryEscalationEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.boundaryEscalationEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawBoundaryMessageEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawBoundaryMessageEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.boundaryMessageEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawBoundarySignalEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawBoundarySignalEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.boundarySignalEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawBoundaryTimerEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawBoundaryTimerEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.boundaryTimerEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawEndEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawEndEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIconWithLayer(shape, icons.endEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.END_EVENT))
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawCancelEndEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawCancelEndEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIconWithLayer(shape, icons.cancelEndEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.END_EVENT))
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawEscalationEndEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawEscalationEndEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIconWithLayer(shape, icons.escalationEndEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.END_EVENT))
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawErrorEndEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawErrorEndEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIconWithLayer(shape, icons.errorEndEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.END_EVENT))
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawTerminateEndEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawTerminateEndEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIconWithLayer(shape, icons.terminateEndEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.END_EVENT))
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawExclusiveGateway(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawExclusiveGateway(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.exclusiveGateway, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawParallelGateway(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawParallelGateway(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.parallelGateway, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawEventGateway(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawEventGateway(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.eventGateway, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawInclusiveGateway(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawInclusiveGateway(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.inclusiveGateway, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawCallActivity(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun drawCallActivity(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRect(shape, name, color(active, Colors.CALL_ACTIVITY_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawServiceTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun drawServiceTask(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIconAtCorner(shape, icons.gear, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawUserTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun drawUserTask(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIconAtCorner(shape, icons.user, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawScriptTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun drawScriptTask(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIconAtCorner(shape, icons.script, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawBusinessRuleTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun drawBusinessRuleTask(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIconAtCorner(shape, icons.businessRule, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawReceiveRuleTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun drawReceiveRuleTask(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIconAtCorner(shape, icons.receive, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawCamelTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun drawCamelTask(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIconAtCorner(shape, icons.camel, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawHttpTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun drawHttpTask(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIconAtCorner(shape, icons.http, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawMuleTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun drawMuleTask(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIconAtCorner(shape, icons.mule, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawDecisionTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun drawDecisionTask(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIconAtCorner(shape, icons.decision, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawShellTask(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun drawShellTask(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIconAtCorner(shape, icons.shell, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawSubProcess(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun drawSubProcess(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRect(shape, name, color(active, Colors.PROCESS_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.SUBPROCESS_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape), index = SUBPROCESS_Z_INDEX)
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape), index = SUBPROCESS_Z_INDEX)
     }
 
-    private fun drawTransactionSubProcess(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun drawTransactionSubProcess(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRect(shape, null, color(active, Colors.PROCESS_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.SUBPROCESS_TEXT_COLOR.color)
-        canvas.drawRoundedRect(shape.wrapInto(transactionalBoundaryMargin), name, color(active, Colors.TRANSACTION_COLOR), Colors.TRANSACTION_ELEMENT_BORDER_COLOR.color, Colors.SUBPROCESS_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape), index = SUBPROCESS_Z_INDEX)
+        canvas.drawRoundedRect(wrapInto(shape, transactionalBoundaryMargin), name, color(active, Colors.TRANSACTION_COLOR), Colors.TRANSACTION_ELEMENT_BORDER_COLOR.color, Colors.SUBPROCESS_TEXT_COLOR.color)
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape), index = SUBPROCESS_Z_INDEX)
     }
 
-    private fun drawAdHocSubProcess(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun wrapInto(target: Rectangle2D.Float, margin: Float): Rectangle2D.Float {
+        return Rectangle2D.Float(target.x + margin, target.y + margin, target.width - 2.0f * margin, target.height - 2.0f * margin)
+    }
+
+    private fun drawAdHocSubProcess(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRectWithIconAtBottom(shape, icons.tilde, name, color(active, Colors.TRANSACTION_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.SUBPROCESS_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape), index = SUBPROCESS_Z_INDEX)
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape), index = SUBPROCESS_Z_INDEX)
     }
 
-    private fun drawStartEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawStartEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIconWithLayer(shape, icons.startEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.START_EVENT))
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawStartConditionalEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawStartConditionalEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIconWithLayer(shape, icons.conditionalStartEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.START_EVENT))
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawStartMessageEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawStartMessageEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIconWithLayer(shape, icons.messageStartEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.START_EVENT))
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawStartErrorEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawStartErrorEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIconWithLayer(shape, icons.errorStartEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.START_EVENT))
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawStartEscalationEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawStartEscalationEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIconWithLayer(shape, icons.escalationStartEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.START_EVENT))
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawStartSignalEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawStartSignalEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIconWithLayer(shape, icons.signalStartEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.START_EVENT))
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawStartTimerEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawStartTimerEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIconWithLayer(shape, icons.timerStartEvent, active, Colors.SELECTED_COLOR.color, { Ellipse2D.Float(it.x, it.y, it.width, it.height) }, color(active, Colors.START_EVENT))
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun defaultElementRender(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, name: String?, active: Boolean): AreaWithZindex {
+    private fun defaultElementRender(canvas: CanvasPainter, shape: Rectangle2D.Float, name: String?, active: Boolean): AreaWithZindex {
         val area = canvas.drawRoundedRect(shape, name, color(active, Colors.SERVICE_TASK_COLOR), Colors.ELEMENT_BORDER_COLOR.color, Colors.INNER_TEXT_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, rectangleAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawTimerCatchEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawTimerCatchEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.timerCatchEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawMessageCatchEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawMessageCatchEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.messageCatchEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawSignalCatchEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawSignalCatchEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.signalCatchEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawConditionalCatchEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawConditionalCatchEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.conditionalCatchEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawNoneThrowEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawNoneThrowEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.noneThrowEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawSignalThrowEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawSignalThrowEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.signalThrowEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun drawEscalationThrowEvent(canvas: CanvasPainter, originalShape: ShapeElement, shape: ShapeElement, active: Boolean): AreaWithZindex {
+    private fun drawEscalationThrowEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
         val area = canvas.drawWrappedIcon(shape, icons.escalationThrowEvent, active, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, Point2D.Float(originalShape.bounds.x, originalShape.bounds.y), AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
+        return AreaWithZindex(area, AreaType.SHAPE, ellipseOrDiamondAnchors(shape), centerAnchor(shape))
     }
 
-    private fun centerAnchor(shape: ShapeElement): MutableSet<Point2D.Float> {
+    private fun centerAnchor(shape: Rectangle2D.Float): MutableSet<Point2D.Float> {
         val cx = shape.bounds.x + shape.bounds.width / 2.0f
         val cy = shape.bounds.y + shape.bounds.height / 2.0f
         return mutableSetOf(
@@ -717,7 +729,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         )
     }
 
-    private fun ellipseOrDiamondAnchors(shape: ShapeElement): MutableSet<Point2D.Float> {
+    private fun ellipseOrDiamondAnchors(shape: Rectangle2D.Float): MutableSet<Point2D.Float> {
         val halfWidth = shape.bounds.width / 2.0f
         val halfHeight = shape.bounds.height / 2.0f
 
@@ -733,7 +745,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         )
     }
 
-    private fun rectangleAnchors(shape: ShapeElement): MutableSet<Point2D.Float> {
+    private fun rectangleAnchors(shape: Rectangle2D.Float): MutableSet<Point2D.Float> {
         val halfWidth = shape.bounds.width / 2.0f
         val halfHeight = shape.bounds.height / 2.0f
 
@@ -795,13 +807,13 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         )
     }
 
-    private fun drawActionsElement(canvas: CanvasPainter, shape: ShapeElement, ctx: ElementInteractionContext, actions: Map<Actions, (dest: ProcessModelUpdateEvents) -> Unit>): Map<DiagramElementId, AreaWithZindex> {
+    private fun drawActionsElement(canvas: CanvasPainter, ownerId: DiagramElementId, shape: Rectangle2D.Float, ctx: ElementInteractionContext, actions: Map<Actions, (dest: ProcessModelUpdateEvents) -> Unit>): Map<DiagramElementId, AreaWithZindex> {
         return drawActionsElement(
                 canvas,
-                shape.id,
-                Point2D.Float(shape.bounds.x - activityToolBoxGap, shape.bounds.y - activityToolBoxGap),
-                shape.bounds.width + activityToolBoxGap * 2.0f,
-                shape.bounds.height + activityToolBoxGap * 2.0f,
+                ownerId,
+                Point2D.Float(shape.x - activityToolBoxGap, shape.y - activityToolBoxGap),
+                shape.width + activityToolBoxGap * 2.0f,
+                shape.height + activityToolBoxGap * 2.0f,
                 ctx,
                 actions
         )
@@ -825,20 +837,26 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
                     val delId = DiagramElementId("DEL:$ownerId")
                     val deleteIconArea = canvas.drawIcon(BoundsElement(location.x + width + actionsMargin, yLocation, actionsIcoSize, actionsIcoSize), icons.recycleBin)
                     ctx.clickCallbacks[delId] = it.value
-                    result[delId] = AreaWithZindex(deleteIconArea, Point2D.Float(0.0f, 0.0f), AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, ownerId)
+                    result[delId] = AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, ownerId)
                     yLocation += actionsIcoSize + actionsMargin
                 }
                 Actions.NEW_LINK -> {
                     val newLinkId = DiagramElementId("NEWLINK:$ownerId")
                     val newSequence = canvas.drawIcon(BoundsElement(location.x + width + actionsMargin, yLocation, actionsIcoSize, actionsIcoSize), icons.sequence)
                     ctx.clickCallbacks[newLinkId] = it.value
-                    result[newLinkId] = AreaWithZindex(newSequence, Point2D.Float(0.0f, 0.0f), AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, ownerId)
+                    result[newLinkId] = AreaWithZindex(newSequence, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, ownerId)
                     yLocation += actionsIcoSize + actionsMargin
                 }
             }
         }
 
         return result
+    }
+
+
+    private fun drawResizeIcons(canvas: CanvasPainter, location: Point2D.Float): AreaWithZindex {
+        val area = canvas.drawIcon(location, icons.dragToResize, Colors.SELECTED_COLOR.color)
+        return AreaWithZindex(area, AreaType.SHAPE)
     }
 
     private data class RenderMetadata(

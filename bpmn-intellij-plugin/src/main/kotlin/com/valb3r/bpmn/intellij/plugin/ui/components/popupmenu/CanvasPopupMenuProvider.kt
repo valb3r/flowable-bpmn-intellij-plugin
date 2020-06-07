@@ -51,12 +51,13 @@ fun popupMenuProvider(): CanvasPopupMenuProvider {
 private fun <T: WithBpmnId> newShapeElement(sceneLocation: Point2D.Float, forObject: T): ShapeElement {
     val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, forObject)
 
+    val bounds = templateShape.rectBounds()
     return templateShape.copy(
             bounds = BoundsElement(
                     sceneLocation.x,
                     sceneLocation.y,
-                    templateShape.bounds.width,
-                    templateShape.bounds.height
+                    bounds.width,
+                    bounds.height
             )
     )
 }
