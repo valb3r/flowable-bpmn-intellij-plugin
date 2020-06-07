@@ -8,14 +8,12 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
-import javax.swing.Icon
 
-class TopLeftIconShape(
+class NoIconShape(
         override val elementId: DiagramElementId,
-        private val icon: Icon,
         shape: ShapeElement,
         state: CurrentState,
-        private val backgroundColor: Colors = Colors.SERVICE_TASK_COLOR,
+        private val backgroundColor: Colors = Colors.CALL_ACTIVITY_COLOR,
         private val borderColor: Colors =  Colors.ELEMENT_BORDER_COLOR,
         private val textColor: Colors = Colors.INNER_TEXT_COLOR,
         childrenElems: List<BaseRenderElement> = emptyList()
@@ -23,9 +21,8 @@ class TopLeftIconShape(
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 
-        val area = ctx.canvas.drawRoundedRectWithIconAtCorner(
+        val area = ctx.canvas.drawRoundedRect(
                 shapeCtx.shape,
-                icon,
                 shapeCtx.name,
                 color(isActive(), backgroundColor),
                 borderColor.color,

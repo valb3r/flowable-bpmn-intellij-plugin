@@ -110,6 +110,25 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(drawShape)
     }
 
+    fun drawEllipse(bounds: Rectangle2D.Float, background: Color, border: Color): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(bounds.x, bounds.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(bounds.x + bounds.width, bounds.y + bounds.height))
+
+        graphics2D.color = background
+        val drawShape = Ellipse2D.Float(
+                leftTop.x,
+                leftTop.y,
+                rightBottom.x - leftTop.x,
+                rightBottom.y - leftTop.y
+        )
+
+        graphics2D.fill(drawShape)
+        graphics2D.color = border
+        graphics2D.draw(drawShape)
+
+        return Area(drawShape)
+    }
+
     fun drawCircle(center: Point2D.Float, radius: Float, color: Color): Area {
         return drawCircle(WaypointElement(center.x, center.y), radius, color, color)
     }
@@ -285,6 +304,30 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
 
         val width = bounds.width.toInt()
         val height = bounds.height.toInt()
+
+        if (0 == width || 0 == height) {
+            return Area()
+        }
+
+        val highlightedShape = Rectangle2D.Float(
+                leftTop.x,
+                leftTop.y,
+                width.toFloat(),
+                height.toFloat()
+        )
+
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
+        graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
+
+        return Area(highlightedShape)
+    }
+
+    fun drawIcon(bounds: Rectangle2D.Float, svgIcon: String): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(bounds.x, bounds.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(bounds.x + bounds.width, bounds.y  + bounds.height))
+
+        val width = (rightBottom.x - leftTop.x).toInt()
+        val height = (rightBottom.y - leftTop.y).toInt()
 
         if (0 == width || 0 == height) {
             return Area()

@@ -1,9 +1,7 @@
-package com.valb3r.bpmn.intellij.plugin.render.elements.anchors
+package com.valb3r.bpmn.intellij.plugin.render.elements.planes
 
-import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
-import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
@@ -11,32 +9,23 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.Event
 import java.awt.geom.Point2D
-import javax.swing.Icon
+import java.awt.geom.Rectangle2D
 
-abstract class AnchorElement(
+class PlaneRenderElement(
         override val elementId: DiagramElementId,
-        private val currentLocation: Point2D.Float,
-        state: CurrentState
+        state: CurrentState,
+        private val childrenElems: List<BaseRenderElement>
 ): BaseRenderElement(elementId, state) {
 
-    val location: Point2D.Float
-        get() = currentLocation
-
-    override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
-        val icon = icon()
-        val active = isActive()
-        val rect = currentRect(ctx.canvas.camera)
-        val area = ctx.canvas.drawIcon(Point2D.Float(rect.x, rect.y), icon, if (active) Colors.SELECTED_COLOR.color else null)
-
-        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT))
-    }
+    override val children: List<BaseRenderElement>
+        get() = childrenElems
 
     override fun doDragToWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?) {
-        TODO("Not yet implemented")
+        // NOP
     }
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
-        TODO("Not yet implemented")
+        return mutableListOf()
     }
 
     override fun doResizeWithoutChildren(dw: Float, dh: Float) {
@@ -47,6 +36,10 @@ abstract class AnchorElement(
         return mutableListOf()
     }
 
+    override fun currentRect(camera: Camera): Rectangle2D.Float {
+        return Rectangle2D.Float()
+    }
+
     override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
         return mutableSetOf()
     }
@@ -55,5 +48,7 @@ abstract class AnchorElement(
         return mutableSetOf()
     }
 
-    protected abstract fun icon(): Icon
+    override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+        return mutableMapOf()
+    }
 }

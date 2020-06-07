@@ -8,7 +8,6 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
-import com.valb3r.bpmn.intellij.plugin.render.elements.State
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorBottom
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorTop
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
@@ -17,15 +16,19 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
 abstract class ShapeRenderElement(
+        override val elementId: DiagramElementId,
         private val shape: ShapeElement,
-        elemState: State,
         state: CurrentState,
-        parent: BaseRenderElement?,
-        private val childrenElems: Set<BaseRenderElement>
-): BaseRenderElement(elemState, state, parent) {
+        private val childrenElems: List<BaseRenderElement> = emptyList()
+): BaseRenderElement(elementId, state) {
 
-    override val children: Set<BaseRenderElement>
-        get() = anchors(state).toList().toSet() + childrenElems
+    private val anchors = Pair(
+            ShapeResizeAnchorTop(DiagramElementId("TOP:" + shape.id.id), Point2D.Float(shape.bounds().first.x, shape.bounds().first.y), state),
+            ShapeResizeAnchorBottom(DiagramElementId("BOTTOM:" + shape.id.id), Point2D.Float(shape.bounds().second.x, shape.bounds().second.y), state)
+    )
+
+    override val children: List<BaseRenderElement>
+        get() = anchors.toList() + childrenElems
 
     override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val elem = state.elementByDiagramId[shape.id]
@@ -99,19 +102,11 @@ abstract class ShapeRenderElement(
     }
 
     override fun currentRect(camera: Camera): Rectangle2D.Float {
-        val anchors = anchors(state)
         return Rectangle2D.Float(
                 anchors.first.location.x,
                 anchors.first.location.y,
-                anchors.second.location.x,
-                anchors.second.location.y
-        )
-    }
-
-    private fun anchors(state: CurrentState): Pair<ShapeResizeAnchorTop, ShapeResizeAnchorBottom> {
-        return Pair(
-                ShapeResizeAnchorTop(DiagramElementId("TOP:" + shape.id.id), Point2D.Float(shape.bounds().first.x, shape.bounds().first.y), State.NOT_SELECTED, state, this),
-                ShapeResizeAnchorBottom(DiagramElementId("BOTTOM:" + shape.id.id), Point2D.Float(shape.bounds().second.x, shape.bounds().second.y), State.NOT_SELECTED, state, this)
+                anchors.second.location.x - anchors.first.location.x,
+                anchors.second.location.y - anchors.first.location.y
         )
     }
 }

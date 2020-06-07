@@ -34,6 +34,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.*
 import com.valb3r.bpmn.intellij.plugin.debugger.currentDebugger
 import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
+import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.planes.PlaneRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.shapes.*
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.BasicStroke
 import java.awt.Color
@@ -49,6 +52,92 @@ interface BpmnProcessRenderer {
 }
 
 class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer {
+
+    private val minShapeSize = 40.0f
+    private val transactionalBoundaryMargin = 5.0f
+    private val undoRedoStartMargin = 20.0f
+    private val waypointLen = 40.0f
+    private val activityToolBoxGap = 8.0f
+    private val anchorRadius = 5f
+    private val nodeRadius = 3f
+    private val actionsIcoSize = 15f
+    private val actionsMargin = 5f
+
+    private val undoId = DiagramElementId("UNDO")
+    private val redoId = DiagramElementId("REDO")
+
+    private val ANCHOR_STROKE = BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(5.0f), 0.0f)
+    private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
+
+    override fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+        val state = ctx.stateProvider.currentState()
+        val elements = mutableListOf<BaseRenderElement>()
+
+        state.shapes.forEach {
+            val elem = state.elementByBpmnId[it.bpmnElement]
+            elem?.let { bpmn -> mapFromShape(state, it.id, it, bpmn)?.let { shape -> elements += shape } }
+        }
+
+        return PlaneRenderElement(
+                DiagramElementId("0:000000"),
+                state,
+                elements
+        ).render(ctx)
+    }
+
+    private fun mapFromShape(state: CurrentState, id: DiagramElementId, shape: ShapeElement, bpmn: WithBpmnId): BaseRenderElement? {
+        return when (bpmn) {
+            is BpmnStartEvent -> EllipticIconOnLayerShape(id, state.iconProvider.startEvent, shape, state, Colors.START_EVENT)
+            is BpmnStartEscalationEvent -> EllipticIconOnLayerShape(id, state.iconProvider.escalationStartEvent, shape, state, Colors.START_EVENT)
+            is BpmnStartConditionalEvent -> EllipticIconOnLayerShape(id, state.iconProvider.conditionalStartEvent, shape, state, Colors.START_EVENT)
+            is BpmnStartErrorEvent -> EllipticIconOnLayerShape(id, state.iconProvider.errorStartEvent, shape, state, Colors.START_EVENT)
+            is BpmnStartMessageEvent -> EllipticIconOnLayerShape(id, state.iconProvider.messageStartEvent, shape, state, Colors.START_EVENT)
+            is BpmnStartSignalEvent -> EllipticIconOnLayerShape(id, state.iconProvider.signalStartEvent, shape, state, Colors.START_EVENT)
+            is BpmnStartTimerEvent -> EllipticIconOnLayerShape(id, state.iconProvider.timerStartEvent, shape, state, Colors.START_EVENT)
+            is BpmnBoundaryCancelEvent -> IconShape(id, state.iconProvider.boundaryCancelEvent, shape, state)
+            is BpmnBoundaryCompensationEvent -> IconShape(id, state.iconProvider.boundaryCompensationEvent, shape, state)
+            is BpmnBoundaryConditionalEvent -> IconShape(id, state.iconProvider.boundaryConditionalEvent, shape, state)
+            is BpmnBoundaryErrorEvent -> IconShape(id, state.iconProvider.boundaryErrorEvent, shape, state)
+            is BpmnBoundaryEscalationEvent -> IconShape(id, state.iconProvider.boundaryEscalationEvent, shape, state)
+            is BpmnBoundaryMessageEvent -> IconShape(id, state.iconProvider.boundaryMessageEvent, shape, state)
+            is BpmnBoundarySignalEvent -> IconShape(id, state.iconProvider.boundarySignalEvent, shape, state)
+            is BpmnBoundaryTimerEvent -> IconShape(id, state.iconProvider.boundaryTimerEvent, shape, state)
+            is BpmnUserTask -> TopLeftIconShape(id, state.iconProvider.user, shape, state)
+            is BpmnScriptTask -> TopLeftIconShape(id, state.iconProvider.script, shape, state)
+            is BpmnServiceTask -> TopLeftIconShape(id, state.iconProvider.gear, shape, state)
+            is BpmnBusinessRuleTask -> TopLeftIconShape(id, state.iconProvider.businessRule, shape, state)
+            is BpmnReceiveTask -> TopLeftIconShape(id, state.iconProvider.receive, shape, state)
+            is BpmnCamelTask -> TopLeftIconShape(id, state.iconProvider.camel, shape, state)
+            is BpmnHttpTask -> TopLeftIconShape(id, state.iconProvider.http, shape, state)
+            is BpmnMuleTask -> TopLeftIconShape(id, state.iconProvider.mule, shape, state)
+            is BpmnDecisionTask -> TopLeftIconShape(id, state.iconProvider.decision, shape, state)
+            is BpmnShellTask -> TopLeftIconShape(id, state.iconProvider.shell, shape, state)
+            is BpmnSubProcess -> NoIconShape(id, shape, state, Colors.PROCESS_COLOR, Colors.ELEMENT_BORDER_COLOR, Colors.SUBPROCESS_TEXT_COLOR)
+            is BpmnTransactionalSubProcess -> NoIconDoubleBorderShape(id, shape, state)
+            is BpmnCallActivity -> NoIconShape(id, shape, state)
+            is BpmnAdHocSubProcess -> BottomMiddleIconShape(id, state.iconProvider.tilde, shape, state)
+            is BpmnExclusiveGateway -> IconShape(id, state.iconProvider.exclusiveGateway, shape, state)
+            is BpmnParallelGateway -> IconShape(id, state.iconProvider.parallelGateway, shape, state)
+            is BpmnInclusiveGateway -> IconShape(id, state.iconProvider.inclusiveGateway, shape, state)
+            is BpmnEventGateway -> IconShape(id, state.iconProvider.eventGateway, shape, state)
+            is BpmnEndEvent -> EllipticIconOnLayerShape(id, state.iconProvider.endEvent, shape, state, Colors.END_EVENT)
+            is BpmnEndCancelEvent -> EllipticIconOnLayerShape(id, state.iconProvider.cancelEndEvent, shape, state, Colors.END_EVENT)
+            is BpmnEndErrorEvent -> EllipticIconOnLayerShape(id, state.iconProvider.errorEndEvent, shape, state, Colors.END_EVENT)
+            is BpmnEndEscalationEvent -> EllipticIconOnLayerShape(id, state.iconProvider.escalationEndEvent, shape, state, Colors.END_EVENT)
+            is BpmnEndTerminateEvent -> EllipticIconOnLayerShape(id, state.iconProvider.terminateEndEvent, shape, state, Colors.END_EVENT)
+            is BpmnIntermediateTimerCatchingEvent -> IconShape(id, state.iconProvider.timerCatchEvent, shape, state)
+            is BpmnIntermediateMessageCatchingEvent -> IconShape(id, state.iconProvider.messageCatchEvent, shape, state)
+            is BpmnIntermediateSignalCatchingEvent -> IconShape(id, state.iconProvider.signalCatchEvent, shape, state)
+            is BpmnIntermediateConditionalCatchingEvent -> IconShape(id, state.iconProvider.conditionalCatchEvent, shape, state)
+            is BpmnIntermediateNoneThrowingEvent -> IconShape(id, state.iconProvider.noneThrowEvent, shape, state)
+            is BpmnIntermediateSignalThrowingEvent -> IconShape(id, state.iconProvider.signalThrowEvent, shape, state)
+            is BpmnIntermediateEscalationThrowingEvent -> IconShape(id, state.iconProvider.escalationThrowEvent, shape, state)
+            else -> throw IllegalArgumentException("Unknown shape: ${bpmn.javaClass}")
+        }
+    }
+}
+
+class DefaultBpmnProcessRendererOld(val icons: IconProvider) : BpmnProcessRenderer {
 
     private val minShapeSize = 40.0f
     private val transactionalBoundaryMargin = 5.0f

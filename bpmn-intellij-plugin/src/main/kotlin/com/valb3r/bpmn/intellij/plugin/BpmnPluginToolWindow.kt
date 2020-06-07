@@ -39,7 +39,7 @@ class BpmnPluginToolWindow {
     private lateinit var canvasPanel: JPanel
 
     private val canvasBuilder = CanvasBuilder(DefaultBpmnProcessRenderer(IconProviderImpl()))
-    private val canvas: Canvas = Canvas(DefaultCanvasConstants())
+    private val canvas: Canvas = Canvas(IconProviderImpl(), DefaultCanvasConstants())
 
     init {
         // attach event listeners to canvas

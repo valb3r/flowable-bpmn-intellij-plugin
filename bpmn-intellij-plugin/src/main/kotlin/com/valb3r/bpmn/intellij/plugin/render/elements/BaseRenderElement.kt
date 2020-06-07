@@ -13,18 +13,21 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
 abstract class BaseRenderElement(
-        protected var renderState: State,
-        protected val state: CurrentState,
-        protected val parent: BaseRenderElement?
+        protected open val elementId: DiagramElementId,
+        protected val state: CurrentState
 ) {
-    open val children: Set<BaseRenderElement> = mutableSetOf()
+    open val children: List<BaseRenderElement> = mutableListOf()
 
     open fun isActive(): Boolean {
-        return State.SELECTED == renderState
+        return false
     }
 
     open fun isDragged(): Boolean {
-        return State.DRAGGED == renderState
+        return false
+    }
+
+    open fun isActiveOrDragged(): Boolean {
+        return isActive() || isDragged()
     }
 
     open fun render(ctx: RenderContext): MutableMap<DiagramElementId, AreaWithZindex> {

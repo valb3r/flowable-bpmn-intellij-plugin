@@ -8,28 +8,26 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
-import javax.swing.Icon
+import java.awt.geom.Ellipse2D
 
-class TopLeftIconShape(
+class EllipticIconOnLayerShape(
         override val elementId: DiagramElementId,
-        private val icon: Icon,
+        private val icon: String,
         shape: ShapeElement,
         state: CurrentState,
-        private val backgroundColor: Colors = Colors.SERVICE_TASK_COLOR,
-        private val borderColor: Colors =  Colors.ELEMENT_BORDER_COLOR,
-        private val textColor: Colors = Colors.INNER_TEXT_COLOR,
+        private val layerColor: Colors,
         childrenElems: List<BaseRenderElement> = emptyList()
 ) : ShapeRenderElement(elementId, shape, state, childrenElems) {
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 
-        val area = ctx.canvas.drawRoundedRectWithIconAtCorner(
+        val area = ctx.canvas.drawWrappedIconWithLayer(
                 shapeCtx.shape,
                 icon,
-                shapeCtx.name,
-                color(isActive(), backgroundColor),
-                borderColor.color,
-                textColor.color
+                isActive(),
+                Colors.SELECTED_COLOR.color,
+                { Ellipse2D.Float(it.x, it.y, it.width, it.height) },
+                layerColor.color
         )
 
         return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera)))
