@@ -18,8 +18,8 @@ data class ShapeElement(
 
     fun bounds(): Pair<ShapeBoundsAnchorElement, ShapeBoundsAnchorElement> {
         return Pair(
-                ShapeBoundsAnchorElement(DiagramElementId("0:" + id.id), this.bounds.x, this.bounds.y),
-                ShapeBoundsAnchorElement(DiagramElementId("1:" + id.id), this.bounds.x + this.bounds.width, this.bounds.y + this.bounds.height)
+                ShapeBoundsAnchorElement(id, bpmnElement, DiagramElementId("0:" + id.id), this.bounds.x, this.bounds.y),
+                ShapeBoundsAnchorElement(id, bpmnElement, DiagramElementId("1:" + id.id), this.bounds.x + this.bounds.width, this.bounds.y + this.bounds.height)
         )
     }
 
@@ -38,6 +38,8 @@ data class BoundsElement(
 
 @KotlinBuilder
 data class ShapeBoundsAnchorElement(
+        val parentId: DiagramElementId,
+        val bpmnElement: BpmnElementId,
         override val id: DiagramElementId,
         val x: Float,
         val y: Float

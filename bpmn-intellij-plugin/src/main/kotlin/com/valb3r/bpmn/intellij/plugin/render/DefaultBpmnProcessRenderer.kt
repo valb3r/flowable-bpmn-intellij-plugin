@@ -41,6 +41,7 @@ import java.awt.geom.Area
 import java.awt.geom.Ellipse2D
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
+import kotlin.math.max
 import kotlin.math.min
 
 interface BpmnProcessRenderer {
@@ -49,6 +50,7 @@ interface BpmnProcessRenderer {
 
 class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer {
 
+    private val minShapeSize = 40.0f
     private val transactionalBoundaryMargin = 5.0f
     private val undoRedoStartMargin = 20.0f
     private val waypointLen = 40.0f
@@ -194,7 +196,8 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
                 .filter { it.bpmnElement == owner }
                 .map {
                     val index = if (type == SOURCE_REF) 0 else it.waypoint.size - 1
-                    CascadeTranslationToWaypoint(cascadeTrigger, it.waypoint[index].id, it.id, it.waypoint[index].internalPhysicalPos)
+                    val waypoint = it.waypoint[index]
+                    CascadeTranslationToWaypoint(cascadeTrigger, waypoint.id, Point2D.Float(waypoint.x, waypoint.y) , it.id, waypoint.internalPhysicalPos)
                 }
     }
 
@@ -231,7 +234,10 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
     private fun dramBpmnElements(shapes: List<ShapeElement>, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>, canvas: CanvasPainter, renderMeta: RenderMetadata) {
         shapes.forEach {
-            mergeArea(it.id, areaByElement, drawShapeElement(canvas, it, renderMeta))
+            val anchors = it.bounds()
+            val shapeRect = computeShapeRect(renderMeta, anchors, it)
+
+            mergeArea(it.id, areaByElement, drawShapeElement(canvas, it, shapeRect, renderMeta))
             if (isActive(it.id, renderMeta)) {
                 val deleteCallback = { dest: ProcessModelUpdateEvents ->
                     dest.addElementRemovedEvent(listOf(DiagramElementRemovedEvent(it.id)), listOf(BpmnElementRemovedEvent(it.bpmnElement)))
@@ -253,19 +259,27 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
                     }
                 }
                 if (isDeepStructureWithActions(renderMeta)) {
-                    val actionsElem = drawActionsElement(canvas, it.id, it.rectBounds(), renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
+                    val bounds = it.rectBounds()
+                    val actionsElem = drawActionsElement(canvas, it.id, bounds, renderMeta.interactionContext, mutableMapOf(Actions.DELETE to deleteCallback, Actions.NEW_LINK to newSequenceCallback))
                     areaByElement += actionsElem
                 }
 
-                renderMeta.interactionContext.dragEndCallbacks[it.id] = OnDragEnd@{ dx: Float, dy: Float, _: BpmnElementId? ->
-                    val events = mutableListOf<DraggedToEvent>()
-                    events += DraggedToEvent(it.id, dx, dy, null, null)
-                    events += renderMeta
-                            .cascadedTransalationOf
-                            .filter { target -> target.cascadeSource == it.bpmnElement}
-                            .filter { target -> !renderMeta.interactionContext.draggedIds.contains(target.waypointId) }
-                            .map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
-                    return@OnDragEnd events
+                if (isDeepStructure(renderMeta)) {
+                    areaByElement += drawResizeIconTop(canvas, shapeRect, it.rectBounds(), anchors.first, renderMeta)
+                    areaByElement += drawResizeIconBottom(canvas, shapeRect, anchors.second, renderMeta)
+                }
+
+                if (!isActive(anchors.first.id, renderMeta) && !isActive(anchors.second.id, renderMeta)) {
+                    renderMeta.interactionContext.dragEndCallbacks[it.id] = OnDragEnd@{ dx: Float, dy: Float, _: BpmnElementId? ->
+                        val events = mutableListOf<DraggedToEvent>()
+                        events += DraggedToEvent(it.id, dx, dy, null, null)
+                        events += renderMeta
+                                .cascadedTransalationOf
+                                .filter { target -> target.cascadeSource == it.bpmnElement }
+                                .filter { target -> !renderMeta.interactionContext.draggedIds.contains(target.waypointId) }
+                                .map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
+                        return@OnDragEnd events
+                    }
                 }
             }
         }
@@ -285,7 +299,8 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         target.area.add(area.area)
         target.anchorsForShape += area.anchorsForShape
         target.anchorsForWaypoints += area.anchorsForWaypoints
-        areas[id] = AreaWithZindex(target.area, target.areaType, target.anchorsForWaypoints, target.anchorsForShape, min(target.index, area.index), target.parentToSelect ?: area.parentToSelect)
+        areas[id] = AreaWithZindex(target.area, target.areaType, target.anchorsForWaypoints, target.anchorsForShape, min(target.index, area.index), target.parentToSelect
+                ?: area.parentToSelect)
     }
 
     private fun drawEdgeElement(canvas: CanvasPainter, shape: EdgeWithIdentifiableWaypoints, meta: RenderMetadata): AreaWithZindex {
@@ -324,7 +339,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     private fun drawWaypointAnchors(canvas: CanvasPainter, begin: IdentifiableWaypoint, end: IdentifiableWaypoint, parent: EdgeWithIdentifiableWaypoints, meta: RenderMetadata, isLast: Boolean, endWaypointIndex: Int): Map<DiagramElementId, AreaWithZindex> {
         val result = HashMap<DiagramElementId, AreaWithZindex>()
 
-        val dragCallback = DragCallback@{dx: Float, dy: Float, elem: IdentifiableWaypoint, droppedOn: BpmnElementId? ->
+        val dragCallback = DragCallback@{ dx: Float, dy: Float, elem: IdentifiableWaypoint, droppedOn: BpmnElementId? ->
             val events = mutableListOf<Event>()
             val index = parent.waypoint.indexOf(elem)
             if (elem.physical) {
@@ -332,7 +347,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
                 if (null != droppedOn && null != parent.bpmnElement
                         && meta.interactionContext.draggedIds.containsAll(setOf(elem.id, parent.id))
                         && meta.interactionContext.draggedIds.size == 2) {
-                    if (parent.waypoint.size - 1 == index ) {
+                    if (parent.waypoint.size - 1 == index) {
                         events += StringValueUpdatedEvent(parent.bpmnElement!!, TARGET_REF, droppedOn.id)
                     } else if (0 == index) {
                         events += StringValueUpdatedEvent(parent.bpmnElement!!, SOURCE_REF, droppedOn.id)
@@ -352,7 +367,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         }
 
         val drawNode = { node: IdentifiableWaypoint, index: Int ->
-            val translatedNode = translateElementIfNeeded(meta, node)
+            val translatedNode = transformElementIfNeeded(meta, node)
             val active = isActive(node.id, meta)
             val color = color(active, if (node.physical) Colors.WAYPOINT_COLOR else Colors.MID_WAYPOINT_COLOR)
             result[node.id] = AreaWithZindex(
@@ -364,17 +379,19 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
                     parent.id
             )
 
-            meta.interactionContext.dragEndCallbacks[node.id] = { dx: Float, dy: Float, droppedOn: BpmnElementId? -> dragCallback(dx, dy, node, droppedOn)}
+            meta.interactionContext.dragEndCallbacks[node.id] = { dx: Float, dy: Float, droppedOn: BpmnElementId? -> dragCallback(dx, dy, node, droppedOn) }
 
             if (active && node.physical && index > 0 && (index < parent.waypoint.size - 1)) {
-                val callback = { dest: ProcessModelUpdateEvents -> dest.addEvents(listOf(NewWaypointsEvent(
-                        parent.id,
-                        parent.waypoint
-                                .filter { it.physical }
-                                .filter { it.id != node.id }
-                                .toList(),
-                        parent.epoch + 1
-                )))}
+                val callback = { dest: ProcessModelUpdateEvents ->
+                    dest.addEvents(listOf(NewWaypointsEvent(
+                            parent.id,
+                            parent.waypoint
+                                    .filter { it.physical }
+                                    .filter { it.id != node.id }
+                                    .toList(),
+                            parent.epoch + 1
+                    )))
+                }
                 if (active && onlyWaypointAndEdgeSelected(meta, node, parent)) {
                     result += drawActionsElement(canvas, translatedNode, meta.interactionContext, mapOf(Actions.DELETE to callback))
                 }
@@ -388,7 +405,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         }
 
         drawNode(begin, endWaypointIndex - 1)
-        meta.interactionContext.dragEndCallbacks[begin.id] = { dx: Float, dy: Float, droppedOn: BpmnElementId? -> dragCallback(dx, dy, begin, droppedOn)}
+        meta.interactionContext.dragEndCallbacks[begin.id] = { dx: Float, dy: Float, droppedOn: BpmnElementId? -> dragCallback(dx, dy, begin, droppedOn) }
         return result
     }
 
@@ -400,8 +417,8 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     }
 
     private fun drawEdge(canvas: CanvasPainter, begin: IdentifiableWaypoint, end: IdentifiableWaypoint, meta: RenderMetadata, color: Color, isLast: Boolean): Area {
-        val translatedBegin = translateElementIfNeeded(meta, begin)
-        val translatedEnd = translateElementIfNeeded(meta, end)
+        val translatedBegin = transformElementIfNeeded(meta, begin)
+        val translatedEnd = transformElementIfNeeded(meta, end)
         if (isLast) {
             return canvas.drawLineWithArrow(translatedBegin.asWaypointElement(), translatedEnd.asWaypointElement(), color)
         }
@@ -409,17 +426,11 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         return canvas.drawLine(translatedBegin.asWaypointElement(), translatedEnd.asWaypointElement(), color)
     }
 
-    private fun drawShapeElement(canvas: CanvasPainter, bpmnShape: ShapeElement, meta: RenderMetadata): AreaWithZindex {
+    private fun drawShapeElement(canvas: CanvasPainter, bpmnShape: ShapeElement, targetRect: Rectangle2D.Float, meta: RenderMetadata): AreaWithZindex {
         val elem = meta.elementById[bpmnShape.bpmnElement]
         val props = meta.elemPropertiesByElementId[bpmnShape.bpmnElement]
         val name = props?.get(NAME)?.value as String?
         val active = isActive(bpmnShape.id, meta)
-
-        val shape = translateElementIfNeeded(meta, bpmnShape)
-        val bounds = shape.bounds()
-        val left = translateElementIfNeeded(meta, bounds.first)
-        val right = translateElementIfNeeded(meta, bounds.second)
-        val targetRect = Rectangle2D.Float(left.x, left.y, right.x - left.x, right.y - left.y)
 
         return when (elem) {
             null -> defaultElementRender(canvas, targetRect, name, active)
@@ -472,18 +483,47 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         }
     }
 
-    private fun <T> translateElementIfNeeded(meta: RenderMetadata, elem: T): T where T : Translatable<T>, T: WithDiagramId {
-        return if (shouldTranslate(meta, elem.id)) {
+    private fun computeShapeRect(meta: RenderMetadata, bounds: Pair<ShapeBoundsAnchorElement, ShapeBoundsAnchorElement>, bpmnShape: ShapeElement): Rectangle2D.Float {
+        when {
+            shouldTransform(meta, bounds.first.id) -> {
+                val left = transformElementIfNeeded(meta, bounds.first)
+                val right = bounds.second
+                return Rectangle2D.Float(
+                        min(right.x - minShapeSize, left.x),
+                        min(right.y - minShapeSize, left.y),
+                        max(minShapeSize, right.x - left.x),
+                        max(minShapeSize, right.y - left.y))
+            }
+
+            shouldTransform(meta, bounds.second.id) -> {
+                val left = bounds.first
+                val right = transformElementIfNeeded(meta, bounds.second)
+                return Rectangle2D.Float(
+                        left.x,
+                        left.y,
+                        max(minShapeSize, right.x - left.x),
+                        max(minShapeSize, right.y - left.y))
+            }
+
+            else -> {
+                val shape = transformElementIfNeeded(meta, bpmnShape)
+                return shape.rectBounds()
+            }
+        }
+    }
+
+    private fun <T> transformElementIfNeeded(meta: RenderMetadata, elem: T): T where T : Translatable<T>, T : WithDiagramId {
+        return if (shouldTransform(meta, elem.id)) {
             elem.copyAndTranslate(
-                    meta.interactionContext.current.x - meta.interactionContext.start.x,
-                    meta.interactionContext.current.y - meta.interactionContext.start.y
+                    meta.interactionContext.dragCurrent.x - meta.interactionContext.dragStart.x,
+                    meta.interactionContext.dragCurrent.y - meta.interactionContext.dragStart.y
             )
         } else {
             elem
         }
     }
 
-    private fun shouldTranslate(meta: RenderMetadata, elemId: DiagramElementId) =
+    private fun shouldTransform(meta: RenderMetadata, elemId: DiagramElementId) =
             meta.interactionContext.draggedIds.contains(elemId) || meta.cascadedTransalationOf.map { it.waypointId }.contains(elemId)
 
     private fun drawBoundaryCancelEvent(canvas: CanvasPainter, shape: Rectangle2D.Float, active: Boolean): AreaWithZindex {
@@ -832,7 +872,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         canvas.drawRectNoFill(location, width, height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
         var yLocation = location.y
         actions.forEach {
-            when(it.key) {
+            when (it.key) {
                 Actions.DELETE -> {
                     val delId = DiagramElementId("DEL:$ownerId")
                     val deleteIconArea = canvas.drawIcon(BoundsElement(location.x + width + actionsMargin, yLocation, actionsIcoSize, actionsIcoSize), icons.recycleBin)
@@ -853,10 +893,39 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         return result
     }
 
+    private fun drawResizeIconTop(canvas: CanvasPainter, rect: Rectangle2D.Float, origRect: Rectangle2D.Float, resizeElem: ShapeBoundsAnchorElement, renderMeta: RenderMetadata): Map<DiagramElementId, AreaWithZindex> {
+        val iconLeft = canvas.camera.fromCameraView(Point2D.Float(0.0f, 0.0f))
+        val iconRight = canvas.camera.fromCameraView(Point2D.Float(icons.dragToResizeTop.iconWidth.toFloat(), icons.dragToResizeTop.iconHeight.toFloat()))
+        val width = iconRight.x - iconLeft.x
+        val height = iconRight.y - iconLeft.y
 
-    private fun drawResizeIcons(canvas: CanvasPainter, location: Point2D.Float): AreaWithZindex {
-        val area = canvas.drawIcon(location, icons.dragToResize, Colors.SELECTED_COLOR.color)
-        return AreaWithZindex(area, AreaType.SHAPE)
+        val active = isActive(resizeElem.id, renderMeta)
+        val area = canvas.drawIcon(Point2D.Float(rect.x - width - actionsMargin, rect.y - height - actionsMargin), icons.dragToResizeTop, if (active) Colors.SELECTED_COLOR.color else null)
+
+        renderMeta.interactionContext.dragEndCallbacks[resizeElem.id] = OnDragEnd@{ dx: Float, dy: Float, _: BpmnElementId? ->
+            val events = mutableListOf<Event>()
+            events += ShapeRectUpdatedEvent(resizeElem.id, dx, dy, rect.width, rect.height)
+            val cx = origRect.x + origRect.width
+            val cy = origRect.y + origRect.height
+            events += renderMeta
+                    .cascadedTransalationOf
+                    .filter { target -> target.cascadeSource == resizeElem.bpmnElement }
+                    .filter { target -> !renderMeta.interactionContext.draggedIds.contains(target.waypointId) }
+                    .map { cascadeTo ->
+                        val newX = cx + (cascadeTo.location.x - cx) / origRect.width * rect.width
+                        val newY = cy + (cascadeTo.location.y - cy) / origRect.height * rect.height
+                        DraggedToEvent(cascadeTo.waypointId, newX - cascadeTo.location.x, newY - cascadeTo.location.y, cascadeTo.parentEdgeId, cascadeTo.internalId)
+                    }
+            return@OnDragEnd events
+        }
+
+        return mapOf(resizeElem.id to AreaWithZindex(area, AreaType.POINT, parentToSelect = resizeElem.parentId))
+    }
+
+    private fun drawResizeIconBottom(canvas: CanvasPainter, rect: Rectangle2D.Float, resizeElem: ShapeBoundsAnchorElement, renderMeta: RenderMetadata): Map<DiagramElementId, AreaWithZindex> {
+        val active = isActive(resizeElem.id, renderMeta)
+        val area = canvas.drawIcon(Point2D.Float(rect.x + rect.width + actionsMargin, rect.y + rect.height + actionsMargin), icons.dragToResizeBottom, if (active) Colors.SELECTED_COLOR.color else null)
+        return mapOf(resizeElem.id to AreaWithZindex(area, AreaType.POINT, parentToSelect = resizeElem.parentId))
     }
 
     private data class RenderMetadata(
@@ -868,7 +937,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             val cascadedTransalationOf: Set<CascadeTranslationToWaypoint>
     )
 
-    private data class CascadeTranslationToWaypoint(val cascadeSource: BpmnElementId, val waypointId: DiagramElementId, val parentEdgeId: DiagramElementId, val internalId: Int)
+    private data class CascadeTranslationToWaypoint(val cascadeSource: BpmnElementId, val waypointId: DiagramElementId, val location: Point2D.Float, val parentEdgeId: DiagramElementId, val internalId: Int)
 
     private enum class Actions {
         DELETE,

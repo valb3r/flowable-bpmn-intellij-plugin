@@ -111,14 +111,14 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
 
         interactionCtx = interactionCtx.copy(
                 draggedIds = selectedElements.toMutableSet(),
-                start = point,
-                current = point
+                dragStart = point,
+                dragCurrent = point
         )
     }
 
     fun attractToAnchors(ctx: ElementInteractionContext): ElementInteractionContext {
         val anchors: MutableSet<AnchorDetails> = mutableSetOf()
-        val cameraPoint = camera.toCameraView(ctx.current)
+        val cameraPoint = camera.toCameraView(ctx.dragCurrent)
         val dragged = ctx.draggedIds.minBy {
             val bounds = areaByElement?.get(it)?.area?.bounds2D ?: Rectangle2D.Float()
             return@minBy Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat()).distance(cameraPoint)
@@ -161,7 +161,7 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
         val selectedAnchors: AnchorHit = if (null == pointAnchor) applyOrthoAnchors(anchorX, anchorY, ctx) else applyPointAnchor(pointAnchor, ctx)
 
         return ctx.copy(
-                current = Point2D.Float(selectedAnchors.dragged.x, selectedAnchors.dragged.y),
+                dragCurrent = Point2D.Float(selectedAnchors.dragged.x, selectedAnchors.dragged.y),
                 anchorsHit = selectedAnchors
         )
     }
@@ -188,7 +188,7 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
             return
         }
 
-        interactionCtx = interactionCtx.copy(current = point)
+        interactionCtx = interactionCtx.copy(dragCurrent = point)
         interactionCtx = attractToAnchors(interactionCtx)
         repaint()
     }
@@ -200,10 +200,10 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
             return
         }
 
-        if (interactionCtx.draggedIds.isNotEmpty() && (interactionCtx.current.distance(interactionCtx.start) > settings.epsilon)) {
+        if (interactionCtx.draggedIds.isNotEmpty() && (interactionCtx.dragCurrent.distance(interactionCtx.dragStart) > settings.epsilon)) {
             interactionCtx = attractToAnchors(interactionCtx)
-            val dx = interactionCtx.current.x - interactionCtx.start.x
-            val dy = interactionCtx.current.y - interactionCtx.start.y
+            val dx = interactionCtx.dragCurrent.x - interactionCtx.dragStart.x
+            val dy = interactionCtx.dragCurrent.y - interactionCtx.dragStart.y
             updateEventsRegistry().addEvents(interactionCtx.draggedIds.flatMap {interactionCtx.dragEndCallbacks[it]?.invoke(dx, dy, bpmnElemsUnderDragCurrent()) ?: emptyList()})
         }
 
@@ -235,10 +235,10 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
 
     private fun applyOrthoAnchors(anchorX: AnchorDetails?, anchorY: AnchorDetails?, ctx: ElementInteractionContext): AnchorHit {
         val selectedAnchors: MutableMap<AnchorType, Point2D.Float> = mutableMapOf()
-        val targetX = anchorX?.let { ctx.current.x + it.anchor.x - it.objectAnchor.x } ?: ctx.current.x
-        val targetY = anchorY?.let { ctx.current.y + it.anchor.y - it.objectAnchor.y } ?: ctx.current.y
-        val objectAnchorX = anchorX?.objectAnchor?.x ?: ctx.current.x
-        val objectAnchorY = anchorY?.objectAnchor?.y ?: ctx.current.y
+        val targetX = anchorX?.let { ctx.dragCurrent.x + it.anchor.x - it.objectAnchor.x } ?: ctx.dragCurrent.x
+        val targetY = anchorY?.let { ctx.dragCurrent.y + it.anchor.y - it.objectAnchor.y } ?: ctx.dragCurrent.y
+        val objectAnchorX = anchorX?.objectAnchor?.x ?: ctx.dragCurrent.x
+        val objectAnchorY = anchorY?.objectAnchor?.y ?: ctx.dragCurrent.y
         anchorX?.apply { selectedAnchors[AnchorType.HORIZONTAL] = this.anchor }
         anchorY?.apply { selectedAnchors[AnchorType.VERTICAL] = this.anchor }
         return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(objectAnchorX, objectAnchorY), selectedAnchors)
@@ -246,14 +246,14 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
 
     private fun applyPointAnchor(anchor: AnchorDetails, ctx: ElementInteractionContext): AnchorHit {
         val selectedAnchors: MutableMap<AnchorType, Point2D.Float> = mutableMapOf()
-        val targetX = ctx.current.x + anchor.anchor.x - anchor.objectAnchor.x
-        val targetY = ctx.current.y + anchor.anchor.y - anchor.objectAnchor.y
+        val targetX = ctx.dragCurrent.x + anchor.anchor.x - anchor.objectAnchor.x
+        val targetY = ctx.dragCurrent.y + anchor.anchor.y - anchor.objectAnchor.y
         selectedAnchors[AnchorType.POINT] = anchor.anchor
         return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(targetX, targetY), selectedAnchors)
     }
 
     private fun bpmnElemsUnderDragCurrent(): BpmnElementId? {
-        val onScreen = camera.toCameraView(interactionCtx.current)
+        val onScreen = camera.toCameraView(interactionCtx.dragCurrent)
         val cursor = cursorRect(onScreen)
         val elems = areaByElement?.filter { it.value.area.intersects(cursor) }
 

@@ -240,7 +240,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(shape)
     }
 
-    fun drawIcon(position: Point2D.Float, icon: Icon, border: Color): Area {
+    fun drawIcon(position: Point2D.Float, icon: Icon, border: Color?): Area {
         val iconTop = camera.toCameraView(position)
 
         val shape = Rectangle2D.Float(
@@ -251,8 +251,11 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         )
 
         icon.paintIcon(null, graphics2D, iconTop.x.toInt(), iconTop.y.toInt())
-        graphics2D.color = border
-        graphics2D.draw(shape)
+        if (null != border) {
+            graphics2D.color = border
+            graphics2D.draw(shape)
+        }
+
         return Area(shape)
     }
 

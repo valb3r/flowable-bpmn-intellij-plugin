@@ -15,8 +15,8 @@ data class ElementInteractionContext(
         val dragSelectionRect: SelectionRect?,
         val clickCallbacks: MutableMap<DiagramElementId, (dest: ProcessModelUpdateEvents) -> Unit>,
         val anchorsHit: AnchorHit?,
-        val start: Point2D.Float,
-        val current: Point2D.Float
+        val dragStart: Point2D.Float,
+        val dragCurrent: Point2D.Float
 )
 
 data class AnchorHit(val dragged: Point2D.Float, val objectAnchor: Point2D.Float, val anchors: Map<AnchorType, Point2D.Float>)

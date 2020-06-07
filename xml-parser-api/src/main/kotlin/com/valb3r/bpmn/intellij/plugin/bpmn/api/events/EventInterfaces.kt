@@ -27,6 +27,14 @@ interface LocationUpdateWithId: Event {
     val internalPos: Int?
 }
 
+interface ShapeRectUpdateWithId: Event {
+    val diagramElementId: DiagramElementId
+    val dx: Float
+    val dy: Float
+    val dw: Float
+    val dh: Float
+}
+
 interface NewWaypoints: Event {
     val edgeElementId: DiagramElementId
     val waypoints: List<IdentifiableWaypoint>

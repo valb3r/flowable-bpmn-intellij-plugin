@@ -14,6 +14,8 @@ data class BooleanValueUpdatedEvent(override val bpmnElementId: BpmnElementId, o
 
 data class DraggedToEvent(override val diagramElementId: DiagramElementId, override val dx: Float, override val dy: Float, override val parentElementId: DiagramElementId?, override val internalPos: Int?): LocationUpdateWithId
 
+data class ShapeRectUpdatedEvent(override val diagramElementId: DiagramElementId, override val dx: Float, override val dy: Float, override val dw: Float, override val dh: Float): ShapeRectUpdateWithId
+
 data class NewWaypointsEvent(override val edgeElementId: DiagramElementId, override val waypoints: List<IdentifiableWaypoint>, override val epoch: Int): NewWaypoints
 
 data class DiagramElementRemovedEvent(override val elementId: DiagramElementId): DiagramElementRemoved

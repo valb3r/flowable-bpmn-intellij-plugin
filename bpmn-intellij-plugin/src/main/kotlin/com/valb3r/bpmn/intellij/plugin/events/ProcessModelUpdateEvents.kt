@@ -55,8 +55,6 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
     private var expectedFileHash: String = ""
 
     private val fileCommitListeners: MutableList<Any> = ArrayList()
-    private val parentCreatesByStaticId: MutableMap<DiagramElementId, MutableList<Order<out Event>>> = HashMap()
-    private val locationUpdatesByStaticId: MutableMap<DiagramElementId, MutableList<Order<out Event>>> = HashMap()
     private val propertyUpdatesByStaticId: MutableMap<BpmnElementId, MutableList<Order<out Event>>> = HashMap()
     private val newShapeElements: MutableList<Order<BpmnShapeObjectAddedEvent>> = ArrayList()
     private val newDiagramElements: MutableList<Order<BpmnEdgeObjectAddedEvent>> = ArrayList()
@@ -73,8 +71,6 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
         allBeforeThis = 0
         updates.clear()
         fileCommitListeners.clear()
-        parentCreatesByStaticId.clear()
-        locationUpdatesByStaticId.clear()
         propertyUpdatesByStaticId.clear()
         newShapeElements.clear()
         newDiagramElements.clear()
@@ -151,9 +147,8 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
             val toStore = Order(current + index, event, EventBlock(events.size))
             updates.add(toStore)
             when (event) {
-                is LocationUpdateWithId -> locationUpdatesByStaticId.computeIfAbsent(event.diagramElementId) { CopyOnWriteArrayList() } += toStore
                 is PropertyUpdateWithId -> propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
-                is NewWaypointsEvent -> parentCreatesByStaticId.computeIfAbsent(event.edgeElementId) { CopyOnWriteArrayList() } += toStore
+                is LocationUpdateWithId, is NewWaypoints, is ShapeRectUpdatedEvent -> { /*NOP*/ }
                 else -> throw IllegalArgumentException("Can't bulk add: " + event::class.qualifiedName)
             }
         }
