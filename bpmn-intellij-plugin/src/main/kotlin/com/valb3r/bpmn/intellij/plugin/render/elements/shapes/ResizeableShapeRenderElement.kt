@@ -24,13 +24,12 @@ abstract class ResizeableShapeRenderElement(
     override val children: MutableList<BaseRenderElement> = mutableListOf(anchors.first, anchors.second)
 
     override fun currentRect(camera: Camera): Rectangle2D.Float {
-        return viewTransform.transform(
-                Rectangle2D.Float(
-                        anchors.first.transformedLocation.x,
-                        anchors.first.transformedLocation.y,
-                        anchors.second.transformedLocation.x - anchors.first.transformedLocation.x,
-                        anchors.second.transformedLocation.y - anchors.first.transformedLocation.y
-                )
+        // its view transform is solely defined by anchors
+        return Rectangle2D.Float(
+                anchors.first.transformedLocation.x,
+                anchors.first.transformedLocation.y,
+                anchors.second.transformedLocation.x - anchors.first.transformedLocation.x,
+                anchors.second.transformedLocation.y - anchors.first.transformedLocation.y
         )
     }
 }

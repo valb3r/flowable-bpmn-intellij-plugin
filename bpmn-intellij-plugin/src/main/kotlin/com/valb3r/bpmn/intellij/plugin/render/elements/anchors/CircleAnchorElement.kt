@@ -40,4 +40,8 @@ abstract class CircleAnchorElement(
 
         return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT, index = ANCHOR_Z_INDEX))
     }
+
+    override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
+        return mutableSetOf(location)
+    }
 }

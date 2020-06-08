@@ -17,7 +17,7 @@ class BottomMiddleIconShape(
         private val backgroundColor: Colors = Colors.TRANSACTION_COLOR,
         private val borderColor: Colors =  Colors.TRANSACTION_ELEMENT_BORDER_COLOR,
         private val textColor: Colors = Colors.INNER_TEXT_COLOR
-) : ShapeRenderElement(elementId, shape, state) {
+) : ResizeableShapeRenderElement(elementId, shape, state) {
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 
