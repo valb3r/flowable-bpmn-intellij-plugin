@@ -3,7 +3,9 @@ package com.valb3r.bpmn.intellij.plugin.ui.components.popupmenu
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.openapi.util.IconLoader
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
@@ -231,8 +233,9 @@ class CanvasPopupMenuProvider {
             val newObject = newElementsFactory().newBpmnObject(clazz)
             val shape = newShapeElement(sceneLocation, newObject)
 
+            // TODO: Handle parent
             updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(newObject, shape, newElementsFactory().propertiesOf(newObject))
+                    BpmnShapeObjectAddedEvent(WithParentId(BpmnElementId("A PARENT"), newObject), shape, newElementsFactory().propertiesOf(newObject))
             )
         }
     }

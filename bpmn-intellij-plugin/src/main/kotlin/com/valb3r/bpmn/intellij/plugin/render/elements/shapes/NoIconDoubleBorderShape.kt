@@ -6,7 +6,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.geom.Rectangle2D
 
@@ -18,9 +17,8 @@ class NoIconDoubleBorderShape(
         private val borderColor: Colors =  Colors.ELEMENT_BORDER_COLOR,
         private val innerBorderColor: Colors =  Colors.TRANSACTION_ELEMENT_BORDER_COLOR,
         private val innerBackgroundColor: Colors = Colors.TRANSACTION_COLOR,
-        private val textColor: Colors = Colors.SUBPROCESS_TEXT_COLOR,
-        childrenElems: List<BaseRenderElement> = emptyList()
-) : ShapeRenderElement(elementId, shape, state, childrenElems) {
+        private val textColor: Colors = Colors.SUBPROCESS_TEXT_COLOR
+) : ShapeRenderElement(elementId, shape, state) {
 
     private val transactionalBoundaryMargin = 5.0f
 

@@ -5,16 +5,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 
 class IconShape(
         override val elementId: DiagramElementId,
         private val icon: String,
         shape: ShapeElement,
-        state: CurrentState,
-        childrenElems: List<BaseRenderElement> = emptyList()
-) : ShapeRenderElement(elementId, shape, state, childrenElems) {
+        state: CurrentState
+) : ShapeRenderElement(elementId, shape, state) {
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 

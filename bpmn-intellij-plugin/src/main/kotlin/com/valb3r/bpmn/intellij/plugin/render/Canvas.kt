@@ -260,7 +260,7 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         return elems?.map { stateProvider.currentState().elementByDiagramId[it.key] }
                 ?.filterNotNull()
                 ?.map { stateProvider.currentState().elementByBpmnId[it] }
-                ?.filter { it !is BpmnSequenceFlow }
+                ?.filter { it?.element !is BpmnSequenceFlow }
                 ?.filterNotNull()
                 ?.map { it.id }
                 ?.firstOrNull()

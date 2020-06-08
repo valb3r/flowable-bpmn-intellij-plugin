@@ -4,6 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
@@ -72,17 +73,39 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     override fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val state = ctx.stateProvider.currentState()
         val elements = mutableListOf<BaseRenderElement>()
+        val elementsById = mutableMapOf<BpmnElementId, BaseRenderElement>()
 
+        val root = createRootProcessElem(state, elements, elementsById)
+        createShapes(state, elements, elementsById)
+        linkChildrenToParent(state, elementsById)
+
+        return root.render(ctx)
+    }
+
+    private fun createRootProcessElem(state: CurrentState, elements: MutableList<BaseRenderElement>, elementsById: MutableMap<BpmnElementId, BaseRenderElement>): BaseRenderElement {
+        val processElem = PlaneRenderElement(DiagramElementId(state.processId.id), state, mutableListOf())
+        elements += processElem
+        elementsById[state.processId] = processElem
+        return processElem
+    }
+
+    private fun linkChildrenToParent(state: CurrentState, elementsById: MutableMap<BpmnElementId, BaseRenderElement>) {
         state.shapes.forEach {
             val elem = state.elementByBpmnId[it.bpmnElement]
-            elem?.let { bpmn -> mapFromShape(state, it.id, it, bpmn)?.let { shape -> elements += shape } }
+            elementsById[elem!!.id]?.let { bpmn -> elementsById[elem.parent]!!.children.add(bpmn) }
         }
+    }
 
-        return PlaneRenderElement(
-                DiagramElementId("0:000000"),
-                state,
-                elements
-        ).render(ctx)
+    private fun createShapes(state: CurrentState, elements: MutableList<BaseRenderElement>, elementsById: MutableMap<BpmnElementId, BaseRenderElement>) {
+        state.shapes.forEach {
+            val elem = state.elementByBpmnId[it.bpmnElement]
+            elem?.let { bpmn ->
+                mapFromShape(state, it.id, it, bpmn.element)?.let { shape ->
+                    elements += shape
+                    elementsById[bpmn.id] = shape
+                }
+            }
+        }
     }
 
     private fun mapFromShape(state: CurrentState, id: DiagramElementId, shape: ShapeElement, bpmn: WithBpmnId): BaseRenderElement? {
@@ -267,10 +290,10 @@ class DefaultBpmnProcessRendererOld(val icons: IconProvider) : BpmnProcessRender
         val result = mutableSetOf<CascadeTranslationToWaypoint>()
         val elemToDiagramId = mutableMapOf<BpmnElementId, MutableSet<DiagramElementId>>()
         state.elementByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
-        ctx.interactionContext.draggedIds.mapNotNull { state.elementByDiagramId[it] }.filter { state.elementByBpmnId[it] !is BpmnSequenceFlow }.forEach { parent ->
+        ctx.interactionContext.draggedIds.mapNotNull { state.elementByDiagramId[it] }.filter { state.elementByBpmnId[it]?.element !is BpmnSequenceFlow }.forEach { parent ->
             state.elemPropertiesByStaticElementId.forEach { (owner, props) ->
                 idCascadesTo.intersect(props.keys).filter { props[it]?.value == parent.id }.forEach { type ->
-                    when (state.elementByBpmnId[owner]) {
+                    when (state.elementByBpmnId[owner]?.element) {
                         is BpmnSequenceFlow -> result += computeCascadeToWaypoint(state, parent, owner, type)
                     }
                 }
@@ -344,7 +367,7 @@ class DefaultBpmnProcessRendererOld(val icons: IconProvider) : BpmnProcessRender
                                         WaypointElement(bounds.first.x + width, bounds.first.y + height / 2.0f),
                                         WaypointElement(bounds.first.x + width + waypointLen, bounds.first.y + height / 2.0f)
                                 ))
-                        dest.addObjectEvent(BpmnEdgeObjectAddedEvent(newSequenceBpmn, EdgeElementState(newSequenceDiagram), newElementsFactory().propertiesOf(newSequenceBpmn)))
+                        dest.addObjectEvent(BpmnEdgeObjectAddedEvent(WithParentId(BpmnElementId("PARENT"), newSequenceBpmn), EdgeElementState(newSequenceDiagram), newElementsFactory().propertiesOf(newSequenceBpmn)))
                     }
                 }
                 if (isDeepStructureWithActions(renderMeta)) {

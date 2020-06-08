@@ -229,7 +229,8 @@ class FlowableParser : BpmnParser {
                 "//*[local-name()='process'][1]"
         ) as Element
 
-        val newNode = when(update.bpmnObject) {
+        // TODO: Handle parent!
+        val newNode = when(update.bpmnObject.element) {
 
             // Events
             // Start
@@ -359,7 +360,8 @@ class FlowableParser : BpmnParser {
                 "//*[local-name()='process'][1]"
         ) as Element
 
-        val newNode = when(update.bpmnObject) {
+        // TODO: Handle parent
+        val newNode = when(update.bpmnObject.element) {
             is BpmnSequenceFlow -> diagramParent.addElement("sequenceFlow")
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }

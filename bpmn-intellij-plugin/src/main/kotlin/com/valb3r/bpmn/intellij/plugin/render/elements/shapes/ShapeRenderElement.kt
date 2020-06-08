@@ -18,8 +18,7 @@ import java.awt.geom.Rectangle2D
 abstract class ShapeRenderElement(
         override val elementId: DiagramElementId,
         private val shape: ShapeElement,
-        state: CurrentState,
-        private val childrenElems: List<BaseRenderElement> = emptyList()
+        state: CurrentState
 ): BaseRenderElement(elementId, state) {
 
     private val anchors = Pair(
@@ -27,8 +26,7 @@ abstract class ShapeRenderElement(
             ShapeResizeAnchorBottom(DiagramElementId("BOTTOM:" + shape.id.id), Point2D.Float(shape.bounds().second.x, shape.bounds().second.y), state)
     )
 
-    override val children: List<BaseRenderElement>
-        get() = anchors.toList() + childrenElems
+    override val children: MutableList<BaseRenderElement> = mutableListOf(anchors.first, anchors.second)
 
     override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val elem = state.elementByDiagramId[shape.id]

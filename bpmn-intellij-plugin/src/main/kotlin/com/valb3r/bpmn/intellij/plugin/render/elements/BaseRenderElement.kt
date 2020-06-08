@@ -16,7 +16,7 @@ abstract class BaseRenderElement(
         protected open val elementId: DiagramElementId,
         protected val state: CurrentState
 ) {
-    open val children: List<BaseRenderElement> = mutableListOf()
+    open val children: MutableList<BaseRenderElement> = mutableListOf()
 
     open fun isActive(): Boolean {
         return false

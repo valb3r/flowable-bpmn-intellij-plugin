@@ -6,7 +6,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.geom.Ellipse2D
 
@@ -15,9 +14,8 @@ class EllipticIconOnLayerShape(
         private val icon: String,
         shape: ShapeElement,
         state: CurrentState,
-        private val layerColor: Colors,
-        childrenElems: List<BaseRenderElement> = emptyList()
-) : ShapeRenderElement(elementId, shape, state, childrenElems) {
+        private val layerColor: Colors
+) : ShapeRenderElement(elementId, shape, state) {
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 

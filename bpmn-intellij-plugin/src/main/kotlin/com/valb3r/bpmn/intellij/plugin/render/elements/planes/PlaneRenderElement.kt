@@ -14,11 +14,8 @@ import java.awt.geom.Rectangle2D
 class PlaneRenderElement(
         override val elementId: DiagramElementId,
         state: CurrentState,
-        private val childrenElems: List<BaseRenderElement>
+        override val children: MutableList<BaseRenderElement> = mutableListOf()
 ): BaseRenderElement(elementId, state) {
-
-    override val children: List<BaseRenderElement>
-        get() = childrenElems
 
     override fun doDragToWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?) {
         // NOP

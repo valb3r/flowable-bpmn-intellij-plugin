@@ -6,7 +6,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import javax.swing.Icon
 
@@ -17,9 +16,8 @@ class BottomMiddleIconShape(
         state: CurrentState,
         private val backgroundColor: Colors = Colors.TRANSACTION_COLOR,
         private val borderColor: Colors =  Colors.TRANSACTION_ELEMENT_BORDER_COLOR,
-        private val textColor: Colors = Colors.INNER_TEXT_COLOR,
-        childrenElems: List<BaseRenderElement> = emptyList()
-) : ShapeRenderElement(elementId, shape, state, childrenElems) {
+        private val textColor: Colors = Colors.INNER_TEXT_COLOR
+) : ShapeRenderElement(elementId, shape, state) {
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 

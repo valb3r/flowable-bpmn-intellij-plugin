@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.events
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.Translatable
@@ -50,13 +51,13 @@ interface BpmnElementRemoved: Event {
 }
 
 interface BpmnShapeObjectAdded: Event {
-    val bpmnObject: WithBpmnId
+    val bpmnObject: WithParentId
     val shape: ShapeElement
     val props: Map<PropertyType, Property>
 }
 
 interface BpmnEdgeObjectAdded: Event {
-    val bpmnObject: WithBpmnId
+    val bpmnObject: WithParentId
     val edge: EdgeWithIdentifiableWaypoints
     val props: Map<PropertyType, Property>
 }
