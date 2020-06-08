@@ -1,6 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.render
 
-import a.a.it
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
@@ -82,14 +81,16 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         
         val elements = mutableListOf<BaseRenderElement>()
         val elementsById = mutableMapOf<BpmnElementId, BaseRenderElement>()
-
         val root = createRootProcessElem(state, elements, elementsById)
         createShapes(state, elements, elementsById)
         createEdges(state, elements, elementsById)
         linkChildrenToParent(state, elementsById)
+        // Not all elements have DiagramElementId
+        val elementsByDiagramId = mutableMapOf<DiagramElementId, BaseRenderElement>()
+        linkDiagramElementId(root, elementsByDiagramId)
 
-        root.applyContextChanges(ctx)
-        return root.render(ctx)
+        root.applyContextChanges(elementsByDiagramId)
+        return root.render()
     }
 
     private fun createRootProcessElem(state: RenderState, elements: MutableList<BaseRenderElement>, elementsById: MutableMap<BpmnElementId, BaseRenderElement>): BaseRenderElement {
@@ -124,6 +125,11 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             val elem = state.currentState.elementByBpmnId[id]
             elem?.parent?.let { elementsById[it]?.children?.add(renderElem) }
         }
+    }
+
+    private fun linkDiagramElementId(root: BaseRenderElement, elementsByDiagramId: MutableMap<DiagramElementId, BaseRenderElement>) {
+        elementsByDiagramId[root.elementId] = root
+        root.children.forEach { linkDiagramElementId(it, elementsByDiagramId)}
     }
 
     private fun mapFromShape(state: RenderState, id: DiagramElementId, shape: ShapeElement, bpmn: WithBpmnId): BaseRenderElement? {

@@ -16,9 +16,9 @@ import java.awt.geom.Rectangle2D
 import kotlin.math.abs
 
 abstract class BaseRenderElement(
-        protected open val elementId: DiagramElementId,
+        open val elementId: DiagramElementId,
         protected val state: RenderState,
-        protected open var viewTransform: ViewTransform = NullViewTransform()
+        internal open var viewTransform: ViewTransform = NullViewTransform()
 ) {
 
     var isVisible: Boolean? = null
@@ -41,30 +41,23 @@ abstract class BaseRenderElement(
         return isActive() || isDragged()
     }
 
-    open fun applyContextChanges(ctx: RenderContext) {
+    open fun applyContextChanges(elemMap: Map<DiagramElementId, BaseRenderElement>) {
         propagateActivityStateToChildren()
 
-        val dx = ctx.interactionContext.dragCurrent.x - ctx.interactionContext.dragStart.x
-        val dy = ctx.interactionContext.dragCurrent.y - ctx.interactionContext.dragStart.y
+        val dx = state.ctx.interactionContext.dragCurrent.x - state.ctx.interactionContext.dragStart.x
+        val dy = state.ctx.interactionContext.dragCurrent.y - state.ctx.interactionContext.dragStart.y
 
         if (abs(dx) + abs(dy) > 0.1f) {
-            propagateDragging(ctx, dx, dy)
-            propagateResizing(ctx, dx, dy)
+            propagateDragging(state.ctx, dx, dy)
         }
 
-        afterContextChanges()
+        propagateStateChangesApplied(elemMap)
     }
 
-    open fun render(ctx: RenderContext): MutableMap<DiagramElementId, AreaWithZindex> {
-        val result = doRenderWithoutChildren(ctx).toMutableMap()
-        children.forEach { result += it.render(ctx) }
+    open fun render(): MutableMap<DiagramElementId, AreaWithZindex> {
+        val result = doRenderWithoutChildren(state.ctx).toMutableMap()
+        children.forEach { result += it.render() }
         return result
-    }
-
-    open fun dragTo(dx: Float, dy: Float) {
-        viewTransform = DragViewTransform(dx, dy)
-        doDragToWithoutChildren(dx, dy)
-        children.forEach { it.dragTo(dx, dy) }
     }
 
     open fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event>  {
@@ -73,19 +66,10 @@ abstract class BaseRenderElement(
         return result
     }
 
-    open fun resize(camera: Camera, dw: Float, dh: Float) {
-        val iniRect = currentRect(camera)
-        doResizeWithoutChildren(dw, dh)
-        val currRect = currentRect(camera)
-        children.forEach { it.resize(camera, dw * currRect.width / iniRect.width, dh * currRect.height / iniRect.height) }
-    }
-
-    open fun onResizeEnd(camera: Camera, dw: Float, dh: Float, droppedOn: BpmnElementId?): MutableList<Event> {
-        val iniRect = currentRect(camera)
-        val result = doResizeEndWithoutChildren(dw, dh)
-        val currRect = currentRect(camera)
-        children.forEach { result += it.onResizeEnd(camera, dw * currRect.width / iniRect.width, dh * currRect.height / iniRect.height, droppedOn) }
-        return result
+    protected open fun dragTo(dx: Float, dy: Float) {
+        viewTransform = DragViewTransform(dx, dy)
+        doDragToWithoutChildren(dx, dy)
+        children.forEach { it.dragTo(dx, dy) }
     }
 
     protected fun propagateActivityStateToChildren() {
@@ -101,7 +85,18 @@ abstract class BaseRenderElement(
         return if (active) Colors.SELECTED_COLOR.color else color.color
     }
 
-    protected open fun afterContextChanges() {
+    /**
+     * Allows parent elements to handle children updates and react on them.
+     */
+    protected open fun propagateStateChangesApplied(elemMap: Map<DiagramElementId, BaseRenderElement>) {
+        afterStateChangesAppliedNoChildren(elemMap)
+        children.forEach { it.propagateStateChangesApplied(elemMap) }
+    }
+
+    /**
+     * Allows parent elements to handle children updates and react on them.
+     */
+    protected open fun afterStateChangesAppliedNoChildren(elemMap: Map<DiagramElementId, BaseRenderElement>) {
     }
 
     abstract fun doDragToWithoutChildren(dx: Float, dy: Float)
@@ -125,9 +120,6 @@ abstract class BaseRenderElement(
 
         dragTo(dx, dy)
         children.forEach { it.propagateDragging(ctx, dx, dy) }
-    }
-
-    protected fun propagateResizing(ctx: RenderContext, dw: Float, dh: Float) {
     }
 
     protected open fun needsDirectParentActiveToAcceptEvents(): Boolean {

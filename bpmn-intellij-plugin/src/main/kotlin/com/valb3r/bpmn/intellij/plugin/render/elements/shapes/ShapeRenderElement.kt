@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationToWaypoint
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTransform
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.Event
 import java.awt.geom.Point2D
@@ -59,7 +60,14 @@ abstract class ShapeRenderElement(
         TODO("Not yet implemented")
     }
 
-    override fun afterContextChanges() {
+    override fun afterStateChangesAppliedNoChildren(elemMap: Map<DiagramElementId, BaseRenderElement>) {
+        if (viewTransform is NullViewTransform) {
+            return
+        }
+
+        cascadeTo.mapNotNull { elemMap[it.waypointId] }.forEach {
+            it.viewTransform = viewTransform
+        }
     }
 
     override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
