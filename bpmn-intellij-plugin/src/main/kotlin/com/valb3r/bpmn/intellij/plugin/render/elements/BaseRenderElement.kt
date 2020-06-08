@@ -18,11 +18,11 @@ abstract class BaseRenderElement(
     open val children: MutableList<BaseRenderElement> = mutableListOf()
 
     open fun isActive(): Boolean {
-        return false
+        return state.ctx.selectedIds.contains(elementId)
     }
 
     open fun isDragged(): Boolean {
-        return false
+        return state.ctx.interactionContext.draggedIds.contains(elementId)
     }
 
     open fun isActiveOrDragged(): Boolean {

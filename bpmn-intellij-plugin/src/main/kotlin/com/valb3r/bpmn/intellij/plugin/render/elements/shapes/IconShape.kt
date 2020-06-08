@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.render.elements.shapes
 
+import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
@@ -16,9 +17,11 @@ class IconShape(
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 
-        val area = ctx.canvas.drawIcon(
+        val area = ctx.canvas.drawWrappedIcon(
                 shapeCtx.shape,
-                icon
+                icon,
+                isActive(),
+                Colors.SELECTED_COLOR.color
         )
 
         return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera)))
