@@ -31,16 +31,11 @@ abstract class ShapeRenderElement(
         val props = state.currentState.elemPropertiesByStaticElementId[elem]
         val name = props?.get(PropertyType.NAME)?.value as String?
 
-        return doRender(
-                ctx,
-                ShapeCtx(
-                        shape.id,
-                        elem,
-                        currentRect(ctx.canvas.camera),
-                        props,
-                        name
-                )
-        )
+        state.ctx.interactionContext.dragEndCallbacks[elementId] = {
+            dx: Float, dy: Float, id: BpmnElementId? -> onDragEnd(dx, dy, id)
+        }
+
+        return doRender(ctx, ShapeCtx(shape.id, elem, currentRect(ctx.canvas.camera), props, name))
     }
 
     abstract fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex>

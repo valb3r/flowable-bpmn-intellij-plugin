@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.render.elements.anchors
 
 import com.valb3r.bpmn.intellij.plugin.Colors
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
@@ -38,6 +39,9 @@ abstract class CircleAnchorElement(
                 currentColor
         )
 
+        state.ctx.interactionContext.dragEndCallbacks[elementId] = {
+            dx: Float, dy: Float, id: BpmnElementId? -> onDragEnd(dx, dy, id)
+        }
         return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT, index = ANCHOR_Z_INDEX))
     }
 

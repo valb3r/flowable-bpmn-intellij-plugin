@@ -69,6 +69,7 @@ abstract class BaseRenderElement(
     open fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event>  {
         val result = doOnDragEndWithoutChildren(dx, dy, droppedOn)
         children.forEach { result += it.onDragEnd(dx, dy, droppedOn) }
+        viewTransform = NullViewTransform()
         return result
     }
 

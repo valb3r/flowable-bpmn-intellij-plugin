@@ -93,9 +93,9 @@ abstract class BaseEdgeRenderElement(
         return edge.waypoint.map {
             if (it.physical) {
                 physicalPos++
-                PhysicalWaypoint(it.id, elementId, edge.bpmnElement!!, physicalPos, numPhysicals, Point2D.Float(it.x, it.y), state)
+                PhysicalWaypoint(it.id, edge.id, edge.bpmnElement, physicalPos, numPhysicals, Point2D.Float(it.x, it.y), state)
             } else {
-                VirtualWaypoint(it.id, elementId, edge, Point2D.Float(it.x, it.y), state)
+                VirtualWaypoint(it.id, edge.id, edge, Point2D.Float(it.x, it.y), state)
             }
         }
     }

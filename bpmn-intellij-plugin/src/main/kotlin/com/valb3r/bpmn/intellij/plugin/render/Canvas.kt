@@ -207,7 +207,7 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
             updateEventsRegistry().addEvents(interactionCtx.draggedIds.flatMap {interactionCtx.dragEndCallbacks[it]?.invoke(dx, dy, bpmnElemsUnderDragCurrent()) ?: emptyList()})
         }
 
-        interactionCtx = interactionCtx.copy(draggedIds = emptySet())
+        interactionCtx = interactionCtx.copy(draggedIds = emptySet(), dragCurrent = interactionCtx.dragStart)
         repaint()
     }
 

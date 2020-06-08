@@ -13,7 +13,7 @@ import java.awt.geom.Point2D
 class PhysicalWaypoint(
         override val elementId: DiagramElementId,
         private val parentElementId: DiagramElementId,
-        private val parentElementBpmnId: BpmnElementId,
+        private val parentElementBpmnId: BpmnElementId?,
         private val physicalPos: Int,
         private val edgePhysicalSize: Int,
         location: Point2D.Float,
@@ -24,6 +24,10 @@ class PhysicalWaypoint(
         val events = mutableListOf<Event>()
 
         events += DraggedToEvent(elementId, dx, dy, parentElementId, physicalPos) as Event
+
+        if (null == parentElementBpmnId) {
+            return events
+        }
 
         if (null != droppedOn && !multipleElementsSelected()) {
             if (edgePhysicalSize - 1 == physicalPos) {
