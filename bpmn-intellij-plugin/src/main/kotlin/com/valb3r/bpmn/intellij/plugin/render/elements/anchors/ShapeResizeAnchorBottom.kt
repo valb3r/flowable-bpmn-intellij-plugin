@@ -39,4 +39,8 @@ class ShapeResizeAnchorBottom(
     override fun icon(): Icon {
         return state.icons.dragToResizeBottom
     }
+
+    override fun acceptsInternalEvents(): Boolean {
+        return false
+    }
 }

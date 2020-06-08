@@ -43,7 +43,14 @@ abstract class BaseRenderElement(
 
     open fun render(ctx: RenderContext): MutableMap<DiagramElementId, AreaWithZindex> {
         propagateActivityStateToChildren()
-        propagateDragging(ctx)
+        val dx = ctx.interactionContext.dragCurrent.x - ctx.interactionContext.dragStart.x
+        val dy = ctx.interactionContext.dragCurrent.y - ctx.interactionContext.dragStart.y
+
+        if (abs(dx) + abs(dy) > 0.1f) {
+            propagateDragging(ctx, dx, dy)
+            propagateResizing(ctx, dx, dy)
+        }
+
         val result = doRender(ctx).toMutableMap()
         children.forEach { result += it.render(ctx) }
         return result
@@ -61,11 +68,11 @@ abstract class BaseRenderElement(
         return result
     }
 
-    open fun resize(camera: Camera, dw: Float, dh: Float, droppedOn: BpmnElementId?) {
+    open fun resize(camera: Camera, dw: Float, dh: Float) {
         val iniRect = currentRect(camera)
         doResizeWithoutChildren(dw, dh)
         val currRect = currentRect(camera)
-        children.forEach { it.resize(camera, dw * currRect.width / iniRect.width, dh * currRect.height / iniRect.height, droppedOn) }
+        children.forEach { it.resize(camera, dw * currRect.width / iniRect.width, dh * currRect.height / iniRect.height) }
     }
 
     open fun onResizeEnd(camera: Camera, dw: Float, dh: Float, droppedOn: BpmnElementId?): MutableList<Event> {
@@ -101,14 +108,31 @@ abstract class BaseRenderElement(
 
     protected abstract fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
 
-    protected fun propagateDragging(ctx: RenderContext) {
-        if (isActiveOrDragged()) {
-            val dx = ctx.interactionContext.dragCurrent.x - ctx.interactionContext.dragStart.x
-            val dy = ctx.interactionContext.dragCurrent.y - ctx.interactionContext.dragStart.y
-            if (abs(dx) + abs(dy) != 0.0f) {
-                dragTo(dx, dy)
-            }
+    protected fun propagateDragging(ctx: RenderContext, dx: Float, dy: Float) {
+        if (!isActiveOrDragged()) {
+            children.filter { !it.needsParentActiveToAcceptEvents() }.forEach { it.propagateDragging(ctx, dx, dy) }
+            return
         }
-        children.forEach { it.propagateDragging(ctx) }
+
+        dragTo(dx, dy)
+        children.forEach { it.propagateDragging(ctx, dx, dy) }
+    }
+
+    protected fun propagateResizing(ctx: RenderContext, dw: Float, dh: Float) {
+        /*
+        if (isActive()) {
+            return
+        }
+
+        resize(ctx.canvas.camera, dw, dh)
+        children.forEach { it.propagateResizing(ctx, dw, dh) }*/
+    }
+
+    protected open fun needsParentActiveToAcceptEvents(): Boolean {
+        return true
+    }
+
+    protected open fun acceptsInternalEvents(): Boolean {
+        return true
     }
 }
