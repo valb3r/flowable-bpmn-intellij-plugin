@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.anchors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
@@ -10,7 +11,7 @@ import java.awt.geom.Point2D
 
 abstract class AnchorElement(
         override val elementId: DiagramElementId,
-        private val currentLocation: Point2D.Float,
+        protected val currentLocation: Point2D.Float,
         state: RenderState
 ): BaseRenderElement(elementId, state) {
 
@@ -19,6 +20,11 @@ abstract class AnchorElement(
 
     val transformedLocation: Point2D.Float
         get() = viewTransform.transform(currentLocation)
+
+    override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
+        // NOP
+        return mutableMapOf()
+    }
 
     override fun doDragToWithoutChildren(dx: Float, dy: Float) {
         // NOP

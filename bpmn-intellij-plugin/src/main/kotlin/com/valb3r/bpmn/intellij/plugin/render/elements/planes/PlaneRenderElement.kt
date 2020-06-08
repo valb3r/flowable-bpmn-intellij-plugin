@@ -48,4 +48,8 @@ class PlaneRenderElement(
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         return mutableMapOf()
     }
+
+    override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
+        return mutableMapOf()
+    }
 }

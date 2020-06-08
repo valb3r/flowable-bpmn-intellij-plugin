@@ -2,14 +2,21 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.shapes
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.events.BpmnEdgeObjectAddedEvent
+import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
+import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
-import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
-import com.valb3r.bpmn.intellij.plugin.render.Camera
-import com.valb3r.bpmn.intellij.plugin.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
+import com.valb3r.bpmn.intellij.plugin.render.*
+import com.valb3r.bpmn.intellij.plugin.render.elements.ACTIONS_ICO_SIZE
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationToWaypoint
@@ -17,6 +24,8 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTra
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
+
+private const val WAYPOINT_LEN = 40.0f
 
 abstract class ShapeRenderElement(
         override val elementId: DiagramElementId,
@@ -36,6 +45,45 @@ abstract class ShapeRenderElement(
         }
 
         return doRender(ctx, ShapeCtx(shape.id, elem, currentRect(ctx.canvas.camera), props, name))
+    }
+
+    override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
+        var currY = y
+        val delId = DiagramElementId("DEL:$elementId")
+        val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
+        state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
+            dest.addElementRemovedEvent(listOf(DiagramElementRemovedEvent(elementId)), listOf(BpmnElementRemovedEvent(shape.bpmnElement)))
+        }
+        currY += ACTIONS_ICO_SIZE * 2.0f
+
+        val newLinkId = DiagramElementId("NEW_LINK:$elementId")
+        val newLinkArea = state.ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.sequence)
+        state.ctx.interactionContext.clickCallbacks[newLinkId] = { dest ->
+            state.currentState.elementByBpmnId[shape.bpmnElement]?.let { it: WithParentId ->
+                val newSequenceBpmn = newElementsFactory().newOutgoingSequence(it.element)
+                val bounds = currentRect(state.ctx.canvas.camera)
+                val width = bounds.width
+                val height = bounds.height
+
+                val newSequenceDiagram = newElementsFactory().newDiagramObject(EdgeElement::class, newSequenceBpmn)
+                        .copy(waypoint = listOf(
+                                WaypointElement(bounds.x + width, bounds.y + height / 2.0f),
+                                WaypointElement(bounds.x + width + WAYPOINT_LEN, bounds.y + height / 2.0f)
+                        ))
+                dest.addObjectEvent(
+                        BpmnEdgeObjectAddedEvent(
+                                WithParentId(BpmnElementId("PARENT"), newSequenceBpmn),
+                                EdgeElementState(newSequenceDiagram),
+                                newElementsFactory().propertiesOf(newSequenceBpmn)
+                        )
+                )
+            }
+        }
+
+        return mutableMapOf(
+                delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, elementId),
+                newLinkId to AreaWithZindex(newLinkArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, elementId)
+        )
     }
 
     abstract fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex>

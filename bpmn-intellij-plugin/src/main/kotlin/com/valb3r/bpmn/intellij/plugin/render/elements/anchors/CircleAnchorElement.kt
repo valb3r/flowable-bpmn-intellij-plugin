@@ -42,11 +42,11 @@ abstract class CircleAnchorElement(
         state.ctx.interactionContext.dragEndCallbacks[elementId] = {
             dx: Float, dy: Float, id: BpmnElementId? -> onDragEnd(dx, dy, id)
         }
-        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT, index = ANCHOR_Z_INDEX))
+        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT, waypointAnchors(ctx.canvas.camera), index = ANCHOR_Z_INDEX))
     }
 
     override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
-        return mutableSetOf(location)
+        return mutableSetOf(transformedLocation)
     }
 
     open protected fun ifVisibleNoRenderIf(): Boolean {

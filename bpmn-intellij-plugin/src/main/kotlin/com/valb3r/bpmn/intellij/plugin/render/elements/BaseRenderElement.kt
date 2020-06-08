@@ -10,12 +10,16 @@ import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.DragViewTransform
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTransform
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ViewTransform
+import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import kotlin.math.abs
 
 val EPSILON = 0.1f
+private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
+const val ACTIONS_ICO_SIZE = 15f
+private const val actionsMargin = 5f
 
 abstract class BaseRenderElement(
         open val elementId: DiagramElementId,
@@ -63,6 +67,10 @@ abstract class BaseRenderElement(
     open fun render(): MutableMap<DiagramElementId, AreaWithZindex> {
         val result = doRenderWithoutChildren(state.ctx).toMutableMap()
         children.forEach { result += it.render() }
+        if (isActive() && !multipleElementsSelected()) {
+            result += drawActionsElement()
+        }
+
         return result
     }
 
@@ -72,6 +80,19 @@ abstract class BaseRenderElement(
         viewTransform = NullViewTransform()
         return result
     }
+
+    protected fun actionsRect(): Rectangle2D.Float {
+        val rect = currentRect(state.ctx.canvas.camera)
+        return Rectangle2D.Float(rect.x - actionsMargin, rect.y - actionsMargin, rect.width + 2.0f * actionsMargin, rect.height + 2.0f * actionsMargin)
+    }
+
+    protected fun drawActionsElement(): Map<DiagramElementId, AreaWithZindex> {
+        val rect = actionsRect()
+        state.ctx.canvas.drawRectNoFill(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
+        return drawActions(rect.x + rect.width + actionsMargin, rect.y)
+    }
+
+    protected abstract fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex>
 
     protected open fun dragTo(dx: Float, dy: Float) {
         viewTransform = DragViewTransform(dx, dy)

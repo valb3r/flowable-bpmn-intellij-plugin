@@ -20,7 +20,7 @@ import java.awt.geom.Rectangle2D
 
 abstract class BaseEdgeRenderElement(
         override val elementId: DiagramElementId,
-        private val edge: EdgeWithIdentifiableWaypoints,
+        protected val edge: EdgeWithIdentifiableWaypoints,
         private val edgeColor: Colors,
         state: RenderState
 ): BaseRenderElement(elementId, state) {
@@ -65,7 +65,7 @@ abstract class BaseEdgeRenderElement(
     }
 
     override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
-        return edge.waypoint.filter { it.physical }.map { Point2D.Float(it.x, it.y) }.toMutableSet()
+        return edge.waypoint.filter { it.physical && !state.ctx.selectedIds.contains(it.id) }.map { Point2D.Float(it.x, it.y) }.toMutableSet()
     }
 
     override fun shapeAnchors(camera: Camera): MutableSet<Point2D.Float> {
@@ -93,7 +93,7 @@ abstract class BaseEdgeRenderElement(
         return edge.waypoint.map {
             if (it.physical) {
                 physicalPos++
-                PhysicalWaypoint(it.id, edge.id, edge.bpmnElement, physicalPos, numPhysicals, Point2D.Float(it.x, it.y), state)
+                PhysicalWaypoint(it.id, edge.id, edge.bpmnElement, edge, physicalPos, numPhysicals, Point2D.Float(it.x, it.y), state)
             } else {
                 VirtualWaypoint(it.id, edge.id, edge, Point2D.Float(it.x, it.y), state)
             }

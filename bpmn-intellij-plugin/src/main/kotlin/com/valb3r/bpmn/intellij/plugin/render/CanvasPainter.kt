@@ -87,50 +87,6 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return arrow
     }
 
-    fun drawLine(start: WaypointElement, end: WaypointElement, color: Color): Area {
-        val st = camera.toCameraView(Point2D.Float(start.x, start.y))
-        val en = camera.toCameraView(Point2D.Float(end.x, end.y))
-
-        graphics2D.color = color
-        val transform = getTranslateInstance(en.x.toDouble(), en.y.toDouble())
-        transform.rotate(en.x.toDouble() - st.x.toDouble(), en.y.toDouble() - st.y.toDouble())
-        val lineLen = en.distance(st).toFloat()
-        val line = Area(Rectangle2D.Float(
-                -lineLen,
-                -regularLineWidth / 2.0f,
-                lineLen,
-                regularLineWidth
-        ))
-        line.transform(transform)
-        graphics2D.fill(line)
-        return line
-    }
-
-    fun drawLineWithArrow(start: WaypointElement, end: WaypointElement, color: Color): Area {
-        val st = camera.toCameraView(Point2D.Float(start.x, start.y))
-        val en = camera.toCameraView(Point2D.Float(end.x, end.y))
-
-        graphics2D.color = color
-        val transform = getTranslateInstance(en.x.toDouble(), en.y.toDouble())
-        transform.rotate(en.x.toDouble() - st.x.toDouble(), en.y.toDouble() - st.y.toDouble())
-        val arrow = Area(arrowStyle)
-        val lineLen = en.distance(st).toFloat()
-        val line = Area(Rectangle2D.Float(
-                -lineLen,
-                -regularLineWidth / 2.0f,
-                lineLen - arrowWidth / 2.0f,
-                regularLineWidth
-        ))
-        arrow.add(line)
-        arrow.transform(transform)
-        graphics2D.fill(arrow)
-        return arrow
-    }
-
-    fun drawCircle(center: WaypointElement, radius: Float, color: Color): Area {
-        return drawCircle(center, radius, color, color)
-    }
-
     fun drawCircle(center: WaypointElement, radius: Float, background: Color, border: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(center.x - radius, center.y - radius))
         val rightBottom = camera.toCameraView(Point2D.Float(center.x + radius, center.y + radius))
@@ -344,30 +300,6 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
 
         val width = bounds.width.toInt()
         val height = bounds.height.toInt()
-
-        if (0 == width || 0 == height) {
-            return Area()
-        }
-
-        val highlightedShape = Rectangle2D.Float(
-                leftTop.x,
-                leftTop.y,
-                width.toFloat(),
-                height.toFloat()
-        )
-
-        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
-        graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
-
-        return Area(highlightedShape)
-    }
-
-    fun drawIcon(bounds: Rectangle2D.Float, svgIcon: String): Area {
-        val leftTop = camera.toCameraView(Point2D.Float(bounds.x, bounds.y))
-        val rightBottom = camera.toCameraView(Point2D.Float(bounds.x + bounds.width, bounds.y  + bounds.height))
-
-        val width = (rightBottom.x - leftTop.x).toInt()
-        val height = (rightBottom.y - leftTop.y).toInt()
 
         if (0 == width || 0 == height) {
             return Area()
