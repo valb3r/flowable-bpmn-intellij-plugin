@@ -8,9 +8,9 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorBottom
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorTop
-import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.Event
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -18,7 +18,7 @@ import java.awt.geom.Rectangle2D
 abstract class ShapeRenderElement(
         override val elementId: DiagramElementId,
         private val shape: ShapeElement,
-        state: CurrentState
+        state: RenderState
 ): BaseRenderElement(elementId, state) {
 
     private val anchors = Pair(
@@ -29,8 +29,8 @@ abstract class ShapeRenderElement(
     override val children: MutableList<BaseRenderElement> = mutableListOf(anchors.first, anchors.second)
 
     override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
-        val elem = state.elementByDiagramId[shape.id]
-        val props = state.elemPropertiesByStaticElementId[elem]
+        val elem = state.currentState.elementByDiagramId[shape.id]
+        val props = state.currentState.elemPropertiesByStaticElementId[elem]
         val name = props?.get(PropertyType.NAME)?.value as String?
 
         return doRender(

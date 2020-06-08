@@ -9,9 +9,9 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.PhysicalWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.VirtualWaypoint
-import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.Event
 import java.awt.geom.Area
 import java.awt.geom.Point2D
@@ -21,7 +21,7 @@ abstract class BaseEdgeRenderElement(
         override val elementId: DiagramElementId,
         private val edge: EdgeWithIdentifiableWaypoints,
         private val edgeColor: Colors,
-        state: CurrentState
+        state: RenderState
 ): BaseRenderElement(elementId, state) {
 
     private val anchors = edge.waypoint.map {

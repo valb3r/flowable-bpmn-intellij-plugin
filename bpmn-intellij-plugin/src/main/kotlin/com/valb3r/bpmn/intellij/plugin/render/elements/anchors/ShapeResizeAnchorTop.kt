@@ -4,7 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.Icon
@@ -12,7 +12,7 @@ import javax.swing.Icon
 class ShapeResizeAnchorTop(
         override val elementId: DiagramElementId,
         private val bottomPoint: Point2D.Float,
-        state: CurrentState
+        state: RenderState
 ): IconAnchorElement(elementId, bottomPoint, state) {
 
     override fun currentRect(camera: Camera): Rectangle2D.Float {
@@ -39,6 +39,6 @@ class ShapeResizeAnchorTop(
     }
 
     override fun icon(): Icon {
-        return state.iconProvider.dragToResizeTop
+        return state.currentState.iconProvider.dragToResizeTop
     }
 }

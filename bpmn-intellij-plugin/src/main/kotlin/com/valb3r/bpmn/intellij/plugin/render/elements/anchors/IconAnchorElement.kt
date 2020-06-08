@@ -5,14 +5,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
 import javax.swing.Icon
 
 abstract class IconAnchorElement(
         override val elementId: DiagramElementId,
         currentLocation: Point2D.Float,
-        state: CurrentState
+        state: RenderState
 ): AnchorElement(elementId, currentLocation, state) {
 
     override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {

@@ -6,13 +6,13 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Rectangle2D
 
 class NoIconDoubleBorderShape(
         override val elementId: DiagramElementId,
         shape: ShapeElement,
-        state: CurrentState,
+        state: RenderState,
         private val backgroundColor: Colors = Colors.PROCESS_COLOR,
         private val borderColor: Colors =  Colors.ELEMENT_BORDER_COLOR,
         private val innerBorderColor: Colors =  Colors.TRANSACTION_ELEMENT_BORDER_COLOR,

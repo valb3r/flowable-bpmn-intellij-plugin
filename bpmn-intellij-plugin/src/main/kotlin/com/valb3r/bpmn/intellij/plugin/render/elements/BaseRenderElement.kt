@@ -6,7 +6,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.Color
 import java.awt.Event
 import java.awt.geom.Point2D
@@ -14,7 +13,7 @@ import java.awt.geom.Rectangle2D
 
 abstract class BaseRenderElement(
         protected open val elementId: DiagramElementId,
-        protected val state: CurrentState
+        protected val state: RenderState
 ) {
     open val children: MutableList<BaseRenderElement> = mutableListOf()
 

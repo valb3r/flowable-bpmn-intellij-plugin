@@ -6,14 +6,14 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
-import com.valb3r.bpmn.intellij.plugin.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.Event
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
 class PlaneRenderElement(
         override val elementId: DiagramElementId,
-        state: CurrentState,
+        state: RenderState,
         override val children: MutableList<BaseRenderElement> = mutableListOf()
 ): BaseRenderElement(elementId, state) {
 

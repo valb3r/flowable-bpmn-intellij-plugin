@@ -6,12 +6,12 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 
 class NoIconShape(
         override val elementId: DiagramElementId,
         shape: ShapeElement,
-        state: CurrentState,
+        state: RenderState,
         private val backgroundColor: Colors = Colors.CALL_ACTIVITY_COLOR,
         private val borderColor: Colors =  Colors.ELEMENT_BORDER_COLOR,
         private val textColor: Colors = Colors.INNER_TEXT_COLOR

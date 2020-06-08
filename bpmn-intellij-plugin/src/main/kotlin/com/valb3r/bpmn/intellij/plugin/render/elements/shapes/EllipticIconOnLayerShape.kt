@@ -6,14 +6,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Ellipse2D
 
 class EllipticIconOnLayerShape(
         override val elementId: DiagramElementId,
         private val icon: String,
         shape: ShapeElement,
-        state: CurrentState,
+        state: RenderState,
         private val layerColor: Colors
 ) : ShapeRenderElement(elementId, shape, state) {
 

@@ -6,7 +6,7 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
@@ -15,7 +15,7 @@ abstract class CircleAnchorElement(
         currentLocation: Point2D.Float,
         private val radius: Float,
         private val bodyColor: Colors,
-        state: CurrentState
+        state: RenderState
 ): AnchorElement(elementId, currentLocation, state) {
 
     override fun currentRect(camera: Camera): Rectangle2D.Float {

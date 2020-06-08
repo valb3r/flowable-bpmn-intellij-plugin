@@ -4,14 +4,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
-import com.valb3r.bpmn.intellij.plugin.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.Event
 import java.awt.geom.Point2D
 
 abstract class AnchorElement(
         override val elementId: DiagramElementId,
         private val currentLocation: Point2D.Float,
-        state: CurrentState
+        state: RenderState
 ): BaseRenderElement(elementId, state) {
 
     val location: Point2D.Float

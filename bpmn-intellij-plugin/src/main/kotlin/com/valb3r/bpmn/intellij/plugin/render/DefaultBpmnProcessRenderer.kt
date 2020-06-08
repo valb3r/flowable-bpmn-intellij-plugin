@@ -36,6 +36,7 @@ import com.valb3r.bpmn.intellij.plugin.debugger.currentDebugger
 import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.edges.EdgeRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.shapes.*
@@ -72,7 +73,11 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
 
     override fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
-        val state = ctx.stateProvider.currentState()
+        val state = RenderState(
+                ctx.stateProvider.currentState(),
+                ctx
+        )
+        
         val elements = mutableListOf<BaseRenderElement>()
         val elementsById = mutableMapOf<BpmnElementId, BaseRenderElement>()
 
@@ -84,16 +89,16 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         return root.render(ctx)
     }
 
-    private fun createRootProcessElem(state: CurrentState, elements: MutableList<BaseRenderElement>, elementsById: MutableMap<BpmnElementId, BaseRenderElement>): BaseRenderElement {
-        val processElem = PlaneRenderElement(DiagramElementId(state.processId.id), state, mutableListOf())
+    private fun createRootProcessElem(state: RenderState, elements: MutableList<BaseRenderElement>, elementsById: MutableMap<BpmnElementId, BaseRenderElement>): BaseRenderElement {
+        val processElem = PlaneRenderElement(DiagramElementId(state.currentState.processId.id), state, mutableListOf())
         elements += processElem
-        elementsById[state.processId] = processElem
+        elementsById[state.currentState.processId] = processElem
         return processElem
     }
 
-    private fun createShapes(state: CurrentState, elements: MutableList<BaseRenderElement>, elementsById: MutableMap<BpmnElementId, BaseRenderElement>) {
-        state.shapes.forEach {
-            val elem = state.elementByBpmnId[it.bpmnElement]
+    private fun createShapes(state: RenderState, elements: MutableList<BaseRenderElement>, elementsById: MutableMap<BpmnElementId, BaseRenderElement>) {
+        state.currentState.shapes.forEach {
+            val elem = state.currentState.elementByBpmnId[it.bpmnElement]
             elem?.let { bpmn ->
                 mapFromShape(state, it.id, it, bpmn.element)?.let { shape ->
                     elements += shape
@@ -103,68 +108,69 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         }
     }
 
-    private fun createEdges(state: CurrentState, elements: MutableList<BaseRenderElement>, elementsById: MutableMap<BpmnElementId, BaseRenderElement>) {
-        state.edges.forEach {
+    private fun createEdges(state: RenderState, elements: MutableList<BaseRenderElement>, elementsById: MutableMap<BpmnElementId, BaseRenderElement>) {
+        state.currentState.edges.forEach {
             val edge = EdgeRenderElement(it.id, it, state)
             elements += edge
             elementsById[it.bpmnElement!!] = edge
         }
     }
 
-    private fun linkChildrenToParent(state: CurrentState, elementsById: MutableMap<BpmnElementId, BaseRenderElement>) {
+    private fun linkChildrenToParent(state: RenderState, elementsById: MutableMap<BpmnElementId, BaseRenderElement>) {
         elementsById.forEach { (id, renderElem) ->
-            val elem = state.elementByBpmnId[id]
+            val elem = state.currentState.elementByBpmnId[id]
             elem?.parent?.let { elementsById[it]?.children?.add(renderElem) }
         }
     }
 
-    private fun mapFromShape(state: CurrentState, id: DiagramElementId, shape: ShapeElement, bpmn: WithBpmnId): BaseRenderElement? {
+    private fun mapFromShape(state: RenderState, id: DiagramElementId, shape: ShapeElement, bpmn: WithBpmnId): BaseRenderElement? {
+        val icons = state.currentState.iconProvider
         return when (bpmn) {
-            is BpmnStartEvent -> EllipticIconOnLayerShape(id, state.iconProvider.startEvent, shape, state, Colors.START_EVENT)
-            is BpmnStartEscalationEvent -> EllipticIconOnLayerShape(id, state.iconProvider.escalationStartEvent, shape, state, Colors.START_EVENT)
-            is BpmnStartConditionalEvent -> EllipticIconOnLayerShape(id, state.iconProvider.conditionalStartEvent, shape, state, Colors.START_EVENT)
-            is BpmnStartErrorEvent -> EllipticIconOnLayerShape(id, state.iconProvider.errorStartEvent, shape, state, Colors.START_EVENT)
-            is BpmnStartMessageEvent -> EllipticIconOnLayerShape(id, state.iconProvider.messageStartEvent, shape, state, Colors.START_EVENT)
-            is BpmnStartSignalEvent -> EllipticIconOnLayerShape(id, state.iconProvider.signalStartEvent, shape, state, Colors.START_EVENT)
-            is BpmnStartTimerEvent -> EllipticIconOnLayerShape(id, state.iconProvider.timerStartEvent, shape, state, Colors.START_EVENT)
-            is BpmnBoundaryCancelEvent -> IconShape(id, state.iconProvider.boundaryCancelEvent, shape, state)
-            is BpmnBoundaryCompensationEvent -> IconShape(id, state.iconProvider.boundaryCompensationEvent, shape, state)
-            is BpmnBoundaryConditionalEvent -> IconShape(id, state.iconProvider.boundaryConditionalEvent, shape, state)
-            is BpmnBoundaryErrorEvent -> IconShape(id, state.iconProvider.boundaryErrorEvent, shape, state)
-            is BpmnBoundaryEscalationEvent -> IconShape(id, state.iconProvider.boundaryEscalationEvent, shape, state)
-            is BpmnBoundaryMessageEvent -> IconShape(id, state.iconProvider.boundaryMessageEvent, shape, state)
-            is BpmnBoundarySignalEvent -> IconShape(id, state.iconProvider.boundarySignalEvent, shape, state)
-            is BpmnBoundaryTimerEvent -> IconShape(id, state.iconProvider.boundaryTimerEvent, shape, state)
-            is BpmnUserTask -> TopLeftIconShape(id, state.iconProvider.user, shape, state)
-            is BpmnScriptTask -> TopLeftIconShape(id, state.iconProvider.script, shape, state)
-            is BpmnServiceTask -> TopLeftIconShape(id, state.iconProvider.gear, shape, state)
-            is BpmnBusinessRuleTask -> TopLeftIconShape(id, state.iconProvider.businessRule, shape, state)
-            is BpmnReceiveTask -> TopLeftIconShape(id, state.iconProvider.receive, shape, state)
-            is BpmnCamelTask -> TopLeftIconShape(id, state.iconProvider.camel, shape, state)
-            is BpmnHttpTask -> TopLeftIconShape(id, state.iconProvider.http, shape, state)
-            is BpmnMuleTask -> TopLeftIconShape(id, state.iconProvider.mule, shape, state)
-            is BpmnDecisionTask -> TopLeftIconShape(id, state.iconProvider.decision, shape, state)
-            is BpmnShellTask -> TopLeftIconShape(id, state.iconProvider.shell, shape, state)
+            is BpmnStartEvent -> EllipticIconOnLayerShape(id, icons.startEvent, shape, state, Colors.START_EVENT)
+            is BpmnStartEscalationEvent -> EllipticIconOnLayerShape(id, icons.escalationStartEvent, shape, state, Colors.START_EVENT)
+            is BpmnStartConditionalEvent -> EllipticIconOnLayerShape(id, icons.conditionalStartEvent, shape, state, Colors.START_EVENT)
+            is BpmnStartErrorEvent -> EllipticIconOnLayerShape(id, icons.errorStartEvent, shape, state, Colors.START_EVENT)
+            is BpmnStartMessageEvent -> EllipticIconOnLayerShape(id, icons.messageStartEvent, shape, state, Colors.START_EVENT)
+            is BpmnStartSignalEvent -> EllipticIconOnLayerShape(id, icons.signalStartEvent, shape, state, Colors.START_EVENT)
+            is BpmnStartTimerEvent -> EllipticIconOnLayerShape(id, icons.timerStartEvent, shape, state, Colors.START_EVENT)
+            is BpmnBoundaryCancelEvent -> IconShape(id, icons.boundaryCancelEvent, shape, state)
+            is BpmnBoundaryCompensationEvent -> IconShape(id, icons.boundaryCompensationEvent, shape, state)
+            is BpmnBoundaryConditionalEvent -> IconShape(id, icons.boundaryConditionalEvent, shape, state)
+            is BpmnBoundaryErrorEvent -> IconShape(id, icons.boundaryErrorEvent, shape, state)
+            is BpmnBoundaryEscalationEvent -> IconShape(id, icons.boundaryEscalationEvent, shape, state)
+            is BpmnBoundaryMessageEvent -> IconShape(id, icons.boundaryMessageEvent, shape, state)
+            is BpmnBoundarySignalEvent -> IconShape(id, icons.boundarySignalEvent, shape, state)
+            is BpmnBoundaryTimerEvent -> IconShape(id, icons.boundaryTimerEvent, shape, state)
+            is BpmnUserTask -> TopLeftIconShape(id, icons.user, shape, state)
+            is BpmnScriptTask -> TopLeftIconShape(id, icons.script, shape, state)
+            is BpmnServiceTask -> TopLeftIconShape(id, icons.gear, shape, state)
+            is BpmnBusinessRuleTask -> TopLeftIconShape(id, icons.businessRule, shape, state)
+            is BpmnReceiveTask -> TopLeftIconShape(id, icons.receive, shape, state)
+            is BpmnCamelTask -> TopLeftIconShape(id, icons.camel, shape, state)
+            is BpmnHttpTask -> TopLeftIconShape(id, icons.http, shape, state)
+            is BpmnMuleTask -> TopLeftIconShape(id, icons.mule, shape, state)
+            is BpmnDecisionTask -> TopLeftIconShape(id, icons.decision, shape, state)
+            is BpmnShellTask -> TopLeftIconShape(id, icons.shell, shape, state)
             is BpmnSubProcess -> NoIconShape(id, shape, state, Colors.PROCESS_COLOR, Colors.ELEMENT_BORDER_COLOR, Colors.SUBPROCESS_TEXT_COLOR)
             is BpmnTransactionalSubProcess -> NoIconDoubleBorderShape(id, shape, state)
             is BpmnCallActivity -> NoIconShape(id, shape, state)
-            is BpmnAdHocSubProcess -> BottomMiddleIconShape(id, state.iconProvider.tilde, shape, state)
-            is BpmnExclusiveGateway -> IconShape(id, state.iconProvider.exclusiveGateway, shape, state)
-            is BpmnParallelGateway -> IconShape(id, state.iconProvider.parallelGateway, shape, state)
-            is BpmnInclusiveGateway -> IconShape(id, state.iconProvider.inclusiveGateway, shape, state)
-            is BpmnEventGateway -> IconShape(id, state.iconProvider.eventGateway, shape, state)
-            is BpmnEndEvent -> EllipticIconOnLayerShape(id, state.iconProvider.endEvent, shape, state, Colors.END_EVENT)
-            is BpmnEndCancelEvent -> EllipticIconOnLayerShape(id, state.iconProvider.cancelEndEvent, shape, state, Colors.END_EVENT)
-            is BpmnEndErrorEvent -> EllipticIconOnLayerShape(id, state.iconProvider.errorEndEvent, shape, state, Colors.END_EVENT)
-            is BpmnEndEscalationEvent -> EllipticIconOnLayerShape(id, state.iconProvider.escalationEndEvent, shape, state, Colors.END_EVENT)
-            is BpmnEndTerminateEvent -> EllipticIconOnLayerShape(id, state.iconProvider.terminateEndEvent, shape, state, Colors.END_EVENT)
-            is BpmnIntermediateTimerCatchingEvent -> IconShape(id, state.iconProvider.timerCatchEvent, shape, state)
-            is BpmnIntermediateMessageCatchingEvent -> IconShape(id, state.iconProvider.messageCatchEvent, shape, state)
-            is BpmnIntermediateSignalCatchingEvent -> IconShape(id, state.iconProvider.signalCatchEvent, shape, state)
-            is BpmnIntermediateConditionalCatchingEvent -> IconShape(id, state.iconProvider.conditionalCatchEvent, shape, state)
-            is BpmnIntermediateNoneThrowingEvent -> IconShape(id, state.iconProvider.noneThrowEvent, shape, state)
-            is BpmnIntermediateSignalThrowingEvent -> IconShape(id, state.iconProvider.signalThrowEvent, shape, state)
-            is BpmnIntermediateEscalationThrowingEvent -> IconShape(id, state.iconProvider.escalationThrowEvent, shape, state)
+            is BpmnAdHocSubProcess -> BottomMiddleIconShape(id, icons.tilde, shape, state)
+            is BpmnExclusiveGateway -> IconShape(id, icons.exclusiveGateway, shape, state)
+            is BpmnParallelGateway -> IconShape(id, icons.parallelGateway, shape, state)
+            is BpmnInclusiveGateway -> IconShape(id, icons.inclusiveGateway, shape, state)
+            is BpmnEventGateway -> IconShape(id, icons.eventGateway, shape, state)
+            is BpmnEndEvent -> EllipticIconOnLayerShape(id, icons.endEvent, shape, state, Colors.END_EVENT)
+            is BpmnEndCancelEvent -> EllipticIconOnLayerShape(id, icons.cancelEndEvent, shape, state, Colors.END_EVENT)
+            is BpmnEndErrorEvent -> EllipticIconOnLayerShape(id, icons.errorEndEvent, shape, state, Colors.END_EVENT)
+            is BpmnEndEscalationEvent -> EllipticIconOnLayerShape(id, icons.escalationEndEvent, shape, state, Colors.END_EVENT)
+            is BpmnEndTerminateEvent -> EllipticIconOnLayerShape(id, icons.terminateEndEvent, shape, state, Colors.END_EVENT)
+            is BpmnIntermediateTimerCatchingEvent -> IconShape(id, icons.timerCatchEvent, shape, state)
+            is BpmnIntermediateMessageCatchingEvent -> IconShape(id, icons.messageCatchEvent, shape, state)
+            is BpmnIntermediateSignalCatchingEvent -> IconShape(id, icons.signalCatchEvent, shape, state)
+            is BpmnIntermediateConditionalCatchingEvent -> IconShape(id, icons.conditionalCatchEvent, shape, state)
+            is BpmnIntermediateNoneThrowingEvent -> IconShape(id, icons.noneThrowEvent, shape, state)
+            is BpmnIntermediateSignalThrowingEvent -> IconShape(id, icons.signalThrowEvent, shape, state)
+            is BpmnIntermediateEscalationThrowingEvent -> IconShape(id, icons.escalationThrowEvent, shape, state)
             else -> throw IllegalArgumentException("Unknown shape: ${bpmn.javaClass}")
         }
     }
