@@ -13,7 +13,7 @@ class ShapeResizeAnchorTop(
         override val elementId: DiagramElementId,
         private val bottomPoint: Point2D.Float,
         state: RenderState
-): IconAnchorElement(elementId, bottomPoint, state) {
+) : IconAnchorElement(elementId, bottomPoint, state) {
 
     override fun currentRect(camera: Camera): Rectangle2D.Float {
         val icon = icon()
@@ -22,16 +22,18 @@ class ShapeResizeAnchorTop(
         val width = iconRight.x - iconLeft.x
         val height = iconRight.y - iconLeft.y
 
-        return Rectangle2D.Float(
-                bottomPoint.x - width,
-                bottomPoint.y - height,
-                width,
-                height
+        return viewTransform.transform(
+                Rectangle2D.Float(
+                        bottomPoint.x - width,
+                        bottomPoint.y - height,
+                        width,
+                        height
+                )
         )
     }
 
     override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
-        if (!isActiveOrDragged()) {
+        if (!isVisible()) {
             return mutableMapOf()
         }
 

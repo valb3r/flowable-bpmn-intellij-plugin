@@ -17,7 +17,7 @@ class PlaneRenderElement(
         override val children: MutableList<BaseRenderElement> = mutableListOf()
 ): BaseRenderElement(elementId, state) {
 
-    override fun doDragToWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?) {
+    override fun doDragToWithoutChildren(dx: Float, dy: Float) {
         // NOP
     }
 

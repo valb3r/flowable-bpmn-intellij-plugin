@@ -26,29 +26,37 @@ abstract class BaseEdgeRenderElement(
 
     private val anchors = edge.waypoint.map {
         if (it.physical) {
-            PhysicalWaypoint(it.id, Point2D.Float(it.x, it.y), state) as BaseRenderElement
+            PhysicalWaypoint(it.id, Point2D.Float(it.x, it.y), state)
         } else {
-            VirtualWaypoint(it.id, Point2D.Float(it.x, it.y), state) as BaseRenderElement
+            VirtualWaypoint(it.id, Point2D.Float(it.x, it.y), state)
         }
     }.toMutableList()
 
-    override val children: MutableList<BaseRenderElement> = anchors
+    override val children: MutableList<BaseRenderElement> = anchors as MutableList<BaseRenderElement>
 
     override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+        if (isActive()) {
+            children.forEach { it.isVisible = true }
+        } else {
+            children.forEach { it.isVisible = it.isActiveOrDragged() }
+        }
+
         val area = Area()
 
-        edge.waypoint.forEachIndexed {pos, waypoint ->
+        val updatedAnchors = anchors.filter { it is PhysicalWaypoint || it.isActiveOrDragged() }.map { it.transformedLocation }
+
+        updatedAnchors.forEachIndexed {pos, waypoint ->
             when {
-                pos == edge.waypoint.size - 1 -> area.add(ctx.canvas.drawLineWithArrow(edge.waypoint[pos - 1].asWaypointElement(), waypoint.asWaypointElement(), color(isActive(), edgeColor)))
-                pos > 0 -> area.add(ctx.canvas.drawLine(edge.waypoint[pos - 1].asWaypointElement(), waypoint.asWaypointElement(), color(isActive(), edgeColor)))
+                pos == updatedAnchors.size - 1 -> area.add(ctx.canvas.drawLineWithArrow(updatedAnchors[pos - 1], waypoint, color(isActive(), edgeColor)))
+                pos > 0 -> area.add(ctx.canvas.drawLine(updatedAnchors[pos - 1], waypoint, color(isActive(), edgeColor)))
             }
         }
 
         return mapOf(elementId to AreaWithZindex(area, AreaType.EDGE, waypointAnchors(ctx.canvas.camera)))
     }
 
-    override fun doDragToWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?) {
-        TODO("Not yet implemented")
+    override fun doDragToWithoutChildren(dx: Float, dy: Float) {
+        // NOP
     }
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
@@ -77,6 +85,7 @@ abstract class BaseEdgeRenderElement(
         val maxX = edge.waypoint.maxBy { it.x }?.x ?: 0.0f
         val maxY = edge.waypoint.maxBy { it.y }?.y ?: 0.0f
 
+        // Edge itself can't be translated, so no viewTransform
         return Rectangle2D.Float(
                 minX,
                 minY,

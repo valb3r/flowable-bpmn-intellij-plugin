@@ -16,19 +16,21 @@ abstract class CircleAnchorElement(
         private val radius: Float,
         private val bodyColor: Colors,
         state: RenderState
-): AnchorElement(elementId, currentLocation, state) {
+) : AnchorElement(elementId, currentLocation, state) {
 
     override fun currentRect(camera: Camera): Rectangle2D.Float {
-        return Rectangle2D.Float(
-                location.x - radius,
-                location.y - radius,
-                2.0f * radius,
-                2.0f * radius
+        return viewTransform.transform(
+                Rectangle2D.Float(
+                        location.x - radius,
+                        location.y - radius,
+                        2.0f * radius,
+                        2.0f * radius
+                )
         )
     }
 
     override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
-        if (!isActive()) {
+        if (!isVisible()) {
             return mutableMapOf()
         }
 

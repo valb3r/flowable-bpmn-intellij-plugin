@@ -17,8 +17,11 @@ abstract class AnchorElement(
     val location: Point2D.Float
         get() = currentLocation
 
-    override fun doDragToWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?) {
-        TODO("Not yet implemented")
+    val transformedLocation: Point2D.Float
+        get() = viewTransform.transform(currentLocation)
+
+    override fun doDragToWithoutChildren(dx: Float, dy: Float) {
+        // NOP
     }
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {

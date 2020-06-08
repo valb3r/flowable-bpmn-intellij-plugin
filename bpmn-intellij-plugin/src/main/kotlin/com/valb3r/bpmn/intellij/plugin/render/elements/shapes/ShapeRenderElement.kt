@@ -19,7 +19,7 @@ abstract class ShapeRenderElement(
         override val elementId: DiagramElementId,
         private val shape: ShapeElement,
         state: RenderState
-): BaseRenderElement(elementId, state) {
+) : BaseRenderElement(elementId, state) {
 
     private val anchors = Pair(
             ShapeResizeAnchorTop(DiagramElementId("TOP:" + shape.id.id), Point2D.Float(shape.bounds().first.x, shape.bounds().first.y), state),
@@ -47,8 +47,8 @@ abstract class ShapeRenderElement(
 
     abstract fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex>
 
-    override fun doDragToWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?) {
-        TODO("Not yet implemented")
+    override fun doDragToWithoutChildren(dx: Float, dy: Float) {
+        // NOP
     }
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
@@ -100,11 +100,13 @@ abstract class ShapeRenderElement(
     }
 
     override fun currentRect(camera: Camera): Rectangle2D.Float {
-        return Rectangle2D.Float(
-                anchors.first.location.x,
-                anchors.first.location.y,
-                anchors.second.location.x - anchors.first.location.x,
-                anchors.second.location.y - anchors.first.location.y
+        return viewTransform.transform(
+                Rectangle2D.Float(
+                        anchors.first.location.x,
+                        anchors.first.location.y,
+                        anchors.second.location.x - anchors.first.location.x,
+                        anchors.second.location.y - anchors.first.location.y
+                )
         )
     }
 }

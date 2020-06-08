@@ -47,6 +47,46 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area()
     }
 
+    fun drawLine(start: Point2D.Float, end: Point2D.Float, color: Color): Area {
+        val st = camera.toCameraView(start)
+        val en = camera.toCameraView(end)
+
+        graphics2D.color = color
+        val transform = getTranslateInstance(en.x.toDouble(), en.y.toDouble())
+        transform.rotate(en.x.toDouble() - st.x.toDouble(), en.y.toDouble() - st.y.toDouble())
+        val lineLen = en.distance(st).toFloat()
+        val line = Area(Rectangle2D.Float(
+                -lineLen,
+                -regularLineWidth / 2.0f,
+                lineLen,
+                regularLineWidth
+        ))
+        line.transform(transform)
+        graphics2D.fill(line)
+        return line
+    }
+
+    fun drawLineWithArrow(start: Point2D.Float, end: Point2D.Float, color: Color): Area {
+        val st = camera.toCameraView(start)
+        val en = camera.toCameraView(end)
+
+        graphics2D.color = color
+        val transform = getTranslateInstance(en.x.toDouble(), en.y.toDouble())
+        transform.rotate(en.x.toDouble() - st.x.toDouble(), en.y.toDouble() - st.y.toDouble())
+        val arrow = Area(arrowStyle)
+        val lineLen = en.distance(st).toFloat()
+        val line = Area(Rectangle2D.Float(
+                -lineLen,
+                -regularLineWidth / 2.0f,
+                lineLen - arrowWidth / 2.0f,
+                regularLineWidth
+        ))
+        arrow.add(line)
+        arrow.transform(transform)
+        graphics2D.fill(arrow)
+        return arrow
+    }
+
     fun drawLine(start: WaypointElement, end: WaypointElement, color: Color): Area {
         val st = camera.toCameraView(Point2D.Float(start.x, start.y))
         val en = camera.toCameraView(Point2D.Float(end.x, end.y))
