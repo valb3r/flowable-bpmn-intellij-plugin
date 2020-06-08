@@ -28,7 +28,7 @@ abstract class CircleAnchorElement(
     }
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
-        if (!isVisible() || multipleElementsSelected()) {
+        if (!isVisible() || ifVisibleNoRenderIf()) {
             return mutableMapOf()
         }
 
@@ -47,5 +47,9 @@ abstract class CircleAnchorElement(
 
     override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
         return mutableSetOf(location)
+    }
+
+    open protected fun ifVisibleNoRenderIf(): Boolean {
+        return multipleElementsSelected()
     }
 }

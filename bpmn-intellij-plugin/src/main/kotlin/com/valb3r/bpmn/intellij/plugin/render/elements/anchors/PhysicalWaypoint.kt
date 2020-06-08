@@ -39,4 +39,8 @@ class PhysicalWaypoint(
 
         return events
     }
+
+    override fun ifVisibleNoRenderIf(): Boolean {
+        return false
+    }
 }
