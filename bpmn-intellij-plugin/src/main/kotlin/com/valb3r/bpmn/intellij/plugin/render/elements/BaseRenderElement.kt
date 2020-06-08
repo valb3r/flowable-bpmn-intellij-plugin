@@ -42,6 +42,7 @@ abstract class BaseRenderElement(
     }
 
     open fun render(ctx: RenderContext): MutableMap<DiagramElementId, AreaWithZindex> {
+        propagateActivityStateToChildren()
         propagateDragging(ctx)
         val result = doRender(ctx).toMutableMap()
         children.forEach { result += it.render(ctx) }
@@ -73,6 +74,14 @@ abstract class BaseRenderElement(
         val currRect = currentRect(camera)
         children.forEach { result += it.onResizeEnd(camera, dw * currRect.width / iniRect.width, dh * currRect.height / iniRect.height, droppedOn) }
         return result
+    }
+
+    protected fun propagateActivityStateToChildren() {
+        if (isActive()) {
+            children.forEach { it.isVisible = true }
+        } else {
+            children.forEach { it.isVisible = it.isActiveOrDragged() }
+        }
     }
 
     protected open fun color(active: Boolean, color: Colors): Color {

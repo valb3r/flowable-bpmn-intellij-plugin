@@ -17,7 +17,7 @@ class TopLeftIconShape(
         private val backgroundColor: Colors = Colors.SERVICE_TASK_COLOR,
         private val borderColor: Colors =  Colors.ELEMENT_BORDER_COLOR,
         private val textColor: Colors = Colors.INNER_TEXT_COLOR
-) : ShapeRenderElement(elementId, shape, state) {
+) : ResizeableShapeRenderElement(elementId, shape, state) {
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 

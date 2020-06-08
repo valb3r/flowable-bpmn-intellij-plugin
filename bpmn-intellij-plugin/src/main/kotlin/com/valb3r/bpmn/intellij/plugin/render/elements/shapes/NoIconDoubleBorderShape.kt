@@ -18,7 +18,7 @@ class NoIconDoubleBorderShape(
         private val innerBorderColor: Colors =  Colors.TRANSACTION_ELEMENT_BORDER_COLOR,
         private val innerBackgroundColor: Colors = Colors.TRANSACTION_COLOR,
         private val textColor: Colors = Colors.SUBPROCESS_TEXT_COLOR
-) : ShapeRenderElement(elementId, shape, state) {
+) : ResizeableShapeRenderElement(elementId, shape, state) {
 
     private val transactionalBoundaryMargin = 5.0f
 

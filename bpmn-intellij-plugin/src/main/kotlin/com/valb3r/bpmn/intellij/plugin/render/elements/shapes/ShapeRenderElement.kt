@@ -9,24 +9,15 @@ import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
-import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorBottom
-import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorTop
 import java.awt.Event
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
 abstract class ShapeRenderElement(
         override val elementId: DiagramElementId,
-        private val shape: ShapeElement,
+        protected val shape: ShapeElement,
         state: RenderState
 ) : BaseRenderElement(elementId, state) {
-
-    private val anchors = Pair(
-            ShapeResizeAnchorTop(DiagramElementId("TOP:" + shape.id.id), Point2D.Float(shape.bounds().first.x, shape.bounds().first.y), state),
-            ShapeResizeAnchorBottom(DiagramElementId("BOTTOM:" + shape.id.id), Point2D.Float(shape.bounds().second.x, shape.bounds().second.y), state)
-    )
-
-    override val children: MutableList<BaseRenderElement> = mutableListOf(anchors.first, anchors.second)
 
     override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val elem = state.currentState.elementByDiagramId[shape.id]
@@ -100,13 +91,6 @@ abstract class ShapeRenderElement(
     }
 
     override fun currentRect(camera: Camera): Rectangle2D.Float {
-        return viewTransform.transform(
-                Rectangle2D.Float(
-                        anchors.first.location.x,
-                        anchors.first.location.y,
-                        anchors.second.location.x - anchors.first.location.x,
-                        anchors.second.location.y - anchors.first.location.y
-                )
-        )
+        return viewTransform.transform(shape.rectBounds())
     }
 }

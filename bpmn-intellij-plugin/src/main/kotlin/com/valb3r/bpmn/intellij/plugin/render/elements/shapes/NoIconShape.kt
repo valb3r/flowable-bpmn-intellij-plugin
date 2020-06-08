@@ -15,7 +15,7 @@ class NoIconShape(
         private val backgroundColor: Colors = Colors.CALL_ACTIVITY_COLOR,
         private val borderColor: Colors =  Colors.ELEMENT_BORDER_COLOR,
         private val textColor: Colors = Colors.INNER_TEXT_COLOR
-) : ShapeRenderElement(elementId, shape, state) {
+) : ResizeableShapeRenderElement(elementId, shape, state) {
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 

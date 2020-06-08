@@ -35,12 +35,6 @@ abstract class BaseEdgeRenderElement(
     override val children: MutableList<BaseRenderElement> = anchors as MutableList<BaseRenderElement>
 
     override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
-        if (isActive()) {
-            children.forEach { it.isVisible = true }
-        } else {
-            children.forEach { it.isVisible = it.isActiveOrDragged() }
-        }
-
         val area = Area()
 
         val updatedAnchors = anchors.filter { it is PhysicalWaypoint || it.isActiveOrDragged() }.map { it.transformedLocation }

@@ -37,7 +37,7 @@ class ShapeResizeAnchorTop(
             return mutableMapOf()
         }
 
-        return super.render(ctx)
+        return super.doRender(ctx)
     }
 
     override fun icon(): Icon {

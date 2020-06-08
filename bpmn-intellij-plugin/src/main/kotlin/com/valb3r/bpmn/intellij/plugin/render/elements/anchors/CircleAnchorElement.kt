@@ -2,10 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.anchors
 
 import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
-import com.valb3r.bpmn.intellij.plugin.render.AreaType
-import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
-import com.valb3r.bpmn.intellij.plugin.render.Camera
-import com.valb3r.bpmn.intellij.plugin.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -41,6 +38,6 @@ abstract class CircleAnchorElement(
                 currentColor
         )
 
-        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT))
+        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT, index = ANCHOR_Z_INDEX))
     }
 }
