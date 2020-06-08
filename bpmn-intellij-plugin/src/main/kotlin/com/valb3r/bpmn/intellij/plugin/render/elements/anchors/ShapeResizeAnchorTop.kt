@@ -44,10 +44,6 @@ class ShapeResizeAnchorTop(
         return state.icons.dragToResizeTop
     }
 
-    override fun needsParentActiveToAcceptEvents(): Boolean {
-        return false
-    }
-
     override fun acceptsInternalEvents(): Boolean {
         return false
     }

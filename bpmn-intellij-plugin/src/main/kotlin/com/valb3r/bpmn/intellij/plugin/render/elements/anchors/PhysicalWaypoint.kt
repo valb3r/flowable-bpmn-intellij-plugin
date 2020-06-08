@@ -9,9 +9,4 @@ class PhysicalWaypoint(
         override val elementId: DiagramElementId,
         location: Point2D.Float,
         state: RenderState
-): CircleAnchorElement(elementId, location, 3.0f, Colors.WAYPOINT_COLOR, state) {
-
-    override fun needsParentActiveToAcceptEvents(): Boolean {
-        return false
-    }
-}
+): CircleAnchorElement(elementId, location, 3.0f, Colors.WAYPOINT_COLOR, state)

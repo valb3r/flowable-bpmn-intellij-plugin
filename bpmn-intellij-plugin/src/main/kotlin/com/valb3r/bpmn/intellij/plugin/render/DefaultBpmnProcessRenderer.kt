@@ -88,6 +88,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         createEdges(state, elements, elementsById)
         linkChildrenToParent(state, elementsById)
 
+        root.applyContextChanges(ctx)
         return root.render(ctx)
     }
 

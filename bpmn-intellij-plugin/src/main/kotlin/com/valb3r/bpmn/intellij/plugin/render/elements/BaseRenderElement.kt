@@ -41,8 +41,9 @@ abstract class BaseRenderElement(
         return isActive() || isDragged()
     }
 
-    open fun render(ctx: RenderContext): MutableMap<DiagramElementId, AreaWithZindex> {
+    open fun applyContextChanges(ctx: RenderContext) {
         propagateActivityStateToChildren()
+
         val dx = ctx.interactionContext.dragCurrent.x - ctx.interactionContext.dragStart.x
         val dy = ctx.interactionContext.dragCurrent.y - ctx.interactionContext.dragStart.y
 
@@ -51,6 +52,10 @@ abstract class BaseRenderElement(
             propagateResizing(ctx, dx, dy)
         }
 
+        afterContextChanges()
+    }
+
+    open fun render(ctx: RenderContext): MutableMap<DiagramElementId, AreaWithZindex> {
         val result = doRenderWithoutChildren(ctx).toMutableMap()
         children.forEach { result += it.render(ctx) }
         return result
@@ -85,14 +90,18 @@ abstract class BaseRenderElement(
 
     protected fun propagateActivityStateToChildren() {
         if (isActive()) {
+            isVisible = true
             children.forEach { it.isVisible = true }
         } else {
-            children.forEach { it.isVisible = it.isActiveOrDragged() }
+            children.forEach { it.propagateActivityStateToChildren() }
         }
     }
 
     protected open fun color(active: Boolean, color: Colors): Color {
         return if (active) Colors.SELECTED_COLOR.color else color.color
+    }
+
+    protected open fun afterContextChanges() {
     }
 
     abstract fun doDragToWithoutChildren(dx: Float, dy: Float)
@@ -110,7 +119,7 @@ abstract class BaseRenderElement(
 
     protected fun propagateDragging(ctx: RenderContext, dx: Float, dy: Float) {
         if (!isActiveOrDragged()) {
-            children.filter { !it.needsParentActiveToAcceptEvents() }.forEach { it.propagateDragging(ctx, dx, dy) }
+            children.filter { !it.needsDirectParentActiveToAcceptEvents() }.forEach { it.propagateDragging(ctx, dx, dy) }
             return
         }
 
@@ -119,17 +128,10 @@ abstract class BaseRenderElement(
     }
 
     protected fun propagateResizing(ctx: RenderContext, dw: Float, dh: Float) {
-        /*
-        if (isActive()) {
-            return
-        }
-
-        resize(ctx.canvas.camera, dw, dh)
-        children.forEach { it.propagateResizing(ctx, dw, dh) }*/
     }
 
-    protected open fun needsParentActiveToAcceptEvents(): Boolean {
-        return true
+    protected open fun needsDirectParentActiveToAcceptEvents(): Boolean {
+        return false
     }
 
     protected open fun acceptsInternalEvents(): Boolean {

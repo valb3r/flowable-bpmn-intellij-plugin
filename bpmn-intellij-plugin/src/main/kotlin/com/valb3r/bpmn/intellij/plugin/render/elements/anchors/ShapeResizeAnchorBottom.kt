@@ -40,10 +40,6 @@ class ShapeResizeAnchorBottom(
         return state.icons.dragToResizeBottom
     }
 
-    override fun needsParentActiveToAcceptEvents(): Boolean {
-        return false
-    }
-
     override fun acceptsInternalEvents(): Boolean {
         return false
     }
