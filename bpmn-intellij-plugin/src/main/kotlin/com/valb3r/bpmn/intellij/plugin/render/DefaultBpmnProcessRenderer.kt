@@ -91,8 +91,13 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
         root.applyContextChanges(elementsByDiagramId)
         val rendered = root.render()
-        // Overlay system elements on top of rendered
+
+        // Overlay system elements on top of rendered BPMN diagram
+        drawUndoRedo(state, rendered)
         drawSelectionRect(ctx)
+        drawMultiremovalRect(state, rendered)
+        drawDebugElements(state, rendered)
+
         return rendered
     }
 
@@ -187,11 +192,91 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         }
     }
 
-    private fun drawSelectionRect(ctx: RenderContext) {
-        ctx.interactionContext.dragSelectionRect?.let {
+    private fun drawSelectionRect(state: RenderContext) {
+        state.interactionContext.dragSelectionRect?.let {
             val rect = it.toRect()
-            ctx.canvas.drawRectNoCameraTransform(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
+            state.canvas.drawRectNoCameraTransform(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
         }
+    }
+
+    private fun drawDebugElements(state: RenderState, renderedArea: Map<DiagramElementId, AreaWithZindex>) {
+        currentDebugger()?.executionSequence(state.currentState.processId.id)?.history?.let { history ->
+            val elemToDiagramId = mutableMapOf<BpmnElementId, MutableSet<DiagramElementId>>()
+            state.currentState.elementByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
+            val elemOccurs = mutableMapOf<BpmnElementId, MutableList<Int>>()
+            history.forEachIndexed { index, elem -> elemOccurs.computeIfAbsent(elem) { mutableListOf() }.add(index) }
+
+            elemOccurs.forEach { (elem, indexes) ->
+                val targetElem = elemToDiagramId[elem]?.firstOrNull()
+                renderedArea[targetElem]?.apply {
+                    val bounds = this.area.bounds2D
+                    state.ctx.canvas.drawTextNoCameraTransform(Point2D.Float(bounds.x.toFloat(), bounds.y.toFloat()), indexes.toString(), Colors.INNER_TEXT_COLOR.color)
+                }
+            }
+
+        }
+    }
+
+    private fun drawMultiremovalRect(state: RenderState, renderedArea: MutableMap<DiagramElementId, AreaWithZindex>) {
+        if (null != state.ctx.interactionContext.dragSelectionRect || state.ctx.selectedIds.size <= 1) {
+            return
+        }
+
+        val parentChild = state.ctx.selectedIds.flatMap { setOf(it, renderedArea[it]?.parentToSelect) }.filterNotNull()
+
+        if (state.ctx.selectedIds.size == 2 && state.ctx.selectedIds.containsAll(parentChild)) {
+            return
+        }
+
+        val areas = state.ctx.selectedIds.map { renderedArea[it] }.filterNotNull()
+
+        val minX = areas.map { it.area.bounds2D.minX }.min()?.toFloat()
+        val minY = areas.map { it.area.bounds2D.minY }.min()?.toFloat()
+        val maxX = areas.map { it.area.bounds2D.maxX }.max()?.toFloat()
+        val maxY = areas.map { it.area.bounds2D.maxY }.max()?.toFloat()
+
+        if (null != minX && null != minY && null != maxX && null != maxY) {
+            val ownerId = state.ctx.selectedIds.joinToString { it.id }
+            state.ctx.canvas.drawRectNoCameraTransform(Point2D.Float(minX, minY), maxX - minX, maxY - minY, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
+            val delId = DiagramElementId("DEL:$ownerId")
+            val deleteIconArea = state.ctx.canvas.drawIconNoCameraTransform(BoundsElement(maxX, minY, actionsIcoSize, actionsIcoSize), icons.recycleBin)
+            state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
+                val targetIds = state.ctx.selectedIds.filter { renderedArea[it]?.areaType == AreaType.SHAPE || renderedArea[it]?.areaType == AreaType.EDGE }
+                dest.addElementRemovedEvent(
+                        targetIds.map { DiagramElementRemovedEvent(it) },
+                        targetIds.mapNotNull { state.currentState.elementByDiagramId[it] }.map { BpmnElementRemovedEvent(it) }
+                )
+            }
+            renderedArea[delId] = AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, null)
+        }
+    }
+
+    private fun drawUndoRedo(state: RenderState, renderedArea: MutableMap<DiagramElementId, AreaWithZindex>) {
+        val start = Point2D.Float(undoRedoStartMargin, undoRedoStartMargin)
+        var locationX = start.x
+        val locationY = start.y
+
+        if (state.currentState.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.UNDO)) {
+            val color = if (isActive(undoId, state)) Colors.SELECTED_COLOR else null
+            val areaUndo = color?.let { state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo, it.color) }
+                    ?: state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo)
+            renderedArea[undoId] = AreaWithZindex(areaUndo, AreaType.SHAPE)
+            locationX += icons.undo.iconWidth + undoRedoStartMargin
+            state.ctx.interactionContext.clickCallbacks[undoId] = { dest -> dest.undo() }
+        }
+
+        if (state.currentState.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.REDO)) {
+            val color = if (isActive(redoId, state)) Colors.SELECTED_COLOR else null
+            val areaRedo = color?.let { state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo, it.color) }
+                    ?: state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo)
+            renderedArea[redoId] = AreaWithZindex(areaRedo, AreaType.SHAPE)
+            locationX += icons.redo.iconWidth + undoRedoStartMargin
+            state.ctx.interactionContext.clickCallbacks[redoId] = { dest -> dest.redo() }
+        }
+    }
+
+    private fun isActive(elemId: DiagramElementId, state: RenderState): Boolean {
+        return elemId.let { state.ctx.selectedIds.contains(it) }
     }
 }
 
@@ -230,89 +315,11 @@ class DefaultBpmnProcessRendererOld(val icons: IconProvider) : BpmnProcessRender
         drawBpmnEdges(state.edges, areaByElement, ctx.canvas, renderMeta)
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
 
-        drawUndoRedo(ctx, state, renderMeta, areaByElement)
+        //drawUndoRedo(ctx, state, renderMeta, areaByElement)
         //drawSelectionRect(ctx)
-        drawMultiremovalRect(ctx, renderMeta, areaByElement)
-        drawDebugElements(state, ctx, areaByElement)
+        //drawMultiremovalRect(ctx, renderMeta, areaByElement)
+        //drawDebugElements(state, ctx, areaByElement)
         return areaByElement
-    }
-
-    private fun drawDebugElements(ctx: CurrentState, renderCtx: RenderContext, renderedArea: Map<DiagramElementId, AreaWithZindex>) {
-        currentDebugger()?.executionSequence(ctx.processId.id)?.history?.let { history ->
-            val elemToDiagramId = mutableMapOf<BpmnElementId, MutableSet<DiagramElementId>>()
-            ctx.elementByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
-            val elemOccurs = mutableMapOf<BpmnElementId, MutableList<Int>>()
-            history.forEachIndexed { index, elem -> elemOccurs.computeIfAbsent(elem) { mutableListOf() }.add(index) }
-
-            elemOccurs.forEach { (elem, indexes) ->
-                val targetElem = elemToDiagramId[elem]?.firstOrNull()
-                renderedArea[targetElem]?.apply {
-                    val bounds = this.area.bounds2D
-                    renderCtx.canvas.drawTextNoCameraTransform(Point2D.Float(bounds.x.toFloat(), bounds.y.toFloat()), indexes.toString(), Colors.INNER_TEXT_COLOR.color)
-                }
-            }
-
-        }
-    }
-
-
-
-    private fun drawMultiremovalRect(renderCtx: RenderContext, ctx: RenderMetadata, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>) {
-        if (null != ctx.interactionContext.dragSelectionRect || ctx.selectedIds.size <= 1) {
-            return
-        }
-
-        val parentChild = ctx.selectedIds.flatMap { setOf(it, areaByElement[it]?.parentToSelect) }.filterNotNull()
-
-        if (ctx.selectedIds.size == 2 && ctx.selectedIds.containsAll(parentChild)) {
-            return
-        }
-
-        val areas = ctx.selectedIds.map { areaByElement[it] }.filterNotNull()
-
-        val minX = areas.map { it.area.bounds2D.minX }.min()?.toFloat()
-        val minY = areas.map { it.area.bounds2D.minY }.min()?.toFloat()
-        val maxX = areas.map { it.area.bounds2D.maxX }.max()?.toFloat()
-        val maxY = areas.map { it.area.bounds2D.maxY }.max()?.toFloat()
-
-        if (null != minX && null != minY && null != maxX && null != maxY) {
-            val ownerId = ctx.selectedIds.joinToString { it.id }
-            renderCtx.canvas.drawRectNoCameraTransform(Point2D.Float(minX, minY), maxX - minX, maxY - minY, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
-            val delId = DiagramElementId("DEL:$ownerId")
-            val deleteIconArea = renderCtx.canvas.drawIconNoCameraTransform(BoundsElement(maxX, minY, actionsIcoSize, actionsIcoSize), icons.recycleBin)
-            ctx.interactionContext.clickCallbacks[delId] = { dest ->
-                val targetIds = ctx.selectedIds.filter { areaByElement[it]?.areaType == AreaType.SHAPE || areaByElement[it]?.areaType == AreaType.EDGE }
-                dest.addElementRemovedEvent(
-                        targetIds.map { DiagramElementRemovedEvent(it) },
-                        targetIds.mapNotNull { ctx.elementByDiagramId[it] }.map { BpmnElementRemovedEvent(it) }
-                )
-            }
-            areaByElement[delId] = AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, null)
-        }
-    }
-
-    private fun drawUndoRedo(ctx: RenderContext, state: CurrentState, meta: RenderMetadata, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>) {
-        val start = Point2D.Float(undoRedoStartMargin, undoRedoStartMargin)
-        var locationX = start.x
-        val locationY = start.y
-
-        if (state.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.UNDO)) {
-            val color = if (isActive(undoId, meta)) Colors.SELECTED_COLOR else null
-            val areaUndo = color?.let { ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo, it.color) }
-                    ?: ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo)
-            areaByElement[undoId] = AreaWithZindex(areaUndo, AreaType.SHAPE)
-            locationX += icons.undo.iconWidth + undoRedoStartMargin
-            ctx.interactionContext.clickCallbacks[undoId] = { dest -> dest.undo() }
-        }
-
-        if (state.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.REDO)) {
-            val color = if (isActive(redoId, meta)) Colors.SELECTED_COLOR else null
-            val areaRedo = color?.let { ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo, it.color) }
-                    ?: ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo)
-            areaByElement[redoId] = AreaWithZindex(areaRedo, AreaType.SHAPE)
-            locationX += icons.redo.iconWidth + undoRedoStartMargin
-            ctx.interactionContext.clickCallbacks[redoId] = { dest -> dest.redo() }
-        }
     }
 
     private fun computeCascadables(ctx: RenderContext, state: CurrentState): Set<CascadeTranslationToWaypoint> {
