@@ -13,7 +13,7 @@ class ShapeResizeAnchorTop(
         override val elementId: DiagramElementId,
         private val bottomPoint: Point2D.Float,
         state: CurrentState
-): AnchorElement(elementId, bottomPoint, state) {
+): IconAnchorElement(elementId, bottomPoint, state) {
 
     override fun currentRect(camera: Camera): Rectangle2D.Float {
         val icon = icon()

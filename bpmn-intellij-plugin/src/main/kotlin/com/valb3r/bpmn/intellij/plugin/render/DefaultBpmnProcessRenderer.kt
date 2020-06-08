@@ -36,6 +36,7 @@ import com.valb3r.bpmn.intellij.plugin.debugger.currentDebugger
 import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.edges.EdgeRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.shapes.*
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
@@ -77,6 +78,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
         val root = createRootProcessElem(state, elements, elementsById)
         createShapes(state, elements, elementsById)
+        createEdges(state, elements, elementsById)
         linkChildrenToParent(state, elementsById)
 
         return root.render(ctx)
@@ -89,13 +91,6 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         return processElem
     }
 
-    private fun linkChildrenToParent(state: CurrentState, elementsById: MutableMap<BpmnElementId, BaseRenderElement>) {
-        state.shapes.forEach {
-            val elem = state.elementByBpmnId[it.bpmnElement]
-            elementsById[elem!!.id]?.let { bpmn -> elementsById[elem.parent]!!.children.add(bpmn) }
-        }
-    }
-
     private fun createShapes(state: CurrentState, elements: MutableList<BaseRenderElement>, elementsById: MutableMap<BpmnElementId, BaseRenderElement>) {
         state.shapes.forEach {
             val elem = state.elementByBpmnId[it.bpmnElement]
@@ -105,6 +100,21 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
                     elementsById[bpmn.id] = shape
                 }
             }
+        }
+    }
+
+    private fun createEdges(state: CurrentState, elements: MutableList<BaseRenderElement>, elementsById: MutableMap<BpmnElementId, BaseRenderElement>) {
+        state.edges.forEach {
+            val edge = EdgeRenderElement(it.id, it, state)
+            elements += edge
+            elementsById[it.bpmnElement!!] = edge
+        }
+    }
+
+    private fun linkChildrenToParent(state: CurrentState, elementsById: MutableMap<BpmnElementId, BaseRenderElement>) {
+        elementsById.forEach { (id, renderElem) ->
+            val elem = state.elementByBpmnId[id]
+            elem?.parent?.let { elementsById[it]?.children?.add(renderElem) }
         }
     }
 
