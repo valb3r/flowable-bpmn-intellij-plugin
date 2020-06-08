@@ -4,7 +4,7 @@
     <name>Flowable BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.2.2</version>
+    <version>0.2.3</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -19,6 +19,12 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+    <p>0.2.3:</p>
+      <ul>
+        <li>
+          Fixed bug with global language injection causing wrong IntelliJ warnings
+        </li>
+      </ul>
      <p>0.2.2:</p>
       <ul>
         <li>
