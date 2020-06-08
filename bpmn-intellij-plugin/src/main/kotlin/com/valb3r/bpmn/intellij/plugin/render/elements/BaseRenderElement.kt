@@ -51,7 +51,7 @@ abstract class BaseRenderElement(
             propagateResizing(ctx, dx, dy)
         }
 
-        val result = doRender(ctx).toMutableMap()
+        val result = doRenderWithoutChildren(ctx).toMutableMap()
         children.forEach { result += it.render(ctx) }
         return result
     }
@@ -106,7 +106,7 @@ abstract class BaseRenderElement(
     protected abstract fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float>
     protected abstract fun shapeAnchors(camera: Camera): MutableSet<Point2D.Float>
 
-    protected abstract fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
+    protected abstract fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
 
     protected fun propagateDragging(ctx: RenderContext, dx: Float, dy: Float) {
         if (!isActiveOrDragged()) {

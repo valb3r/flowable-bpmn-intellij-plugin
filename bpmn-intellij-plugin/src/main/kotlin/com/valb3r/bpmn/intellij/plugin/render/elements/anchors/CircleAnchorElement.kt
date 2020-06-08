@@ -26,7 +26,7 @@ abstract class CircleAnchorElement(
         )
     }
 
-    override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+    override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         if (!isVisible()) {
             return mutableMapOf()
         }

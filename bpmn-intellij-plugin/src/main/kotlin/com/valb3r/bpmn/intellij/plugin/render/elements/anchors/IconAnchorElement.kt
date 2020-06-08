@@ -15,7 +15,7 @@ abstract class IconAnchorElement(
         state: RenderState
 ): AnchorElement(elementId, currentLocation, state) {
 
-    override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+    override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val icon = icon()
         val active = isActive()
         val rect = currentRect(ctx.canvas.camera)

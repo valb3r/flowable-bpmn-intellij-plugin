@@ -19,7 +19,7 @@ abstract class ShapeRenderElement(
         state: RenderState
 ) : BaseRenderElement(elementId, state) {
 
-    override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+    override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val elem = state.currentState.elementByDiagramId[shape.id]
         val props = state.currentState.elemPropertiesByStaticElementId[elem]
         val name = props?.get(PropertyType.NAME)?.value as String?

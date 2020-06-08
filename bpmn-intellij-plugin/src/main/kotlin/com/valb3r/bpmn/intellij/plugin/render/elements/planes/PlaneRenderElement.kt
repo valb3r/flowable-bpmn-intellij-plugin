@@ -45,7 +45,7 @@ class PlaneRenderElement(
         return mutableSetOf()
     }
 
-    override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+    override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         return mutableMapOf()
     }
 }

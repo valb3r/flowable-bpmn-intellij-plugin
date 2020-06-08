@@ -28,16 +28,20 @@ class ShapeResizeAnchorBottom(
         )
     }
 
-    override fun doRender(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+    override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         if (!isVisible()) {
             return mutableMapOf()
         }
 
-        return super.doRender(ctx)
+        return super.doRenderWithoutChildren(ctx)
     }
 
     override fun icon(): Icon {
         return state.icons.dragToResizeBottom
+    }
+
+    override fun needsParentActiveToAcceptEvents(): Boolean {
+        return false
     }
 
     override fun acceptsInternalEvents(): Boolean {
