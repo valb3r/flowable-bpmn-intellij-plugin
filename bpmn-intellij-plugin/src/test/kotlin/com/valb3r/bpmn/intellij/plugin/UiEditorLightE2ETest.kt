@@ -132,6 +132,8 @@ internal class UiEditorLightE2ETest {
         whenever(icons.gear).thenReturn(mock())
         whenever(icons.redo).thenReturn(mock())
         whenever(icons.undo).thenReturn(mock())
+        whenever(icons.dragToResizeBottom).thenReturn(mock())
+        whenever(icons.dragToResizeTop).thenReturn(mock())
 
         doAnswer {
             val result = it.callRealMethod()!! as Map<DiagramElementId, AreaWithZindex>
