@@ -2,13 +2,12 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.shapes
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
-import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorBottom
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorTop
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ResizeViewTransform
 import java.awt.geom.Point2D
-import java.awt.geom.Rectangle2D
 
 abstract class ResizeableShapeRenderElement(
         override val elementId: DiagramElementId,
@@ -23,13 +22,45 @@ abstract class ResizeableShapeRenderElement(
 
     override val children: MutableList<BaseRenderElement> = mutableListOf(anchors.first, anchors.second)
 
-    override fun currentRect(camera: Camera): Rectangle2D.Float {
-        // its view transform is solely defined by anchors
-        return Rectangle2D.Float(
-                anchors.first.transformedLocation.x,
-                anchors.first.transformedLocation.y,
-                anchors.second.transformedLocation.x - anchors.first.transformedLocation.x,
-                anchors.second.transformedLocation.y - anchors.first.transformedLocation.y
-        )
+    override fun afterStateChangesAppliedNoChildren(elemMap: Map<DiagramElementId, BaseRenderElement>) {
+        // Detect only resize, not drag as drag is handled by higher-level elements and it may happen that two anchors
+        // were dragged simultaneously
+        val widthOrig = anchors.second.location.x - anchors.first.location.x
+        val heightOrig = anchors.second.location.y - anchors.first.location.y
+
+        val widthNew = anchors.second.transformedLocation.x - anchors.first.transformedLocation.x
+        val heightNew = anchors.second.transformedLocation.y - anchors.first.transformedLocation.y
+
+        if (widthNew != widthOrig || heightNew != heightOrig) {
+            handleResize(widthOrig, heightOrig, widthNew, heightNew)
+        }
+
+        super.afterStateChangesAppliedNoChildren(elemMap)
+    }
+
+    private fun handleResize(widthOrig: Float, heightOrig: Float, widthNew: Float, heightNew: Float) {
+        when {
+            anchors.first.location.distance(anchors.first.transformedLocation) < 0.1f -> {
+                viewTransform = ResizeViewTransform(
+                        anchors.first.location.x,
+                        anchors.first.location.y,
+                        widthNew / widthOrig,
+                        heightNew / heightOrig
+                )
+
+            }
+            anchors.second.location.distance(anchors.second.transformedLocation) < 0.1f -> {
+                viewTransform = ResizeViewTransform(
+                        anchors.second.location.x,
+                        anchors.second.location.y,
+                        widthNew / widthOrig,
+                        heightNew / heightOrig
+                )
+
+            }
+            else -> {
+                throw IllegalStateException("Both anchors moved")
+            }
+        }
     }
 }

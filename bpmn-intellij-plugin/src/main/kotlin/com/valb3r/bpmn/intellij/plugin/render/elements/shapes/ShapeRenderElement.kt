@@ -115,15 +115,13 @@ abstract class ShapeRenderElement(
         val result = mutableSetOf<CascadeTranslationToWaypoint>()
         val elemToDiagramId = mutableMapOf<BpmnElementId, MutableSet<DiagramElementId>>()
         state.currentState.elementByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
-        state.ctx.interactionContext.draggedIds.map { state.currentState.elementByDiagramId[it] }.filter { state.currentState.elementByBpmnId[it]?.element !is BpmnSequenceFlow }.forEach { parent ->
-            state.currentState.elemPropertiesByStaticElementId.forEach { (owner, props) ->
-                idCascadesTo.intersect(props.keys).filter { props[it]?.value == parent?.id }.forEach { type ->
-                    when (state.currentState.elementByBpmnId[owner]?.element) {
-                        is BpmnSequenceFlow -> parent?.let { result += computeCascadeToWaypoint(state.currentState, it, owner, type) }
-                    }
+        state.currentState.elemPropertiesByStaticElementId.forEach { (owner, props) ->
+            idCascadesTo.intersect(props.keys).filter { props[it]?.value == shape.bpmnElement.id }.forEach { type ->
+                when (state.currentState.elementByBpmnId[owner]?.element) {
+                    is BpmnSequenceFlow -> { result += computeCascadeToWaypoint(state.currentState, shape.bpmnElement, owner, type) }
                 }
-
             }
+
         }
         return result
     }
