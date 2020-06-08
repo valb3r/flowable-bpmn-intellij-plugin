@@ -4,15 +4,16 @@ import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.AnchorElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.PhysicalWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.VirtualWaypoint
-import java.awt.Event
 import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -24,13 +25,7 @@ abstract class BaseEdgeRenderElement(
         state: RenderState
 ): BaseRenderElement(elementId, state) {
 
-    private val anchors = edge.waypoint.map {
-        if (it.physical) {
-            PhysicalWaypoint(it.id, Point2D.Float(it.x, it.y), state)
-        } else {
-            VirtualWaypoint(it.id, Point2D.Float(it.x, it.y), state)
-        }
-    }.toMutableList()
+    private val anchors = computeAnchors()
 
     override val children: MutableList<BaseRenderElement> = anchors as MutableList<BaseRenderElement>
 
@@ -90,5 +85,18 @@ abstract class BaseEdgeRenderElement(
                 maxX - minX,
                 maxY - minY
         )
+    }
+
+    private fun computeAnchors(): List<AnchorElement> {
+        val numPhysicals = edge.waypoint.filter { it.physical }.size
+        var physicalPos = -1
+        return edge.waypoint.map {
+            if (it.physical) {
+                physicalPos++
+                PhysicalWaypoint(it.id, elementId, edge.bpmnElement!!, physicalPos, numPhysicals, Point2D.Float(it.x, it.y), state)
+            } else {
+                VirtualWaypoint(it.id, elementId, edge, Point2D.Float(it.x, it.y), state)
+            }
+        }
     }
 }

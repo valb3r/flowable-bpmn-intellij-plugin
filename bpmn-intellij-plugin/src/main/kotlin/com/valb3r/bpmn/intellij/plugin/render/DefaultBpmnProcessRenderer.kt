@@ -85,7 +85,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         createShapes(state, elements, elementsById)
         createEdges(state, elements, elementsById)
         linkChildrenToParent(state, elementsById)
-        // Not all elements have DiagramElementId
+        // Not all elements have BpmnElementId, but they have DiagramElementId
         val elementsByDiagramId = mutableMapOf<DiagramElementId, BaseRenderElement>()
         linkDiagramElementId(root, elementsByDiagramId)
 
