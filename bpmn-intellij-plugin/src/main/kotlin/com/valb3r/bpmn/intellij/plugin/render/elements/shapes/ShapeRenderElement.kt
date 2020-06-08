@@ -4,7 +4,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
@@ -13,7 +15,6 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationToWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTransform
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
-import java.awt.Event
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
@@ -49,7 +50,13 @@ abstract class ShapeRenderElement(
     }
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
-        TODO("Not yet implemented")
+        val events = mutableListOf<Event>()
+        events += DraggedToEvent(elementId, dx, dy, null, null)
+        events += cascadeTo
+                .filter { target -> target.cascadeSource == shape.bpmnElement }
+                .filter { target -> !state.ctx.interactionContext.draggedIds.contains(target.waypointId) }
+                .map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
+        return events
     }
 
     override fun doResizeWithoutChildren(dw: Float, dh: Float) {
