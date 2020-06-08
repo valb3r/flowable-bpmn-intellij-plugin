@@ -75,7 +75,8 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     override fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val state = RenderState(
                 ctx.stateProvider.currentState(),
-                ctx
+                ctx,
+                icons
         )
         
         val elements = mutableListOf<BaseRenderElement>()
@@ -124,7 +125,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     }
 
     private fun mapFromShape(state: RenderState, id: DiagramElementId, shape: ShapeElement, bpmn: WithBpmnId): BaseRenderElement? {
-        val icons = state.currentState.iconProvider
+        val icons = state.icons
         return when (bpmn) {
             is BpmnStartEvent -> EllipticIconOnLayerShape(id, icons.startEvent, shape, state, Colors.START_EVENT)
             is BpmnStartEscalationEvent -> EllipticIconOnLayerShape(id, icons.escalationStartEvent, shape, state, Colors.START_EVENT)

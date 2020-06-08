@@ -11,7 +11,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBodyBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -86,60 +88,13 @@ internal class UiEditorLightE2ETest {
     private val icons = mock<IconProvider>()
     private val renderer = spy(DefaultBpmnProcessRenderer(icons))
     private val canvasBuilder = CanvasBuilder(renderer)
-    private val canvas = Canvas(DefaultCanvasConstants().copy(baseCursorSize = 3.0f)) // Using small cursor size for clarity
+    private val canvas = Canvas(icons, DefaultCanvasConstants().copy(baseCursorSize = 3.0f)) // Using small cursor size for clarity
     private var renderResult: Map<DiagramElementId, AreaWithZindex>? = null
 
     private val basicProcess = BpmnProcessObject(
             BpmnProcess(
                     BpmnElementId("processElem"),
                     "mainProcess",
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
                     null,
                     null,
                     null,
@@ -789,7 +744,7 @@ internal class UiEditorLightE2ETest {
                 bounds = BoundsElement(intermediateX, intermediateY, serviceTaskSize, serviceTaskSize)
         )
         updateEventsRegistry().addObjectEvent(
-                BpmnShapeObjectAddedEvent(task, shape, mapOf(PropertyType.ID to Property(task.id)))
+                BpmnShapeObjectAddedEvent(WithParentId(planeElementBpmnId, task), shape, mapOf(PropertyType.ID to Property(task.id)))
         )
 
         return task.id
@@ -862,7 +817,11 @@ internal class UiEditorLightE2ETest {
 
     private fun prepareTwoServiceTaskView() {
         val process = basicProcess.copy(
-                basicProcess.process.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd)),
+                basicProcess.process.copy(
+                        body = BpmnProcessBodyBuilder.builder()
+                                .setServiceTask(listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
+                                .create()
+                ),
                 listOf(DiagramElement(
                         diagramMainElementId,
                         PlaneElement(diagramMainPlaneElementId, planeElementBpmnId, listOf(diagramServiceTaskStart, diagramServiceTaskEnd), listOf()))

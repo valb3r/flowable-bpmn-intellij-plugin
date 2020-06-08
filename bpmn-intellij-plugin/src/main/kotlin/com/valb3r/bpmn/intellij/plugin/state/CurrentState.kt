@@ -11,8 +11,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
-import com.valb3r.bpmn.intellij.plugin.render.IconProvider
-import com.valb3r.bpmn.intellij.plugin.render.IconProviderImpl
 import java.util.concurrent.atomic.AtomicReference
 
 private val currentStateProvider = AtomicReference<CurrentStateProvider>()
@@ -34,16 +32,15 @@ data class CurrentState(
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
         val elementByBpmnId: Map<BpmnElementId, WithParentId>,
         val elemPropertiesByStaticElementId: Map<BpmnElementId, Map<PropertyType, Property>>,
-        val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>,
-        val iconProvider: IconProvider
+        val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>
 )
 
 // Global singleton
 class CurrentStateProvider {
-    private var fileState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptySet(), IconProviderImpl())
-    private var currentState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptySet(), IconProviderImpl())
+    private var fileState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptySet())
+    private var currentState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptySet())
 
-    fun resetStateTo(fileContent: String, iconProvider: IconProvider, processObject: BpmnProcessObjectView) {
+    fun resetStateTo(fileContent: String, processObject: BpmnProcessObjectView) {
         fileState = CurrentState(
                 processObject.processId,
                 processObject.diagram.firstOrNull()?.bpmnPlane?.bpmnShape ?: emptyList(),
@@ -51,8 +48,7 @@ class CurrentStateProvider {
                 processObject.elementByDiagramId,
                 processObject.elementByStaticId,
                 processObject.elemPropertiesByElementId,
-                emptySet(),
-                iconProvider
+                emptySet()
         )
         currentState = fileState
         updateEventsRegistry().reset(fileContent)
@@ -116,8 +112,7 @@ class CurrentStateProvider {
                 updatedElementByDiagramId,
                 updatedElementByStaticId,
                 updatedElemPropertiesByStaticElementId,
-                undoRedoStatus,
-                state.iconProvider
+                undoRedoStatus
         )
     }
 

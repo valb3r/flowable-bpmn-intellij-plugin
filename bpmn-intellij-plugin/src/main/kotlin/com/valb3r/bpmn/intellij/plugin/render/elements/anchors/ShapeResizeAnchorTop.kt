@@ -39,6 +39,6 @@ class ShapeResizeAnchorTop(
     }
 
     override fun icon(): Icon {
-        return state.currentState.iconProvider.dragToResizeTop
+        return state.icons.dragToResizeTop
     }
 }

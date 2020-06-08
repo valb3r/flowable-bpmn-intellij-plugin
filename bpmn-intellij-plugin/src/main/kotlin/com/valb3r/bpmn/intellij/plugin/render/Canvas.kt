@@ -58,7 +58,7 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         this.camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
         this.propsVisualizer = propertiesVisualizer()
         this.propsVisualizer?.clear()
-        this.stateProvider.resetStateTo(fileContent, iconProvider, processObject)
+        this.stateProvider.resetStateTo(fileContent, processObject)
         selectedElements = mutableSetOf()
         repaint()
     }
