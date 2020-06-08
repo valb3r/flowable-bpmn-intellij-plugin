@@ -34,10 +34,14 @@ abstract class BaseEdgeRenderElement(
 
     override val children: MutableList<BaseRenderElement> = anchors as MutableList<BaseRenderElement>
 
+    override fun dragTo(dx: Float, dy: Float) {
+        // No drag support for edge itself
+    }
+
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val area = Area()
 
-        val updatedAnchors = anchors.filter { it is PhysicalWaypoint || it.isActiveOrDragged() }.map { it.transformedLocation }
+        val updatedAnchors = anchors.filter { it is PhysicalWaypoint || (!multipleElementsSelected() && it.isActiveOrDragged()) }.map { it.transformedLocation }
 
         updatedAnchors.forEachIndexed {pos, waypoint ->
             when {

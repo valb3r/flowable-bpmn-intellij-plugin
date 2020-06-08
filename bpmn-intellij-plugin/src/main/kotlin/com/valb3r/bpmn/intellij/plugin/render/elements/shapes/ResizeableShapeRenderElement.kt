@@ -3,11 +3,13 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.shapes
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.EPSILON
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorBottom
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorTop
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ResizeViewTransform
 import java.awt.geom.Point2D
+import kotlin.math.abs
 
 abstract class ResizeableShapeRenderElement(
         override val elementId: DiagramElementId,
@@ -31,7 +33,7 @@ abstract class ResizeableShapeRenderElement(
         val widthNew = anchors.second.transformedLocation.x - anchors.first.transformedLocation.x
         val heightNew = anchors.second.transformedLocation.y - anchors.first.transformedLocation.y
 
-        if (widthNew != widthOrig || heightNew != heightOrig) {
+        if (abs(widthNew - widthOrig) > EPSILON || abs(heightNew - heightOrig) > EPSILON) {
             handleResize(widthOrig, heightOrig, widthNew, heightNew)
         }
 
@@ -40,7 +42,7 @@ abstract class ResizeableShapeRenderElement(
 
     private fun handleResize(widthOrig: Float, heightOrig: Float, widthNew: Float, heightNew: Float) {
         when {
-            anchors.first.location.distance(anchors.first.transformedLocation) < 0.1f -> {
+            anchors.first.location.distance(anchors.first.transformedLocation) < EPSILON -> {
                 viewTransform = ResizeViewTransform(
                         anchors.first.location.x,
                         anchors.first.location.y,
@@ -49,7 +51,7 @@ abstract class ResizeableShapeRenderElement(
                 )
 
             }
-            anchors.second.location.distance(anchors.second.transformedLocation) < 0.1f -> {
+            anchors.second.location.distance(anchors.second.transformedLocation) < EPSILON -> {
                 viewTransform = ResizeViewTransform(
                         anchors.second.location.x,
                         anchors.second.location.y,

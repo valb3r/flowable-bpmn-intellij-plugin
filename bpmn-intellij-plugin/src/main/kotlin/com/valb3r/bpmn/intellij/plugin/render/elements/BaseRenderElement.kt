@@ -15,6 +15,8 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import kotlin.math.abs
 
+val EPSILON = 0.1f
+
 abstract class BaseRenderElement(
         open val elementId: DiagramElementId,
         protected val state: RenderState,
@@ -24,6 +26,10 @@ abstract class BaseRenderElement(
     var isVisible: Boolean? = null
 
     open val children: MutableList<BaseRenderElement> = mutableListOf()
+
+    open fun multipleElementsSelected(): Boolean {
+        return state.ctx.selectedIds.size > 1
+    }
 
     open fun isVisible(): Boolean {
         return true == isVisible
@@ -47,7 +53,7 @@ abstract class BaseRenderElement(
         val dx = state.ctx.interactionContext.dragCurrent.x - state.ctx.interactionContext.dragStart.x
         val dy = state.ctx.interactionContext.dragCurrent.y - state.ctx.interactionContext.dragStart.y
 
-        if (abs(dx) + abs(dy) > 0.1f) {
+        if (abs(dx) + abs(dy) > EPSILON) {
             propagateDragging(state.ctx, dx, dy)
         }
 

@@ -29,7 +29,7 @@ class ShapeResizeAnchorBottom(
     }
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
-        if (!isVisible()) {
+        if (!isVisible() || multipleElementsSelected()) {
             return mutableMapOf()
         }
 

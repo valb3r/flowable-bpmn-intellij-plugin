@@ -90,7 +90,10 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         linkDiagramElementId(root, elementsByDiagramId)
 
         root.applyContextChanges(elementsByDiagramId)
-        return root.render()
+        val rendered = root.render()
+        // Overlay system elements on top of rendered
+        drawSelectionRect(ctx)
+        return rendered
     }
 
     private fun createRootProcessElem(state: RenderState, elements: MutableList<BaseRenderElement>, elementsById: MutableMap<BpmnElementId, BaseRenderElement>): BaseRenderElement {
@@ -183,6 +186,13 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             else -> throw IllegalArgumentException("Unknown shape: ${bpmn.javaClass}")
         }
     }
+
+    private fun drawSelectionRect(ctx: RenderContext) {
+        ctx.interactionContext.dragSelectionRect?.let {
+            val rect = it.toRect()
+            ctx.canvas.drawRectNoCameraTransform(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
+        }
+    }
 }
 
 class DefaultBpmnProcessRendererOld(val icons: IconProvider) : BpmnProcessRenderer {
@@ -221,7 +231,7 @@ class DefaultBpmnProcessRendererOld(val icons: IconProvider) : BpmnProcessRender
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
 
         drawUndoRedo(ctx, state, renderMeta, areaByElement)
-        drawSelectionRect(ctx)
+        //drawSelectionRect(ctx)
         drawMultiremovalRect(ctx, renderMeta, areaByElement)
         drawDebugElements(state, ctx, areaByElement)
         return areaByElement
@@ -245,12 +255,7 @@ class DefaultBpmnProcessRendererOld(val icons: IconProvider) : BpmnProcessRender
         }
     }
 
-    private fun drawSelectionRect(ctx: RenderContext) {
-        ctx.interactionContext.dragSelectionRect?.let {
-            val rect = it.toRect()
-            ctx.canvas.drawRectNoCameraTransform(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
-        }
-    }
+
 
     private fun drawMultiremovalRect(renderCtx: RenderContext, ctx: RenderMetadata, areaByElement: MutableMap<DiagramElementId, AreaWithZindex>) {
         if (null != ctx.interactionContext.dragSelectionRect || ctx.selectedIds.size <= 1) {
