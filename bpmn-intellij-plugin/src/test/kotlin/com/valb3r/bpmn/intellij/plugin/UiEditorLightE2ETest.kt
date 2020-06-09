@@ -655,6 +655,11 @@ internal class UiEditorLightE2ETest {
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
 
+        // New renderer does not keep edge selected
+        // Select edge:
+        canvas.click(newLocation)
+        canvas.paintComponent(graphics)
+        // Select waypoint:
         canvas.click(newLocation)
         canvas.paintComponent(graphics)
         val deleteElem = findExactlyOneDeleteElem().shouldNotBeNull()
