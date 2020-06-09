@@ -233,7 +233,6 @@ class CanvasPopupMenuProvider {
             val newObject = newElementsFactory().newBpmnObject(clazz)
             val shape = newShapeElement(sceneLocation, newObject)
 
-            // TODO: Handle parent
             updateEventsRegistry().addObjectEvent(
                     BpmnShapeObjectAddedEvent(WithParentId(parent, newObject), shape, newElementsFactory().propertiesOf(newObject))
             )
