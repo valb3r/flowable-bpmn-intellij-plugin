@@ -83,7 +83,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     }
 
     private fun createRootProcessElem(state: RenderState, elements: MutableList<BaseRenderElement>, elementsById: MutableMap<BpmnElementId, BaseRenderElement>): BaseRenderElement {
-        val processElem = PlaneRenderElement(DiagramElementId(state.currentState.processId.id), state, mutableListOf())
+        val processElem = PlaneRenderElement(DiagramElementId(state.currentState.processId.id), state.currentState.processId, state, mutableListOf())
         elements += processElem
         elementsById[state.currentState.processId] = processElem
         return processElem
@@ -112,7 +112,10 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     private fun linkChildrenToParent(state: RenderState, elementsById: MutableMap<BpmnElementId, BaseRenderElement>) {
         elementsById.forEach { (id, renderElem) ->
             val elem = state.currentState.elementByBpmnId[id]
-            elem?.parent?.let { elementsById[it]?.children?.add(renderElem) }
+            elem?.parent?.let {
+                elementsById[it]?.children?.add(renderElem)
+                renderElem.parents.add(it)
+            }
         }
     }
 
@@ -149,10 +152,10 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             is BpmnMuleTask -> TopLeftIconShape(id, icons.mule, shape, state)
             is BpmnDecisionTask -> TopLeftIconShape(id, icons.decision, shape, state)
             is BpmnShellTask -> TopLeftIconShape(id, icons.shell, shape, state)
-            is BpmnSubProcess -> NoIconShape(id, shape, state, Colors.PROCESS_COLOR, Colors.ELEMENT_BORDER_COLOR, Colors.SUBPROCESS_TEXT_COLOR)
-            is BpmnTransactionalSubProcess -> NoIconDoubleBorderShape(id, shape, state)
+            is BpmnSubProcess -> NoIconShape(id, shape, state, Colors.PROCESS_COLOR, Colors.ELEMENT_BORDER_COLOR, Colors.SUBPROCESS_TEXT_COLOR, areaType = AreaType.SHAPE_THAT_NESTS)
+            is BpmnTransactionalSubProcess -> NoIconDoubleBorderShape(id, shape, state, areaType = AreaType.SHAPE_THAT_NESTS)
             is BpmnCallActivity -> NoIconShape(id, shape, state)
-            is BpmnAdHocSubProcess -> BottomMiddleIconShape(id, icons.tilde, shape, state)
+            is BpmnAdHocSubProcess -> BottomMiddleIconShape(id, icons.tilde, shape, state, areaType = AreaType.SHAPE_THAT_NESTS)
             is BpmnExclusiveGateway -> IconShape(id, icons.exclusiveGateway, shape, state)
             is BpmnParallelGateway -> IconShape(id, icons.parallelGateway, shape, state)
             is BpmnInclusiveGateway -> IconShape(id, icons.inclusiveGateway, shape, state)

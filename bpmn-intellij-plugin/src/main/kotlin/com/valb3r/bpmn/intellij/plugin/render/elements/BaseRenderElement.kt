@@ -31,6 +31,12 @@ abstract class BaseRenderElement(
 
     open val children: MutableList<BaseRenderElement> = mutableListOf()
 
+    /**
+     * Parents in the order: direct parent, parent of direct parent...
+     * Typically 'direct parent' is sufficient and is only provided
+     */
+    open val parents: MutableList<BpmnElementId> = mutableListOf()
+
     open fun multipleElementsSelected(): Boolean {
         return state.ctx.selectedIds.size > 1
     }

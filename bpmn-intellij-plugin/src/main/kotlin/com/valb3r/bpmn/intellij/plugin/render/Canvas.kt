@@ -233,6 +233,10 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         return camera.fromCameraView(point)
     }
 
+    fun parentableElementAt(point: Point2D.Float): BpmnElementId {
+        return parentableElemUnderCursor(point)
+    }
+
     private fun applyOrthoAnchors(anchorX: AnchorDetails?, anchorY: AnchorDetails?, ctx: ElementInteractionContext): AnchorHit {
         val selectedAnchors: MutableMap<AnchorType, Point2D.Float> = mutableMapOf()
         val targetX = anchorX?.let { ctx.dragCurrent.x + it.anchor.x - it.objectAnchor.x } ?: ctx.dragCurrent.x
@@ -264,6 +268,19 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
                 ?.filterNotNull()
                 ?.map { it.id }
                 ?.firstOrNull()
+    }
+
+    private fun parentableElemUnderCursor(cursorPoint: Point2D.Float): BpmnElementId {
+        val withinRect = cursorRect(cursorPoint)
+        val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
+        val result = mutableListOf<BpmnElementId>()
+        val centerRect = Point2D.Float(withinRect.centerX.toFloat(), withinRect.centerY.toFloat())
+        intersection
+                ?.filter { null != it.value.bpmnElementId }
+                ?.filter { it.value.areaType == AreaType.SHAPE_THAT_NESTS }
+                ?.minBy { Point2D.Float(it.value.area.bounds2D.centerX.toFloat(), it.value.area.bounds2D.centerY.toFloat()).distance(centerRect) }
+                ?.let { result += it.value.bpmnElementId!! }
+        return result.first()
     }
 
     private fun elemUnderCursor(cursorPoint: Point2D.Float): List<DiagramElementId> {

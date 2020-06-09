@@ -17,7 +17,8 @@ class NoIconDoubleBorderShape(
         private val borderColor: Colors =  Colors.ELEMENT_BORDER_COLOR,
         private val innerBorderColor: Colors =  Colors.TRANSACTION_ELEMENT_BORDER_COLOR,
         private val innerBackgroundColor: Colors = Colors.TRANSACTION_COLOR,
-        private val textColor: Colors = Colors.SUBPROCESS_TEXT_COLOR
+        private val textColor: Colors = Colors.SUBPROCESS_TEXT_COLOR,
+        private val areaType: AreaType = AreaType.SHAPE
 ) : ResizeableShapeRenderElement(elementId, shape, state) {
 
     private val transactionalBoundaryMargin = 5.0f
@@ -39,7 +40,7 @@ class NoIconDoubleBorderShape(
                 textColor.color
         )
 
-        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera)))
+        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, areaType, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), bpmnElementId = shape.bpmnElement))
     }
 
     private fun wrapInto(target: Rectangle2D.Float, margin: Float): Rectangle2D.Float {

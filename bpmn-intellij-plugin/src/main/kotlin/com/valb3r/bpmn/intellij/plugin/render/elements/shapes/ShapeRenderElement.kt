@@ -72,7 +72,7 @@ abstract class ShapeRenderElement(
                         ))
                 dest.addObjectEvent(
                         BpmnEdgeObjectAddedEvent(
-                                WithParentId(BpmnElementId("PARENT"), newSequenceBpmn),
+                                WithParentId(parents.first(), newSequenceBpmn),
                                 EdgeElementState(newSequenceDiagram),
                                 newElementsFactory().propertiesOf(newSequenceBpmn)
                         )
