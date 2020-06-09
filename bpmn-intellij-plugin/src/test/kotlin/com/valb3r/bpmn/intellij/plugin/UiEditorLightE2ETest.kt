@@ -208,7 +208,7 @@ internal class UiEditorLightE2ETest {
             val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
             lastValue.shouldContainSame(listOf(edgeBpmn, shapeBpmn, draggedTo, propUpdated))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -242,7 +242,7 @@ internal class UiEditorLightE2ETest {
             val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
             lastValue.shouldContainSame(listOf(edgeBpmn, draggedTo, propUpdated))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -276,7 +276,7 @@ internal class UiEditorLightE2ETest {
             val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
             lastValue.shouldContainSame(listOf(edgeBpmn, draggedTo, propUpdated))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -314,7 +314,7 @@ internal class UiEditorLightE2ETest {
             val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
             lastValue.shouldContainSame(listOf(edgeBpmn, draggedToMid, draggedToTarget, propUpdated))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -350,7 +350,7 @@ internal class UiEditorLightE2ETest {
             val newWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().shouldHaveSingleItem()
             lastValue.shouldContainSame(listOf(edgeBpmn, newWaypoint))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -402,7 +402,7 @@ internal class UiEditorLightE2ETest {
             val newQuarterWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().last()
             lastValue.shouldContainSame(listOf(edgeBpmn, newMidWaypoint, newQuarterWaypoint))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -438,7 +438,7 @@ internal class UiEditorLightE2ETest {
             val dragEdge = lastValue.filterIsInstance<DraggedToEvent>().last()
             lastValue.shouldContainSame(listOf(edgeBpmn, dragTask, dragEdge))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -468,7 +468,7 @@ internal class UiEditorLightE2ETest {
             val cascadeIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().last()
             lastValue.shouldContainSame(listOf(edgeBpmn, origIdUpdate, cascadeIdUpdate))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -505,7 +505,7 @@ internal class UiEditorLightE2ETest {
             val dragEdge = lastValue.filterIsInstance<DraggedToEvent>().last()
             lastValue.shouldContainSame(listOf(edgeBpmn, origIdUpdate, cascadeIdUpdate, dragTask, dragEdge))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -601,7 +601,7 @@ internal class UiEditorLightE2ETest {
             val dragEdge = lastValue.filterIsInstance<DraggedToEvent>().last()
             lastValue.shouldContainSame(listOf(edgeBpmn, dragStart, dragEdge))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -633,7 +633,7 @@ internal class UiEditorLightE2ETest {
             val removeEdgeDiagram = lastValue.filterIsInstance<DiagramElementRemovedEvent>().first()
             lastValue.shouldContainSame(listOf(edgeBpmn, removeEdgeDiagram, removeEdgeBpmn))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -668,7 +668,7 @@ internal class UiEditorLightE2ETest {
             val removeWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().last()
             lastValue.shouldContainSame(listOf(edgeBpmn, newWaypoint, removeWaypoint))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -715,7 +715,7 @@ internal class UiEditorLightE2ETest {
             val bpmnRemoved = lastValue.filterIsInstance<BpmnElementRemovedEvent>()
             lastValue.shouldContainSame(listOf(edgeBpmn) + diagramRemoved + bpmnRemoved)
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
