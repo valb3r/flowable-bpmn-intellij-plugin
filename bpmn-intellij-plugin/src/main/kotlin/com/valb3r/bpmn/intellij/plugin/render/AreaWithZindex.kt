@@ -14,7 +14,8 @@ enum class AreaType {
     POINT,
     EDGE,
     SHAPE,
-    SHAPE_THAT_NESTS
+    SHAPE_THAT_NESTS,
+    PARENT_PROCESS_SHAPE
 }
 
 data class AreaWithZindex(

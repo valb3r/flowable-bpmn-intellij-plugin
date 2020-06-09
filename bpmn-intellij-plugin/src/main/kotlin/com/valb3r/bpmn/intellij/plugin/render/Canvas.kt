@@ -275,9 +275,10 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
         val result = mutableListOf<BpmnElementId>()
         val centerRect = Point2D.Float(withinRect.centerX.toFloat(), withinRect.centerY.toFloat())
+        val shapesThatCanParent = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SHAPE_THAT_NESTS)
         intersection
                 ?.filter { null != it.value.bpmnElementId }
-                ?.filter { it.value.areaType == AreaType.SHAPE_THAT_NESTS }
+                ?.filter { shapesThatCanParent.contains(it.value.areaType) }
                 ?.minBy { Point2D.Float(it.value.area.bounds2D.centerX.toFloat(), it.value.area.bounds2D.centerY.toFloat()).distance(centerRect) }
                 ?.let { result += it.value.bpmnElementId!! }
         return result.first()
@@ -290,6 +291,7 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         val result = mutableListOf<DiagramElementId>()
         val centerRect = Point2D.Float(withinRect.centerX.toFloat(), withinRect.centerY.toFloat())
         intersection
+                ?.filter { it.value.areaType != AreaType.PARENT_PROCESS_SHAPE }
                 ?.filter { it.value.index == minZindex?.value?.index }
                 ?.minBy { Point2D.Float(it.value.area.bounds2D.centerX.toFloat(), it.value.area.bounds2D.centerY.toFloat()).distance(centerRect) }
                 ?.let { result += it.key; it.value.parentToSelect?.apply { result += this }  }
@@ -300,6 +302,7 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
         val result = mutableListOf<DiagramElementId>()
         intersection
+                ?.filter { it.value.areaType != AreaType.PARENT_PROCESS_SHAPE }
                 ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this }  }
         return result
     }

@@ -51,7 +51,7 @@ class PlaneRenderElement(
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val area = InfiniteShape()
-        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.SHAPE_THAT_NESTS, mutableSetOf(), mutableSetOf(), bpmnElementId = bpmnElementId, index = OWNING_PROCESS_Z_INDEX))
+        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.PARENT_PROCESS_SHAPE, mutableSetOf(), mutableSetOf(), bpmnElementId = bpmnElementId, index = OWNING_PROCESS_Z_INDEX))
     }
 
     override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
