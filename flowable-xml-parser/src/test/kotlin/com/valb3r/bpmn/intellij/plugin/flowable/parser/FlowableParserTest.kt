@@ -3,7 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.flowable.parser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
@@ -20,6 +20,7 @@ import java.util.*
 
 internal class FlowableParserTest {
 
+    private val parentElemId = BpmnElementId("duplicates")
     private val bmpnElemId = BpmnElementId(UUID.randomUUID().toString())
     private val diagramElementId = DiagramElementId(UUID.randomUUID().toString())
     
@@ -102,7 +103,7 @@ internal class FlowableParserTest {
         val updated = FlowableParser().update(
                 "duplicates.bpmn20.xml".asResource()!!,
                 listOf(BpmnShapeObjectAddedEvent(
-                        BpmnExclusiveGateway(bmpnElemId, "Exclusive gateway", null, null),
+                        WithParentId(parentElemId, BpmnExclusiveGateway(bmpnElemId, "Exclusive gateway", null, null)),
                         ShapeElement(diagramElementId, bmpnElemId, BoundsElement(0.0f, 0.0f, 30.0f, 40.0f)),
                         mapOf(
                                 PropertyType.ID to Property(bmpnElemId.id),
@@ -121,7 +122,7 @@ internal class FlowableParserTest {
                 "duplicates.bpmn20.xml".asResource()!!,
                 listOf(
                         BpmnEdgeObjectAddedEvent(
-                                BpmnSequenceFlow(bmpnElemId, "Exclusive gateway", null, "source", "target", null),
+                                WithParentId(parentElemId, BpmnSequenceFlow(bmpnElemId, "Exclusive gateway", null, "source", "target", null)),
                                 EdgeElementState(
                                         diagramElementId,
                                         bmpnElemId,
@@ -211,6 +212,6 @@ data class DiagramElementRemovedEvent(override val elementId: DiagramElementId):
 
 data class BpmnElementRemovedEvent(override val elementId: BpmnElementId): BpmnElementRemoved
 
-data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithBpmnId, override val shape: ShapeElement, override val props: Map<PropertyType, Property>): BpmnShapeObjectAdded
+data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithParentId, override val shape: ShapeElement, override val props: Map<PropertyType, Property>): BpmnShapeObjectAdded
 
-data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithBpmnId, override val edge: EdgeWithIdentifiableWaypoints, override val props: Map<PropertyType, Property>): BpmnEdgeObjectAdded
+data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithParentId, override val edge: EdgeWithIdentifiableWaypoints, override val props: Map<PropertyType, Property>): BpmnEdgeObjectAdded
