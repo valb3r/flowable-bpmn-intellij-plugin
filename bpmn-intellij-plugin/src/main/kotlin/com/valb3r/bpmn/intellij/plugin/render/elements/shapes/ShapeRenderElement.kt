@@ -56,7 +56,7 @@ abstract class ShapeRenderElement(
         }
         currY += ACTIONS_ICO_SIZE * 2.0f
 
-        val newLinkId = DiagramElementId("NEW_LINK:$elementId")
+        val newLinkId = DiagramElementId("NEWLINK:$elementId")
         val newLinkArea = state.ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.sequence)
         state.ctx.interactionContext.clickCallbacks[newLinkId] = { dest ->
             state.currentState.elementByBpmnId[shape.bpmnElement]?.let { it: WithParentId ->
