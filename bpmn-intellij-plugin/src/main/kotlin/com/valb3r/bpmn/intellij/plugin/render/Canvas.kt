@@ -259,9 +259,15 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
     private fun bpmnElemsUnderDragCurrent(): BpmnElementId? {
         val onScreen = camera.toCameraView(interactionCtx.dragCurrent)
         val cursor = cursorRect(onScreen)
-        val elems = areaByElement?.filter { it.value.area.intersects(cursor) }
+        // Correct order would require non-layered but computed z-index
+        val indexes = mapOf(AreaType.POINT to 0, AreaType.EDGE to 10, AreaType.SHAPE to 10, AreaType.SHAPE_THAT_NESTS to 20, AreaType.PARENT_PROCESS_SHAPE to 100)
+        val elems = areaByElement
+                ?.filter { it.value.area.intersects(cursor) }
+                ?.toList()
+                ?.sortedBy { indexes[it.second.areaType] }
+                ?.map { it.first }
 
-        return elems?.map { stateProvider.currentState().elementByDiagramId[it.key] }
+        return elems?.map { stateProvider.currentState().elementByDiagramId[it] }
                 ?.filterNotNull()
                 ?.map { stateProvider.currentState().elementByBpmnId[it] }
                 ?.filter { it?.element !is BpmnSequenceFlow }

@@ -11,9 +11,6 @@ import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
-val viewMin = Float.MIN_VALUE
-val viewMax = Float.MAX_VALUE
-
 class PlaneRenderElement(
         override val elementId: DiagramElementId,
         private val bpmnElementId: BpmnElementId,
