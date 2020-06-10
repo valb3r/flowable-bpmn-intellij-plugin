@@ -102,6 +102,15 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
 
     fun startSelectionOrDrag(current: Point2D.Float) {
         val point = camera.fromCameraView(current)
+        if (selectedElements.isNotEmpty()) {
+            interactionCtx = interactionCtx.copy(
+                    draggedIds = selectedElements.toMutableSet(),
+                    dragStart = point,
+                    dragCurrent = point
+            )
+            return
+        }
+
         val elemsUnderCursor = elemUnderCursor(current)
 
         if (elemsUnderCursor.isEmpty()) {
@@ -112,7 +121,8 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         interactionCtx = interactionCtx.copy(
                 draggedIds = selectedElements.toMutableSet(),
                 dragStart = point,
-                dragCurrent = point
+                dragCurrent = point,
+                dragSelectionRect = SelectionRect(current, current)
         )
     }
 
@@ -178,12 +188,12 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
                     current
             ))
 
-            this.selectedElements.addAll(elemsUnderRect(interactionCtx.dragSelectionRect!!.toRect()))
+            this.selectedElements.addAll(elemsUnderRect(interactionCtx.dragSelectionRect!!.toRect(), excludeAreas = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SHAPE_THAT_NESTS)))
             repaint()
             return
         }
 
-        if (selectedElements.isEmpty() || interactionCtx.draggedIds.isEmpty()) {
+        if (selectedElements.isEmpty() && interactionCtx.draggedIds.isEmpty()) {
             dragCanvas(previous, current)
             return
         }
@@ -209,7 +219,7 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
             })
         }
 
-        interactionCtx = interactionCtx.copy(draggedIds = emptySet(), dragCurrent = interactionCtx.dragStart)
+        interactionCtx = interactionCtx.copy(draggedIds = emptySet(), dragCurrent = interactionCtx.dragStart, dragSelectionRect = null)
         repaint()
     }
 
@@ -306,12 +316,12 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         return result
     }
 
-    private fun elemsUnderRect(withinRect: Rectangle2D): List<DiagramElementId> {
+    private fun elemsUnderRect(withinRect: Rectangle2D, excludeAreas: Set<AreaType> = setOf(AreaType.PARENT_PROCESS_SHAPE)): List<DiagramElementId> {
         val intersection = areaByElement?.filter { withinRect.contains(it.value.area.bounds2D) }
 
         val result = mutableListOf<DiagramElementId>()
         intersection
-                ?.filter { it.value.areaType != AreaType.PARENT_PROCESS_SHAPE }
+                ?.filter { !excludeAreas.contains(it.value.areaType) }
                 ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this } }
         return result
     }
