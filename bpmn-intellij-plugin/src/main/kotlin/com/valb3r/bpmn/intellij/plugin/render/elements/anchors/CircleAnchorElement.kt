@@ -29,6 +29,10 @@ abstract class CircleAnchorElement(
     }
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+        if (!isRenderable()) {
+            return mutableMapOf()
+        }
+
         val rect = currentRect(ctx.canvas.camera)
         if (!isVisible() || ifVisibleNoRenderIf()) {
             val point = ctx.canvas.camera.toCameraView(Point2D.Float(rect.x, rect.y))
@@ -56,5 +60,9 @@ abstract class CircleAnchorElement(
 
     open protected fun ifVisibleNoRenderIf(): Boolean {
         return multipleElementsSelected()
+    }
+
+    open protected fun isRenderable(): Boolean {
+        return true
     }
 }

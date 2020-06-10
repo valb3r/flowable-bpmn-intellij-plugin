@@ -112,7 +112,6 @@ abstract class ShapeRenderElement(
         events += DraggedToEvent(elementId, dx, dy, null, null)
         events += cascadeTo
                 .filter { target -> target.cascadeSource == shape.bpmnElement }
-                .filter { target -> !state.ctx.interactionContext.draggedIds.contains(target.waypointId) }
                 .map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
         return events
     }

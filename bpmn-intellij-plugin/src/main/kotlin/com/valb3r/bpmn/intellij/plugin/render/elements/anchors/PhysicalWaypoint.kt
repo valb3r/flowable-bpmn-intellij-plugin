@@ -83,6 +83,10 @@ class PhysicalWaypoint(
     }
 
     override fun ifVisibleNoRenderIf(): Boolean {
-        return false
+        return edgePhysicalSize - 1 == physicalPos || 0 == physicalPos
+    }
+
+    override fun isRenderable(): Boolean {
+        return !(edgePhysicalSize - 1 == physicalPos || 0 == physicalPos)
     }
 }
