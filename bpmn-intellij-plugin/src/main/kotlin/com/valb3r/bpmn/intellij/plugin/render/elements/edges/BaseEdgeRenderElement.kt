@@ -29,10 +29,6 @@ abstract class BaseEdgeRenderElement(
 
     override val children: MutableList<BaseRenderElement> = anchors as MutableList<BaseRenderElement>
 
-    override fun dragTo(dx: Float, dy: Float) {
-        // No drag support for edge itself
-    }
-
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val area = Area()
 

@@ -152,16 +152,12 @@ abstract class BaseRenderElement(
 
     protected fun propagateDragging(ctx: RenderContext, dx: Float, dy: Float) {
         if (!isActiveOrDragged()) {
-            children.filter { !it.needsDirectParentActiveToAcceptEvents() }.forEach { it.propagateDragging(ctx, dx, dy) }
+            children.forEach { it.propagateDragging(ctx, dx, dy) }
             return
         }
 
         dragTo(dx, dy)
         children.forEach { it.propagateDragging(ctx, dx, dy) }
-    }
-
-    protected open fun needsDirectParentActiveToAcceptEvents(): Boolean {
-        return false
     }
 
     protected open fun acceptsInternalEvents(): Boolean {
