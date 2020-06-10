@@ -1,6 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.render.elements.anchors
 
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
@@ -9,9 +11,11 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.Icon
 
+// TODO code duplication with ShapeResizeAnchorBottom
 class ShapeResizeAnchorTop(
         override val elementId: DiagramElementId,
         private val bottomPoint: Point2D.Float,
+        private val onDragEndCallback: (() -> MutableList<Event>),
         state: RenderState
 ) : IconAnchorElement(elementId, bottomPoint, state) {
 
@@ -30,6 +34,13 @@ class ShapeResizeAnchorTop(
                         height
                 )
         )
+    }
+
+    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
+        val events = mutableListOf<Event>()
+        events += super.doOnDragEndWithoutChildren(dx, dy, droppedOn)
+        events += onDragEndCallback()
+        return events
     }
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {

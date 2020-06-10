@@ -39,6 +39,7 @@ import org.dom4j.*
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.SAXReader
 import org.dom4j.io.XMLWriter
+import java.awt.geom.Point2D
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
@@ -132,6 +133,7 @@ class FlowableParser : BpmnParser {
         for (event in events) {
             when (event) {
                 is LocationUpdateWithId -> applyLocationUpdate(doc, event)
+                is BpmnShapeResizedAndMoved -> applyShapeRectUpdate(doc, event)
                 is NewWaypoints -> applyNewWaypoints(doc, event)
                 is DiagramElementRemoved -> applyDiagramElementRemoved(doc, event)
                 is BpmnElementRemoved -> applyBpmnElementRemoved(doc, event)
@@ -174,6 +176,33 @@ class FlowableParser : BpmnParser {
         nx.value = (nx.value.toFloat() + update.dx).toString()
         ny.value = (ny.value.toFloat() + update.dy).toString()
     }
+
+    private fun applyShapeRectUpdate(doc: Document, update: BpmnShapeResizedAndMoved) {
+        val node = doc.selectSingleNode(
+                "//*[local-name()='BPMNShape'][@id='${update.diagramElementId.id}']/*[@x][@y]"
+        ) as Element
+
+        val nx = node.attribute("x")
+        val ny = node.attribute("y")
+        val nw = node.attribute("width")
+        val nh = node.attribute("height")
+
+        val nodeX = nx.value.toFloat()
+        val nodeY = ny.value.toFloat()
+        val nodeW = nw.value.toFloat()
+        val nodeH = nh.value.toFloat()
+
+        val left = Point2D.Float(nodeX, nodeY)
+        val right = Point2D.Float(nodeX + nodeW, nodeY + nodeH)
+        val newLeft = update.transform(left)
+        val newRight = update.transform(right)
+
+        nx.value = newLeft.x.toString()
+        ny.value = newLeft.y.toString()
+        nw.value = (newRight.x - newLeft.x).toString()
+        nh.value = (newRight.y - newLeft.y).toString()
+    }
+
 
     private fun applyNewWaypoints(doc: Document, update: NewWaypoints) {
         val node = doc.selectSingleNode(

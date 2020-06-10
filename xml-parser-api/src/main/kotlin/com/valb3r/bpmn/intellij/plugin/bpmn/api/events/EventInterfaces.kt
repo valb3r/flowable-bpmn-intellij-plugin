@@ -1,7 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.events
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
@@ -10,6 +9,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import java.awt.geom.Point2D
+
 interface Event
 
 data class EventBlock(val size: Int)
@@ -26,14 +27,6 @@ interface LocationUpdateWithId: Event {
     val dy: Float
     val parentElementId: DiagramElementId?
     val internalPos: Int?
-}
-
-interface ShapeRectUpdateWithId: Event {
-    val diagramElementId: DiagramElementId
-    val dx: Float
-    val dy: Float
-    val dw: Float
-    val dh: Float
 }
 
 interface NewWaypoints: Event {
@@ -54,6 +47,16 @@ interface BpmnShapeObjectAdded: Event {
     val bpmnObject: WithParentId
     val shape: ShapeElement
     val props: Map<PropertyType, Property>
+}
+
+interface BpmnShapeResizedAndMoved: Event {
+    val diagramElementId: DiagramElementId
+    val cx: Float
+    val cy: Float
+    val coefW: Float
+    val coefH: Float
+
+    fun transform(point: Point2D.Float): Point2D.Float
 }
 
 interface BpmnEdgeObjectAdded: Event {

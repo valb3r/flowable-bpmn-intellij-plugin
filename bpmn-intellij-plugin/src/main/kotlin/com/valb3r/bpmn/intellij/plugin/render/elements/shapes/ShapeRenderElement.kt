@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.LocationUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.BpmnEdgeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
@@ -92,6 +93,20 @@ abstract class ShapeRenderElement(
         // NOP
     }
 
+    override fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
+        // Avoid double dragging by cascade and then by children
+        val result = doOnDragEndWithoutChildren(dx, dy, null)
+        val alreadyDraggedLocations = result.filterIsInstance<LocationUpdateWithId>().map { it.diagramElementId }.toMutableSet()
+        children.forEach {
+            for (event in it.onDragEnd(dx, dy, null)) {
+                handleChildDrag(event, alreadyDraggedLocations, result)
+            }
+        }
+
+        viewTransform = NullViewTransform()
+        return result
+    }
+
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
         val events = mutableListOf<Event>()
         events += DraggedToEvent(elementId, dx, dy, null, null)
@@ -102,6 +117,20 @@ abstract class ShapeRenderElement(
         return events
     }
 
+    private fun handleChildDrag(event: Event, alreadyDraggedLocations: MutableSet<DiagramElementId>, result: MutableList<Event>) {
+        if (event !is LocationUpdateWithId) {
+            result += event
+            return
+        }
+
+        if (alreadyDraggedLocations.contains(event.diagramElementId)) {
+            return
+        }
+
+        alreadyDraggedLocations += event.diagramElementId
+        result += event
+    }
+
     override fun doResizeWithoutChildren(dw: Float, dh: Float) {
         TODO("Not yet implemented")
     }
@@ -110,12 +139,12 @@ abstract class ShapeRenderElement(
         TODO("Not yet implemented")
     }
 
-    override fun afterStateChangesAppliedNoChildren(elemMap: Map<DiagramElementId, BaseRenderElement>) {
+    override fun afterStateChangesAppliedNoChildren() {
         if (viewTransform is NullViewTransform) {
             return
         }
 
-        cascadeTo.mapNotNull { elemMap[it.waypointId] }.forEach {
+        cascadeTo.mapNotNull { state.elemMap[it.waypointId] }.forEach {
             it.viewTransform = viewTransform
         }
     }

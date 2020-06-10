@@ -53,7 +53,9 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
 
     override fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+        val elementsByDiagramId = mutableMapOf<DiagramElementId, BaseRenderElement>()
         val state = RenderState(
+                elementsByDiagramId,
                 ctx.stateProvider.currentState(),
                 ctx,
                 icons
@@ -66,10 +68,9 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         createEdges(state, elements, elementsById)
         linkChildrenToParent(state, elementsById)
         // Not all elements have BpmnElementId, but they have DiagramElementId
-        val elementsByDiagramId = mutableMapOf<DiagramElementId, BaseRenderElement>()
         linkDiagramElementId(root, elementsByDiagramId)
 
-        root.applyContextChanges(elementsByDiagramId)
+        root.applyContextChanges()
         val rendered = root.render()
 
         // Overlay system elements on top of rendered BPMN diagram

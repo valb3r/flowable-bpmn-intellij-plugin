@@ -57,7 +57,7 @@ abstract class BaseRenderElement(
         return isActive() || isDragged()
     }
 
-    open fun applyContextChanges(elemMap: Map<DiagramElementId, BaseRenderElement>) {
+    open fun applyContextChanges() {
         propagateActivityStateToChildren()
 
         val dx = state.ctx.interactionContext.dragCurrent.x - state.ctx.interactionContext.dragStart.x
@@ -67,7 +67,7 @@ abstract class BaseRenderElement(
             propagateDragging(state.ctx, dx, dy)
         }
 
-        propagateStateChangesApplied(elemMap)
+        propagateStateChangesApplied()
     }
 
     open fun render(): MutableMap<DiagramElementId, AreaWithZindex> {
@@ -122,15 +122,19 @@ abstract class BaseRenderElement(
     /**
      * Allows parent elements to handle children updates and react on them.
      */
-    protected open fun propagateStateChangesApplied(elemMap: Map<DiagramElementId, BaseRenderElement>) {
-        afterStateChangesAppliedNoChildren(elemMap)
-        children.forEach { it.propagateStateChangesApplied(elemMap) }
+    protected open fun propagateStateChangesApplied() {
+        afterStateChangesAppliedNoChildren()
+        children.forEach { it.propagateStateChangesApplied() }
     }
 
     /**
      * Allows parent elements to handle children updates and react on them.
      */
-    protected open fun afterStateChangesAppliedNoChildren(elemMap: Map<DiagramElementId, BaseRenderElement>) {
+    protected open fun afterStateChangesAppliedNoChildren() {
+    }
+
+    internal open fun doComputeLocationChangesBasedOnTransformationWithCascade(): MutableList<Event> {
+        return mutableListOf()
     }
 
     abstract fun doDragToWithoutChildren(dx: Float, dy: Float)

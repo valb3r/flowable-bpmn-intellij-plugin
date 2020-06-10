@@ -53,7 +53,7 @@ abstract class BaseEdgeRenderElement(
     }
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
-        TODO("Not yet implemented")
+        return mutableListOf()
     }
 
     override fun doResizeWithoutChildren(dw: Float, dh: Float) {

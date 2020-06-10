@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import java.awt.geom.Point2D
 
 data class StringValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: String, override val referencedValue: String? = null, override val newIdValue: BpmnElementId? = null): PropertyUpdateWithId
 
@@ -14,7 +15,12 @@ data class BooleanValueUpdatedEvent(override val bpmnElementId: BpmnElementId, o
 
 data class DraggedToEvent(override val diagramElementId: DiagramElementId, override val dx: Float, override val dy: Float, override val parentElementId: DiagramElementId?, override val internalPos: Int?): LocationUpdateWithId
 
-data class ShapeRectUpdatedEvent(override val diagramElementId: DiagramElementId, override val dx: Float, override val dy: Float, override val dw: Float, override val dh: Float): ShapeRectUpdateWithId
+data class BpmnShapeResizedAndMovedEvent(override val diagramElementId: DiagramElementId, override val cx: Float, override val cy: Float, override val coefW: Float, override val coefH: Float): BpmnShapeResizedAndMoved {
+
+    override fun transform(point: Point2D.Float): Point2D.Float {
+        return Point2D.Float(cx + (point.x - cx) * coefW, cy + (point.y - cy) * coefH)
+    }
+}
 
 data class NewWaypointsEvent(override val edgeElementId: DiagramElementId, override val waypoints: List<IdentifiableWaypoint>, override val epoch: Int): NewWaypoints
 

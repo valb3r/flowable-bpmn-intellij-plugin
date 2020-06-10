@@ -15,6 +15,7 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.elements.ACTIONS_ICO_SIZE
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ResizeViewTransform
 import java.awt.geom.Point2D
 
 class PhysicalWaypoint(
@@ -62,6 +63,23 @@ class PhysicalWaypoint(
         }
 
         return events
+    }
+
+    override fun doComputeLocationChangesBasedOnTransformationWithCascade(): MutableList<Event> {
+        val transform = viewTransform
+        if (transform !is ResizeViewTransform) {
+            return mutableListOf()
+        }
+
+        return mutableListOf(
+                DraggedToEvent(
+                        elementId,
+                        transformedLocation.x - currentLocation.x,
+                        transformedLocation.y - currentLocation.y,
+                        parentElementId,
+                        physicalPos
+                )
+        )
     }
 
     override fun ifVisibleNoRenderIf(): Boolean {

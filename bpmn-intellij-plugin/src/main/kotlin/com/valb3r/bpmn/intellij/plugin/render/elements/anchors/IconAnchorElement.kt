@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.render.elements.anchors
 
 import com.valb3r.bpmn.intellij.plugin.Colors
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
@@ -20,6 +21,10 @@ abstract class IconAnchorElement(
         val active = isActive()
         val rect = currentRect(ctx.canvas.camera)
         val area = ctx.canvas.drawIcon(Point2D.Float(rect.x, rect.y), icon, if (active) Colors.SELECTED_COLOR.color else null)
+
+        state.ctx.interactionContext.dragEndCallbacks[elementId] = {
+            dx: Float, dy: Float, id: BpmnElementId? -> onDragEnd(dx, dy, id)
+        }
 
         return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT))
     }

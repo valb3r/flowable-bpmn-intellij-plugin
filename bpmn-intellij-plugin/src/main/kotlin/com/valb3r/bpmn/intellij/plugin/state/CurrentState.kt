@@ -71,8 +71,11 @@ class CurrentStateProvider {
         updates.map { it.event }.forEach { event ->
             when (event) {
                 is LocationUpdateWithId -> {
-                    updatedShapes = updatedShapes.map { shape -> if (shape.id == event.diagramElementId) updateWaypointLocation(shape, event) else shape }.toMutableList()
+                    updatedShapes = updatedShapes.map { shape -> if (shape.id == event.diagramElementId) updateShapeLocation(shape, event) else shape }.toMutableList()
                     updatedEdges = updatedEdges.map { edge -> if (edge.id == event.parentElementId) updateWaypointLocation(edge, event) else edge }.toMutableList()
+                }
+                is BpmnShapeResizedAndMoved -> {
+                    updatedShapes = updatedShapes.map { shape -> if (shape.id == event.diagramElementId) updateShapeLocationAndSize(shape, event) else shape }.toMutableList()
                 }
                 is NewWaypoints -> {
                     updatedEdges = updatedEdges.map { edge -> if (edge.id == event.edgeElementId) updateWaypointLocation(edge, event) else edge }.toMutableList()
@@ -174,7 +177,11 @@ class CurrentStateProvider {
         updatedElemPropertiesByStaticElementId[newElementId] = elemPropUpdated
     }
 
-    private fun updateWaypointLocation(elem: ShapeElement, update: LocationUpdateWithId): ShapeElement {
+    private fun updateShapeLocationAndSize(elem: ShapeElement, update: BpmnShapeResizedAndMoved): ShapeElement {
+        return elem.copyAndResize { update.transform(it) }
+    }
+
+    private fun updateShapeLocation(elem: ShapeElement, update: LocationUpdateWithId): ShapeElement {
         return elem.copyAndTranslate(update.dx, update.dy)
     }
 
