@@ -23,7 +23,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstants): JPanel() {
+class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstants) : JPanel() {
     private val stateProvider = currentStateProvider()
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
@@ -204,7 +204,9 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
             interactionCtx = attractToAnchors(interactionCtx)
             val dx = interactionCtx.dragCurrent.x - interactionCtx.dragStart.x
             val dy = interactionCtx.dragCurrent.y - interactionCtx.dragStart.y
-            updateEventsRegistry().addEvents(interactionCtx.draggedIds.flatMap {interactionCtx.dragEndCallbacks[it]?.invoke(dx, dy, bpmnElemsUnderDragCurrent()) ?: emptyList()})
+            updateEventsRegistry().addEvents(interactionCtx.draggedIds.flatMap {
+                interactionCtx.dragEndCallbacks[it]?.invoke(dx, dy, bpmnElemsUnderDragCurrent()) ?: emptyList()
+            })
         }
 
         interactionCtx = interactionCtx.copy(draggedIds = emptySet(), dragCurrent = interactionCtx.dragStart)
@@ -300,16 +302,17 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
                 ?.filter { it.value.areaType != AreaType.PARENT_PROCESS_SHAPE }
                 ?.filter { it.value.index == minZindex?.value?.index }
                 ?.minBy { Point2D.Float(it.value.area.bounds2D.centerX.toFloat(), it.value.area.bounds2D.centerY.toFloat()).distance(centerRect) }
-                ?.let { result += it.key; it.value.parentToSelect?.apply { result += this }  }
+                ?.let { result += it.key; it.value.parentToSelect?.apply { result += this } }
         return result
     }
 
     private fun elemsUnderRect(withinRect: Rectangle2D): List<DiagramElementId> {
-        val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
+        val intersection = areaByElement?.filter { withinRect.contains(it.value.area.bounds2D) }
+
         val result = mutableListOf<DiagramElementId>()
         intersection
                 ?.filter { it.value.areaType != AreaType.PARENT_PROCESS_SHAPE }
-                ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this }  }
+                ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this } }
         return result
     }
 

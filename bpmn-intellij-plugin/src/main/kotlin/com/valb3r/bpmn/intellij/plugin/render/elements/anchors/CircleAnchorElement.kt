@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
@@ -28,13 +29,17 @@ abstract class CircleAnchorElement(
     }
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+        val rect = currentRect(ctx.canvas.camera)
         if (!isVisible() || ifVisibleNoRenderIf()) {
-            return mutableMapOf()
+            val point = ctx.canvas.camera.toCameraView(Point2D.Float(rect.x, rect.y))
+            return mutableMapOf(
+                    elementId to AreaWithZindex(Area(Rectangle2D.Float(point.x, point.y, 0.1f, 0.1f)), AreaType.POINT, waypointAnchors(ctx.canvas.camera), index = ANCHOR_Z_INDEX)
+            )
         }
 
         val currentColor = color(isActive(), bodyColor)
         val area = ctx.canvas.drawEllipse(
-                currentRect(ctx.canvas.camera),
+                rect,
                 currentColor,
                 currentColor
         )
