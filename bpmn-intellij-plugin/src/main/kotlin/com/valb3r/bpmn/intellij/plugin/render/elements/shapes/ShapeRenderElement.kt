@@ -112,9 +112,17 @@ abstract class ShapeRenderElement(
         events += cascadeTargets
                 .map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
 
+        if (allDroppedOn.isEmpty()) {
+            return events
+        }
+
         val nests = allDroppedOn[AreaType.SHAPE_THAT_NESTS]
         val parentProcess = allDroppedOn[AreaType.PARENT_PROCESS_SHAPE]
         val currentParent = parents.firstOrNull()
+
+        if (allDroppedOn[allDroppedOn.firstKey()] == currentParent) {
+            return events
+        }
 
         if (null != nests && nests != currentParent) {
             events += BpmnParentChangedEvent(shape.bpmnElement, nests)
