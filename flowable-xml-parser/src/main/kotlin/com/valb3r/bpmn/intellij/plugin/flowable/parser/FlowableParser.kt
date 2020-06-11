@@ -140,6 +140,7 @@ class FlowableParser : BpmnParser {
                 is BpmnShapeObjectAdded -> applyBpmnShapeObjectAdded(doc, event)
                 is BpmnEdgeObjectAdded -> applyBpmnEdgeObjectAdded(doc, event)
                 is PropertyUpdateWithId -> applyPropertyUpdateWithId(doc, event)
+                is BpmnParentChanged -> applyParentChange(doc, event)
             }
         }
     }
@@ -424,6 +425,20 @@ class FlowableParser : BpmnParser {
         ) as Element
 
         diagramElement.addAttribute("bpmnElement", update.newIdValue!!.id)
+    }
+
+    private fun applyParentChange(doc: Document, update: BpmnParentChanged) {
+        val node = doc.selectSingleNode(
+                "//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]"
+        ) as Element
+
+        val newParent = (
+                doc.selectSingleNode("//*[local-name()='process'][1]//*[@id='${update.newParentId.id}'][1]") as Element?
+                        ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.newParentId.id}'][1]") as Element?
+                )!!
+
+        node.parent.remove(node)
+        newParent.add(node)
     }
 
 
