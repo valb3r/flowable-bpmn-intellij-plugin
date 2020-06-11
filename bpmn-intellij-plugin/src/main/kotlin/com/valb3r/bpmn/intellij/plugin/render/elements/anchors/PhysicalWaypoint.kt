@@ -17,6 +17,7 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.ACTIONS_ICO_SIZE
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ResizeViewTransform
 import java.awt.geom.Point2D
+import java.util.*
 
 class PhysicalWaypoint(
         override val elementId: DiagramElementId,
@@ -30,6 +31,10 @@ class PhysicalWaypoint(
 ): CircleAnchorElement(elementId, location, 3.0f, Colors.WAYPOINT_COLOR, state) {
 
     override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
+        if (isEdgeEnd()) {
+            return mutableMapOf()
+        }
+
         val delId = DiagramElementId("DEL:$elementId")
         val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, y, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
         state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
@@ -45,7 +50,7 @@ class PhysicalWaypoint(
         return mutableMapOf(delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, elementId))
     }
 
-    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
+    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
         val events = mutableListOf<Event>()
 
         events += DraggedToEvent(elementId, dx, dy, parentElementId, physicalPos) as Event
@@ -83,10 +88,16 @@ class PhysicalWaypoint(
     }
 
     override fun ifVisibleNoRenderIf(): Boolean {
-        return edgePhysicalSize - 1 == physicalPos || 0 == physicalPos
+        return !isRenderable()
     }
 
     override fun isRenderable(): Boolean {
-        return !(edgePhysicalSize - 1 == physicalPos || 0 == physicalPos)
+        return if (isEdgeEnd()) {
+            return !multipleElementsSelected()
+        } else {
+            true
+        }
     }
+
+    private fun isEdgeEnd() = edgePhysicalSize - 1 == physicalPos || 0 == physicalPos
 }

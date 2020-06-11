@@ -10,6 +10,7 @@ import java.awt.Rectangle
 import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
+import java.util.*
 
 class PlaneRenderElement(
         override val elementId: DiagramElementId,
@@ -22,7 +23,7 @@ class PlaneRenderElement(
         // NOP
     }
 
-    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
+    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
         return mutableListOf()
     }
 

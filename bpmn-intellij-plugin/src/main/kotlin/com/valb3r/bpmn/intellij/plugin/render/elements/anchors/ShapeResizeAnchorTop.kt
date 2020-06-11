@@ -3,12 +3,14 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.anchors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
+import java.util.*
 import javax.swing.Icon
 
 // TODO code duplication with ShapeResizeAnchorBottom
@@ -36,9 +38,9 @@ class ShapeResizeAnchorTop(
         )
     }
 
-    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
+    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
         val events = mutableListOf<Event>()
-        events += super.doOnDragEndWithoutChildren(dx, dy, droppedOn)
+        events += super.doOnDragEndWithoutChildren(dx, dy, droppedOn, allDroppedOn)
         events += onDragEndCallback()
         return events
     }

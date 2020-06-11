@@ -25,6 +25,7 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTra
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
+import java.util.*
 
 private const val WAYPOINT_LEN = 40.0f
 
@@ -42,7 +43,7 @@ abstract class ShapeRenderElement(
         val name = props?.get(PropertyType.NAME)?.value as String?
 
         state.ctx.interactionContext.dragEndCallbacks[elementId] = {
-            dx: Float, dy: Float, id: BpmnElementId? -> onDragEnd(dx, dy, id)
+            dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId> -> onDragEnd(dx, dy, droppedOn, allDroppedOn)
         }
 
         return doRender(ctx, ShapeCtx(shape.id, elem, currentRect(ctx.canvas.camera), props, name))
@@ -93,12 +94,12 @@ abstract class ShapeRenderElement(
         // NOP
     }
 
-    override fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
+    override fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
         // Avoid double dragging by cascade and then by children
-        val result = doOnDragEndWithoutChildren(dx, dy, null)
+        val result = doOnDragEndWithoutChildren(dx, dy, null, sortedMapOf())
         val alreadyDraggedLocations = result.filterIsInstance<LocationUpdateWithId>().map { it.diagramElementId }.toMutableSet()
         children.forEach {
-            for (event in it.onDragEnd(dx, dy, null)) {
+            for (event in it.onDragEnd(dx, dy, null, sortedMapOf())) {
                 handleChildDrag(event, alreadyDraggedLocations, result)
             }
         }
@@ -107,7 +108,7 @@ abstract class ShapeRenderElement(
         return result
     }
 
-    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
+    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
         val events = mutableListOf<Event>()
         events += DraggedToEvent(elementId, dx, dy, null, null)
         events += cascadeTo

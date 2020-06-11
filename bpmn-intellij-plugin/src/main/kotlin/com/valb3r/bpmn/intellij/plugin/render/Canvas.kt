@@ -17,6 +17,7 @@ import java.awt.RenderingHints
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
+import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.swing.JPanel
 import kotlin.math.abs
@@ -215,7 +216,13 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
             val dx = interactionCtx.dragCurrent.x - interactionCtx.dragStart.x
             val dy = interactionCtx.dragCurrent.y - interactionCtx.dragStart.y
             updateEventsRegistry().addEvents(interactionCtx.draggedIds.flatMap {
-                interactionCtx.dragEndCallbacks[it]?.invoke(dx, dy, bpmnElemsUnderDragCurrent()) ?: emptyList()
+                val droppedOn = bpmnElemsUnderDragCurrent()
+                interactionCtx.dragEndCallbacks[it]?.invoke(
+                        dx,
+                        dy,
+                        if (droppedOn.isEmpty()) null else droppedOn[droppedOn.firstKey()],
+                        droppedOn)
+                        ?: emptyList()
             })
         }
 
@@ -268,7 +275,7 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(targetX, targetY), selectedAnchors)
     }
 
-    private fun bpmnElemsUnderDragCurrent(): BpmnElementId? {
+    private fun bpmnElemsUnderDragCurrent(): SortedMap<AreaType, BpmnElementId> {
         val onScreen = camera.toCameraView(interactionCtx.dragCurrent)
         val cursor = cursorRect(onScreen)
         // Correct order would require non-layered but computed z-index
@@ -277,15 +284,19 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
                 ?.filter { it.value.area.intersects(cursor) }
                 ?.toList()
                 ?.sortedBy { indexes[it.second.areaType] }
-                ?.map { it.first }
+                ?.filter { !interactionCtx.draggedIds.contains(it.first) && !selectedElements.contains(it.first) } ?: emptyList()
 
-        return elems?.map { stateProvider.currentState().elementByDiagramId[it] }
-                ?.filterNotNull()
-                ?.map { stateProvider.currentState().elementByBpmnId[it] }
-                ?.filter { it?.element !is BpmnSequenceFlow }
-                ?.filterNotNull()
-                ?.map { it.id }
-                ?.firstOrNull()
+        val result = sortedMapOf<AreaType, BpmnElementId>()
+        for (elem in elems) {
+            val bpmnId = stateProvider.currentState().elementByDiagramId[elem.first] ?: continue
+            val bpmnElem = stateProvider.currentState().elementByBpmnId[bpmnId] ?: continue
+            if (bpmnElem.element is BpmnSequenceFlow) {
+                continue
+            }
+            result[elem.second.areaType] = bpmnId
+        }
+
+        return result
     }
 
     private fun parentableElemUnderCursor(cursorPoint: Point2D.Float): BpmnElementId {

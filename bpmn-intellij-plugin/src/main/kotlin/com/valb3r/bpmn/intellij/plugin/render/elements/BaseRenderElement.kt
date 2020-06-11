@@ -4,6 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
@@ -14,6 +15,7 @@ import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
+import java.util.*
 import kotlin.math.abs
 
 val EPSILON = 0.1f
@@ -80,9 +82,9 @@ abstract class BaseRenderElement(
         return result
     }
 
-    open fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event>  {
-        val result = doOnDragEndWithoutChildren(dx, dy, droppedOn)
-        children.forEach { result += it.onDragEnd(dx, dy, droppedOn) }
+    open fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event>  {
+        val result = doOnDragEndWithoutChildren(dx, dy, droppedOn, allDroppedOn)
+        children.forEach { result += it.onDragEnd(dx, dy, droppedOn, allDroppedOn) }
         viewTransform = NullViewTransform()
         return result
     }
@@ -138,7 +140,7 @@ abstract class BaseRenderElement(
     }
 
     abstract fun doDragToWithoutChildren(dx: Float, dy: Float)
-    abstract fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event>
+    abstract fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event>
 
     abstract fun doResizeWithoutChildren(dw: Float, dh: Float)
     abstract fun doResizeEndWithoutChildren(dw: Float, dh: Float): MutableList<Event>

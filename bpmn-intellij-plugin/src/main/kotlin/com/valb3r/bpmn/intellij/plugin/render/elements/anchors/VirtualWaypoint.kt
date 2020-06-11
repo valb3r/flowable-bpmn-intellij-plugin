@@ -6,8 +6,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.events.NewWaypointsEvent
+import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
+import java.util.*
 
 class VirtualWaypoint(
         override val elementId: DiagramElementId,
@@ -17,7 +19,7 @@ class VirtualWaypoint(
         state: RenderState
 ): CircleAnchorElement(elementId, location, 3.0f, Colors.MID_WAYPOINT_COLOR, state) {
 
-    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?): MutableList<Event> {
+    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
         if (!isActiveOrDragged()) {
             return mutableListOf()
         }
