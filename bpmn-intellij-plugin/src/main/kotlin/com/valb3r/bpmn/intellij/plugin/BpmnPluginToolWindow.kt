@@ -17,6 +17,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.IntelliJFileCommitter
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
+import com.valb3r.bpmn.intellij.plugin.langinjection.registerCurrentFile
 import com.valb3r.bpmn.intellij.plugin.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.render.Canvas
@@ -65,6 +66,7 @@ class BpmnPluginToolWindow {
 
         setupUiBeforeRun()
         val virtualFile = bpmnFile.virtualFile
+        registerCurrentFile(bpmnFile)
         this.canvasBuilder.build(
                 { IntelliJFileCommitter(it, context.project, virtualFile) },
                 FlowableParser(),

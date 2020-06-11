@@ -5,8 +5,16 @@ import com.intellij.lang.injection.MultiHostInjector
 import com.intellij.lang.injection.MultiHostRegistrar
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.intellij.psi.PsiLiteralExpression
+import java.util.concurrent.atomic.AtomicReference
+
+private val currentFile = AtomicReference<PsiFile>()
+
+fun registerCurrentFile(file: PsiFile) {
+    currentFile.set(file)
+}
 
 class FlowableDelegateExpressionUiInjector: MultiHostInjector {
 
@@ -16,6 +24,12 @@ class FlowableDelegateExpressionUiInjector: MultiHostInjector {
 
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, context: PsiElement) {
         if (context !is PsiLanguageInjectionHost) {
+            return
+        }
+
+        val expectedFile = currentFile.get() ?: return
+
+        if (context.containingFile != expectedFile && context.containingFile?.context?.containingFile != expectedFile) {
             return
         }
 
