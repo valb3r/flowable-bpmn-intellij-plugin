@@ -41,12 +41,13 @@ abstract class BaseEdgeRenderElement(
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val area = Area()
 
-        val updatedAnchors = anchors.filter { it is PhysicalWaypoint || (!multipleElementsSelected() && it.isActiveOrDragged()) }.map { it.transformedLocation }
+        val activeWaypoints = anchors.filter { it is PhysicalWaypoint || (!multipleElementsSelected() && it.isActiveOrDragged()) }
+        val updatedAnchors = activeWaypoints.map { it.transformedLocation }
 
         updatedAnchors.forEachIndexed {pos, waypoint ->
             when {
-                pos == updatedAnchors.size - 1 -> area.add(ctx.canvas.drawLineWithArrow(updatedAnchors[pos - 1], waypoint, color(isActive(), edgeColor)))
-                pos > 0 -> area.add(ctx.canvas.drawLine(updatedAnchors[pos - 1], waypoint, color(isActive(), edgeColor)))
+                pos == updatedAnchors.size - 1 -> area.add(ctx.canvas.drawLineWithArrow(updatedAnchors[pos - 1], waypoint, color(isActiveEdge(pos, activeWaypoints), edgeColor)))
+                pos > 0 -> area.add(ctx.canvas.drawLine(updatedAnchors[pos - 1], waypoint, color(isActiveEdge(pos, activeWaypoints), edgeColor)))
             }
         }
 
@@ -90,6 +91,17 @@ abstract class BaseEdgeRenderElement(
                 maxX - minX,
                 maxY - minY
         )
+    }
+
+    private fun isActiveEdge(endPos: Int, activeAnchors: List<AnchorElement>): Boolean {
+        if (isActive()) {
+            return true
+        }
+        val leftAnchorActive = activeAnchors[endPos - 1].isActive()
+        val rightAnchorActive = activeAnchors[endPos].isActive()
+        val anyAnchorActive = leftAnchorActive || rightAnchorActive
+
+        return (leftAnchorActive && rightAnchorActive) || (anyAnchorActive && endPos == activeAnchors.size - 1) || (anyAnchorActive && endPos - 1 == 0)
     }
 
     private fun computeAnchors(): List<AnchorElement> {
