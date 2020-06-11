@@ -31,7 +31,7 @@ class PhysicalWaypoint(
 ): CircleAnchorElement(elementId, location, 3.0f, Colors.WAYPOINT_COLOR, state) {
 
     override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
-        if (isEdgeEnd()) {
+        if (isEdgeBeginOrEnd()) {
             return mutableMapOf()
         }
 
@@ -92,12 +92,12 @@ class PhysicalWaypoint(
     }
 
     override fun isRenderable(): Boolean {
-        return if (isEdgeEnd()) {
+        return if (isEdgeBeginOrEnd()) {
             return !multipleElementsSelected()
         } else {
             true
         }
     }
 
-    private fun isEdgeEnd() = edgePhysicalSize - 1 == physicalPos || 0 == physicalPos
+    private fun isEdgeBeginOrEnd() = edgePhysicalSize - 1 == physicalPos || 0 == physicalPos
 }

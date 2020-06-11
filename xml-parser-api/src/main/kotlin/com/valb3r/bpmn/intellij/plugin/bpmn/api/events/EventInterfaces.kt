@@ -65,6 +65,11 @@ interface BpmnEdgeObjectAdded: Event {
     val props: Map<PropertyType, Property>
 }
 
+interface BpmnParentChanged: Event {
+    val bpmnElementId: BpmnElementId
+    val newParentId: BpmnElementId
+}
+
 interface PropertyUpdateWithId: Event {
     val bpmnElementId: BpmnElementId
     val property: PropertyType

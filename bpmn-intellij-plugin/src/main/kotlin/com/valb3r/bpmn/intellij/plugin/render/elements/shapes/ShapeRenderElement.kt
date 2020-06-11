@@ -11,16 +11,13 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.LocationUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.events.BpmnEdgeObjectAddedEvent
-import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
-import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
-import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
+import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.ACTIONS_ICO_SIZE
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
-import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationToWaypoint
+import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationOrChangesToWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTransform
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.geom.Point2D
@@ -96,10 +93,10 @@ abstract class ShapeRenderElement(
 
     override fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
         // Avoid double dragging by cascade and then by children
-        val result = doOnDragEndWithoutChildren(dx, dy, null, sortedMapOf())
+        val result = doOnDragEndWithoutChildren(dx, dy, null, allDroppedOn)
         val alreadyDraggedLocations = result.filterIsInstance<LocationUpdateWithId>().map { it.diagramElementId }.toMutableSet()
         children.forEach {
-            for (event in it.onDragEnd(dx, dy, null, sortedMapOf())) {
+            for (event in it.onDragEnd(dx, dy, null, sortedMapOf())) { // Children do not change parent - sortedMapOf()
                 handleChildDrag(event, alreadyDraggedLocations, result)
             }
         }
@@ -111,9 +108,25 @@ abstract class ShapeRenderElement(
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
         val events = mutableListOf<Event>()
         events += DraggedToEvent(elementId, dx, dy, null, null)
-        events += cascadeTo
-                .filter { target -> target.cascadeSource == shape.bpmnElement }
+        val cascadeTargets = cascadeTo.filter { target -> target.cascadeSource == shape.bpmnElement } // TODO check if this comparison is still needed
+        events += cascadeTargets
                 .map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
+
+        val nests = allDroppedOn[AreaType.SHAPE_THAT_NESTS]
+        val parentProcess = allDroppedOn[AreaType.PARENT_PROCESS_SHAPE]
+        val currentParent = parents.firstOrNull()
+
+        if (null != nests && nests != currentParent) {
+            events += BpmnParentChangedEvent(shape.bpmnElement, nests)
+            // Cascade parent change to waypoint owning edge
+            events += cascadeTargets.mapNotNull { state.currentState.elementByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, nests) }
+
+        } else if (null != parentProcess && parentProcess != parents.firstOrNull()) {
+            events += BpmnParentChangedEvent(shape.bpmnElement, parentProcess)
+            // Cascade parent change to waypoint owning edge
+            events += cascadeTargets.mapNotNull { state.currentState.elementByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, parentProcess) }
+        }
+
         return events
     }
 
@@ -189,9 +202,9 @@ abstract class ShapeRenderElement(
         return viewTransform.transform(shape.rectBounds())
     }
 
-    protected fun computeCascadables(): Set<CascadeTranslationToWaypoint> {
+    protected fun computeCascadables(): Set<CascadeTranslationOrChangesToWaypoint> {
         val idCascadesTo = setOf(PropertyType.SOURCE_REF, PropertyType.TARGET_REF)
-        val result = mutableSetOf<CascadeTranslationToWaypoint>()
+        val result = mutableSetOf<CascadeTranslationOrChangesToWaypoint>()
         val elemToDiagramId = mutableMapOf<BpmnElementId, MutableSet<DiagramElementId>>()
         state.currentState.elementByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
         state.currentState.elemPropertiesByStaticElementId.forEach { (owner, props) ->
@@ -205,13 +218,13 @@ abstract class ShapeRenderElement(
         return result
     }
 
-    protected fun computeCascadeToWaypoint(state: CurrentState, cascadeTrigger: BpmnElementId, owner: BpmnElementId, type: PropertyType): Collection<CascadeTranslationToWaypoint> {
+    protected fun computeCascadeToWaypoint(state: CurrentState, cascadeTrigger: BpmnElementId, owner: BpmnElementId, type: PropertyType): Collection<CascadeTranslationOrChangesToWaypoint> {
         return state.edges
                 .filter { it.bpmnElement == owner }
                 .map {
                     val index = if (type == PropertyType.SOURCE_REF) 0 else it.waypoint.size - 1
                     val waypoint = it.waypoint[index]
-                    CascadeTranslationToWaypoint(cascadeTrigger, waypoint.id, Point2D.Float(waypoint.x, waypoint.y), it.id, waypoint.internalPhysicalPos)
+                    CascadeTranslationOrChangesToWaypoint(cascadeTrigger, waypoint.id, Point2D.Float(waypoint.x, waypoint.y), it.id, waypoint.internalPhysicalPos)
                 }
     }
 }

@@ -288,9 +288,9 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
 
         val result = sortedMapOf<AreaType, BpmnElementId>()
         for (elem in elems) {
-            val bpmnId = stateProvider.currentState().elementByDiagramId[elem.first] ?: continue
-            val bpmnElem = stateProvider.currentState().elementByBpmnId[bpmnId] ?: continue
-            if (bpmnElem.element is BpmnSequenceFlow) {
+            val bpmnId = setOf(stateProvider.currentState().elementByDiagramId[elem.first], elem.second.bpmnElementId).filterNotNull().firstOrNull() ?: continue
+            val bpmnElem = stateProvider.currentState().elementByBpmnId[bpmnId]
+            if (bpmnElem?.element is BpmnSequenceFlow) {
                 continue
             }
             result[elem.second.areaType] = bpmnId
