@@ -11,7 +11,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBodyBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -64,82 +67,41 @@ internal class UiEditorLightE2ETest {
     private val startElemX = 0.0f
     private val startElemY = 0.0f
     private val serviceTaskSize = 60.0f
+    private val subProcessElemX = 0.0f
+    private val subProcessElemY = 0.0f
+    private val subProcessSize = 200.0f
 
     private val endElemX = 10 * serviceTaskSize
     private val endElemY = 0.0f
     private val endElemMidY = serviceTaskSize / 2.0f
 
-    private val planeElementBpmnId = BpmnElementId("planeElementId")
     private val diagramMainElementId = DiagramElementId("diagramMainElement")
     private val diagramMainPlaneElementId = DiagramElementId("diagramMainPlaneElement")
 
+    private val subprocessBpmnId = BpmnElementId("subProcess")
     private val serviceTaskStartBpmnId = BpmnElementId("startServiceTask")
     private val serviceTaskEndBpmnId = BpmnElementId("endServiceTask")
+    private val subprocessDiagramId = DiagramElementId("DIAGRAM-subProcess")
     private val serviceTaskStartDiagramId = DiagramElementId("DIAGRAM-startServiceTask")
     private val serviceTaskEndDiagramId = DiagramElementId("DIAGRAM-endServiceTask")
 
     private val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId, null, null, null, null, null, null, null, null, null, null, null)
+    private val bpmnSubProcess = BpmnSubProcess(subprocessBpmnId, null, null, null, null)
     private val bpmnServiceTaskEnd = BpmnServiceTask(serviceTaskEndBpmnId, null, null, null, null, null, null, null, null, null, null, null)
     private val diagramServiceTaskStart = ShapeElement(serviceTaskStartDiagramId, bpmnServiceTaskStart.id, BoundsElement(startElemX, startElemY, serviceTaskSize, serviceTaskSize))
     private val diagramServiceTaskEnd = ShapeElement(serviceTaskEndDiagramId, bpmnServiceTaskEnd.id, BoundsElement(endElemX, endElemY, serviceTaskSize, serviceTaskSize))
+    private val diagramSubProcess = ShapeElement(subprocessDiagramId, subprocessBpmnId, BoundsElement(subProcessElemX, subProcessElemY, subProcessSize, subProcessSize))
 
     private val icons = mock<IconProvider>()
     private val renderer = spy(DefaultBpmnProcessRenderer(icons))
     private val canvasBuilder = CanvasBuilder(renderer)
-    private val canvas = Canvas(DefaultCanvasConstants().copy(baseCursorSize = 3.0f)) // Using small cursor size for clarity
+    private val canvas = Canvas(icons, DefaultCanvasConstants().copy(baseCursorSize = 3.0f)) // Using small cursor size for clarity
     private var renderResult: Map<DiagramElementId, AreaWithZindex>? = null
 
     private val basicProcess = BpmnProcessObject(
             BpmnProcess(
                     BpmnElementId("processElem"),
                     "mainProcess",
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
                     null,
                     null,
                     null,
@@ -177,6 +139,8 @@ internal class UiEditorLightE2ETest {
         whenever(icons.gear).thenReturn(mock())
         whenever(icons.redo).thenReturn(mock())
         whenever(icons.undo).thenReturn(mock())
+        whenever(icons.dragToResizeBottom).thenReturn(mock())
+        whenever(icons.dragToResizeTop).thenReturn(mock())
 
         doAnswer {
             val result = it.callRealMethod()!! as Map<DiagramElementId, AreaWithZindex>
@@ -251,7 +215,12 @@ internal class UiEditorLightE2ETest {
             val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
             lastValue.shouldContainSame(listOf(edgeBpmn, shapeBpmn, draggedTo, propUpdated))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            shapeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnServiceTask>()
+            shapeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -285,7 +254,8 @@ internal class UiEditorLightE2ETest {
             val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
             lastValue.shouldContainSame(listOf(edgeBpmn, draggedTo, propUpdated))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -319,7 +289,8 @@ internal class UiEditorLightE2ETest {
             val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
             lastValue.shouldContainSame(listOf(edgeBpmn, draggedTo, propUpdated))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -350,20 +321,26 @@ internal class UiEditorLightE2ETest {
 
         argumentCaptor<List<Event>>().apply {
             verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(4)
+            lastValue.shouldHaveSize(5)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val draggedToMid = lastValue.filterIsInstance<DraggedToEvent>().first().shouldNotBeNull()
+            val intermediateTargetChangeToParentPropUpd = lastValue.filterIsInstance<StringValueUpdatedEvent>().first().shouldNotBeNull()
             val draggedToTarget = lastValue.filterIsInstance<DraggedToEvent>().last().shouldNotBeNull()
-            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
-            lastValue.shouldContainSame(listOf(edgeBpmn, draggedToMid, draggedToTarget, propUpdated))
+            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().last().shouldNotBeNull()
+            lastValue.shouldContainSame(listOf(edgeBpmn, draggedToMid, intermediateTargetChangeToParentPropUpd, draggedToTarget, propUpdated))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
             draggedToMid.diagramElementId.shouldBeEqualTo(lastEndpointId)
             draggedToMid.dx.shouldBeNear(midPoint.x - point.x, 0.1f)
             draggedToMid.dy.shouldBeNear(midPoint.y - point.y, 0.1f)
+
+            intermediateTargetChangeToParentPropUpd.bpmnElementId.shouldBe(edgeBpmn.bpmnObject.id)
+            intermediateTargetChangeToParentPropUpd.property.shouldBe(PropertyType.TARGET_REF)
+            intermediateTargetChangeToParentPropUpd.newValue.shouldBe(basicProcess.process.id.id)
 
             draggedToTarget.diagramElementId.shouldBeEqualTo(lastEndpointId)
             draggedToTarget.dx.shouldBeNear(endElemX - point.x - draggedToMid.dx, 0.1f)
@@ -393,7 +370,8 @@ internal class UiEditorLightE2ETest {
             val newWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().shouldHaveSingleItem()
             lastValue.shouldContainSame(listOf(edgeBpmn, newWaypoint))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -445,7 +423,8 @@ internal class UiEditorLightE2ETest {
             val newQuarterWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().last()
             lastValue.shouldContainSame(listOf(edgeBpmn, newMidWaypoint, newQuarterWaypoint))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -481,7 +460,8 @@ internal class UiEditorLightE2ETest {
             val dragEdge = lastValue.filterIsInstance<DraggedToEvent>().last()
             lastValue.shouldContainSame(listOf(edgeBpmn, dragTask, dragEdge))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -511,7 +491,8 @@ internal class UiEditorLightE2ETest {
             val cascadeIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().last()
             lastValue.shouldContainSame(listOf(edgeBpmn, origIdUpdate, cascadeIdUpdate))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -548,7 +529,8 @@ internal class UiEditorLightE2ETest {
             val dragEdge = lastValue.filterIsInstance<DraggedToEvent>().last()
             lastValue.shouldContainSame(listOf(edgeBpmn, origIdUpdate, cascadeIdUpdate, dragTask, dragEdge))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -618,6 +600,7 @@ internal class UiEditorLightE2ETest {
         val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
 
         val begin = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
+        canvas.click(begin) // unselect service task
         canvas.paintComponent(graphics)
         canvas.startSelectionOrDrag(begin)
         canvas.paintComponent(graphics)
@@ -644,7 +627,8 @@ internal class UiEditorLightE2ETest {
             val dragEdge = lastValue.filterIsInstance<DraggedToEvent>().last()
             lastValue.shouldContainSame(listOf(edgeBpmn, dragStart, dragEdge))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -676,7 +660,8 @@ internal class UiEditorLightE2ETest {
             val removeEdgeDiagram = lastValue.filterIsInstance<DiagramElementRemovedEvent>().first()
             lastValue.shouldContainSame(listOf(edgeBpmn, removeEdgeDiagram, removeEdgeBpmn))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -698,6 +683,11 @@ internal class UiEditorLightE2ETest {
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
 
+        // New renderer does not keep edge selected
+        // Select edge:
+        canvas.click(newLocation)
+        canvas.paintComponent(graphics)
+        // Select waypoint:
         canvas.click(newLocation)
         canvas.paintComponent(graphics)
         val deleteElem = findExactlyOneDeleteElem().shouldNotBeNull()
@@ -711,7 +701,8 @@ internal class UiEditorLightE2ETest {
             val removeWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().last()
             lastValue.shouldContainSame(listOf(edgeBpmn, newWaypoint, removeWaypoint))
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -735,6 +726,7 @@ internal class UiEditorLightE2ETest {
 
         val begin = Point2D.Float(-10.0f, -10.0f)
         val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
+        canvas.click(begin) // de-select rectangle
         canvas.startSelectionOrDrag(begin)
         canvas.paintComponent(graphics)
 
@@ -758,7 +750,8 @@ internal class UiEditorLightE2ETest {
             val bpmnRemoved = lastValue.filterIsInstance<BpmnElementRemovedEvent>()
             lastValue.shouldContainSame(listOf(edgeBpmn) + diagramRemoved + bpmnRemoved)
 
-            val sequence = edgeBpmn.bpmnObject.shouldBeInstanceOf<BpmnSequenceFlow>()
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -768,6 +761,264 @@ internal class UiEditorLightE2ETest {
             bpmnRemoved.map { it.elementId.id }.shouldContainSame(
                     listOf("startServiceTask", addedEdge.bpmnObject.id.id, "endServiceTask")
             )
+        }
+    }
+
+    @Test
+    fun `Subprocess is selected as parent`() {
+        prepareOneSubProcessView()
+
+        canvas.paintComponent(graphics)
+
+        canvas
+                .parentableElementAt(Point2D.Float(subProcessElemX + subProcessSize / 2.0f, subProcessElemY + subProcessSize / 2.0f))
+                .shouldBe(subprocessBpmnId)
+    }
+
+    @Test
+    fun `Removing element from subprocess works`() {
+        prepareOneSubProcessWithTwoServiceTasksView()
+
+        clickOnId(serviceTaskStartDiagramId)
+        val deleteElem = findExactlyOneDeleteElem().shouldNotBeNull()
+        clickOnId(deleteElem)
+
+        renderResult.shouldNotBeNull().shouldNotHaveKey(serviceTaskStartDiagramId)
+        findFirstNewLinkElem().shouldBeNull()
+        findFirstDeleteElem().shouldBeNull()
+        renderResult.shouldNotBeNull().shouldHaveKey(serviceTaskEndDiagramId)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            firstValue.shouldContainSame(listOf(
+                    DiagramElementRemovedEvent(serviceTaskStartDiagramId),
+                    BpmnElementRemovedEvent(serviceTaskStartBpmnId))
+            )
+        }
+    }
+
+    @Test
+    fun `Adding link to element in subprocess works`() {
+        prepareOneSubProcessWithTwoServiceTasksView()
+
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
+
+        val intermediateX = 100.0f
+        val intermediateY = 100.0f
+        val newTaskId = newServiceTask(intermediateX, intermediateY)
+
+        clickOnId(addedEdge.edge.id)
+        val lastEndpointId = addedEdge.edge.waypoint.last().id
+        val point = clickOnId(lastEndpointId)
+        dragToAndVerifyButDontStop(point, Point2D.Float(intermediateX, intermediateY + serviceTaskSize / 2.0f), lastEndpointId)
+        canvas.stopDragOrSelect()
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(4)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val shapeBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().shouldHaveSingleItem()
+            val draggedTo = lastValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
+            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            lastValue.shouldContainSame(listOf(edgeBpmn, shapeBpmn, draggedTo, propUpdated))
+
+            shapeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnServiceTask>()
+            shapeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(subprocessBpmnId)
+
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+
+            draggedTo.diagramElementId.shouldBe(lastEndpointId)
+            draggedTo.dx.shouldBeNear(intermediateX - point.x, 0.1f)
+            draggedTo.dy.shouldBeNear(intermediateY + serviceTaskSize / 2.0f - point.y, 0.1f)
+
+            propUpdated.bpmnElementId.shouldBe(edgeBpmn.bpmnObject.id)
+            propUpdated.property.shouldBe(PropertyType.TARGET_REF)
+            propUpdated.newValue.shouldBeEqualTo(newTaskId.id)
+        }
+    }
+
+    @Test
+    fun `Subprocess dragging cascades to service tasks and edges`() {
+        val dx = 30.0f
+        val dy = 30.0f
+        val midDx = 20.0f
+        val midDy = 20.0f
+
+        prepareOneSubProcessWithTwoServiceTasksView()
+
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
+        // Link to second sub-task
+        clickOnId(addedEdge.edge.id)
+        val lastEndpointId = addedEdge.edge.waypoint.last().id
+        val point = clickOnId(lastEndpointId)
+        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX, endElemMidY), lastEndpointId)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+        // Add midpoint
+        clickOnId(addedEdge.edge.id)
+        val newWaypointAnchor = addedEdge.edge.waypoint.first { !it.physical }.id
+        val midPoint = clickOnId(newWaypointAnchor)
+        dragToAndVerifyButDontStop(midPoint, Point2D.Float(midPoint.x + midDx, midPoint.y + midDy), newWaypointAnchor)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+        // Click on subprocess
+        val subProcessPoint = clickOnId(subprocessDiagramId)
+        dragToAndVerifyButDontStop(subProcessPoint, Point2D.Float(subProcessPoint.x + dx, subProcessPoint.y + dy), subprocessDiagramId)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(4)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(10)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val draggedToEdge = lastValue.filterIsInstance<DraggedToEvent>().first()
+            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            val newWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().first()
+            val allDraggeds = lastValue.filterIsInstance<DraggedToEvent>()
+            val cascadedDrags = allDraggeds.subList(1, allDraggeds.size).shouldHaveSize(6)
+            val subprocessDragSelf = cascadedDrags.filter { it.diagramElementId == subprocessDiagramId }.shouldHaveSingleItem()
+            val subprocessDragStartServiceTask = cascadedDrags.filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()
+            val subprocessDragEndServiceTask = cascadedDrags.filter { it.diagramElementId == serviceTaskEndDiagramId }.shouldHaveSingleItem()
+            val subprocessDragEdgeStart = cascadedDrags.filter { it.parentElementId == addedEdge.edge.id && it.internalPos == 0 }.shouldHaveSingleItem()
+            val subprocessDragEdgeMid = cascadedDrags.filter { it.parentElementId == addedEdge.edge.id && it.internalPos == 1 }.shouldHaveSingleItem()
+            val subprocessDragEdgeEnd = cascadedDrags.filter { it.parentElementId == addedEdge.edge.id && it.internalPos == 2 }.shouldHaveSingleItem()
+
+            edgeBpmn.bpmnObject.parent.shouldBe(subprocessBpmnId)
+            edgeBpmn.bpmnObject.id.shouldBe(addedEdge.bpmnObject.id)
+            edgeBpmn.props[PropertyType.SOURCE_REF].shouldNotBeNull().value.shouldBe(serviceTaskStartBpmnId.id)
+
+            draggedToEdge.parentElementId.shouldBe(addedEdge.edge.id)
+
+            propUpdated.bpmnElementId.shouldBe(addedEdge.bpmnObject.id)
+            propUpdated.property.shouldBe(PropertyType.TARGET_REF)
+            propUpdated.newValue.shouldBeEqualTo(serviceTaskEndBpmnId.id)
+
+            newWaypoint.edgeElementId.shouldBeEqualTo(addedEdge.edge.id)
+
+            setOf(subprocessDragSelf, subprocessDragStartServiceTask, subprocessDragEndServiceTask, subprocessDragEdgeStart, subprocessDragEdgeMid, subprocessDragEdgeEnd)
+                    .forEach {
+                        it.dx.shouldBeEqualTo(dx)
+                        it.dy.shouldBeEqualTo(dy)
+                    }
+        }
+    }
+
+    @Test
+    fun `Single element can be draggable in subprocess`() {
+        val dx = 30.0f
+        val dy = 30.0f
+        prepareOneSubProcessWithTwoServiceTasksView()
+
+        val serviceTaskPoint = clickOnId(serviceTaskStartDiagramId)
+        dragToAndVerifyButDontStop(serviceTaskPoint, Point2D.Float(serviceTaskPoint.x + dx, serviceTaskPoint.y + dy), serviceTaskStartDiagramId)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(1)
+            val serviceTaskDragged = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()
+            serviceTaskDragged.dx.shouldBeEqualTo(dx)
+            serviceTaskDragged.dy.shouldBeEqualTo(dy)
+        }
+    }
+
+    @Test
+    fun `Rectangle selection dragging in subprocess`() {
+        val dx = 30.0f
+        val dy = 30.0f
+        val midDx = 10.0f
+        val midDy = 10.0f
+
+        prepareOneSubProcessWithTwoServiceTasksView()
+
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
+        // Link to second sub-task
+        clickOnId(addedEdge.edge.id)
+        val lastEndpointId = addedEdge.edge.waypoint.last().id
+        val point = clickOnId(lastEndpointId)
+        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX, endElemMidY), lastEndpointId)
+        canvas.stopDragOrSelect()
+        // Add midpoint
+        clickOnId(addedEdge.edge.id)
+        val newWaypointAnchor = addedEdge.edge.waypoint.first { !it.physical }.id
+        val midPoint = clickOnId(newWaypointAnchor)
+        dragToAndVerifyButDontStop(midPoint, Point2D.Float(midPoint.x + midDx, midPoint.y + midDy), newWaypointAnchor)
+        canvas.stopDragOrSelect()
+        // Select rectangle
+        val begin = Point2D.Float(-10.0f, -10.0f)
+        canvas.click(begin)
+        canvas.startSelectionOrDrag(begin)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize + 10.0f, endElemY + serviceTaskSize + 10.0f))
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+        // Drag rectangle
+        val dragStart = elementCenter(serviceTaskStartDiagramId)
+        canvas.startSelectionOrDrag(dragStart)
+        canvas.dragOrSelectWithLeftButton(dragStart, Point2D.Float(dragStart.x + dx, dragStart.y + dy))
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(4)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(9)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val draggedToEdge = lastValue.filterIsInstance<DraggedToEvent>().first()
+            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            val newWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().first()
+            val allDraggeds = lastValue.filterIsInstance<DraggedToEvent>()
+            val rectDrags = allDraggeds.subList(1, allDraggeds.size).shouldHaveSize(5)
+
+            val rectangleDragStartServiceTask = rectDrags.filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()
+            val rectangleDragEndServiceTask = rectDrags.filter { it.diagramElementId == serviceTaskEndDiagramId }.shouldHaveSingleItem()
+            val rectangleDragEdgeStart = rectDrags.filter { it.parentElementId == addedEdge.edge.id && it.internalPos == 0 }.shouldHaveSingleItem()
+            val rectangleDragEdgeMid = rectDrags.filter { it.parentElementId == addedEdge.edge.id && it.internalPos == 1 }.shouldHaveSingleItem()
+            val rectangleDragEdgeEnd = rectDrags.filter { it.parentElementId == addedEdge.edge.id && it.internalPos == 2 }.shouldHaveSingleItem()
+
+            edgeBpmn.bpmnObject.parent.shouldBe(subprocessBpmnId)
+            edgeBpmn.bpmnObject.id.shouldBe(addedEdge.bpmnObject.id)
+            edgeBpmn.props[PropertyType.SOURCE_REF].shouldNotBeNull().value.shouldBe(serviceTaskStartBpmnId.id)
+
+            draggedToEdge.parentElementId.shouldBe(addedEdge.edge.id)
+
+            propUpdated.bpmnElementId.shouldBe(addedEdge.bpmnObject.id)
+            propUpdated.property.shouldBe(PropertyType.TARGET_REF)
+            propUpdated.newValue.shouldBeEqualTo(serviceTaskEndBpmnId.id)
+
+            newWaypoint.edgeElementId.shouldBeEqualTo(addedEdge.edge.id)
+
+            setOf(rectangleDragStartServiceTask, rectangleDragEndServiceTask, rectangleDragEdgeStart, rectangleDragEdgeMid, rectangleDragEdgeEnd)
+                    .forEach {
+                        it.dx.shouldBeEqualTo(dx)
+                        it.dy.shouldBeEqualTo(dy)
+                    }
+        }
+    }
+
+    @Test
+    fun `Removing link from element in subprocess works`() {
+        prepareOneSubProcessWithTwoServiceTasksView()
+
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
+        clickOnId(addedEdge.edge.id)
+        val deleteElem = findExactlyOneDeleteElem().shouldNotBeNull()
+        clickOnId(deleteElem)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(3)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val removeShapeBpmn = lastValue.filterIsInstance<BpmnElementRemovedEvent>().shouldHaveSingleItem()
+            val removeDiagramBpmn = lastValue.filterIsInstance<DiagramElementRemovedEvent>().shouldHaveSingleItem()
+
+            edgeBpmn.bpmnObject.parent.shouldBe(subprocessBpmnId)
+            removeShapeBpmn.elementId.shouldBe(addedEdge.edge.bpmnElement)
+            removeDiagramBpmn.elementId.shouldBe(addedEdge.edge.id)
         }
     }
 
@@ -789,7 +1040,7 @@ internal class UiEditorLightE2ETest {
                 bounds = BoundsElement(intermediateX, intermediateY, serviceTaskSize, serviceTaskSize)
         )
         updateEventsRegistry().addObjectEvent(
-                BpmnShapeObjectAddedEvent(task, shape, mapOf(PropertyType.ID to Property(task.id)))
+                BpmnShapeObjectAddedEvent(WithParentId(basicProcess.process.id, task), shape, mapOf(PropertyType.ID to Property(task.id)))
         )
 
         return task.id
@@ -840,11 +1091,16 @@ internal class UiEditorLightE2ETest {
     }
 
     private fun clickOnId(elemId: DiagramElementId): Point2D.Float {
+        val point = elementCenter(elemId)
+        canvas.click(point)
+        canvas.paintComponent(graphics)
+        return point
+    }
+
+    private fun elementCenter(elemId: DiagramElementId): Point2D.Float {
         val area = renderResult?.get(elemId).shouldNotBeNull()
         val bounds = area.area.bounds2D.shouldNotBeNull()
         val point = Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat())
-        canvas.click(point)
-        canvas.paintComponent(graphics)
         return point
     }
 
@@ -860,12 +1116,61 @@ internal class UiEditorLightE2ETest {
         renderResult?.get(serviceTaskEndDiagramId)!!.area.bounds2D.shouldBeEqualTo(Rectangle2D.Float(endElemX, endElemY, serviceTaskSize, serviceTaskSize))
     }
 
-    private fun prepareTwoServiceTaskView() {
+    private fun prepareOneSubProcessView() {
         val process = basicProcess.copy(
-                basicProcess.process.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd)),
+                basicProcess.process.copy(
+                        body = BpmnProcessBodyBuilder.builder()
+                                .setSubProcess(listOf(bpmnSubProcess))
+                                .create()
+                ),
                 listOf(DiagramElement(
                         diagramMainElementId,
-                        PlaneElement(diagramMainPlaneElementId, planeElementBpmnId, listOf(diagramServiceTaskStart, diagramServiceTaskEnd), listOf()))
+                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSubProcess), listOf()))
+                )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
+    private fun prepareOneSubProcessWithTwoServiceTasksView() {
+        val process = basicProcess.copy(
+                basicProcess.process.copy(
+                        body = BpmnProcessBodyBuilder.builder()
+                                .setServiceTask(listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
+                                .setSubProcess(listOf(bpmnSubProcess))
+                                .create(),
+                        children = mapOf(
+                                subprocessBpmnId to BpmnProcessBodyBuilder.builder()
+                                        .setServiceTask(listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
+                                        .create()
+                        )
+                ),
+                listOf(
+                        DiagramElement(
+                                diagramMainElementId,
+                                PlaneElement(
+                                        diagramMainPlaneElementId,
+                                        basicProcess.process.id,
+                                        listOf(diagramSubProcess, diagramServiceTaskStart, diagramServiceTaskEnd),
+                                        listOf()
+                                )
+                        )
+                )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
+    private fun prepareTwoServiceTaskView() {
+        val process = basicProcess.copy(
+                basicProcess.process.copy(
+                        body = BpmnProcessBodyBuilder.builder()
+                                .setServiceTask(listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
+                                .create()
+                ),
+                listOf(DiagramElement(
+                        diagramMainElementId,
+                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, diagramServiceTaskEnd), listOf()))
                 )
         )
         whenever(parser.parse("")).thenReturn(process)

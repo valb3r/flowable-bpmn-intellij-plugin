@@ -7,6 +7,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.CDATA_FIELD
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.ProcessBody
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -16,7 +17,7 @@ data class AdHocSubProcess(
         @JacksonXmlProperty(isAttribute = true) val ordering: String?,
         val documentation: String?,
         val completionCondition: CompletionCondition?
-): BpmnMappable<BpmnAdHocSubProcess> {
+): BpmnMappable<BpmnAdHocSubProcess>, ProcessBody() {
 
     override fun toElement(): BpmnAdHocSubProcess {
         return Mappers.getMapper(Mapping::class.java).convertToDto(this)

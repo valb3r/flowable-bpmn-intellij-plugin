@@ -2,9 +2,9 @@ package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
@@ -14,12 +14,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import org.amshove.kluent.shouldNotBeNull
 import org.junit.jupiter.api.Test
+import java.awt.geom.Point2D
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
 
 
 internal class FlowableParserTest {
 
+    private val parentElemId = BpmnElementId("duplicates")
     private val bmpnElemId = BpmnElementId(UUID.randomUUID().toString())
     private val diagramElementId = DiagramElementId(UUID.randomUUID().toString())
     
@@ -37,6 +39,15 @@ internal class FlowableParserTest {
         val processObject: BpmnProcessObject?
 
         processObject = FlowableParser().parse("duplicates.bpmn20.xml".asResource()!!)
+
+        processObject.shouldNotBeNull()
+    }
+
+    @Test
+    fun `XML process with nested subprocess elements of same type should be parseable without error`() {
+        val processObject: BpmnProcessObject?
+
+        processObject = FlowableParser().parse("nested.bpmn20.xml".asResource()!!)
 
         processObject.shouldNotBeNull()
     }
@@ -93,7 +104,7 @@ internal class FlowableParserTest {
         val updated = FlowableParser().update(
                 "duplicates.bpmn20.xml".asResource()!!,
                 listOf(BpmnShapeObjectAddedEvent(
-                        BpmnExclusiveGateway(bmpnElemId, "Exclusive gateway", null, null),
+                        WithParentId(parentElemId, BpmnExclusiveGateway(bmpnElemId, "Exclusive gateway", null, null)),
                         ShapeElement(diagramElementId, bmpnElemId, BoundsElement(0.0f, 0.0f, 30.0f, 40.0f)),
                         mapOf(
                                 PropertyType.ID to Property(bmpnElemId.id),
@@ -112,7 +123,7 @@ internal class FlowableParserTest {
                 "duplicates.bpmn20.xml".asResource()!!,
                 listOf(
                         BpmnEdgeObjectAddedEvent(
-                                BpmnSequenceFlow(bmpnElemId, "Exclusive gateway", null, "source", "target", null),
+                                WithParentId(parentElemId, BpmnSequenceFlow(bmpnElemId, "Exclusive gateway", null, "source", "target", null)),
                                 EdgeElementState(
                                         diagramElementId,
                                         bmpnElemId,
@@ -129,6 +140,29 @@ internal class FlowableParserTest {
                         )
                 )
         )
+
+        updated.shouldNotBeNull()
+    }
+
+    @Test
+    fun `XML should properly handle element resize event`() {
+        val updated = FlowableParser().update(
+                "nested.bpmn20.xml".asResource()!!,
+                listOf(BpmnShapeResizedAndMovedEvent(DiagramElementId("BPMNShape_sid-0E2068A3-FEF1-46A1-AD2B-7DCD0003AA65"), 10.0f, -10.0f, 0.5f, 0.5f))
+        )
+
+        updated.shouldNotBeNull()
+    }
+
+    @Test
+    fun `XML should properly handle parent change event`() {
+        val updated = FlowableParser().update(
+                "nested.bpmn20.xml".asResource()!!,
+                listOf(BpmnParentChangedEvent(
+                        BpmnElementId("sid-57A163D8-81CB-4B71-B74C-DD4A152B6653"),
+                        BpmnElementId("sid-5EEB495F-ACAC-4C04-99E1-691D906B3A30")
+                )
+                ))
 
         updated.shouldNotBeNull()
     }
@@ -202,6 +236,15 @@ data class DiagramElementRemovedEvent(override val elementId: DiagramElementId):
 
 data class BpmnElementRemovedEvent(override val elementId: BpmnElementId): BpmnElementRemoved
 
-data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithBpmnId, override val shape: ShapeElement, override val props: Map<PropertyType, Property>): BpmnShapeObjectAdded
+data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithParentId, override val shape: ShapeElement, override val props: Map<PropertyType, Property>): BpmnShapeObjectAdded
 
-data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithBpmnId, override val edge: EdgeWithIdentifiableWaypoints, override val props: Map<PropertyType, Property>): BpmnEdgeObjectAdded
+data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithParentId, override val edge: EdgeWithIdentifiableWaypoints, override val props: Map<PropertyType, Property>): BpmnEdgeObjectAdded
+
+data class BpmnShapeResizedAndMovedEvent(override val diagramElementId: DiagramElementId, override val cx: Float, override val cy: Float, override val coefW: Float, override val coefH: Float): BpmnShapeResizedAndMoved {
+
+    override fun transform(point: Point2D.Float): Point2D.Float {
+        return Point2D.Float(cx + (point.x - cx) * coefW, cy + (point.y - cy) * coefH)
+    }
+}
+
+data class BpmnParentChangedEvent(override val bpmnElementId: BpmnElementId, override val newParentId: BpmnElementId): BpmnParentChanged

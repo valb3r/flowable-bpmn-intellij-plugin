@@ -21,11 +21,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTra
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 
 @KotlinBuilder
-data class BpmnProcess(
-        val id: BpmnElementId,
-        val name: String,
-        val documentation: String?,
-        val isExecutable: Boolean?,
+data class BpmnProcessBody(
 
         // Events
         // Start
@@ -81,6 +77,7 @@ data class BpmnProcess(
 
         // Sub-process alike
         val callActivity: List<BpmnCallActivity>?,
+        // These elems are to be flattened as they recurse into BpmnProcess themselves
         val subProcess: List<BpmnSubProcess>?,
         val transaction: List<BpmnTransactionalSubProcess>?,
         val adHocSubProcess: List<BpmnAdHocSubProcess>?,
@@ -93,4 +90,21 @@ data class BpmnProcess(
 
         // Linking elements
         val sequenceFlow: List<BpmnSequenceFlow>?
+)
+
+@KotlinBuilder
+data class BpmnProcess(
+        val id: BpmnElementId,
+        val name: String,
+        val documentation: String?,
+        val isExecutable: Boolean?,
+
+        // Process body
+        val body: BpmnProcessBody?,
+
+        // Process children (i.e. subProcess)
+        // Using flat data approach as CycleAvoidingMappingContext seem to be an issue with @KotlinBuilder
+        // Child BPMN processes in rendering order, flattened, so that i.e. subProcess is flat simple object (id, docs, ...)
+        // and not recursion object
+        val children: Map<BpmnElementId, BpmnProcessBody>?
 )

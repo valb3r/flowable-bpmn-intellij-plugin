@@ -17,13 +17,14 @@ import java.awt.RenderingHints
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
+import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.swing.JPanel
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class Canvas(private val settings: CanvasConstants): JPanel() {
+class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstants) : JPanel() {
     private val stateProvider = currentStateProvider()
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
@@ -102,6 +103,15 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
 
     fun startSelectionOrDrag(current: Point2D.Float) {
         val point = camera.fromCameraView(current)
+        if (selectedElements.isNotEmpty()) {
+            interactionCtx = interactionCtx.copy(
+                    draggedIds = selectedElements.toMutableSet(),
+                    dragStart = point,
+                    dragCurrent = point
+            )
+            return
+        }
+
         val elemsUnderCursor = elemUnderCursor(current)
 
         if (elemsUnderCursor.isEmpty()) {
@@ -111,14 +121,15 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
 
         interactionCtx = interactionCtx.copy(
                 draggedIds = selectedElements.toMutableSet(),
-                start = point,
-                current = point
+                dragStart = point,
+                dragCurrent = point,
+                dragSelectionRect = SelectionRect(current, current)
         )
     }
 
     fun attractToAnchors(ctx: ElementInteractionContext): ElementInteractionContext {
         val anchors: MutableSet<AnchorDetails> = mutableSetOf()
-        val cameraPoint = camera.toCameraView(ctx.current)
+        val cameraPoint = camera.toCameraView(ctx.dragCurrent)
         val dragged = ctx.draggedIds.minBy {
             val bounds = areaByElement?.get(it)?.area?.bounds2D ?: Rectangle2D.Float()
             return@minBy Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat()).distance(cameraPoint)
@@ -161,7 +172,7 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
         val selectedAnchors: AnchorHit = if (null == pointAnchor) applyOrthoAnchors(anchorX, anchorY, ctx) else applyPointAnchor(pointAnchor, ctx)
 
         return ctx.copy(
-                current = Point2D.Float(selectedAnchors.dragged.x, selectedAnchors.dragged.y),
+                dragCurrent = Point2D.Float(selectedAnchors.dragged.x, selectedAnchors.dragged.y),
                 anchorsHit = selectedAnchors
         )
     }
@@ -178,17 +189,17 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
                     current
             ))
 
-            this.selectedElements.addAll(elemsUnderRect(interactionCtx.dragSelectionRect!!.toRect()))
+            this.selectedElements.addAll(elemsUnderRect(interactionCtx.dragSelectionRect!!.toRect(), excludeAreas = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SHAPE_THAT_NESTS)))
             repaint()
             return
         }
 
-        if (selectedElements.isEmpty() || interactionCtx.draggedIds.isEmpty()) {
+        if (selectedElements.isEmpty() && interactionCtx.draggedIds.isEmpty()) {
             dragCanvas(previous, current)
             return
         }
 
-        interactionCtx = interactionCtx.copy(current = point)
+        interactionCtx = interactionCtx.copy(dragCurrent = point)
         interactionCtx = attractToAnchors(interactionCtx)
         repaint()
     }
@@ -200,14 +211,22 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
             return
         }
 
-        if (interactionCtx.draggedIds.isNotEmpty() && (interactionCtx.current.distance(interactionCtx.start) > settings.epsilon)) {
+        if (interactionCtx.draggedIds.isNotEmpty() && (interactionCtx.dragCurrent.distance(interactionCtx.dragStart) > settings.epsilon)) {
             interactionCtx = attractToAnchors(interactionCtx)
-            val dx = interactionCtx.current.x - interactionCtx.start.x
-            val dy = interactionCtx.current.y - interactionCtx.start.y
-            updateEventsRegistry().addEvents(interactionCtx.draggedIds.flatMap {interactionCtx.dragEndCallbacks[it]?.invoke(dx, dy, bpmnElemsUnderDragCurrent()) ?: emptyList()})
+            val dx = interactionCtx.dragCurrent.x - interactionCtx.dragStart.x
+            val dy = interactionCtx.dragCurrent.y - interactionCtx.dragStart.y
+            updateEventsRegistry().addEvents(interactionCtx.draggedIds.flatMap {
+                val droppedOn = bpmnElemsUnderDragCurrent()
+                interactionCtx.dragEndCallbacks[it]?.invoke(
+                        dx,
+                        dy,
+                        if (droppedOn.isEmpty()) null else droppedOn[droppedOn.firstKey()],
+                        droppedOn)
+                        ?: emptyList()
+            })
         }
 
-        interactionCtx = interactionCtx.copy(draggedIds = emptySet())
+        interactionCtx = interactionCtx.copy(draggedIds = emptySet(), dragCurrent = interactionCtx.dragStart, dragSelectionRect = null)
         repaint()
     }
 
@@ -233,35 +252,67 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
         return camera.fromCameraView(point)
     }
 
+    fun parentableElementAt(point: Point2D.Float): BpmnElementId {
+        return parentableElemUnderCursor(point)
+    }
+
     private fun applyOrthoAnchors(anchorX: AnchorDetails?, anchorY: AnchorDetails?, ctx: ElementInteractionContext): AnchorHit {
         val selectedAnchors: MutableMap<AnchorType, Point2D.Float> = mutableMapOf()
-        val targetX = anchorX?.let { ctx.current.x + it.anchor.x - it.objectAnchor.x } ?: ctx.current.x
-        val targetY = anchorY?.let { ctx.current.y + it.anchor.y - it.objectAnchor.y } ?: ctx.current.y
+        val targetX = anchorX?.let { ctx.dragCurrent.x + it.anchor.x - it.objectAnchor.x } ?: ctx.dragCurrent.x
+        val targetY = anchorY?.let { ctx.dragCurrent.y + it.anchor.y - it.objectAnchor.y } ?: ctx.dragCurrent.y
+        val objectAnchorX = anchorX?.objectAnchor?.x ?: ctx.dragCurrent.x
+        val objectAnchorY = anchorY?.objectAnchor?.y ?: ctx.dragCurrent.y
         anchorX?.apply { selectedAnchors[AnchorType.HORIZONTAL] = this.anchor }
         anchorY?.apply { selectedAnchors[AnchorType.VERTICAL] = this.anchor }
-        return AnchorHit(Point2D.Float(targetX, targetY), selectedAnchors)
+        return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(objectAnchorX, objectAnchorY), selectedAnchors)
     }
 
     private fun applyPointAnchor(anchor: AnchorDetails, ctx: ElementInteractionContext): AnchorHit {
         val selectedAnchors: MutableMap<AnchorType, Point2D.Float> = mutableMapOf()
-        val targetX = ctx.current.x + anchor.anchor.x - anchor.objectAnchor.x
-        val targetY = ctx.current.y + anchor.anchor.y - anchor.objectAnchor.y
+        val targetX = ctx.dragCurrent.x + anchor.anchor.x - anchor.objectAnchor.x
+        val targetY = ctx.dragCurrent.y + anchor.anchor.y - anchor.objectAnchor.y
         selectedAnchors[AnchorType.POINT] = anchor.anchor
-        return AnchorHit(Point2D.Float(targetX, targetY), selectedAnchors)
+        return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(targetX, targetY), selectedAnchors)
     }
 
-    private fun bpmnElemsUnderDragCurrent(): BpmnElementId? {
-        val onScreen = camera.toCameraView(interactionCtx.current)
+    private fun bpmnElemsUnderDragCurrent(): SortedMap<AreaType, BpmnElementId> {
+        val onScreen = camera.toCameraView(interactionCtx.dragCurrent)
         val cursor = cursorRect(onScreen)
-        val elems = areaByElement?.filter { it.value.area.intersects(cursor) }
+        // Correct order would require non-layered but computed z-index
+        val indexes = mapOf(AreaType.POINT to 0, AreaType.EDGE to 10, AreaType.SHAPE to 10, AreaType.SHAPE_THAT_NESTS to 20, AreaType.PARENT_PROCESS_SHAPE to 100)
+        val elems = areaByElement
+                ?.filter { it.value.area.intersects(cursor) }
+                ?.toList()
+                ?.sortedBy { indexes[it.second.areaType] }
+                ?.filter { !interactionCtx.draggedIds.contains(it.first) && !selectedElements.contains(it.first) } ?: emptyList()
 
-        return elems?.map { stateProvider.currentState().elementByDiagramId[it.key] }
+        val result = sortedMapOf<AreaType, BpmnElementId>()
+        for (elem in elems) {
+            val bpmnId = setOf(stateProvider.currentState().elementByDiagramId[elem.first], elem.second.bpmnElementId).filterNotNull().firstOrNull() ?: continue
+            val bpmnElem = stateProvider.currentState().elementByBpmnId[bpmnId]
+            if (bpmnElem?.element is BpmnSequenceFlow) {
+                continue
+            }
+            result[elem.second.areaType] = bpmnId
+        }
+
+        return result
+    }
+
+    private fun parentableElemUnderCursor(cursorPoint: Point2D.Float): BpmnElementId {
+        val withinRect = cursorRect(cursorPoint)
+        val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
+        val shapesThatCanParent = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SHAPE_THAT_NESTS)
+        val indexes = mapOf(AreaType.SHAPE_THAT_NESTS to 20, AreaType.PARENT_PROCESS_SHAPE to 100)
+
+        return intersection
+                ?.filter { null != it.value.bpmnElementId }
+                ?.filter { shapesThatCanParent.contains(it.value.areaType) }
+                ?.toList()
+                ?.sortedBy { indexes[it.second.areaType] }
+                ?.map { it.second.bpmnElementId }
                 ?.filterNotNull()
-                ?.map { stateProvider.currentState().elementByBpmnId[it] }
-                ?.filter { it !is BpmnSequenceFlow }
-                ?.filterNotNull()
-                ?.map { it.id }
-                ?.firstOrNull()
+                ?.first()!!
     }
 
     private fun elemUnderCursor(cursorPoint: Point2D.Float): List<DiagramElementId> {
@@ -271,17 +322,20 @@ class Canvas(private val settings: CanvasConstants): JPanel() {
         val result = mutableListOf<DiagramElementId>()
         val centerRect = Point2D.Float(withinRect.centerX.toFloat(), withinRect.centerY.toFloat())
         intersection
+                ?.filter { it.value.areaType != AreaType.PARENT_PROCESS_SHAPE }
                 ?.filter { it.value.index == minZindex?.value?.index }
                 ?.minBy { Point2D.Float(it.value.area.bounds2D.centerX.toFloat(), it.value.area.bounds2D.centerY.toFloat()).distance(centerRect) }
-                ?.let { result += it.key; it.value.parentToSelect?.apply { result += this }  }
+                ?.let { result += it.key; it.value.parentToSelect?.apply { result += this } }
         return result
     }
 
-    private fun elemsUnderRect(withinRect: Rectangle2D): List<DiagramElementId> {
-        val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
+    private fun elemsUnderRect(withinRect: Rectangle2D, excludeAreas: Set<AreaType> = setOf(AreaType.PARENT_PROCESS_SHAPE)): List<DiagramElementId> {
+        val intersection = areaByElement?.filter { withinRect.contains(it.value.area.bounds2D) }
+
         val result = mutableListOf<DiagramElementId>()
         intersection
-                ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this }  }
+                ?.filter { !excludeAreas.contains(it.value.areaType) }
+                ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this } }
         return result
     }
 

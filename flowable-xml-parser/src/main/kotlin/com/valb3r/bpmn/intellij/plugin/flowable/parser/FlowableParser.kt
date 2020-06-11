@@ -39,6 +39,7 @@ import org.dom4j.*
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.SAXReader
 import org.dom4j.io.XMLWriter
+import java.awt.geom.Point2D
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
@@ -132,12 +133,14 @@ class FlowableParser : BpmnParser {
         for (event in events) {
             when (event) {
                 is LocationUpdateWithId -> applyLocationUpdate(doc, event)
+                is BpmnShapeResizedAndMoved -> applyShapeRectUpdate(doc, event)
                 is NewWaypoints -> applyNewWaypoints(doc, event)
                 is DiagramElementRemoved -> applyDiagramElementRemoved(doc, event)
                 is BpmnElementRemoved -> applyBpmnElementRemoved(doc, event)
                 is BpmnShapeObjectAdded -> applyBpmnShapeObjectAdded(doc, event)
                 is BpmnEdgeObjectAdded -> applyBpmnEdgeObjectAdded(doc, event)
                 is PropertyUpdateWithId -> applyPropertyUpdateWithId(doc, event)
+                is BpmnParentChanged -> applyParentChange(doc, event)
             }
         }
     }
@@ -174,6 +177,33 @@ class FlowableParser : BpmnParser {
         nx.value = (nx.value.toFloat() + update.dx).toString()
         ny.value = (ny.value.toFloat() + update.dy).toString()
     }
+
+    private fun applyShapeRectUpdate(doc: Document, update: BpmnShapeResizedAndMoved) {
+        val node = doc.selectSingleNode(
+                "//*[local-name()='BPMNShape'][@id='${update.diagramElementId.id}']/*[@x][@y]"
+        ) as Element
+
+        val nx = node.attribute("x")
+        val ny = node.attribute("y")
+        val nw = node.attribute("width")
+        val nh = node.attribute("height")
+
+        val nodeX = nx.value.toFloat()
+        val nodeY = ny.value.toFloat()
+        val nodeW = nw.value.toFloat()
+        val nodeH = nh.value.toFloat()
+
+        val left = Point2D.Float(nodeX, nodeY)
+        val right = Point2D.Float(nodeX + nodeW, nodeY + nodeH)
+        val newLeft = update.transform(left)
+        val newRight = update.transform(right)
+
+        nx.value = newLeft.x.toString()
+        ny.value = newLeft.y.toString()
+        nw.value = (newRight.x - newLeft.x).toString()
+        nh.value = (newRight.y - newLeft.y).toString()
+    }
+
 
     private fun applyNewWaypoints(doc: Document, update: NewWaypoints) {
         val node = doc.selectSingleNode(
@@ -216,7 +246,7 @@ class FlowableParser : BpmnParser {
 
     private fun applyBpmnElementRemoved(doc: Document, update: BpmnElementRemoved) {
         val node = doc.selectSingleNode(
-                "//*[local-name()='process']/*[@id='${update.elementId.id}'][1]"
+                "//*[local-name()='process']//*[@id='${update.elementId.id}'][1]"
         ) as Node
 
         val parent = node.parent
@@ -225,11 +255,12 @@ class FlowableParser : BpmnParser {
     }
 
     private fun applyBpmnShapeObjectAdded(doc: Document, update: BpmnShapeObjectAdded) {
-        val diagramParent = doc.selectSingleNode(
-                "//*[local-name()='process'][1]"
-        ) as Element
+        val diagramParent = (
+                doc.selectSingleNode("//*[local-name()='process'][1]//*[@id='${update.bpmnObject.parent.id}'][1]") as Element?
+                        ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnObject.parent.id}'][1]") as Element?
+                )!!
 
-        val newNode = when(update.bpmnObject) {
+        val newNode = when(update.bpmnObject.element) {
 
             // Events
             // Start
@@ -306,10 +337,11 @@ class FlowableParser : BpmnParser {
         newShape.addAttribute("id", update.shape.id.id)
         newShape.addAttribute("bpmnElement", update.bpmnObject.id.id)
         val newBounds = newShape.addElement(NS.OMGDC.named("Bounds"))
-        newBounds.addAttribute("x", update.shape.bounds.x.toString())
-        newBounds.addAttribute("y", update.shape.bounds.y.toString())
-        newBounds.addAttribute("width", update.shape.bounds.width.toString())
-        newBounds.addAttribute("height", update.shape.bounds.height.toString())
+        val bounds = update.shape.rectBounds()
+        newBounds.addAttribute("x", bounds.x.toString())
+        newBounds.addAttribute("y", bounds.y.toString())
+        newBounds.addAttribute("width", bounds.width.toString())
+        newBounds.addAttribute("height", bounds.height.toString())
         trimWhitespace(shapeParent, false)
     }
 
@@ -358,7 +390,8 @@ class FlowableParser : BpmnParser {
                 "//*[local-name()='process'][1]"
         ) as Element
 
-        val newNode = when(update.bpmnObject) {
+        // TODO: Handle parent
+        val newNode = when(update.bpmnObject.element) {
             is BpmnSequenceFlow -> diagramParent.addElement("sequenceFlow")
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
@@ -378,7 +411,7 @@ class FlowableParser : BpmnParser {
 
     private fun applyPropertyUpdateWithId(doc: Document, update: PropertyUpdateWithId) {
         val node = doc.selectSingleNode(
-                "//*[local-name()='process'][1]/*[@id='${update.bpmnElementId.id}'][1]"
+                "//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]"
         ) as Element
 
         setToNode(node, update.property, update.newValue)
@@ -392,6 +425,20 @@ class FlowableParser : BpmnParser {
         ) as Element
 
         diagramElement.addAttribute("bpmnElement", update.newIdValue!!.id)
+    }
+
+    private fun applyParentChange(doc: Document, update: BpmnParentChanged) {
+        val node = doc.selectSingleNode(
+                "//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]"
+        ) as Element
+
+        val newParent = (
+                doc.selectSingleNode("//*[local-name()='process'][1]//*[@id='${update.newParentId.id}'][1]") as Element?
+                        ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.newParentId.id}'][1]") as Element?
+                )!!
+
+        node.parent.remove(node)
+        newParent.add(node)
     }
 
 

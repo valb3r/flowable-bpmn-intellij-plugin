@@ -2,7 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.state
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
@@ -30,7 +30,7 @@ data class CurrentState(
         val shapes: List<ShapeElement>,
         val edges: List<EdgeWithIdentifiableWaypoints>,
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
-        val elementByBpmnId: Map<BpmnElementId, WithBpmnId>,
+        val elementByBpmnId: Map<BpmnElementId, WithParentId>,
         val elemPropertiesByStaticElementId: Map<BpmnElementId, Map<PropertyType, Property>>,
         val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>
 )
@@ -71,8 +71,11 @@ class CurrentStateProvider {
         updates.map { it.event }.forEach { event ->
             when (event) {
                 is LocationUpdateWithId -> {
-                    updatedShapes = updatedShapes.map { shape -> if (shape.id == event.diagramElementId) updateWaypointLocation(shape, event) else shape }.toMutableList()
+                    updatedShapes = updatedShapes.map { shape -> if (shape.id == event.diagramElementId) updateShapeLocation(shape, event) else shape }.toMutableList()
                     updatedEdges = updatedEdges.map { edge -> if (edge.id == event.parentElementId) updateWaypointLocation(edge, event) else edge }.toMutableList()
+                }
+                is BpmnShapeResizedAndMoved -> {
+                    updatedShapes = updatedShapes.map { shape -> if (shape.id == event.diagramElementId) updateShapeLocationAndSize(shape, event) else shape }.toMutableList()
                 }
                 is NewWaypoints -> {
                     updatedEdges = updatedEdges.map { edge -> if (edge.id == event.edgeElementId) updateWaypointLocation(edge, event) else edge }.toMutableList()
@@ -102,6 +105,16 @@ class CurrentStateProvider {
                         updateId(event.bpmnElementId, event.newIdValue!!, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
                     }
                 }
+                is BpmnParentChanged -> {
+                    for ((key, value) in updatedElementByStaticId) {
+                        if (key != event.bpmnElementId) {
+                            continue
+                        }
+
+                        updatedElementByStaticId[key] = WithParentId(event.newParentId, value.element)
+                    }
+                }
+                else -> throw IllegalStateException("Can't handle event ${event.javaClass}")
             }
         }
 
@@ -135,7 +148,7 @@ class CurrentStateProvider {
             updatedShapes: MutableList<ShapeElement>,
             updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>,
             updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>,
-            updatedElementByStaticId: MutableMap<BpmnElementId, WithBpmnId>,
+            updatedElementByStaticId: MutableMap<BpmnElementId, WithParentId>,
             updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>>
     ) {
         val shape = updatedShapes.find { it.bpmnElement == elementId }
@@ -152,7 +165,7 @@ class CurrentStateProvider {
             updatedShapes: MutableList<ShapeElement>,
             updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>,
             updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>,
-            updatedElementByStaticId: MutableMap<BpmnElementId, WithBpmnId>,
+            updatedElementByStaticId: MutableMap<BpmnElementId, WithParentId>,
             updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>>
     ) {
         val shape = updatedShapes.find { it.bpmnElement == elementId }
@@ -168,13 +181,17 @@ class CurrentStateProvider {
             updatedEdges.add(it.updateBpmnElemId(newElementId))
         }
         val elemByBpmnIdUpdated = updatedElementByStaticId.remove(elementId)
-        elemByBpmnIdUpdated?.let { updatedElementByStaticId[newElementId] = it.updateBpmnElemId(newElementId) }
+        elemByBpmnIdUpdated?.let { updatedElementByStaticId[newElementId] = WithParentId(it.parent, it.updateBpmnElemId(newElementId)) }
         val elemPropUpdated = updatedElemPropertiesByStaticElementId.remove(elementId)?.toMutableMap() ?: mutableMapOf()
         elemPropUpdated[PropertyType.ID] = Property(newElementId.id)
         updatedElemPropertiesByStaticElementId[newElementId] = elemPropUpdated
     }
 
-    private fun updateWaypointLocation(elem: ShapeElement, update: LocationUpdateWithId): ShapeElement {
+    private fun updateShapeLocationAndSize(elem: ShapeElement, update: BpmnShapeResizedAndMoved): ShapeElement {
+        return elem.copyAndResize { update.transform(it) }
+    }
+
+    private fun updateShapeLocation(elem: ShapeElement, update: LocationUpdateWithId): ShapeElement {
         return elem.copyAndTranslate(update.dx, update.dy)
     }
 

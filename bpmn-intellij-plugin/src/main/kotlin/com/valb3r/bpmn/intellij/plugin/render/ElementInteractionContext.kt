@@ -6,20 +6,21 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
+import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
 data class ElementInteractionContext(
         val draggedIds: Set<DiagramElementId>,
-        val dragEndCallbacks: MutableMap<DiagramElementId, (dx: Float, dy: Float, droppedOn: BpmnElementId?) -> List<Event>>,
+        val dragEndCallbacks: MutableMap<DiagramElementId, (dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>) -> List<Event>>,
         val dragSelectionRect: SelectionRect?,
         val clickCallbacks: MutableMap<DiagramElementId, (dest: ProcessModelUpdateEvents) -> Unit>,
         val anchorsHit: AnchorHit?,
-        val start: Point2D.Float,
-        val current: Point2D.Float
+        val dragStart: Point2D.Float,
+        val dragCurrent: Point2D.Float
 )
 
-data class AnchorHit(val dragged: Point2D.Float, val anchors: Map<AnchorType, Point2D.Float>)
+data class AnchorHit(val dragged: Point2D.Float, val objectAnchor: Point2D.Float, val anchors: Map<AnchorType, Point2D.Float>)
 
 enum class AnchorType {
     VERTICAL,
