@@ -302,15 +302,17 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
     private fun parentableElemUnderCursor(cursorPoint: Point2D.Float): BpmnElementId {
         val withinRect = cursorRect(cursorPoint)
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
-        val result = mutableListOf<BpmnElementId>()
-        val centerRect = Point2D.Float(withinRect.centerX.toFloat(), withinRect.centerY.toFloat())
         val shapesThatCanParent = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SHAPE_THAT_NESTS)
-        intersection
+        val indexes = mapOf(AreaType.SHAPE_THAT_NESTS to 20, AreaType.PARENT_PROCESS_SHAPE to 100)
+
+        return intersection
                 ?.filter { null != it.value.bpmnElementId }
                 ?.filter { shapesThatCanParent.contains(it.value.areaType) }
-                ?.minBy { Point2D.Float(it.value.area.bounds2D.centerX.toFloat(), it.value.area.bounds2D.centerY.toFloat()).distance(centerRect) }
-                ?.let { result += it.value.bpmnElementId!! }
-        return result.first()
+                ?.toList()
+                ?.sortedBy { indexes[it.second.areaType] }
+                ?.map { it.second.bpmnElementId }
+                ?.filterNotNull()
+                ?.first()!!
     }
 
     private fun elemUnderCursor(cursorPoint: Point2D.Float): List<DiagramElementId> {

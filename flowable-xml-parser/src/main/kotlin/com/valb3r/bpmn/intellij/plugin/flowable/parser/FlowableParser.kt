@@ -255,11 +255,11 @@ class FlowableParser : BpmnParser {
     }
 
     private fun applyBpmnShapeObjectAdded(doc: Document, update: BpmnShapeObjectAdded) {
-        val diagramParent = doc.selectSingleNode(
-                "//*[local-name()='process'][1]"
-        ) as Element
+        val diagramParent = (
+                doc.selectSingleNode("//*[local-name()='process'][1]//*[@id='${update.bpmnObject.parent.id}'][1]") as Element?
+                        ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnObject.parent.id}'][1]") as Element?
+                )!!
 
-        // TODO: Handle parent!
         val newNode = when(update.bpmnObject.element) {
 
             // Events
