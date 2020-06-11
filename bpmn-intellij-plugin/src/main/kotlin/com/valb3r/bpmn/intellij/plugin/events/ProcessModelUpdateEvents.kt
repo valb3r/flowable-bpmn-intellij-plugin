@@ -148,7 +148,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
             updates.add(toStore)
             when (event) {
                 is PropertyUpdateWithId -> propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
-                is LocationUpdateWithId, is BpmnShapeResizedAndMoved, is NewWaypoints, is BpmnShapeResizedAndMovedEvent -> { /*NOP*/ }
+                is LocationUpdateWithId, is BpmnShapeResizedAndMoved, is NewWaypoints, is BpmnParentChanged -> { /*NOP*/ }
                 else -> throw IllegalArgumentException("Can't bulk add: " + event::class.qualifiedName)
             }
         }

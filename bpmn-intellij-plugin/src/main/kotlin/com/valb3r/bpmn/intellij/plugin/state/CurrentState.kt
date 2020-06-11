@@ -105,6 +105,16 @@ class CurrentStateProvider {
                         updateId(event.bpmnElementId, event.newIdValue!!, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
                     }
                 }
+                is BpmnParentChanged -> {
+                    for ((key, value) in updatedElementByStaticId) {
+                        if (key != event.bpmnElementId) {
+                            continue
+                        }
+
+                        updatedElementByStaticId[key] = WithParentId(event.newParentId, value.element)
+                    }
+                }
+                else -> throw IllegalStateException("Can't handle event ${event.javaClass}")
             }
         }
 
