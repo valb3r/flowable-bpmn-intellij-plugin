@@ -1,24 +1,27 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
+import javax.xml.bind.annotation.XmlAccessType
+import javax.xml.bind.annotation.XmlAccessorType
+import javax.xml.bind.annotation.XmlAttribute
 
+@XmlAccessorType(XmlAccessType.FIELD)
 data class UserTask(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
+        @XmlAttribute val id: String,
+        @XmlAttribute val name: String?,
         val documentation: String?,
-        @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val assignee: String?,
-        @JacksonXmlProperty(isAttribute = true) val dueDate: String?,
-        @JacksonXmlProperty(isAttribute = true) val category: String?,
-        @JacksonXmlProperty(isAttribute = true) val formKey: String?,
-        @JacksonXmlProperty(isAttribute = true) val formFieldValidation: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val priority: String?,
-        @JacksonXmlProperty(isAttribute = true) val skipExpression: String?
+        @XmlAttribute val async: Boolean?,
+        @XmlAttribute val isForCompensation: Boolean?,
+        @XmlAttribute val assignee: String?,
+        @XmlAttribute val dueDate: String?,
+        @XmlAttribute val category: String?,
+        @XmlAttribute val formKey: String?,
+        @XmlAttribute val formFieldValidation: Boolean?,
+        @XmlAttribute val priority: String?,
+        @XmlAttribute val skipExpression: String?
 ): BpmnMappable<BpmnUserTask> {
 
     override fun toElement(): BpmnUserTask {

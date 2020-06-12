@@ -1,21 +1,24 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
+import javax.xml.bind.annotation.XmlAccessType
+import javax.xml.bind.annotation.XmlAccessorType
+import javax.xml.bind.annotation.XmlAttribute
+import javax.xml.bind.annotation.XmlElementWrapper
 
+@XmlAccessorType(XmlAccessType.FIELD)
 data class CallActivity(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
-        @JacksonXmlProperty(isAttribute = true) val documentation: String?,
-        @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val calledElement: String?,
-        @JacksonXmlProperty(isAttribute = true) val calledElementType: String?,
-        @JacksonXmlProperty(isAttribute = true) val inheritVariables: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val fallbackToDefaultTenant: Boolean?,
+        @XmlAttribute val id: String,
+        @XmlAttribute val name: String?,
+        @XmlAttribute val documentation: String?,
+        @XmlAttribute val async: Boolean?,
+        @XmlAttribute val calledElement: String?,
+        @XmlAttribute val calledElementType: String?,
+        @XmlAttribute val inheritVariables: Boolean?,
+        @XmlAttribute val fallbackToDefaultTenant: Boolean?,
         val extensionElements: ExtensionElements?
 ): BpmnMappable<BpmnCallActivity> {
 
@@ -30,7 +33,7 @@ data class CallActivity(
 }
 
 data class ExtensionElements(
-        @JacksonXmlElementWrapper(useWrapping = false) val out: List<OutExtensionElement>?
+        @XmlElementWrapper val out: List<OutExtensionElement>?
 )
 
 data class OutExtensionElement(val source: String?, val target: String?)

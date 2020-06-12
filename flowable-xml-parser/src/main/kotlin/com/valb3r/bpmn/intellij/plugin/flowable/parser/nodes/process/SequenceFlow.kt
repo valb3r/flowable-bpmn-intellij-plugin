@@ -1,21 +1,21 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.CDATA_FIELD
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
+import javax.xml.bind.annotation.XmlAccessType
+import javax.xml.bind.annotation.XmlAccessorType
+import javax.xml.bind.annotation.XmlAttribute
+import javax.xml.bind.annotation.XmlValue
 
+@XmlAccessorType(XmlAccessType.FIELD)
 data class SequenceFlow(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
+        @XmlAttribute val id: String,
+        @XmlAttribute val name: String?,
         val documentation: String?,
-        @JacksonXmlProperty(isAttribute = true) val sourceRef: String?,
-        @JacksonXmlProperty(isAttribute = true) val targetRef: String?,
+        @XmlAttribute val sourceRef: String?,
+        @XmlAttribute val targetRef: String?,
         val conditionExpression: ConditionExpression?
 ): BpmnMappable<BpmnSequenceFlow> {
 
@@ -31,5 +31,5 @@ data class SequenceFlow(
 
 data class ConditionExpression(
         val type: String?  = null,
-        @JsonProperty(CDATA_FIELD) @JacksonXmlText @JacksonXmlCData val text: String? = null
+        @XmlValue val text: String? = null
 )

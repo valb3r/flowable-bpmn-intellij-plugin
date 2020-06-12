@@ -1,8 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes
 
-import com.fasterxml.jackson.annotation.JsonMerge
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
@@ -21,90 +18,83 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.Plane
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.*
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
+import javax.xml.bind.annotation.*
 
-// For mixed lists in XML we need to have JsonSetter/JsonMerge on field
-// https://github.com/FasterXML/jackson-dataformat-xml/issues/363
-// unfortunately this has failed with Kotlin 'data' classes
-class BpmnFile(
-        @JacksonXmlProperty(localName = "message")
-        @JsonMerge
-        @JacksonXmlElementWrapper(useWrapping = false)
-        var messages: List<MessageNode>? = null,
+@XmlRootElement(name = "definitions")
+@XmlAccessorType(XmlAccessType.FIELD)
+class BpmnFile {
+    @XmlElementWrapper(name = "message")
+    var messages: List<MessageNode>? = null
 
-        @JacksonXmlProperty(localName = "process")
-        @JsonMerge
-        @JacksonXmlElementWrapper(useWrapping = false)
-        var processes: List<ProcessNode>,
+    @XmlElementWrapper(name = "process")
+    var processes: List<ProcessNode> = mutableListOf()
 
-        @JacksonXmlProperty(localName = "BPMNDiagram")
-        @JsonMerge
-        @JacksonXmlElementWrapper(useWrapping = false)
-        var diagrams: List<DiagramNode>? = null
-)
+    @XmlElementWrapper(name = "BPMNDiagram")
+    var diagrams: List<DiagramNode>? = null
+}
 
 data class MessageNode(val id: String, var name: String?)
 
+@XmlAccessorType(XmlAccessType.FIELD)
 open class ProcessBody {
     
     // Events
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var startEvent: List<StartEventNode>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var endEvent: List<EndEventNode>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var boundaryEvent: List<BoundaryEvent>? = null
     // Events-intermediate
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var intermediateCatchEvent: List<IntermediateCatchEvent>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var intermediateThrowEvent: List<IntermediateThrowEvent>? = null
 
     // Service task alike:
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var userTask: List<UserTask>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var scriptTask: List<ScriptTask>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var serviceTask: List<ServiceTask>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var businessRuleTask: List<BusinessRuleTask>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var receiveTask: List<ReceiveTask>? = null
 
     // Sub process alike
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var callActivity: List<CallActivity>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var subProcess: List<SubProcess>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var transaction: List<Transaction>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var adHocSubProcess: List<AdHocSubProcess>? = null
 
     // Gateways
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var exclusiveGateway: List<ExclusiveGateway>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var parallelGateway: List<ParallelGateway>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var inclusiveGateway: List<InclusiveGateway>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var eventBasedGateway: List<EventBasedGateway>? = null
 
     // Linking elements
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @XmlElementWrapper
     var sequenceFlow: List<SequenceFlow>? = null
 }
 
-// For mixed lists in XML we need to have JsonSetter/JsonMerge on field
-// https://github.com/FasterXML/jackson-dataformat-xml/issues/363
-// unfortunately this has failed with Kotlin 'data' classes
 class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
-    @JacksonXmlProperty(isAttribute = true) var id: String? = null // it is false - it is non-null
-    @JacksonXmlProperty(isAttribute = true) var name: String? = null // it is false - it is non-null
+    @XmlAttribute
+    var id: String? = null // it is false - it is non-null
+    @XmlAttribute var name: String? = null // it is false - it is non-null
     var documentation: String? = null
-    @JacksonXmlProperty(isAttribute = true) var isExecutable: Boolean? = null
+    @XmlAttribute var isExecutable: Boolean? = null
 
     override fun toElement(): BpmnProcess {
         val result = Mappers.getMapper(Mapping::class.java).convertToDto(this)
@@ -397,8 +387,8 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 }
 
 data class DiagramNode(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(localName = "BPMNPlane") val bpmnPlane: Plane
+        @XmlAttribute val id: String,
+        @XmlElement(name = "BPMNPlane") val bpmnPlane: Plane
 ) : BpmnMappable<DiagramElement> {
 
     override fun toElement(): DiagramElement {

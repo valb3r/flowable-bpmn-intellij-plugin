@@ -1,19 +1,22 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
-import com.fasterxml.jackson.annotation.JsonSetter
-import com.fasterxml.jackson.annotation.Nulls
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.subevents.EscalationEventDefinition
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.subevents.SignalEventDefinition
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
+import javax.xml.bind.annotation.XmlAccessType
+import javax.xml.bind.annotation.XmlAccessorType
+import javax.xml.bind.annotation.XmlAttribute
 
+@XmlAccessorType(XmlAccessType.FIELD)
 data class IntermediateThrowEvent(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
-        @JacksonXmlProperty(isAttribute = true) val documentation: String?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val signalEventDefinition: SignalEventDefinition?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val escalationEventDefinition: EscalationEventDefinition?
+        @XmlAttribute val id: String,
+        @XmlAttribute val name: String?,
+        @XmlAttribute val documentation: String?,
+        val signalEventDefinition: SignalEventDefinition?,
+        val escalationEventDefinition: EscalationEventDefinition?
 
 ): BpmnMappable<BpmnIntermediateThrowingEvent> {
 
@@ -25,13 +28,5 @@ data class IntermediateThrowEvent(
     interface Mapping {
         fun convertToDto(input: IntermediateThrowEvent) : BpmnIntermediateThrowingEvent
     }
-
-    data class SignalEventDefinition(
-            val signalRef: String? = null
-    )
-
-    data class EscalationEventDefinition(
-            val escalationRef: String? = null
-    )
 }
 

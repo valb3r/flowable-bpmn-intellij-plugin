@@ -1,20 +1,24 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnScriptTask
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
+import javax.xml.bind.annotation.XmlAccessType
+import javax.xml.bind.annotation.XmlAccessorType
+import javax.xml.bind.annotation.XmlAttribute
+import javax.xml.bind.annotation.XmlElement
 
+@XmlAccessorType(XmlAccessType.FIELD)
 data class ScriptTask(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
+        @XmlAttribute val id: String,
+        @XmlAttribute val name: String?,
         val documentation: String?,
-        @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
-        @JacksonXmlProperty(isAttribute = false, localName = "script") val scriptBody: String?,
-        @JacksonXmlProperty(isAttribute = true) val scriptFormat: String?,
-        @JacksonXmlProperty(isAttribute = true) val autoStoreVariables: Boolean?
+        @XmlAttribute val async: Boolean?,
+        @XmlAttribute val isForCompensation: Boolean?,
+        @XmlElement(name = "script") val scriptBody: String?,
+        @XmlAttribute val scriptFormat: String?,
+        @XmlAttribute val autoStoreVariables: Boolean?
 ): BpmnMappable<BpmnScriptTask> {
 
     override fun toElement(): BpmnScriptTask {
