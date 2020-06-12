@@ -6,7 +6,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
-import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
 import java.util.*
@@ -15,7 +15,7 @@ abstract class AnchorElement(
         override val elementId: DiagramElementId,
         protected val currentLocation: Point2D.Float,
         state: RenderState
-): BaseRenderElement(elementId, state) {
+): BaseDiagramRenderElement(elementId, state) {
 
     val location: Point2D.Float
         get() = currentLocation

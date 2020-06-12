@@ -23,21 +23,21 @@ private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicSt
 const val ACTIONS_ICO_SIZE = 15f
 private const val actionsMargin = 5f
 
-abstract class BaseRenderElement(
+abstract class BaseDiagramRenderElement(
         open val elementId: DiagramElementId,
-        protected val state: RenderState,
+        protected open val state: RenderState,
         internal open var viewTransform: ViewTransform = NullViewTransform()
 ) {
 
     var isVisible: Boolean? = null
 
-    open val children: MutableList<BaseRenderElement> = mutableListOf()
+    open val children: MutableList<BaseDiagramRenderElement> = mutableListOf()
 
     /**
      * Parents in the order: direct parent, parent of direct parent...
      * Typically 'direct parent' is sufficient and is only provided
      */
-    open val parents: MutableList<BpmnElementId> = mutableListOf()
+    open val parents: MutableList<BaseBpmnRenderElement> = mutableListOf()
 
     open fun multipleElementsSelected(): Boolean {
         return state.ctx.selectedIds.size > 1
@@ -164,5 +164,9 @@ abstract class BaseRenderElement(
 
     protected open fun acceptsInternalEvents(): Boolean {
         return true
+    }
+
+    protected open fun zIndex(): Int {
+        return (parents.firstOrNull()?.zIndex() ?: -1) + 1
     }
 }

@@ -1,10 +1,11 @@
 package com.valb3r.bpmn.intellij.plugin.render.elements.shapes
 
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.events.BpmnShapeResizedAndMovedEvent
-import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.EPSILON
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorBottom
@@ -15,16 +16,17 @@ import kotlin.math.abs
 
 abstract class ResizeableShapeRenderElement(
         override val elementId: DiagramElementId,
+        override val bpmnElementId: BpmnElementId,
         shape: ShapeElement,
         state: RenderState
-) : ShapeRenderElement(elementId, shape, state) {
+) : ShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
     private val anchors = Pair(
             ShapeResizeAnchorTop(DiagramElementId("TOP:" + shape.id.id), Point2D.Float(shape.bounds().first.x, shape.bounds().first.y), { doComputeLocationChangesBasedOnTransformationWithCascade() } , state),
             ShapeResizeAnchorBottom(DiagramElementId("BOTTOM:" + shape.id.id), Point2D.Float(shape.bounds().second.x, shape.bounds().second.y), { doComputeLocationChangesBasedOnTransformationWithCascade() }, state)
     )
 
-    override val children: MutableList<BaseRenderElement> = mutableListOf(anchors.first, anchors.second)
+    override val children: MutableList<BaseDiagramRenderElement> = mutableListOf(anchors.first, anchors.second)
 
     override fun afterStateChangesAppliedNoChildren() {
         // Detect only resize, not drag as drag is handled by higher-level elements and it may happen that two anchors

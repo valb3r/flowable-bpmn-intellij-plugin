@@ -10,9 +10,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
 import com.valb3r.bpmn.intellij.plugin.events.NewWaypointsEvent
 import com.valb3r.bpmn.intellij.plugin.events.StringValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.render.ANCHOR_Z_INDEX
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
+import com.valb3r.bpmn.intellij.plugin.render.ICON_Z_INDEX
 import com.valb3r.bpmn.intellij.plugin.render.elements.ACTIONS_ICO_SIZE
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ResizeViewTransform
@@ -47,7 +47,7 @@ class PhysicalWaypoint(
                     edge.epoch + 1
             )))
         }
-        return mutableMapOf(delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, elementId))
+        return mutableMapOf(delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(),  ICON_Z_INDEX, elementId))
     }
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {

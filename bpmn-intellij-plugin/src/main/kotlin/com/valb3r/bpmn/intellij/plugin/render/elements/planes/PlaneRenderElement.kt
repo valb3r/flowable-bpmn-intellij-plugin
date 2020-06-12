@@ -3,8 +3,12 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.planes
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
-import com.valb3r.bpmn.intellij.plugin.render.*
-import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.AreaType
+import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
+import com.valb3r.bpmn.intellij.plugin.render.Camera
+import com.valb3r.bpmn.intellij.plugin.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.render.elements.BaseBpmnRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.Rectangle
 import java.awt.geom.Area
@@ -14,10 +18,10 @@ import java.util.*
 
 class PlaneRenderElement(
         override val elementId: DiagramElementId,
-        private val bpmnElementId: BpmnElementId,
+        override val bpmnElementId: BpmnElementId,
         state: RenderState,
-        override val children: MutableList<BaseRenderElement> = mutableListOf()
-): BaseRenderElement(elementId, state) {
+        override val children: MutableList<BaseDiagramRenderElement> = mutableListOf()
+): BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 
     override fun doDragToWithoutChildren(dx: Float, dy: Float) {
         // NOP
@@ -49,7 +53,7 @@ class PlaneRenderElement(
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val area = InfiniteShape()
-        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.PARENT_PROCESS_SHAPE, mutableSetOf(), mutableSetOf(), bpmnElementId = bpmnElementId, index = OWNING_PROCESS_Z_INDEX))
+        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.PARENT_PROCESS_SHAPE, mutableSetOf(), mutableSetOf(), bpmnElementId = bpmnElementId, index = zIndex()))
     }
 
     override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {

@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.render.elements.shapes
 
 import com.valb3r.bpmn.intellij.plugin.Colors
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
@@ -11,6 +12,7 @@ import java.awt.geom.Rectangle2D
 
 class NoIconDoubleBorderShape(
         override val elementId: DiagramElementId,
+        override val bpmnElementId: BpmnElementId,
         shape: ShapeElement,
         state: RenderState,
         private val backgroundColor: Colors = Colors.PROCESS_COLOR,
@@ -19,7 +21,7 @@ class NoIconDoubleBorderShape(
         private val innerBackgroundColor: Colors = Colors.TRANSACTION_COLOR,
         private val textColor: Colors = Colors.SUBPROCESS_TEXT_COLOR,
         private val areaType: AreaType = AreaType.SHAPE
-) : ResizeableShapeRenderElement(elementId, shape, state) {
+) : ResizeableShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
     private val transactionalBoundaryMargin = 5.0f
 
@@ -40,7 +42,7 @@ class NoIconDoubleBorderShape(
                 textColor.color
         )
 
-        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, areaType, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), bpmnElementId = shape.bpmnElement))
+        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, areaType, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = shape.bpmnElement))
     }
 
     private fun wrapInto(target: Rectangle2D.Float, margin: Float): Rectangle2D.Float {
