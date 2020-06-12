@@ -15,7 +15,7 @@ import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.ACTIONS_ICO_SIZE
-import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.BaseBpmnRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationOrChangesToWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTransform
@@ -28,9 +28,10 @@ private const val WAYPOINT_LEN = 40.0f
 
 abstract class ShapeRenderElement(
         override val elementId: DiagramElementId,
+        override val bpmnElementId: BpmnElementId,
         protected val shape: ShapeElement,
         state: RenderState
-) : BaseRenderElement(elementId, state) {
+) : BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 
     protected open val cascadeTo = computeCascadables()
 
@@ -71,7 +72,7 @@ abstract class ShapeRenderElement(
                         ))
                 dest.addObjectEvent(
                         BpmnEdgeObjectAddedEvent(
-                                WithParentId(parents.first(), newSequenceBpmn),
+                                WithParentId(parents.first().bpmnElementId, newSequenceBpmn),
                                 EdgeElementState(newSequenceDiagram),
                                 newElementsFactory().propertiesOf(newSequenceBpmn)
                         )
@@ -80,8 +81,8 @@ abstract class ShapeRenderElement(
         }
 
         return mutableMapOf(
-                delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, elementId),
-                newLinkId to AreaWithZindex(newLinkArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, elementId)
+                delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId),
+                newLinkId to AreaWithZindex(newLinkArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
         )
     }
 
@@ -120,16 +121,16 @@ abstract class ShapeRenderElement(
         val parentProcess = allDroppedOn[AreaType.PARENT_PROCESS_SHAPE]
         val currentParent = parents.firstOrNull()
 
-        if (allDroppedOn[allDroppedOn.firstKey()] == currentParent) {
+        if (allDroppedOn[allDroppedOn.firstKey()] == currentParent?.bpmnElementId) {
             return events
         }
 
-        if (null != nests && nests != currentParent) {
+        if (null != nests && nests != currentParent?.bpmnElementId) {
             events += BpmnParentChangedEvent(shape.bpmnElement, nests)
             // Cascade parent change to waypoint owning edge
             events += cascadeTargets.mapNotNull { state.currentState.elementByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, nests) }
 
-        } else if (null != parentProcess && parentProcess != parents.firstOrNull()) {
+        } else if (null != parentProcess && parentProcess != parents.firstOrNull()?.bpmnElementId) {
             events += BpmnParentChangedEvent(shape.bpmnElement, parentProcess)
             // Cascade parent change to waypoint owning edge
             events += cascadeTargets.mapNotNull { state.currentState.elementByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, parentProcess) }
@@ -178,8 +179,6 @@ abstract class ShapeRenderElement(
         val cx = rect.x + rect.width / 2.0f
         val cy = rect.y + rect.height / 2.0f
         return mutableSetOf(
-                Point2D.Float(cx, cy),
-
                 Point2D.Float(cx - halfWidth, cy),
                 Point2D.Float(cx + halfWidth, cy),
                 Point2D.Float(cx, cy - halfHeight),

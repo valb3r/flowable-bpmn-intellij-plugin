@@ -27,7 +27,7 @@ abstract class IconAnchorElement(
             dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId> -> onDragEnd(dx, dy, droppedOn, allDroppedOn)
         }
 
-        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT))
+        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT, index = zIndex()))
     }
 
     protected abstract fun icon(): Icon

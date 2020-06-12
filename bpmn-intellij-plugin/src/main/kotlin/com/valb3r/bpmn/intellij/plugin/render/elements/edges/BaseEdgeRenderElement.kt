@@ -9,7 +9,8 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.render.elements.BaseRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.BaseBpmnRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.AnchorElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.PhysicalWaypoint
@@ -21,14 +22,15 @@ import java.util.*
 
 abstract class BaseEdgeRenderElement(
         override val elementId: DiagramElementId,
+        override val bpmnElementId: BpmnElementId,
         protected val edge: EdgeWithIdentifiableWaypoints,
         private val edgeColor: Colors,
         state: RenderState
-): BaseRenderElement(elementId, state) {
+): BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 
     private val anchors = computeAnchors()
 
-    override val children: MutableList<BaseRenderElement> = anchors as MutableList<BaseRenderElement>
+    override val children: MutableList<BaseDiagramRenderElement> = anchors as MutableList<BaseDiagramRenderElement>
 
     override fun dragTo(dx: Float, dy: Float) {
         if (multipleElementsSelected() && isActiveOrDragged()) {
@@ -51,7 +53,7 @@ abstract class BaseEdgeRenderElement(
             }
         }
 
-        return mapOf(elementId to AreaWithZindex(area, AreaType.EDGE, waypointAnchors(ctx.canvas.camera)))
+        return mapOf(elementId to AreaWithZindex(area, AreaType.EDGE, waypointAnchors(ctx.canvas.camera), index = zIndex()))
     }
 
     override fun doDragToWithoutChildren(dx: Float, dy: Float) {
@@ -110,9 +112,9 @@ abstract class BaseEdgeRenderElement(
         return edge.waypoint.map {
             if (it.physical) {
                 physicalPos++
-                PhysicalWaypoint(it.id, edge.id, edge.bpmnElement, edge, physicalPos, numPhysicals, Point2D.Float(it.x, it.y), state)
+                PhysicalWaypoint(it.id, edge.id, edge.bpmnElement, edge, physicalPos, numPhysicals, Point2D.Float(it.x, it.y), state).let { it.parents.add(this); it }
             } else {
-                VirtualWaypoint(it.id, edge.id, edge, Point2D.Float(it.x, it.y), state)
+                VirtualWaypoint(it.id, edge.id, edge, Point2D.Float(it.x, it.y), state).let { it.parents.add(this); it }
             }
         }
     }

@@ -5,9 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import java.awt.geom.Area
 import java.awt.geom.Point2D
 
-const val OWNING_PROCESS_Z_INDEX = 1000000
-const val SUBPROCESS_Z_INDEX = 20000
-const val DEFAULT_Z_INDEX = 10000
+const val ICON_Z_INDEX = 10000
 const val ANCHOR_Z_INDEX = 1000
 
 enum class AreaType(val nests: Boolean = false) {
@@ -23,7 +21,7 @@ data class AreaWithZindex(
         val areaType: AreaType,
         val anchorsForWaypoints: MutableSet<Point2D.Float> = mutableSetOf(),
         val anchorsForShape: MutableSet<Point2D.Float> = mutableSetOf(),
-        val index: Int = DEFAULT_Z_INDEX,
+        val index: Int = 0,
         val parentToSelect: DiagramElementId? = null,
         val bpmnElementId: BpmnElementId? = null
 )

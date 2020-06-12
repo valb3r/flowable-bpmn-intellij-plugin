@@ -279,15 +279,18 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         val onScreen = camera.toCameraView(interactionCtx.dragCurrent)
         val cursor = cursorRect(onScreen)
         // Correct order would require non-layered but computed z-index
-        val indexes = mapOf(AreaType.POINT to 0, AreaType.EDGE to 10, AreaType.SHAPE to 10, AreaType.SHAPE_THAT_NESTS to 20, AreaType.PARENT_PROCESS_SHAPE to 100)
         val elems = areaByElement
                 ?.filter { it.value.area.intersects(cursor) }
                 ?.toList()
-                ?.sortedBy { indexes[it.second.areaType] }
+                ?.sortedByDescending { it.second.index }
                 ?.filter { !interactionCtx.draggedIds.contains(it.first) && !selectedElements.contains(it.first) } ?: emptyList()
 
         val result = sortedMapOf<AreaType, BpmnElementId>()
         for (elem in elems) {
+            if (result.containsKey(elem.second.areaType)) {
+                continue
+            }
+
             val bpmnId = setOf(stateProvider.currentState().elementByDiagramId[elem.first], elem.second.bpmnElementId).filterNotNull().firstOrNull() ?: continue
             val bpmnElem = stateProvider.currentState().elementByBpmnId[bpmnId]
             if (bpmnElem?.element is BpmnSequenceFlow) {
@@ -303,13 +306,12 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         val withinRect = cursorRect(cursorPoint)
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
         val shapesThatCanParent = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SHAPE_THAT_NESTS)
-        val indexes = mapOf(AreaType.SHAPE_THAT_NESTS to 20, AreaType.PARENT_PROCESS_SHAPE to 100)
 
         return intersection
                 ?.filter { null != it.value.bpmnElementId }
                 ?.filter { shapesThatCanParent.contains(it.value.areaType) }
                 ?.toList()
-                ?.sortedBy { indexes[it.second.areaType] }
+                ?.sortedByDescending { it.second.index }
                 ?.map { it.second.bpmnElementId }
                 ?.filterNotNull()
                 ?.first()!!
@@ -318,12 +320,12 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
     private fun elemUnderCursor(cursorPoint: Point2D.Float): List<DiagramElementId> {
         val withinRect = cursorRect(cursorPoint)
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
-        val minZindex = intersection?.minBy { it.value.index }
+        val maxZindex = intersection?.maxBy { it.value.index }
         val result = mutableListOf<DiagramElementId>()
         val centerRect = Point2D.Float(withinRect.centerX.toFloat(), withinRect.centerY.toFloat())
         intersection
                 ?.filter { it.value.areaType != AreaType.PARENT_PROCESS_SHAPE }
-                ?.filter { it.value.index == minZindex?.value?.index }
+                ?.filter { it.value.index == maxZindex?.value?.index }
                 ?.minBy { Point2D.Float(it.value.area.bounds2D.centerX.toFloat(), it.value.area.bounds2D.centerY.toFloat()).distance(centerRect) }
                 ?.let { result += it.key; it.value.parentToSelect?.apply { result += this } }
         return result

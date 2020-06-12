@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.render.elements.shapes
 
 import com.valb3r.bpmn.intellij.plugin.Colors
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
@@ -12,10 +13,11 @@ import java.awt.geom.Point2D
 
 class IconShape(
         override val elementId: DiagramElementId,
+        override val bpmnElementId: BpmnElementId,
         private val icon: String,
         shape: ShapeElement,
         state: RenderState
-) : ShapeRenderElement(elementId, shape, state) {
+) : ShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 
@@ -26,7 +28,7 @@ class IconShape(
                 Colors.SELECTED_COLOR.color
         )
 
-        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera)))
+        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex()))
     }
 
     override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
