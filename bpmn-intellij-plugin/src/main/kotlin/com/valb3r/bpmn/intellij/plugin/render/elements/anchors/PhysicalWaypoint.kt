@@ -36,7 +36,7 @@ class PhysicalWaypoint(
         }
 
         val delId = DiagramElementId("DEL:$elementId")
-        val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, y, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
+        val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
         state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
             dest.addEvents(listOf(NewWaypointsEvent(
                     parentElementId,
