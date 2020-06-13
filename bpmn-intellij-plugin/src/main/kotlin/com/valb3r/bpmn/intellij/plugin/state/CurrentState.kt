@@ -222,6 +222,13 @@ class CurrentStateProvider {
         }
         val elemByBpmnIdUpdated = updatedElementByStaticId.remove(elementId)
         elemByBpmnIdUpdated?.let { updatedElementByStaticId[newElementId] = WithParentId(it.parent, it.updateBpmnElemId(newElementId)) }
+
+        // Cascade ID update to children:
+        updatedElementByStaticId.forEach {elemId, elem ->
+            if (elem.parent == elementId) {
+                updatedElementByStaticId[elemId] = WithParentId(newElementId, elem.element)
+            }
+        }
         val elemPropUpdated = updatedElemPropertiesByStaticElementId.remove(elementId)?.toMutableMap() ?: mutableMapOf()
         elemPropUpdated[PropertyType.ID] = Property(newElementId.id)
         updatedElemPropertiesByStaticElementId[newElementId] = elemPropUpdated
