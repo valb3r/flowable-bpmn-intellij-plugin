@@ -22,7 +22,7 @@ class EdgeRenderElement(
 
     override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         val delId = DiagramElementId("DEL:$elementId")
-        val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, y, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
+        val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
         state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
             val bpmnRemoves = mutableListOf<BpmnElementRemovedEvent>()
             val diagramRemoves = mutableListOf<DiagramElementRemovedEvent>()
