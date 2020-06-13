@@ -65,7 +65,7 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
     }
 
     fun click(location: Point2D.Float) {
-        val clickedElements = elemUnderCursor(location, setOf())
+        val clickedElements = elemUnderCursor(location)
         clickedElements.forEach { interactionCtx.clickCallbacks[it]?.invoke(updateEventsRegistry()) }
 
         this.selectedElements.clear()
@@ -74,7 +74,8 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
 
         repaint()
 
-        val elementIdForPropertiesTable = selectedElements.firstOrNull()
+        val propertiesForElement = if (selectedElements.isEmpty()) elemUnderCursor(location, setOf()) else selectedElements
+        val elementIdForPropertiesTable = propertiesForElement.firstOrNull()
         val state = stateProvider.currentState()
         state
                 .elementByDiagramId[elementIdForPropertiesTable]
