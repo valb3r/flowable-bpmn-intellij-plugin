@@ -412,9 +412,8 @@ class FlowableParser : BpmnParser {
     }
 
     private fun applyPropertyUpdateWithId(doc: Document, update: PropertyUpdateWithId) {
-        val node = doc.selectSingleNode(
-                "//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]"
-        ) as Element
+        val node = doc.selectSingleNode("//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]") as Element?
+                ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnElementId.id}'][1]") as Element
 
         setToNode(node, update.property, update.newValue)
 
@@ -422,9 +421,8 @@ class FlowableParser : BpmnParser {
             return
         }
 
-        val diagramElement = doc.selectSingleNode(
-                "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]/*[@bpmnElement='${update.bpmnElementId.id}']"
-        ) as Element
+        val diagramElement = doc.selectSingleNode("//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]/*[@bpmnElement='${update.bpmnElementId.id}']") as Element?
+                ?: doc.selectSingleNode("//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][@bpmnElement='${update.bpmnElementId.id}']") as Element
 
         diagramElement.addAttribute("bpmnElement", update.newIdValue!!.id)
     }

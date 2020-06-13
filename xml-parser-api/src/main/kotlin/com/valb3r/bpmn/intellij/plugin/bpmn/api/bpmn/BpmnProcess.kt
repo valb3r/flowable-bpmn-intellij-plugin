@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn
 
 import com.github.pozo.KotlinBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
@@ -94,7 +95,7 @@ data class BpmnProcessBody(
 
 @KotlinBuilder
 data class BpmnProcess(
-        val id: BpmnElementId,
+        override val id: BpmnElementId,
         val name: String,
         val documentation: String?,
         val isExecutable: Boolean?,
@@ -107,4 +108,9 @@ data class BpmnProcess(
         // Child BPMN processes in rendering order, flattened, so that i.e. subProcess is flat simple object (id, docs, ...)
         // and not recursion object
         val children: Map<BpmnElementId, BpmnProcessBody>?
-)
+): WithBpmnId {
+
+    override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
+        return copy(id = newId)
+    }
+}
