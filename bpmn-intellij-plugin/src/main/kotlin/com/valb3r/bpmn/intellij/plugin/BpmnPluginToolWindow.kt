@@ -4,6 +4,7 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileTypes.StdFileTypes
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.psi.JavaCodeFragment
 import com.intellij.psi.JavaCodeFragmentFactory
 import com.intellij.psi.PsiDocumentManager
@@ -71,6 +72,7 @@ class BpmnPluginToolWindow {
                 { IntelliJFileCommitter(it, context.project, virtualFile) },
                 FlowableParser(),
                 table,
+                { _: BpmnElementId, _: PropertyType, value: String, allowableValues: Set<String> -> createDropdown(value, allowableValues) },
                 { _: BpmnElementId, _: PropertyType, value: String -> createEditor(context.project, bpmnFile, value) },
                 { _: BpmnElementId, _: PropertyType, value: String -> createTextField(value) },
                 { _: BpmnElementId, _: PropertyType, value: Boolean -> createCheckboxField(value) },
@@ -117,6 +119,17 @@ class BpmnPluginToolWindow {
                 get() = textField.text
             override val component: JComponent
                 get() = textField
+        }
+    }
+
+    fun createDropdown(text: String, allowableValues: Set<String>): TextValueAccessor {
+        val dropDownField = ComboBox(allowableValues.toTypedArray())
+        dropDownField.selectedItem = text
+        return object: TextValueAccessor {
+            override val text: String
+                get() = dropDownField.selectedItem as String
+            override val component: JComponent
+                get() = dropDownField
         }
     }
 

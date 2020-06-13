@@ -5,5 +5,6 @@ enum class PropertyValueType {
     STRING,
     BOOLEAN,
     CLASS,
-    EXPRESSION
+    EXPRESSION,
+    ATTACHED_SEQUENCE_SELECT
 }

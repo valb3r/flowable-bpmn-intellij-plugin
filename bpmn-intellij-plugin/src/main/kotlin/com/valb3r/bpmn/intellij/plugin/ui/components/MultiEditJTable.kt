@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.ui.components
 
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
@@ -25,6 +26,7 @@ class MultiEditJTable(tableModel: TableModel): JBTable(tableModel) {
             is EditorTextField -> EditorTextFieldCellEditor(value)
             is JBTextField -> JBTextFieldCellEditor(value)
             is JBCheckBox -> JBCheckBoxCellEditor(value)
+            is ComboBox<*> -> JBComboBoxCellEditor(value)
             else -> super.getCellEditor(row, column)
         }
     }
@@ -36,6 +38,7 @@ class MultiEditJTable(tableModel: TableModel): JBTable(tableModel) {
             is EditorTextField -> EditorTextFieldCellRenderer(value)
             is JBTextField -> JBTextFieldCellRenderer(value)
             is JBCheckBox -> JBCheckBoxCellRenderer(value)
+            is ComboBox<*> -> JBComboBoxCellRenderer(value)
             is String -> LabelTextFieldCellRenderer(value)
             else -> super.getCellRenderer(row, column)
         }
@@ -93,6 +96,17 @@ class JBCheckBoxCellEditor(val field: JBCheckBox): AbstractTableCellEditor() {
     }
 }
 
+class JBComboBoxCellEditor(val field: ComboBox<*>): AbstractTableCellEditor() {
+
+    override fun getTableCellEditorComponent(table: JTable?, value: Any?, isSelected: Boolean, row: Int, column: Int): Component {
+        return field
+    }
+
+    override fun getCellEditorValue(): Any {
+        return field
+    }
+}
+
 class EditorTextFieldCellRenderer(val field: EditorTextField): TableCellRenderer {
 
     override fun getTableCellRendererComponent(
@@ -116,6 +130,15 @@ class JBCheckBoxCellRenderer(val field: JBCheckBox): TableCellRenderer {
         return field
     }
 }
+
+class JBComboBoxCellRenderer(val field: ComboBox<*>): TableCellRenderer {
+
+    override fun getTableCellRendererComponent(
+            table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
+        return field
+    }
+}
+
 
 class LabelTextFieldCellRenderer(val field: String): TableCellRenderer {
 

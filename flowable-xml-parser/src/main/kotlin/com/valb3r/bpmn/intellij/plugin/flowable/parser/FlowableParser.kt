@@ -545,7 +545,7 @@ class FlowableParser : BpmnParser {
         }
 
         return when(type) {
-            STRING, CLASS, EXPRESSION -> value as String
+            STRING, CLASS, EXPRESSION, ATTACHED_SEQUENCE_SELECT -> value as String
             BOOLEAN -> (value as Boolean).toString()
         }
     }

@@ -47,6 +47,6 @@ enum class PropertyType(
     CONDITION_EXPR_VALUE("conditionExpression.text", "Condition expression", PropertyValueType.EXPRESSION, "conditionExpression.text"),
     CONDITION_EXPR_TYPE("conditionExpression.type", "Condition expression type", STRING, "conditionExpression.type"),
     COMPLETION_CONDITION("completionCondition.condition", "Completion condition", PropertyValueType.EXPRESSION, "completionCondition.condition"),
-    DEFAULT_FLOW("defaultElement", "Default flow element", STRING, "defaultElement", false, ID),
+    DEFAULT_FLOW("defaultElement", "Default flow element", PropertyValueType.ATTACHED_SEQUENCE_SELECT, "defaultElement", false, ID),
     IS_TRANSACTIONAL_SUBPROCESS("transactionalSubprocess", "Is transactional subprocess", BOOLEAN, "transactionalSubprocess", elementUpdateChangesClass = true)
 }

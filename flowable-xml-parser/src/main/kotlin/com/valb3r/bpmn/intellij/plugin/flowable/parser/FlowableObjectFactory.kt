@@ -194,7 +194,9 @@ class FlowableObjectFactory: BpmnObjectFactory {
         }
 
         result[type] = when (type.valueType) {
-            PropertyValueType.STRING, PropertyValueType.CLASS, PropertyValueType.EXPRESSION -> if (node.isNull) Property(null) else Property(node.asText())
+            PropertyValueType.STRING, PropertyValueType.CLASS, PropertyValueType.EXPRESSION, PropertyValueType.ATTACHED_SEQUENCE_SELECT
+            -> if (node.isNull) Property(null) else Property(node.asText())
+
             PropertyValueType.BOOLEAN -> Property(node.asBoolean())
         }
     }
