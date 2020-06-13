@@ -12,6 +12,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import org.amshove.kluent.shouldContainAll
+import org.amshove.kluent.shouldHaveSize
 import org.amshove.kluent.shouldNotBeNull
 import org.junit.jupiter.api.Test
 import java.awt.geom.Point2D
@@ -50,6 +52,17 @@ internal class FlowableParserTest {
         processObject = FlowableParser().parse("nested.bpmn20.xml".asResource()!!)
 
         processObject.shouldNotBeNull()
+    }
+
+    @Test
+    fun `XML process with nested subprocess elements that have interlaced subelems of same type should be parseable without error`() {
+        val processObject: BpmnProcessObject?
+
+        processObject = FlowableParser().parse("nested-interlaced.bpmn20.xml".asResource()!!)
+
+        processObject.shouldNotBeNull()
+        processObject.process.body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
+        processObject.process.children!![BpmnElementId("sid-C4389D7E-1083-47D2-BECC-99479E63D18B")]!!.serviceTask!!.shouldHaveSize(2)
     }
 
     @Test
