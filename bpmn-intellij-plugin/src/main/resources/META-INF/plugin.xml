@@ -314,6 +314,7 @@
     <!-- Inject SpEL for highlighting -->
     <extensions defaultExtensionNs="com.intellij">
         <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.langinjection.FlowableDelegateExpressionUiInjector"/>
+        <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.langinjection.xml.XmlFlowableInjector"/>
     </extensions>
 
     <!-- <extensions defaultExtensionNs="com.intellij">
