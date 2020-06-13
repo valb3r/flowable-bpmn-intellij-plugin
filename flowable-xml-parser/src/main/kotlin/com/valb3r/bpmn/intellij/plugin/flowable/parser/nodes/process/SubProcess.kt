@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSub
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.ProcessBody
 import org.mapstruct.Mapper
+import org.mapstruct.Mapping
 import org.mapstruct.factory.Mappers
 
 class SubProcess: BpmnMappable<BpmnSubProcess>, ProcessBody() {
@@ -16,11 +17,13 @@ class SubProcess: BpmnMappable<BpmnSubProcess>, ProcessBody() {
     @JacksonXmlProperty(isAttribute = true) var exclusive:Boolean? = null
 
     override fun toElement(): BpmnSubProcess {
-        return Mappers.getMapper(Mapping::class.java).convertToDto(this)
+        return Mappers.getMapper(SubProcessMapping::class.java).convertToDto(this)
     }
 
     @Mapper(uses = [BpmnElementIdMapper::class])
-    interface Mapping {
+    interface SubProcessMapping {
+
+        @Mapping(target = "transactionalSubprocess", constant = "false")
         fun convertToDto(input: SubProcess) : BpmnSubProcess
     }
 }

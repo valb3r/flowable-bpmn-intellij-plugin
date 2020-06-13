@@ -206,6 +206,17 @@ internal class FlowableParserTest {
         updated.shouldNotBeNull()
     }
 
+    @Test
+    fun `XML process with interlaced elements of same type should be updatable with element type change`() {
+        val updated = FlowableParser().update(
+                "nested-interlaced.bpmn20.xml".asResource()!!,
+                listOf(BooleanValueUpdatedEvent(BpmnElementId("sid-C4389D7E-1083-47D2-BECC-99479E63D18B"), PropertyType.IS_TRANSACTIONAL_SUBPROCESS, true))
+        )
+
+        updated.shouldNotBeNull()
+        val processObject = FlowableParser().parse(updated)
+        processObject.process.body!!.transaction!!.map { it.id.id }.shouldContain("sid-C4389D7E-1083-47D2-BECC-99479E63D18B")
+    }
 
     @Test
     fun `XML process with interlaced elements of same type should be updatable with property update event without error`() {
