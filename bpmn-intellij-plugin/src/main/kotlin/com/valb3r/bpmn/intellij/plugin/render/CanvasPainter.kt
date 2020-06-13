@@ -87,6 +87,29 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return arrow
     }
 
+    fun drawLineSlash(start: Point2D.Float, end: Point2D.Float, color: Color): Area {
+        val st = camera.toCameraView(start)
+        val en = camera.toCameraView(end)
+
+        val stLen = camera.toCameraView(Point2D.Float(0.0f, 0.0f))
+        val enLen = camera.toCameraView(Point2D.Float(15.0f, 0.0f))
+
+        graphics2D.color = color
+        val transform = getTranslateInstance((st.x + (en.x - st.x) / 5.0f).toDouble(), (st.y + (en.y - st.y) / 5.0f).toDouble())
+        transform.rotate(en.x.toDouble() - st.x.toDouble(), en.y.toDouble() - st.y.toDouble())
+        transform.rotate(- Math.PI / 4.0f)
+        val len = stLen.distance(enLen).toFloat()
+        val line = Area(Rectangle2D.Float(
+                -regularLineWidth / 4.0f,
+                -len / 2.0f,
+                regularLineWidth / 2.0f,
+                len
+        ))
+        line.transform(transform)
+        graphics2D.fill(line)
+        return line
+    }
+
     fun drawCircle(center: WaypointElement, radius: Float, background: Color, border: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(center.x - radius, center.y - radius))
         val rightBottom = camera.toCameraView(Point2D.Float(center.x + radius, center.y + radius))

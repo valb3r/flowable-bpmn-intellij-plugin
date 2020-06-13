@@ -26,11 +26,12 @@ interface SelectedValueAccessor {
 }
 
 fun newPropertiesVisualizer(table: JTable,
+                            dropDownFactory: (id: BpmnElementId, type: PropertyType, value: String, availableValues: Set<String>) -> TextValueAccessor,
                             editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor): PropertiesVisualizer {
     return visualizer.updateAndGet {
-        return@updateAndGet PropertiesVisualizer(table, editorFactory, textFieldFactory, checkboxFieldFactory)
+        return@updateAndGet PropertiesVisualizer(table, dropDownFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
     }
 }
 
@@ -40,6 +41,7 @@ fun propertiesVisualizer(): PropertiesVisualizer {
 
 class PropertiesVisualizer(
         val table: JTable,
+        val dropDownFactory: (id: BpmnElementId, type: PropertyType, value: String, availableValues: Set<String>) -> TextValueAccessor,
         val editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         val textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         val checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor) {
@@ -79,6 +81,7 @@ class PropertiesVisualizer(
                 BOOLEAN -> model.addRow(arrayOf(it.key.caption, buildCheckboxField(bpmnElementId, it.key, it.value)))
                 CLASS -> model.addRow(arrayOf(it.key.caption, buildClassField(state, bpmnElementId, it.key, it.value)))
                 EXPRESSION -> model.addRow(arrayOf(it.key.caption, buildExpressionField(state, bpmnElementId, it.key, it.value)))
+                ATTACHED_SEQUENCE_SELECT -> model.addRow(arrayOf(it.key.caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, it.key, it.value)))
             }
         }
         model.fireTableDataChanged()
@@ -137,6 +140,31 @@ class PropertiesVisualizer(
         val field = editorFactory(bpmnElementId, type, "\"${fieldValue}\"")
         addEditorTextListener(state, field, bpmnElementId, type)
         return field.component
+    }
+
+    private fun buildDropDownSelectFieldForTargettedIds(state: Map<BpmnElementId, Map<PropertyType, Property>>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
+        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
+        val field = dropDownFactory(bpmnElementId, type, fieldValue, findCascadeTargetIds(bpmnElementId, type, state))
+        addEditorTextListener(state, field, bpmnElementId, type)
+        return field.component
+    }
+
+    private fun findCascadeTargetIds(forId: BpmnElementId, type: PropertyType, state: Map<BpmnElementId, Map<PropertyType, Property>>): Set<String> {
+        if (null == type.updatedBy) {
+            throw IllegalArgumentException("Type $type should be cascadable")
+        }
+
+        val result = mutableSetOf("")
+
+        state.forEach { (_, props) ->
+            props.forEach {property ->
+                if (property.key == type.updatedBy && props[PropertyType.SOURCE_REF]?.value == forId.id) {
+                    props[PropertyType.ID]?.value?.let { result += it as String }
+                }
+            }
+        }
+
+        return result
     }
 
     private fun addEditorTextListener(state: Map<BpmnElementId, Map<PropertyType, Property>>, field: TextValueAccessor, bpmnElementId: BpmnElementId, type: PropertyType) {

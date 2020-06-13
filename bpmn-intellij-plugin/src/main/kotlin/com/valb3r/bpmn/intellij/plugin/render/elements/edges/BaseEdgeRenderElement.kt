@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
@@ -53,6 +54,7 @@ abstract class BaseEdgeRenderElement(
             }
         }
 
+        area.add(renderDefaultMarkIfNeeded(ctx, anchors.filterIsInstance<PhysicalWaypoint>().map { it.transformedLocation }))
         return mapOf(elementId to AreaWithZindex(area, AreaType.EDGE, waypointAnchors(ctx.canvas.camera), index = zIndex()))
     }
 
@@ -93,6 +95,15 @@ abstract class BaseEdgeRenderElement(
                 maxX - minX,
                 maxY - minY
         )
+    }
+
+    private fun renderDefaultMarkIfNeeded(ctx: RenderContext, anchors: List<Point2D.Float>): Area {
+        val sourceRefOf = state.currentState.elemPropertiesByStaticElementId.filter { it.value[PropertyType.DEFAULT_FLOW]?.value == bpmnElementId.id }
+        if (sourceRefOf.isEmpty()) {
+            return Area()
+        }
+
+        return ctx.canvas.drawLineSlash(anchors[0], anchors[1], color(isActive(), edgeColor))
     }
 
     private fun isActiveEdge(endPos: Int, activeAnchors: List<AnchorElement>): Boolean {

@@ -32,6 +32,7 @@ class CanvasBuilder(val bpmnProcessRenderer: BpmnProcessRenderer) {
 
     fun build(
             committerFactory: (BpmnParser) -> FileCommitter, parser: BpmnParser, properties: JTable,
+            dropDownFactory: (id: BpmnElementId, type: PropertyType, value: String, availableValues: Set<String>) -> TextValueAccessor,
             editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
             textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
             checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor,
@@ -44,12 +45,12 @@ class CanvasBuilder(val bpmnProcessRenderer: BpmnProcessRenderer) {
         val data = readFile(bpmnFile)
         val process = parser.parse(data)
         newObjectsFactory = createNewElementsFactory(FlowableObjectFactory())
-        newPropertiesVisualizer(properties, editorFactory, textFieldFactory, checkboxFieldFactory)
+        newPropertiesVisualizer(properties, dropDownFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
         canvas.reset(data, process.toView(newObjectsFactory!!), bpmnProcessRenderer)
 
         currentConnection?.let { it.disconnect(); it.dispose() }
         currentConnection = attachFileChangeListener(project, bpmnFile) {
-            build(committerFactory, parser, properties, editorFactory, textFieldFactory, checkboxFieldFactory, canvas, project, it)
+            build(committerFactory, parser, properties, dropDownFactory, editorFactory, textFieldFactory, checkboxFieldFactory, canvas, project, it)
         }
     }
 
