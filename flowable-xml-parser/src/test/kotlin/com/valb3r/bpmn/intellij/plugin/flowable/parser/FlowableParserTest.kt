@@ -12,6 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import org.amshove.kluent.shouldContain
 import org.amshove.kluent.shouldContainAll
 import org.amshove.kluent.shouldHaveSize
 import org.amshove.kluent.shouldNotBeNull
@@ -26,7 +27,7 @@ internal class FlowableParserTest {
     private val parentElemId = BpmnElementId("duplicates")
     private val bmpnElemId = BpmnElementId(UUID.randomUUID().toString())
     private val diagramElementId = DiagramElementId(UUID.randomUUID().toString())
-    
+
     @Test
     fun `XML process with all Flowable elements is parseable without error`() {
         val processObject: BpmnProcessObject?
@@ -62,7 +63,32 @@ internal class FlowableParserTest {
 
         processObject.shouldNotBeNull()
         processObject.process.body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
-        processObject.process.children!![BpmnElementId("sid-C4389D7E-1083-47D2-BECC-99479E63D18B")]!!.serviceTask!!.shouldHaveSize(2)
+        processObject.process.children!![BpmnElementId("sid-775FFB07-8CFB-4F82-A6EA-AB0E9BBB79A6")]!!.serviceTask!!.shouldHaveSize(2)
+        processObject.process.children!![BpmnElementId("sid-775FFB07-8CFB-4F82-A6EA-AB0E9BBB79A6")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlaced")
+    }
+
+    @Test
+    fun `XML process with nested adhoc subprocess elements that have interlaced subelems of same type should be parseable without error`() {
+        val processObject: BpmnProcessObject?
+
+        processObject = FlowableParser().parse("nested-interlaced.bpmn20.xml".asResource()!!)
+
+        processObject.shouldNotBeNull()
+        processObject.process.body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
+        processObject.process.children!![BpmnElementId("sid-5EEB495F-ACAC-4C04-99E1-691D906B3A30")]!!.serviceTask!!.shouldHaveSize(2)
+        processObject.process.children!![BpmnElementId("sid-5EEB495F-ACAC-4C04-99E1-691D906B3A30")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlacedOther")
+    }
+
+    @Test
+    fun `XML process with nested transactional subprocess elements that have interlaced subelems of same type should be parseable without error`() {
+        val processObject: BpmnProcessObject?
+
+        processObject = FlowableParser().parse("nested-interlaced.bpmn20.xml".asResource()!!)
+
+        processObject.shouldNotBeNull()
+        processObject.process.body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
+        processObject.process.children!![BpmnElementId("sid-1BB4FA80-C87F-4A05-95DF-753D06EE7424")]!!.serviceTask!!.shouldHaveSize(2)
+        processObject.process.children!![BpmnElementId("sid-1BB4FA80-C87F-4A05-95DF-753D06EE7424")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlacedYetOther")
     }
 
     @Test
@@ -107,7 +133,7 @@ internal class FlowableParserTest {
         val updated = FlowableParser().update(
                 "duplicates.bpmn20.xml".asResource()!!,
                 listOf(BpmnElementRemovedEvent(BpmnElementId("serviceTaskStart"))
-        ))
+                ))
 
         updated.shouldNotBeNull()
     }
@@ -125,7 +151,7 @@ internal class FlowableParserTest {
                                 PropertyType.CONDITION_EXPR_TYPE to Property("a type")
                         )
                 )
-        ))
+                ))
 
         updated.shouldNotBeNull()
     }
@@ -179,7 +205,6 @@ internal class FlowableParserTest {
 
         updated.shouldNotBeNull()
     }
-
 
     @Test
     fun `XML process with interlaced elements of same type should be updatable with property update event without error`() {

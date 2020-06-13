@@ -31,6 +31,6 @@ data class SequenceFlow(
 
 @Xml
 data class ConditionExpression(
-        @Attribute val type: String?  = null,
+        @Attribute(name = "xsi:type") val type: String?  = null,
         @PropertyElement(writeAsCData = true) val text: String? = null
 )

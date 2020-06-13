@@ -12,13 +12,13 @@ import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
 @Xml
-data class AdHocSubProcess(
-        @Attribute val id: String,
-        @Attribute val name: String?,
-        @Attribute val ordering: String?,
-        @PropertyElement val documentation: String?,
-        @Element val completionCondition: CompletionCondition?
-): BpmnMappable<BpmnAdHocSubProcess>, ProcessBody() {
+class AdHocSubProcess: BpmnMappable<BpmnAdHocSubProcess>, ProcessBody() {
+
+    @Attribute var id: String? = null
+    @Attribute var name: String? = null
+    @Attribute var ordering: String? = null
+    @PropertyElement var documentation: String?  = null
+    @Element var completionCondition: CompletionCondition? = null
 
     override fun toElement(): BpmnAdHocSubProcess {
         return Mappers.getMapper(Mapping::class.java).convertToDto(this)

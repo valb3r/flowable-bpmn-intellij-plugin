@@ -10,13 +10,13 @@ import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
 @Xml
-data class Transaction(
-        @Attribute val id: String,
-        @Attribute val name: String?,
-        @PropertyElement val documentation: String?,
-        @Attribute val async: Boolean?,
-        @Attribute val exclusive: Boolean?
-): BpmnMappable<BpmnTransactionalSubProcess>, ProcessBody() {
+class Transaction: BpmnMappable<BpmnTransactionalSubProcess>, ProcessBody() {
+
+    @Attribute var id: String? = null
+    @Attribute var name: String? = null
+    @PropertyElement var documentation: String? = null
+    @Attribute var async: Boolean? = null
+    @Attribute var exclusive: Boolean? = null
 
     override fun toElement(): BpmnTransactionalSubProcess {
         return Mappers.getMapper(Mapping::class.java).convertToDto(this)

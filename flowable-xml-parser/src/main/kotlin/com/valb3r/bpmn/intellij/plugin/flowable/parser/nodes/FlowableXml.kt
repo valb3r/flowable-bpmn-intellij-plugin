@@ -115,9 +115,9 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     private fun extractNestedProcesses(body: ProcessBody): Map<BpmnElementId, BpmnProcessBody>? {
         val children = mutableMapOf<BpmnElementId, BpmnProcessBody>()
 
-        body.adHocSubProcess?.forEach { mapChildren(BpmnElementId(it.id), it, children) }
+        body.adHocSubProcess?.forEach { mapChildren(BpmnElementId(it.id!!), it, children) }
         body.subProcess?.forEach { mapChildren(BpmnElementId(it.id!!), it, children) }
-        body.transaction?.forEach { mapChildren(BpmnElementId(it.id), it, children) }
+        body.transaction?.forEach { mapChildren(BpmnElementId(it.id!!), it, children) }
 
         if (children.isNotEmpty()) {
             return children

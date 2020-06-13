@@ -12,9 +12,9 @@ data class Plane(
         @Attribute val id: String,
         @Attribute val bpmnElement: String,
         // variable name sensitive
-        @Element(name = "BPMNShape") val bpmnShape: List<Shape>?,
+        @Element(name = "bpmndi:BPMNShape") val bpmnShape: List<Shape>?,
         // variable name sensitive
-        @Element(name = "BPMNEdge") val bpmnEdge: List<Edge>?
+        @Element(name = "bpmndi:BPMNEdge") val bpmnEdge: List<Edge>?
 ) {
     @Mapper(uses = [DiagramElementIdMapper::class, BpmnElementIdMapper::class])
     interface Mapping {

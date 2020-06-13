@@ -11,7 +11,7 @@ import org.mapstruct.Mapper
 data class Shape(
         @Attribute val id: String,
         @Attribute val bpmnElement: String,
-        @Element val bounds: Bounds
+        @Element(name = "omgdc:Bounds") val bounds: Bounds
 ) {
     @Mapper(uses = [DiagramElementIdMapper::class, BpmnElementIdMapper::class])
     interface Mapping {

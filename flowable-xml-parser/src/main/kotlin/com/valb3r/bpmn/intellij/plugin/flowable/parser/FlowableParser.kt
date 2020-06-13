@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
 import com.tickaroo.tikxml.TikXml
+import com.tickaroo.tikxml.TypeConverter
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
@@ -539,8 +540,19 @@ class FlowableParser : BpmnParser {
 
     private fun mapper(): TikXml {
         return TikXml.Builder()
+                .addTypeConverter(Float::class.java, FloatConverter())
                 .exceptionOnUnreadXml(false)
                 .build()
+    }
+
+    private class FloatConverter: TypeConverter<Float> {
+        override fun write(value: Float?): String {
+            return value?.toString() ?: ""
+        }
+
+        override fun read(value: String?): Float {
+            return value?.toFloat() ?: 0.0f
+        }
     }
 
     enum class NS(val namePrefix: String, val url: String) {

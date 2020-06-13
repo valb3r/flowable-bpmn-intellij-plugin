@@ -11,7 +11,7 @@ import org.mapstruct.Mapper
 data class Edge (
         @Attribute val id: String?,
         @Attribute val bpmnElement: String?,
-        @Element val waypoint: List<Waypoint>?
+        @Element(name = "omgdi:waypoint") val waypoint: List<Waypoint>?
 ) {
     @Mapper(uses = [DiagramElementIdMapper::class, BpmnElementIdMapper::class])
     interface Mapping {
