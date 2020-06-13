@@ -23,6 +23,10 @@ class PlaneRenderElement(
         override val children: MutableList<BaseDiagramRenderElement> = mutableListOf()
 ): BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 
+    override fun drawActionsElement(): Map<DiagramElementId, AreaWithZindex> {
+        return mutableMapOf()
+    }
+
     override fun doDragToWithoutChildren(dx: Float, dy: Float) {
         // NOP
     }

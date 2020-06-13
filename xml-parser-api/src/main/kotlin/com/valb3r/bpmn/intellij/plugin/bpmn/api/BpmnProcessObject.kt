@@ -18,6 +18,9 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
         val propertiesById = mutableMapOf<BpmnElementId, MutableMap<PropertyType, Property>>()
 
+        fillFor(BpmnElementId(""), factory, process, elementByStaticId, propertiesById)
+        elementByDiagramId[DiagramElementId(process.id.id)] = process.id
+
         process.body?.let { extractElementsFromBody(process.id, it, factory, elementByStaticId, propertiesById) }
         process.children?.forEach { (id, body) -> extractElementsFromBody(id, body, factory, elementByStaticId, propertiesById)}
 
@@ -119,7 +122,6 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         elementById[activity.id] = WithParentId(parentId, activity)
         propertiesByElemType[activity.id] = factory.propertiesOf(activity).toMutableMap()
     }
-
 }
 
 data class BpmnProcessObjectView(

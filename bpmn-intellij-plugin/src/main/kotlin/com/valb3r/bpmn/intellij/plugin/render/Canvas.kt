@@ -65,7 +65,7 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
     }
 
     fun click(location: Point2D.Float) {
-        val clickedElements = elemUnderCursor(location)
+        val clickedElements = elemUnderCursor(location, setOf())
         clickedElements.forEach { interactionCtx.clickCallbacks[it]?.invoke(updateEventsRegistry()) }
 
         this.selectedElements.clear()
@@ -317,14 +317,14 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
                 ?.first()!!
     }
 
-    private fun elemUnderCursor(cursorPoint: Point2D.Float): List<DiagramElementId> {
+    private fun elemUnderCursor(cursorPoint: Point2D.Float, excludeAreas: Set<AreaType> = setOf(AreaType.PARENT_PROCESS_SHAPE)): List<DiagramElementId> {
         val withinRect = cursorRect(cursorPoint)
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
         val maxZindex = intersection?.maxBy { it.value.index }
         val result = mutableListOf<DiagramElementId>()
         val centerRect = Point2D.Float(withinRect.centerX.toFloat(), withinRect.centerY.toFloat())
         intersection
-                ?.filter { it.value.areaType != AreaType.PARENT_PROCESS_SHAPE }
+                ?.filter { !excludeAreas.contains(it.value.areaType) }
                 ?.filter { it.value.index == maxZindex?.value?.index }
                 ?.minBy { Point2D.Float(it.value.area.bounds2D.centerX.toFloat(), it.value.area.bounds2D.centerY.toFloat()).distance(centerRect) }
                 ?.let { result += it.key; it.value.parentToSelect?.apply { result += this } }

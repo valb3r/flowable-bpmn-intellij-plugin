@@ -94,7 +94,7 @@ abstract class BaseDiagramRenderElement(
         return Rectangle2D.Float(rect.x - actionsMargin, rect.y - actionsMargin, rect.width + 2.0f * actionsMargin, rect.height + 2.0f * actionsMargin)
     }
 
-    protected fun drawActionsElement(): Map<DiagramElementId, AreaWithZindex> {
+    open protected fun drawActionsElement(): Map<DiagramElementId, AreaWithZindex> {
         val rect = actionsRect()
         state.ctx.canvas.drawRectNoFill(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
         return drawActions(rect.x + rect.width + actionsMargin, rect.y)
