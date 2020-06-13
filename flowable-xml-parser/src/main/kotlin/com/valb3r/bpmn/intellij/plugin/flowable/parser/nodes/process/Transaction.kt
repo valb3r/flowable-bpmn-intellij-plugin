@@ -7,13 +7,13 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.ProcessBody
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
-data class Transaction(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
-        val documentation: String?,
-        @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val exclusive: Boolean?
-): BpmnMappable<BpmnTransactionalSubProcess>, ProcessBody() {
+class Transaction: BpmnMappable<BpmnTransactionalSubProcess>, ProcessBody() {
+
+    @JacksonXmlProperty(isAttribute = true) var id: String? = null
+    @JacksonXmlProperty(isAttribute = true) var name: String? = null
+    var documentation: String? = null
+    @JacksonXmlProperty(isAttribute = true) var async: Boolean? = null
+    @JacksonXmlProperty(isAttribute = true) var exclusive: Boolean? = null
 
     override fun toElement(): BpmnTransactionalSubProcess {
         return Mappers.getMapper(Mapping::class.java).convertToDto(this)

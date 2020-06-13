@@ -62,7 +62,7 @@ internal class FlowableParserTest {
 
         processObject.shouldNotBeNull()
         processObject.process.body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
-        processObject.process.children!![BpmnElementId("sid-C4389D7E-1083-47D2-BECC-99479E63D18B")]!!.serviceTask!!.shouldHaveSize(2)
+        processObject.process.children!![BpmnElementId("sid-775FFB07-8CFB-4F82-A6EA-AB0E9BBB79A6")]!!.serviceTask!!.shouldHaveSize(2)
     }
 
     @Test

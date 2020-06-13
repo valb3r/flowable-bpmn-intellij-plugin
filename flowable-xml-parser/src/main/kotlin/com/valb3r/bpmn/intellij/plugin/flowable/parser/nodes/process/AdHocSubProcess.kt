@@ -11,13 +11,13 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.ProcessBody
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
-data class AdHocSubProcess(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
-        @JacksonXmlProperty(isAttribute = true) val ordering: String?,
-        val documentation: String?,
-        val completionCondition: CompletionCondition?
-): BpmnMappable<BpmnAdHocSubProcess>, ProcessBody() {
+class AdHocSubProcess: BpmnMappable<BpmnAdHocSubProcess>, ProcessBody() {
+
+    @JacksonXmlProperty(isAttribute = true) var id: String? = null
+    @JacksonXmlProperty(isAttribute = true) var name: String? = null
+    @JacksonXmlProperty(isAttribute = true) var ordering: String? = null
+    var documentation: String? = null
+    var completionCondition: CompletionCondition? = null
 
     override fun toElement(): BpmnAdHocSubProcess {
         return Mappers.getMapper(Mapping::class.java).convertToDto(this)
