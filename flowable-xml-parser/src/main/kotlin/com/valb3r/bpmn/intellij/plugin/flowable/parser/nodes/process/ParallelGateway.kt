@@ -1,16 +1,19 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.tickaroo.tikxml.annotation.Attribute
+import com.tickaroo.tikxml.annotation.PropertyElement
+import com.tickaroo.tikxml.annotation.Xml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
+@Xml
 data class ParallelGateway(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
-        @JacksonXmlProperty(isAttribute = true, localName = "default") val defaultElement: String?,
-        val documentation: String?
+        @Attribute val id: String,
+        @Attribute val name: String?,
+        @Attribute(name = "default") val defaultElement: String?,
+        @PropertyElement val documentation: String?
 ): BpmnMappable<BpmnParallelGateway> {
 
     override fun toElement(): BpmnParallelGateway {

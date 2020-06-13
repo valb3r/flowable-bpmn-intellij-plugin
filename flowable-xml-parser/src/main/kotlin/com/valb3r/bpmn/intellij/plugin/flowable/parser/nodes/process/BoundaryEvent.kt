@@ -1,29 +1,30 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
-import com.fasterxml.jackson.annotation.JsonSetter
-import com.fasterxml.jackson.annotation.Nulls
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
-import com.github.pozo.KotlinBuilder
+import com.tickaroo.tikxml.annotation.Attribute
+import com.tickaroo.tikxml.annotation.Element
+import com.tickaroo.tikxml.annotation.PropertyElement
+import com.tickaroo.tikxml.annotation.Xml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.subelements.*
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
-@KotlinBuilder
+@Xml
 data class BoundaryEvent(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
-        @JacksonXmlProperty(isAttribute = true) val attachedToRef: String?,
-        @JacksonXmlProperty(isAttribute = true) val cancelActivity: Boolean?,
-        val documentation: String?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val timerEventDefinition: TimerEventDefinition?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val signalEventDefinition: SignalEventDefinition?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val messageEventDefinition: MessageEventDefinition?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val errorEventDefinition: ErrorEventDefinition?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val cancelEventDefinition: CancelEventDefinition?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val compensateEventDefinition: CompensateEventDefinition?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val conditionalEventDefinition: ConditionalEventDefinition?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val escalationEventDefinition: EscalationEventDefinition?
+        @Attribute val id: String,
+        @Attribute val name: String?,
+        @Attribute val attachedToRef: String?,
+        @Attribute val cancelActivity: Boolean?,
+        @PropertyElement val documentation: String?,
+        @Element val timerEventDefinition: TimerEventDefinition?,
+        @Element val signalEventDefinition: SignalEventDefinition?,
+        @Element val messageEventDefinition: MessageEventDefinition?,
+        @Element val errorEventDefinition: ErrorEventDefinition?,
+        @Element val cancelEventDefinition: CancelEventDefinition?,
+        @Element val compensateEventDefinition: CompensateEventDefinition?,
+        @Element val conditionalEventDefinition: ConditionalEventDefinition?,
+        @Element val escalationEventDefinition: EscalationEventDefinition?
 ): BpmnMappable<BpmnBoundaryEvent> {
 
     override fun toElement(): BpmnBoundaryEvent {
@@ -34,36 +35,4 @@ data class BoundaryEvent(
     interface Mapping {
         fun convertToDto(input: BoundaryEvent) : BpmnBoundaryEvent
     }
-
-    data class TimerEventDefinition(
-            val timeDate: String? = null
-    )
-
-    data class SignalEventDefinition(
-            val signalRef: String? = null
-    )
-
-    data class MessageEventDefinition(
-            val messageRef: String? = null
-    )
-
-    data class ErrorEventDefinition(
-            val errorRef: String? = null
-    )
-
-    data class CancelEventDefinition(
-            val cancelRef: String? = null // TODO - what it cancels?
-    )
-
-    data class CompensateEventDefinition(
-            val activityRef: String? = null
-    )
-
-    data class ConditionalEventDefinition(
-            val condition: String? = null
-    )
-
-    data class EscalationEventDefinition(
-            val escalationRef: String? = null
-    )
 }

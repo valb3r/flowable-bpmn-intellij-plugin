@@ -1,18 +1,21 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.tickaroo.tikxml.annotation.Attribute
+import com.tickaroo.tikxml.annotation.PropertyElement
+import com.tickaroo.tikxml.annotation.Xml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.ProcessBody
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
+@Xml
 data class Transaction(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
-        val documentation: String?,
-        @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val exclusive: Boolean?
+        @Attribute val id: String,
+        @Attribute val name: String?,
+        @PropertyElement val documentation: String?,
+        @Attribute val async: Boolean?,
+        @Attribute val exclusive: Boolean?
 ): BpmnMappable<BpmnTransactionalSubProcess>, ProcessBody() {
 
     override fun toElement(): BpmnTransactionalSubProcess {

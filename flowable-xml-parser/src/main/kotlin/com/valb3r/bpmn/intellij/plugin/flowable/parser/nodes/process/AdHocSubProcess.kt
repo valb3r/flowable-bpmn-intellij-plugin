@@ -1,22 +1,23 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
+import com.tickaroo.tikxml.annotation.Attribute
+import com.tickaroo.tikxml.annotation.Element
+import com.tickaroo.tikxml.annotation.PropertyElement
+import com.tickaroo.tikxml.annotation.Xml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.CDATA_FIELD
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.ProcessBody
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.subelements.CompletionCondition
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
+@Xml
 data class AdHocSubProcess(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
-        @JacksonXmlProperty(isAttribute = true) val ordering: String?,
-        val documentation: String?,
-        val completionCondition: CompletionCondition?
+        @Attribute val id: String,
+        @Attribute val name: String?,
+        @Attribute val ordering: String?,
+        @PropertyElement val documentation: String?,
+        @Element val completionCondition: CompletionCondition?
 ): BpmnMappable<BpmnAdHocSubProcess>, ProcessBody() {
 
     override fun toElement(): BpmnAdHocSubProcess {
@@ -28,7 +29,3 @@ data class AdHocSubProcess(
         fun convertToDto(input: AdHocSubProcess) : BpmnAdHocSubProcess
     }
 }
-
-data class CompletionCondition(
-        @JsonProperty(CDATA_FIELD) @JacksonXmlText @JacksonXmlCData val condition: String? = null
-)

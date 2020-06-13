@@ -1,8 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes
 
-import com.fasterxml.jackson.annotation.JsonMerge
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.tickaroo.tikxml.annotation.Attribute
+import com.tickaroo.tikxml.annotation.Element
+import com.tickaroo.tikxml.annotation.PropertyElement
+import com.tickaroo.tikxml.annotation.Xml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
@@ -22,89 +23,84 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.*
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
-// For mixed lists in XML we need to have JsonSetter/JsonMerge on field
-// https://github.com/FasterXML/jackson-dataformat-xml/issues/363
-// unfortunately this has failed with Kotlin 'data' classes
+@Xml
 class BpmnFile(
-        @JacksonXmlProperty(localName = "message")
-        @JsonMerge
-        @JacksonXmlElementWrapper(useWrapping = false)
+        @Element(name = "message")
         var messages: List<MessageNode>? = null,
 
-        @JacksonXmlProperty(localName = "process")
-        @JsonMerge
-        @JacksonXmlElementWrapper(useWrapping = false)
+        @Element(name = "process")
         var processes: List<ProcessNode>,
 
-        @JacksonXmlProperty(localName = "BPMNDiagram")
-        @JsonMerge
-        @JacksonXmlElementWrapper(useWrapping = false)
+        @Element(name = "bpmndi:BPMNDiagram")
         var diagrams: List<DiagramNode>? = null
 )
 
-data class MessageNode(val id: String, var name: String?)
+@Xml
+data class MessageNode(
+        @Attribute val id: String,
+        @Attribute var name: String?
+)
 
+@Xml
 open class ProcessBody {
     
     // Events
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element(name = "startEvent")
     var startEvent: List<StartEventNode>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element(name = "endEvent")
     var endEvent: List<EndEventNode>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var boundaryEvent: List<BoundaryEvent>? = null
     // Events-intermediate
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var intermediateCatchEvent: List<IntermediateCatchEvent>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var intermediateThrowEvent: List<IntermediateThrowEvent>? = null
 
     // Service task alike:
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var userTask: List<UserTask>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var scriptTask: List<ScriptTask>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var serviceTask: List<ServiceTask>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var businessRuleTask: List<BusinessRuleTask>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var receiveTask: List<ReceiveTask>? = null
 
     // Sub process alike
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var callActivity: List<CallActivity>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var subProcess: List<SubProcess>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var transaction: List<Transaction>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var adHocSubProcess: List<AdHocSubProcess>? = null
 
     // Gateways
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var exclusiveGateway: List<ExclusiveGateway>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var parallelGateway: List<ParallelGateway>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var inclusiveGateway: List<InclusiveGateway>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var eventBasedGateway: List<EventBasedGateway>? = null
 
     // Linking elements
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    @Element
     var sequenceFlow: List<SequenceFlow>? = null
 }
 
-// For mixed lists in XML we need to have JsonSetter/JsonMerge on field
-// https://github.com/FasterXML/jackson-dataformat-xml/issues/363
-// unfortunately this has failed with Kotlin 'data' classes
+@Xml
 class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
-    @JacksonXmlProperty(isAttribute = true) var id: String? = null // it is false - it is non-null
-    @JacksonXmlProperty(isAttribute = true) var name: String? = null // it is false - it is non-null
-    var documentation: String? = null
-    @JacksonXmlProperty(isAttribute = true) var isExecutable: Boolean? = null
+    @Attribute var id: String? = null // it is false - it is non-null
+    @Attribute var name: String? = null // it is false - it is non-null
+    @PropertyElement var documentation: String? = null
+    @Attribute var isExecutable: Boolean? = null
 
     override fun toElement(): BpmnProcess {
         val result = Mappers.getMapper(Mapping::class.java).convertToDto(this)
@@ -120,7 +116,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         val children = mutableMapOf<BpmnElementId, BpmnProcessBody>()
 
         body.adHocSubProcess?.forEach { mapChildren(BpmnElementId(it.id), it, children) }
-        body.subProcess?.forEach { mapChildren(BpmnElementId(it.id), it, children) }
+        body.subProcess?.forEach { mapChildren(BpmnElementId(it.id!!), it, children) }
         body.transaction?.forEach { mapChildren(BpmnElementId(it.id), it, children) }
 
         if (children.isNotEmpty()) {
@@ -396,9 +392,10 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     }
 }
 
+@Xml
 data class DiagramNode(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(localName = "BPMNPlane") val bpmnPlane: Plane
+        @Attribute val id: String,
+        @Element(name = "bpmndi:BPMNPlane") val bpmnPlane: Plane
 ) : BpmnMappable<DiagramElement> {
 
     override fun toElement(): DiagramElement {

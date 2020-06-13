@@ -1,21 +1,27 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
-import com.fasterxml.jackson.annotation.JsonSetter
-import com.fasterxml.jackson.annotation.Nulls
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.tickaroo.tikxml.annotation.Attribute
+import com.tickaroo.tikxml.annotation.Element
+import com.tickaroo.tikxml.annotation.PropertyElement
+import com.tickaroo.tikxml.annotation.Xml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.subelements.ConditionalEventDefinition
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.subelements.MessageEventDefinition
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.subelements.SignalEventDefinition
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.subelements.TimerEventDefinition
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
+@Xml
 data class IntermediateCatchEvent(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
-        @JacksonXmlProperty(isAttribute = true) val documentation: String?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val timerEventDefinition: TimerEventDefinition?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val signalEventDefinition: SignalEventDefinition?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val messageEventDefinition: MessageEventDefinition?,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) val conditionalEventDefinition: ConditionalEventDefinition?
+        @Attribute val id: String,
+        @Attribute val name: String?,
+        @PropertyElement val documentation: String?,
+        @Element val timerEventDefinition: TimerEventDefinition?,
+        @Element val signalEventDefinition: SignalEventDefinition?,
+        @Element val messageEventDefinition: MessageEventDefinition?,
+        @Element val conditionalEventDefinition: ConditionalEventDefinition?
 
 ): BpmnMappable<BpmnIntermediateCatchingEvent> {
 
@@ -27,20 +33,4 @@ data class IntermediateCatchEvent(
     interface Mapping {
         fun convertToDto(input: IntermediateCatchEvent) : BpmnIntermediateCatchingEvent
     }
-
-    data class TimerEventDefinition(
-            val timeDate: String? = null
-    )
-
-    data class SignalEventDefinition(
-            @JacksonXmlProperty(isAttribute = true) val signalRef: String? = null
-    )
-
-    data class MessageEventDefinition(
-            @JacksonXmlProperty(isAttribute = true) val messageRef: String? = null
-    )
-
-    data class ConditionalEventDefinition(
-            val condition: String? = null
-    )
 }

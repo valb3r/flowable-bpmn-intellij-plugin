@@ -1,22 +1,26 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.tickaroo.tikxml.annotation.Attribute
+import com.tickaroo.tikxml.annotation.Element
+import com.tickaroo.tikxml.annotation.PropertyElement
+import com.tickaroo.tikxml.annotation.Xml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.subelements.ExtensionElements
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
+@Xml
 data class CallActivity(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
-        @JacksonXmlProperty(isAttribute = true) val documentation: String?,
-        @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val calledElement: String?,
-        @JacksonXmlProperty(isAttribute = true) val calledElementType: String?,
-        @JacksonXmlProperty(isAttribute = true) val inheritVariables: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val fallbackToDefaultTenant: Boolean?,
-        val extensionElements: ExtensionElements?
+        @Attribute val id: String,
+        @Attribute val name: String?,
+        @PropertyElement val documentation: String?,
+        @Attribute val async: Boolean?,
+        @Attribute val calledElement: String?,
+        @Attribute val calledElementType: String?,
+        @Attribute val inheritVariables: Boolean?,
+        @Attribute val fallbackToDefaultTenant: Boolean?,
+        @Element val extensionElements: ExtensionElements?
 ): BpmnMappable<BpmnCallActivity> {
 
     override fun toElement(): BpmnCallActivity {
@@ -28,9 +32,3 @@ data class CallActivity(
         fun convertToDto(input: CallActivity) : BpmnCallActivity
     }
 }
-
-data class ExtensionElements(
-        @JacksonXmlElementWrapper(useWrapping = false) val out: List<OutExtensionElement>?
-)
-
-data class OutExtensionElement(val source: String?, val target: String?)

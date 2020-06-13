@@ -1,15 +1,17 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.tickaroo.tikxml.annotation.Attribute
+import com.tickaroo.tikxml.annotation.Element
+import com.tickaroo.tikxml.annotation.Xml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.BpmnElementIdMapper
 import org.mapstruct.Mapper
 
+@Xml
 data class Edge (
-        @JacksonXmlProperty(isAttribute = true) val id: String?,
-        @JacksonXmlProperty(isAttribute = true) val bpmnElement: String?,
-        @JacksonXmlElementWrapper(useWrapping = false) val waypoint: List<Waypoint>?
+        @Attribute val id: String?,
+        @Attribute val bpmnElement: String?,
+        @Element val waypoint: List<Waypoint>?
 ) {
     @Mapper(uses = [DiagramElementIdMapper::class, BpmnElementIdMapper::class])
     interface Mapping {
@@ -17,7 +19,8 @@ data class Edge (
     }
 }
 
+@Xml
 data class Waypoint(
-        @JacksonXmlProperty(isAttribute = true) val x: Float,
-        @JacksonXmlProperty(isAttribute = true) val y: Float
+        @Attribute val x: Float,
+        @Attribute val y: Float
 )

@@ -1,13 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.MapperFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.tickaroo.tikxml.TikXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
@@ -35,6 +28,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnFile
+import okio.Okio
 import org.dom4j.*
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.SAXReader
@@ -44,9 +38,6 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.charset.StandardCharsets
-
-
-const val CDATA_FIELD = "CDATA"
 
 enum class PropertyTypeDetails(
         val propertyType: PropertyType,
@@ -98,10 +89,10 @@ enum class XmlType {
 
 class FlowableParser : BpmnParser {
 
-    private val mapper: XmlMapper = mapper()
+    private val mapper: TikXml = mapper()
 
     override fun parse(input: String): BpmnProcessObject {
-        val dto = mapper.readValue<BpmnFile>(input)
+        val dto = mapper.read(Okio.buffer(Okio.source(ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8)))), BpmnFile::class.java)
         return toProcessObject(dto)
     }
 
@@ -546,16 +537,10 @@ class FlowableParser : BpmnParser {
         return BpmnProcessObject(process, listOf(diagram))
     }
 
-    private fun mapper(): XmlMapper {
-        val mapper : ObjectMapper = XmlMapper(
-                // FIXME https://github.com/FasterXML/jackson-module-kotlin/issues/138
-                JacksonXmlModule().apply { setXMLTextElementName(CDATA_FIELD) }
-        )
-        mapper.registerModule(KotlinModule())
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        return mapper as XmlMapper
+    private fun mapper(): TikXml {
+        return TikXml.Builder()
+                .exceptionOnUnreadXml(false)
+                .build()
     }
 
     enum class NS(val namePrefix: String, val url: String) {
