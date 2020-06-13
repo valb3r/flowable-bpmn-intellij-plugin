@@ -46,6 +46,11 @@ import javax.swing.table.TableColumnModel
 // These are global singletons as i.e. `initializeNewElementsFactory` is
 private val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
 private val boolFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, SelectedValueAccessor> = mutableMapOf()
+private val comboboxFactory = { id: BpmnElementId, type: PropertyType, value: String, allowedValues: Set<String> -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
+    val res = mock<TextValueAccessor>()
+    whenever(res.text).thenReturn(value)
+    return@computeIfAbsent res
+} }
 private val editorFactory = { id: BpmnElementId, type: PropertyType, value: String -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
     val res = mock<TextValueAccessor>()
     whenever(res.text).thenReturn(value)
@@ -1105,7 +1110,7 @@ internal class UiEditorLightE2ETest {
     }
 
     private fun initializeCanvas() {
-        canvasBuilder.build({ fileCommitter }, parser, propertiesTable, editorFactory, editorFactory, checkboxFieldFactory, canvas, project, virtualFile)
+        canvasBuilder.build({ fileCommitter }, parser, propertiesTable, comboboxFactory, editorFactory, editorFactory, checkboxFieldFactory, canvas, project, virtualFile)
         canvas.paintComponent(graphics)
     }
 
