@@ -87,13 +87,15 @@ enum class PropertyTypeDetails(
     CONDITION_EXPR_VALUE(PropertyType.CONDITION_EXPR_VALUE, "conditionExpression.text", XmlType.CDATA),
     CONDITION_EXPR_TYPE(PropertyType.CONDITION_EXPR_TYPE, "conditionExpression.xsi:type", XmlType.ATTRIBUTE),
     COMPLETION_CONDITION(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA),
-    DEFAULT_FLOW(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE)
+    DEFAULT_FLOW(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE),
+    IS_TRANSACTIONAL_SUBPROCESS(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT)
 }
 
 enum class XmlType {
 
     CDATA,
-    ATTRIBUTE
+    ATTRIBUTE,
+    ELEMENT
 }
 
 class FlowableParser : BpmnParser {
@@ -492,6 +494,19 @@ class FlowableParser : BpmnParser {
         when (details.type) {
             XmlType.ATTRIBUTE -> setAttribute(node, name, value)
             XmlType.CDATA -> setCdata(node, name, value)
+            XmlType.ELEMENT -> changeElementType(node, name, details, value)
+        }
+    }
+
+    private fun changeElementType(node: Element, name: String, details: PropertyTypeDetails, value: String?) {
+        if (PropertyTypeDetails.IS_TRANSACTIONAL_SUBPROCESS != details) {
+            throw IllegalArgumentException("Can't change type for: ${details.javaClass.canonicalName}")
+        }
+
+        if (null == value || !value.toBoolean()) {
+            node.name = "subProcess"
+        } else {
+            node.name = "transaction"
         }
     }
 

@@ -10,7 +10,8 @@ data class BpmnTransactionalSubProcess(
         val name: String?,
         val documentation: String?,
         val async: Boolean?,
-        val exclusive: Boolean?
+        val exclusive: Boolean?,
+        val transactionalSubprocess: Boolean // can't set default for @KotlinBuilder
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

@@ -3,6 +3,8 @@ package com.valb3r.bpmn.intellij.plugin.state
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
@@ -10,7 +12,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.mappers.MapTransactionalSubprocessToSubprocess
 import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
+import org.mapstruct.factory.Mappers
 import java.util.concurrent.atomic.AtomicReference
 
 private val currentStateProvider = AtomicReference<CurrentStateProvider>()
@@ -99,11 +103,7 @@ class CurrentStateProvider {
                     updatedElemPropertiesByStaticElementId[event.bpmnObject.id] = event.props
                 }
                 is PropertyUpdateWithId -> {
-                    if (null == event.newIdValue) {
-                        updateProperty(event, updatedElemPropertiesByStaticElementId)
-                    } else {
-                        updateId(event.bpmnElementId, event.newIdValue!!, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
-                    }
+                    applyPropertyUpdate(event, updatedElemPropertiesByStaticElementId, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId)
                 }
                 is BpmnParentChanged -> {
                     for ((key, value) in updatedElementByStaticId) {
@@ -127,6 +127,46 @@ class CurrentStateProvider {
                 updatedElemPropertiesByStaticElementId,
                 undoRedoStatus
         )
+    }
+
+    private fun applyPropertyUpdate(
+            event: PropertyUpdateWithId,
+            updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>>,
+            updatedShapes: MutableList<ShapeElement>,
+            updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>,
+            updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>,
+            updatedElementByStaticId: MutableMap<BpmnElementId, WithParentId>
+    ) {
+        if (event.property.elementUpdateChangesClass) {
+            updateElementType(event, updatedElementByStaticId)
+            return
+        }
+
+        if (null == event.newIdValue) {
+            updateProperty(event, updatedElemPropertiesByStaticElementId)
+        } else {
+            updateId(event.bpmnElementId, event.newIdValue!!, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
+        }
+    }
+
+    private fun updateElementType(event: PropertyUpdateWithId, updatedElementByStaticId: MutableMap<BpmnElementId, WithParentId>) {
+        if (event.property != PropertyType.IS_TRANSACTIONAL_SUBPROCESS) {
+            throw IllegalArgumentException("Can't change class for: ${event.property.name}}")
+        }
+
+        val mapper = Mappers.getMapper(MapTransactionalSubprocessToSubprocess::class.java)
+        val withPrentElem = updatedElementByStaticId[event.bpmnElementId]!!
+        when (val elem = withPrentElem.element) {
+            is BpmnSubProcess -> {
+                updatedElementByStaticId[event.bpmnElementId] = WithParentId(withPrentElem.parent, mapper.map(elem))
+
+            }
+            is BpmnTransactionalSubProcess -> {
+                updatedElementByStaticId[event.bpmnElementId] = WithParentId(withPrentElem.parent, mapper.map(elem))
+            }
+            else -> throw IllegalStateException("Unexpected element: ${elem.javaClass.canonicalName}")
+
+        }
     }
 
     private fun updateProperty(event: PropertyUpdateWithId, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>>) {
