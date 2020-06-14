@@ -428,6 +428,10 @@ class FlowableParser : BpmnParser {
     }
 
     private fun applyParentChange(doc: Document, update: BpmnParentChanged) {
+        if (!update.propagateToXml) {
+            return
+        }
+
         val node = doc.selectSingleNode(
                 "//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]"
         ) as Element

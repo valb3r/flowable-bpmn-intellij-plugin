@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.events.BpmnParentChangedEvent
 import com.valb3r.bpmn.intellij.plugin.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.Camera
@@ -33,11 +34,13 @@ class AnyShapeNestableIconShape(
 
         nests.filterNotNull().forEach { nestTo ->
             if (nestTo != currentParent?.bpmnElementId) {
+                newEvents += BpmnParentChangedEvent(shape.bpmnElement, nestTo, false)
                 newEvents += StringValueUpdatedEvent(shape.bpmnElement, PropertyType.ATTACHED_TO_REF, nestTo.id)
             }
         }
 
         if (nests.isEmpty() && null != parentProcess && parentProcess != parents.firstOrNull()?.bpmnElementId) {
+            newEvents += BpmnParentChangedEvent(shape.bpmnElement, parentProcess, false)
             newEvents += StringValueUpdatedEvent(shape.bpmnElement, PropertyType.ATTACHED_TO_REF, parentProcess.id)
         }
 
