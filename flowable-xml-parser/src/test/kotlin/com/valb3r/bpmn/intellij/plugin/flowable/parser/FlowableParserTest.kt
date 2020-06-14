@@ -297,4 +297,4 @@ data class BpmnShapeResizedAndMovedEvent(override val diagramElementId: DiagramE
     }
 }
 
-data class BpmnParentChangedEvent(override val bpmnElementId: BpmnElementId, override val newParentId: BpmnElementId): BpmnParentChanged
+data class BpmnParentChangedEvent(override val bpmnElementId: BpmnElementId, override val newParentId: BpmnElementId, override val propagateToXml: Boolean = true): BpmnParentChanged
