@@ -281,7 +281,7 @@ class FlowableParser : BpmnParser {
             is BpmnEndErrorEvent -> createEndEventWithType(diagramParent, "errorEventDefinition")
             // Boundary
             is BpmnBoundaryCancelEvent -> createBoundaryEventWithType(diagramParent, "cancelEventDefinition")
-            is BpmnBoundaryCompensationEvent -> createBoundaryEventWithType(diagramParent, "conditionalEventDefinition")
+            is BpmnBoundaryCompensationEvent -> createBoundaryEventWithType(diagramParent, "compensateEventDefinition")
             is BpmnBoundaryConditionalEvent -> createBoundaryEventWithType(diagramParent, "conditionalEventDefinition")
             is BpmnBoundaryErrorEvent -> createBoundaryEventWithType(diagramParent, "errorEventDefinition")
             is BpmnBoundaryEscalationEvent -> createBoundaryEventWithType(diagramParent, "escalationEventDefinition")
