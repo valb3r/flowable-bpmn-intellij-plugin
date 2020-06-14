@@ -27,6 +27,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclu
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
@@ -314,6 +315,7 @@ class FlowableParser : BpmnParser {
             // Sub processes
             is BpmnCallActivity -> diagramParent.addElement("callActivity")
             is BpmnSubProcess -> diagramParent.addElement("subProcess")
+            is BpmnEventSubprocess -> createEventSubprocess(diagramParent)
             is BpmnAdHocSubProcess -> diagramParent.addElement("adHocSubProcess")
             is BpmnTransactionalSubProcess -> diagramParent.addElement("transaction")
 
@@ -384,6 +386,12 @@ class FlowableParser : BpmnParser {
     private fun createServiceTaskWithType(elem: Element, type: String? = null): Element {
         val newElem = elem.addElement("serviceTask")
         type?.let { newElem.addAttribute(NS.FLOWABLE.named("type"), type) }
+        return newElem
+    }
+
+    private fun createEventSubprocess(elem: Element): Element {
+        val newElem = elem.addElement("subProcess")
+        newElem.addAttribute("triggeredByEvent", "true")
         return newElem
     }
 

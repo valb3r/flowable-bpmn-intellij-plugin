@@ -14,6 +14,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.DiagramElementIdMapper
@@ -143,6 +145,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
     private fun fillBodyWithDedicatedElements(processBody: BpmnProcessBody): BpmnProcessBody {
         var body = processBody
+        body = applySubprocessCustomizationByEventTrigger(body)
         body = applyServiceTaskCustomizationByType(body)
         body = applyIntermediateCatchEventCustomizationByType(body)
         body = applyIntermediateThrowingEventCustomizationByType(body)
@@ -151,7 +154,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return applyBoundaryEventCustomizationByType(body)
     }
 
-    private fun applyServiceTaskCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
+    private fun applySubprocessCustomizationByEventTrigger(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
         result = extractTasksBasedOnType(result, "camel",  Mappers.getMapper(CamelMapper::class.java)) { updates, target -> target.copy(camelTask = updates) }
         result = extractTasksBasedOnType(result, "http",  Mappers.getMapper(HttpMapper::class.java)) { updates, target -> target.copy(httpTask = updates) }
@@ -159,6 +162,15 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         result = extractTasksBasedOnType(result, "dmn",  Mappers.getMapper(DecisionMapper::class.java)) { updates, target -> target.copy(decisionTask = updates) }
         result = extractTasksBasedOnType(result, "shell",  Mappers.getMapper(ShellMapper::class.java)) { updates, target -> target.copy(shellTask = updates) }
         return result
+    }
+
+    private fun applyServiceTaskCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
+        val mapper = Mappers.getMapper(EventSubProcessMapper::class.java)
+        process.subProcess?.apply {
+            val byTypeGroup = this.groupBy { it.triggeredByEvent == true }
+            return process.copy(subProcess = byTypeGroup[false], eventSubProcess = byTypeGroup[true]?.map { mapper.convertToDto(it) })
+        }
+        return process
     }
 
     private fun applyIntermediateCatchEventCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
@@ -283,6 +295,9 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     }
 
     @Mapper
+    interface EventSubProcessMapper: SubProcessMapper<BpmnEventSubprocess>
+
+    @Mapper
     interface CamelMapper: ServiceTaskMapper<BpmnCamelTask>
 
     @Mapper
@@ -394,6 +409,10 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
     interface BoundaryEventMapper<T> {
         fun convertToDto(input: BpmnBoundaryEvent): T
+    }
+
+    interface SubProcessMapper<T> {
+        fun convertToDto(input: BpmnSubProcess): T
     }
 }
 

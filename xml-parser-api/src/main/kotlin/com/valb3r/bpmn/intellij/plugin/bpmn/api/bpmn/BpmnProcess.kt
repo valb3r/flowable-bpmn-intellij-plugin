@@ -17,6 +17,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclu
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
@@ -80,6 +81,7 @@ data class BpmnProcessBody(
         val callActivity: List<BpmnCallActivity>?,
         // These elems are to be flattened as they recurse into BpmnProcess themselves
         val subProcess: List<BpmnSubProcess>?,
+        val eventSubProcess: List<BpmnEventSubprocess>?,
         val transaction: List<BpmnTransactionalSubProcess>?,
         val adHocSubProcess: List<BpmnAdHocSubProcess>?,
 
