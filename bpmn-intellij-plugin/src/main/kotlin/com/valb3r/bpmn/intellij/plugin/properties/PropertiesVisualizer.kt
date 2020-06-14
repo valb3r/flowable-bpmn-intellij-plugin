@@ -27,11 +27,12 @@ interface SelectedValueAccessor {
 
 fun newPropertiesVisualizer(table: JTable,
                             dropDownFactory: (id: BpmnElementId, type: PropertyType, value: String, availableValues: Set<String>) -> TextValueAccessor,
+                            classEditorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor): PropertiesVisualizer {
     return visualizer.updateAndGet {
-        return@updateAndGet PropertiesVisualizer(table, dropDownFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
+        return@updateAndGet PropertiesVisualizer(table, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
     }
 }
 
@@ -42,6 +43,7 @@ fun propertiesVisualizer(): PropertiesVisualizer {
 class PropertiesVisualizer(
         val table: JTable,
         val dropDownFactory: (id: BpmnElementId, type: PropertyType, value: String, availableValues: Set<String>) -> TextValueAccessor,
+        val classEditorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         val editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         val textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         val checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor) {
@@ -130,7 +132,7 @@ class PropertiesVisualizer(
 
     private fun buildClassField(state: Map<BpmnElementId, Map<PropertyType, Property>>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
         val fieldValue = lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
-        val field = editorFactory(bpmnElementId, type, fieldValue)
+        val field = classEditorFactory(bpmnElementId, type, fieldValue)
         addEditorTextListener(state, field, bpmnElementId, type)
         return field.component
     }
