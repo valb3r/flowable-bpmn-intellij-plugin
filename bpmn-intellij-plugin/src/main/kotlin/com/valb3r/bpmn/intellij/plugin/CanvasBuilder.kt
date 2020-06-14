@@ -21,6 +21,7 @@ import com.valb3r.bpmn.intellij.plugin.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.properties.newPropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.render.BpmnProcessRenderer
 import com.valb3r.bpmn.intellij.plugin.render.Canvas
+import com.valb3r.bpmn.intellij.plugin.xmlnav.newXmlNavigator
 import java.nio.charset.StandardCharsets.UTF_8
 import javax.swing.JTable
 
@@ -46,6 +47,7 @@ class CanvasBuilder(val bpmnProcessRenderer: BpmnProcessRenderer) {
         val data = readFile(bpmnFile)
         val process = parser.parse(data)
         newObjectsFactory = createNewElementsFactory(FlowableObjectFactory())
+        newXmlNavigator(project)
         newPropertiesVisualizer(properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
         canvas.reset(data, process.toView(newObjectsFactory!!), bpmnProcessRenderer)
 

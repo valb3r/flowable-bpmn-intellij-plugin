@@ -415,7 +415,8 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         graphics2D.font = font // for ellipsis
         graphics2D.color = textColor
         graphics2D.drawString(text, textLocation.x.toInt(), textLocation.y.toInt())
-        return Area(graphics2D.fontMetrics.getStringBounds(text, graphics2D))
+        val rect = graphics2D.fontMetrics.getStringBounds(text, graphics2D)
+        return Area(Rectangle2D.Float(textLocation.x + rect.x.toFloat(), textLocation.y + rect.y.toFloat(), rect.width.toFloat(), rect.height.toFloat()))
     }
 
     fun drawTextNoCameraTransform(location: Point2D.Float, text: String, textColor: Color) {

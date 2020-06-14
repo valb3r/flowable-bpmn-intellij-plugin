@@ -21,6 +21,7 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationOrChangesToWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTransform
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.xmlnav.xmlNavigator
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.util.*
@@ -98,7 +99,7 @@ abstract class ShapeRenderElement(
         currY += spaceCoeff * ySpacing
         val toXmlId = DiagramElementId("TOXML:$elementId")
         val toXmlArea = state.ctx.canvas.drawText(Point2D.Float(x, currY), "<XML/>", Colors.INNER_TEXT_COLOR.color)
-        state.ctx.interactionContext.clickCallbacks[toXmlId] = { dest -> }
+        state.ctx.interactionContext.clickCallbacks[toXmlId] = { dest -> xmlNavigator().jumpTo(bpmnElementId)}
 
         return mutableMapOf(
                 delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId),
