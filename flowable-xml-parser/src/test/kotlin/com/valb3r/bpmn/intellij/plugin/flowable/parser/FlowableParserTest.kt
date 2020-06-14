@@ -184,6 +184,38 @@ internal class FlowableParserTest {
     }
 
     @Test
+    fun `New edge should have correct parent in diagram`() {
+        val newId = BpmnElementId("SID-132131231")
+        val updated = FlowableParser().update(
+                "nested.bpmn20.xml".asResource()!!,
+                listOf(
+                        BpmnEdgeObjectAddedEvent(
+                                WithParentId(
+                                        BpmnElementId("sid-3AD3FAD5-389C-4066-8CB0-C4090CA91F6D"),
+                                        BpmnSequenceFlow(newId, "Exclusive gateway", null, "source", "target", null)),
+                                EdgeElementState(
+                                        diagramElementId,
+                                        newId,
+                                        mutableListOf(
+                                                WaypointElementState(diagramElementId, 10.0f, 20.0f, 0.0f, 0.0f, true, 1),
+                                                WaypointElementState(diagramElementId, 30.0f, 40.0f, 0.0f, 0.0f, true, 0)
+                                        ),
+                                        0),
+                                mapOf(
+                                        PropertyType.ID to Property(newId.id),
+                                        PropertyType.CONDITION_EXPR_VALUE to Property("condition 1"),
+                                        PropertyType.CONDITION_EXPR_TYPE to Property("a type")
+                                )
+                        )
+                )
+        )
+
+        updated.shouldNotBeNull()
+        val updatedProcess = FlowableParser().parse(updated)
+        updatedProcess.process.children!![BpmnElementId("sid-3AD3FAD5-389C-4066-8CB0-C4090CA91F6D")]!!.sequenceFlow!!.map { it.id }.shouldContain(newId)
+    }
+
+    @Test
     fun `XML should properly handle element resize event`() {
         val updated = FlowableParser().update(
                 "nested.bpmn20.xml".asResource()!!,
