@@ -14,7 +14,8 @@ class SubProcess: BpmnMappable<BpmnSubProcess>, ProcessBody() {
     @JacksonXmlProperty(isAttribute = true) var name: String? = null
     var documentation: String? = null
     @JacksonXmlProperty(isAttribute = true) var async: Boolean? = null
-    @JacksonXmlProperty(isAttribute = true) var exclusive:Boolean? = null
+    @JacksonXmlProperty(isAttribute = true) var exclusive: Boolean? = null
+    @JacksonXmlProperty(isAttribute = true) var triggeredByEvent: Boolean? = null
 
     override fun toElement(): BpmnSubProcess {
         return Mappers.getMapper(SubProcessMapping::class.java).convertToDto(this)

@@ -8,6 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import java.awt.Stroke
 
 class NoIconShape(
         override val elementId: DiagramElementId,
@@ -17,7 +18,8 @@ class NoIconShape(
         private val backgroundColor: Colors = Colors.CALL_ACTIVITY_COLOR,
         private val borderColor: Colors =  Colors.ELEMENT_BORDER_COLOR,
         private val textColor: Colors = Colors.INNER_TEXT_COLOR,
-        private val areaType: AreaType = AreaType.SHAPE
+        private val areaType: AreaType = AreaType.SHAPE,
+        private val borderStroke: Stroke? = null
 ) : ResizeableShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
@@ -27,7 +29,8 @@ class NoIconShape(
                 shapeCtx.name,
                 color(isActive(), backgroundColor),
                 borderColor.color,
-                textColor.color
+                textColor.color,
+                borderStroke
         )
 
         return mapOf(shapeCtx.diagramId to AreaWithZindex(area, areaType, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = shape.bpmnElement))

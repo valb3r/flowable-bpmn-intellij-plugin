@@ -22,6 +22,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclu
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
@@ -116,6 +117,7 @@ class CanvasPopupMenuProvider {
     // Sub process alike
     private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
     private val SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/subprocess.png")
+    private val EVENT_SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/event-subprocess.png")
     private val ADHOC_SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/adhoc-subprocess.png")
 
     // Gateway
@@ -167,6 +169,7 @@ class CanvasPopupMenuProvider {
     private fun structural(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
         val menu = JMenu("Structural")
         addItem(menu, "Sub process", SUB_PROCESS, ShapeCreator(BpmnSubProcess::class, sceneLocation, parent))
+        addItem(menu, "Event sub process", EVENT_SUB_PROCESS, ShapeCreator(BpmnEventSubprocess::class, sceneLocation, parent))
         addItem(menu, "Call activity", CALL_ACTIVITY, ShapeCreator(BpmnCallActivity::class, sceneLocation, parent))
         addItem(menu, "Adhoc sub process", ADHOC_SUB_PROCESS, ShapeCreator(BpmnAdHocSubProcess::class, sceneLocation, parent))
         return menu
