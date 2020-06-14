@@ -405,6 +405,19 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(highlightedShape)
     }
 
+    fun drawText(location: Point2D.Float, text: String, textColor: Color): Area {
+        if ("" == text) {
+            return Area()
+        }
+
+        val textLocation = camera.toCameraView(location)
+
+        graphics2D.font = font // for ellipsis
+        graphics2D.color = textColor
+        graphics2D.drawString(text, textLocation.x.toInt(), textLocation.y.toInt())
+        return Area(graphics2D.fontMetrics.getStringBounds(text, graphics2D))
+    }
+
     fun drawTextNoCameraTransform(location: Point2D.Float, text: String, textColor: Color) {
         if ("" == text) {
             return
