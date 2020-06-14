@@ -16,6 +16,10 @@ fun registerCurrentFile(file: PsiFile) {
     currentFile.set(file)
 }
 
+fun getCurrentFile(): PsiFile {
+    return currentFile.get()!!
+}
+
 class FlowableDelegateExpressionUiInjector: MultiHostInjector {
 
     override fun elementsToInjectIn(): MutableList<out Class<out PsiElement>> {
