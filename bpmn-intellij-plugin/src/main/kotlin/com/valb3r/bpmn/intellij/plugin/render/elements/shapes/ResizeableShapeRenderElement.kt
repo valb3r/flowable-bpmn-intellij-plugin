@@ -1,16 +1,31 @@
 package com.valb3r.bpmn.intellij.plugin.render.elements.shapes
 
+import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.events.BpmnEdgeObjectAddedEvent
+import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.events.BpmnShapeResizedAndMovedEvent
+import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
+import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
+import com.valb3r.bpmn.intellij.plugin.render.AreaType
+import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
+import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
+import com.valb3r.bpmn.intellij.plugin.render.ICON_Z_INDEX
+import com.valb3r.bpmn.intellij.plugin.render.elements.ACTIONS_ICO_SIZE
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.EPSILON
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorBottom
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorTop
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ResizeViewTransform
+import com.valb3r.bpmn.intellij.plugin.xmlnav.xmlNavigator
 import java.awt.geom.Point2D
 import kotlin.math.abs
 
@@ -27,6 +42,65 @@ abstract class ResizeableShapeRenderElement(
     )
 
     override val children: MutableList<BaseDiagramRenderElement> = mutableListOf(anchors.first, anchors.second)
+
+    override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
+        val spaceCoeff = 1.5f
+        val actionCount = 3
+        val start = state.ctx.canvas.camera.fromCameraView(Point2D.Float(0.0f, 0.0f))
+        val end = state.ctx.canvas.camera.fromCameraView(Point2D.Float(0.0f, ACTIONS_ICO_SIZE * spaceCoeff))
+        val ySpacing = end.y - start.y
+
+        val rect = currentRect(state.ctx.canvas.camera)
+        val left = state.ctx.canvas.camera.toCameraView(Point2D.Float(rect.x, rect.y))
+        val right = state.ctx.canvas.camera.toCameraView(Point2D.Float(rect.x + rect.width, rect.y + rect.height))
+
+        if (ACTIONS_ICO_SIZE * actionCount >= (right.y - left.y)) {
+            return mutableMapOf()
+        }
+
+        var currY = y
+        val delId = DiagramElementId("DEL:$elementId")
+        val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
+        state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
+            dest.addElementRemovedEvent(listOf(DiagramElementRemovedEvent(elementId)), listOf(BpmnElementRemovedEvent(shape.bpmnElement)))
+        }
+
+        currY += ySpacing
+        val newLinkId = DiagramElementId("NEWLINK:$elementId")
+        val newLinkArea = state.ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.sequence)
+        state.ctx.interactionContext.clickCallbacks[newLinkId] = { dest ->
+            state.currentState.elementByBpmnId[shape.bpmnElement]?.let { it: WithParentId ->
+                val newSequenceBpmn = newElementsFactory().newOutgoingSequence(it.element)
+                val bounds = currentRect(state.ctx.canvas.camera)
+                val width = bounds.width
+                val height = bounds.height
+
+                val newSequenceDiagram = newElementsFactory().newDiagramObject(EdgeElement::class, newSequenceBpmn)
+                        .copy(waypoint = listOf(
+                                WaypointElement(bounds.x + width, bounds.y + height / 2.0f),
+                                WaypointElement(bounds.x + width + WAYPOINT_LEN, bounds.y + height / 2.0f)
+                        ))
+                dest.addObjectEvent(
+                        BpmnEdgeObjectAddedEvent(
+                                WithParentId(parents.first().bpmnElementId, newSequenceBpmn),
+                                EdgeElementState(newSequenceDiagram),
+                                newElementsFactory().propertiesOf(newSequenceBpmn)
+                        )
+                )
+            }
+        }
+
+        currY += spaceCoeff * ySpacing
+        val toXmlId = DiagramElementId("TOXML:$elementId")
+        val toXmlArea = state.ctx.canvas.drawText(Point2D.Float(x, currY), "<XML/>", Colors.INNER_TEXT_COLOR.color)
+        state.ctx.interactionContext.clickCallbacks[toXmlId] = { dest -> xmlNavigator().jumpTo(bpmnElementId)}
+
+        return mutableMapOf(
+                delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId),
+                newLinkId to AreaWithZindex(newLinkArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId),
+                toXmlId to AreaWithZindex(toXmlArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
+        )
+    }
 
     override fun afterStateChangesAppliedNoChildren() {
         // Detect only resize, not drag as drag is handled by higher-level elements and it may happen that two anchors
