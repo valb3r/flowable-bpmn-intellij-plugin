@@ -68,6 +68,7 @@ interface BpmnEdgeObjectAdded: Event {
 interface BpmnParentChanged: Event {
     val bpmnElementId: BpmnElementId
     val newParentId: BpmnElementId
+    val propagateToXml: Boolean
 }
 
 interface PropertyUpdateWithId: Event {
