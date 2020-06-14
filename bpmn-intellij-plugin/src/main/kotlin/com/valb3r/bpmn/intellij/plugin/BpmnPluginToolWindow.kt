@@ -5,10 +5,7 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileTypes.StdFileTypes
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.psi.JavaCodeFragment
-import com.intellij.psi.JavaCodeFragmentFactory
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiFile
+import com.intellij.psi.*
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.JavaReferenceEditorUtil
 import com.intellij.ui.components.JBCheckBox
@@ -73,6 +70,7 @@ class BpmnPluginToolWindow {
                 FlowableParser(),
                 table,
                 { _: BpmnElementId, _: PropertyType, value: String, allowableValues: Set<String> -> createDropdown(value, allowableValues) },
+                { _: BpmnElementId, _: PropertyType, value: String -> createEditorForClass(context.project, bpmnFile, value) },
                 { _: BpmnElementId, _: PropertyType, value: String -> createEditor(context.project, bpmnFile, value) },
                 { _: BpmnElementId, _: PropertyType, value: String -> createTextField(value) },
                 { _: BpmnElementId, _: PropertyType, value: Boolean -> createCheckboxField(value) },
@@ -107,7 +105,7 @@ class BpmnPluginToolWindow {
 
     fun createEditor(project: Project, bpmnFile: PsiFile, text: String): TextValueAccessor {
         val factory = JavaCodeFragmentFactory.getInstance(project)
-        val fragment: JavaCodeFragment = factory.createCodeBlockCodeFragment(text, bpmnFile, true)
+        val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, PsiType.CHAR, true)
         fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
         val document = PsiDocumentManager.getInstance(project).getDocument(fragment)!!
 
@@ -134,17 +132,17 @@ class BpmnPluginToolWindow {
     }
 
     // JavaCodeFragmentFactory - important
-    protected fun createEditorForClass(project: Project, bpmnFile: PsiFile, text: String?): EditorTextField {
-        val type = StdFileTypes.JAVA
-        val document = JavaReferenceEditorUtil.createDocument("", project, true)
+    protected fun createEditorForClass(project: Project, bpmnFile: PsiFile, text: String?): TextValueAccessor {
+        val document = JavaReferenceEditorUtil.createDocument(text, project, true)!!
+        val textField: EditorTextField = JavaEditorTextField(document, project)
+        textField.setOneLineMode(true)
 
-        val textField: EditorTextField = object : EditorTextField(document, project, type) {
-            override fun createEditor(): EditorEx {
-                val editorEx: EditorEx = super.createEditor()
-                return editorEx
-            }
+        return object: TextValueAccessor {
+            override val text: String
+                get() = textField.text
+            override val component: JComponent
+                get() = textField
         }
-        return textField
     }
 
     private fun setupUiBeforeRun() {

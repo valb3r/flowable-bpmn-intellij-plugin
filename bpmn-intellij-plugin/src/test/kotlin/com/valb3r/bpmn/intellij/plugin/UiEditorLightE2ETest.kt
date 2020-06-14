@@ -1110,7 +1110,7 @@ internal class UiEditorLightE2ETest {
     }
 
     private fun initializeCanvas() {
-        canvasBuilder.build({ fileCommitter }, parser, propertiesTable, comboboxFactory, editorFactory, editorFactory, checkboxFieldFactory, canvas, project, virtualFile)
+        canvasBuilder.build({ fileCommitter }, parser, propertiesTable, comboboxFactory, editorFactory, editorFactory, editorFactory, checkboxFieldFactory, canvas, project, virtualFile)
         canvas.paintComponent(graphics)
     }
 
