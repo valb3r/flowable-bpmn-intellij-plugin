@@ -13,6 +13,7 @@ aiming for code navigation support between BPMN diagram and your classes includi
 
 1. BPMN process editing - adding/removing elements, changing their properties, undo/redo, bulk drag-n-drop, bulk removal of elements
 1. Code navigation - jump from `Delegate Expression` or `Class` property directly to bean/function/class in code
+1. IntelliJ refactorings propagation to backing XML file of the process (i.e. rename bean)
 1. BPMN process 'debugging' by allowing to see steps (and their order) done for latest process execution directly in plugin
 
 
