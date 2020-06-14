@@ -92,7 +92,7 @@ class XmlFlowableInjector: MultiHostInjector {
             return false
         }
 
-        if (parent.localName == "delegateExpression") {
+        if (parent.localName == "delegateExpression" || parent.localName == "expression") {
             if (!asHost.text.contains("[$#]\\{".toRegex()) || !asHost.text.contains("}")) {
                 return false
             }
