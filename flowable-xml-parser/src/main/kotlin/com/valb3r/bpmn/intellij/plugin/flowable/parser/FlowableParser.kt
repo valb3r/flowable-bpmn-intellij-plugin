@@ -388,11 +388,11 @@ class FlowableParser : BpmnParser {
     }
 
     private fun applyBpmnEdgeObjectAdded(doc: Document, update: BpmnEdgeObjectAdded) {
-        val diagramParent = doc.selectSingleNode(
-                "//*[local-name()='process'][1]"
-        ) as Element
+        val diagramParent = (
+                doc.selectSingleNode("//*[local-name()='process'][1]//*[@id='${update.bpmnObject.parent.id}'][1]") as Element?
+                        ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnObject.parent.id}'][1]") as Element?
+                )!!
 
-        // TODO: Handle parent
         val newNode = when(update.bpmnObject.element) {
             is BpmnSequenceFlow -> diagramParent.addElement("sequenceFlow")
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
