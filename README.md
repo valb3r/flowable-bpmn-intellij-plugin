@@ -51,10 +51,16 @@ IntelliJ docs on this topic:
 
 ## Plugin usage:
 
-[![Work with plugin](https://img.youtube.com/vi/4kCLCzj4gpg/0.jpg)](https://youtu.be/4kCLCzj4gpg)
+### Basic usage
+
+[![Work with plugin](https://img.youtube.com/vi/fdl2JQuIWl8/0.jpg)](https://youtu.be/fdl2JQuIWl8)
 
 
-## Debugging BPMN process with the plugin
+### BPMN-Java-XML 'gluing' usage
+
+[![Work with plugin](https://img.youtube.com/vi/BQf0eglY2vo/0.jpg)](https://youtu.be/BQf0eglY2vo)
+
+### Debugging BPMN process with the plugin
 
 [![Debug BPMN with plugin](https://img.youtube.com/vi/_zQ1zy_0Qfc/0.jpg)](https://youtu.be/_zQ1zy_0Qfc)
 
