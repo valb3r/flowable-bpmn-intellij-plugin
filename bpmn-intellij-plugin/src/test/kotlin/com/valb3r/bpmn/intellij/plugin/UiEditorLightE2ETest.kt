@@ -34,6 +34,7 @@ import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyInt
+import java.awt.FontMetrics
 import java.awt.Graphics2D
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -116,6 +117,7 @@ internal class UiEditorLightE2ETest {
     )
 
     private val graphics = mock<Graphics2D>()
+    private val fontMetrics = mock<FontMetrics>()
     private val messageBus = mock<MessageBus>()
     private val messageBusConnection = mock<MessageBusConnection>()
     private val parser = mock<BpmnParser>()
@@ -133,6 +135,8 @@ internal class UiEditorLightE2ETest {
 
         whenever(propertiesTable.columnModel).thenReturn(columnModel)
         whenever(columnModel.getColumn(anyInt())).thenReturn(tableColumn)
+        whenever(graphics.fontMetrics).thenReturn(fontMetrics)
+        whenever(fontMetrics.getStringBounds(any(), eq(graphics))).thenReturn(Rectangle2D.Float())
         whenever(graphics.create()).thenReturn(graphics)
         whenever(virtualFile.contentsToByteArray()).thenReturn(ByteArray(0))
         whenever(project.messageBus).thenReturn(messageBus)
