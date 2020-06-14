@@ -11,7 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
 
-class IconShape(
+open class IconShape(
         override val elementId: DiagramElementId,
         override val bpmnElementId: BpmnElementId,
         private val icon: String,

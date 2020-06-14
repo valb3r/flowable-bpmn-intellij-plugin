@@ -21,8 +21,12 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         fillFor(BpmnElementId(""), factory, process, elementByStaticId, propertiesById)
         elementByDiagramId[DiagramElementId(process.id.id)] = process.id
 
+        // 1st pass
         process.body?.let { extractElementsFromBody(process.id, it, factory, elementByStaticId, propertiesById) }
         process.children?.forEach { (id, body) -> extractElementsFromBody(id, body, factory, elementByStaticId, propertiesById)}
+        // 2nd pass
+        process.body?.let { reassignParentsBasedOnTargetRef(process.id, it, factory, elementByStaticId, propertiesById) }
+        process.children?.forEach { (id, body) -> reassignParentsBasedOnTargetRef(id, body, factory, elementByStaticId, propertiesById)}
 
         diagram.firstOrNull()
                 ?.bpmnPlane
@@ -113,6 +117,24 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         body.sequenceFlow?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
     }
 
+    private fun reassignParentsBasedOnTargetRef(
+            parentId: BpmnElementId,
+            body: BpmnProcessBody,
+            factory: BpmnObjectFactory,
+            elementByStaticId: MutableMap<BpmnElementId, WithParentId>,
+            propertiesById: MutableMap<BpmnElementId, MutableMap<PropertyType, Property>>) {
+        // Boundary
+        body.boundaryEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.boundaryCancelEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.boundaryCompensationEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.boundaryConditionalEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.boundaryErrorEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.boundaryEscalationEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.boundaryMessageEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.boundarySignalEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.boundaryTimerEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
+    }
+
     private fun fillFor(
             parentId: BpmnElementId,
             factory: BpmnObjectFactory,
@@ -121,6 +143,23 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
             propertiesByElemType: MutableMap<BpmnElementId, MutableMap<PropertyType, Property>>) {
         elementById[activity.id] = WithParentId(parentId, activity)
         propertiesByElemType[activity.id] = factory.propertiesOf(activity).toMutableMap()
+    }
+
+    private fun fillForTargetRefParent(
+            defaultParentId: BpmnElementId,
+            factory: BpmnObjectFactory,
+            activity: WithBpmnId,
+            elementById: MutableMap<BpmnElementId, WithParentId>,
+            propertiesByElemType: MutableMap<BpmnElementId, MutableMap<PropertyType, Property>>) {
+        propertiesByElemType[activity.id] = factory.propertiesOf(activity).toMutableMap()
+        var parentId = defaultParentId
+        val referencedId = propertiesByElemType[activity.id]?.get(PropertyType.ATTACHED_TO_REF)?.value
+        referencedId?.let {referenced ->
+            val computedParent = elementById[BpmnElementId(referenced as String)]
+            computedParent?.let { parentId = it.id }
+        }
+
+        elementById[activity.id] = WithParentId(parentId, activity)
     }
 }
 
