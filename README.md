@@ -80,7 +80,7 @@ IntelliJ docs on this topic:
 
 |            XML element           | Supported |
 |:--------------------------------:|:---------:|
-|          adHocSubProcess         |     P     |
+|          adHocSubProcess         |     Y     |
 |            association           |           |
 |           boundaryEvent          |     P     |
 |        bpmndi:BPMNDiagram        |     Y     |
@@ -129,13 +129,13 @@ IntelliJ docs on this topic:
 |            serviceTask           |     Y     |
 |       signalEventDefinition      |     P     |
 |            startEvent            |     Y     |
-|            subProcess            |     P     |
+|            subProcess            |     Y     |
 |     terminateEventDefinition     |     P     |
 |               text               |     P     |
 |          textAnnotation          |     P     |
 |             timeDate             |     P     |
 |       timerEventDefinition       |     P     |
-|            transaction           |     P     |
+|            transaction           |     Y     |
 |             userTask             |     Y     |
 
 **Legend**:
