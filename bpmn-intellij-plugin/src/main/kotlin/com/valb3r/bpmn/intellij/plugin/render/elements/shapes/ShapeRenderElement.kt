@@ -117,40 +117,9 @@ abstract class ShapeRenderElement(
             return events
         }
 
-        val nests = allDroppedOn[AreaType.SHAPE_THAT_NESTS]
-        val parentProcess = allDroppedOn[AreaType.PARENT_PROCESS_SHAPE]
-        val currentParent = parents.firstOrNull()
-
-        if (allDroppedOn[allDroppedOn.firstKey()] == currentParent?.bpmnElementId) {
-            return events
-        }
-
-        if (null != nests && nests != currentParent?.bpmnElementId) {
-            events += BpmnParentChangedEvent(shape.bpmnElement, nests)
-            // Cascade parent change to waypoint owning edge
-            events += cascadeTargets.mapNotNull { state.currentState.elementByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, nests) }
-
-        } else if (null != parentProcess && parentProcess != parents.firstOrNull()?.bpmnElementId) {
-            events += BpmnParentChangedEvent(shape.bpmnElement, parentProcess)
-            // Cascade parent change to waypoint owning edge
-            events += cascadeTargets.mapNotNull { state.currentState.elementByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, parentProcess) }
-        }
+        events += handlePossibleNestingTo(allDroppedOn, cascadeTargets)
 
         return events
-    }
-
-    private fun handleChildDrag(event: Event, alreadyDraggedLocations: MutableSet<DiagramElementId>, result: MutableList<Event>) {
-        if (event !is LocationUpdateWithId) {
-            result += event
-            return
-        }
-
-        if (alreadyDraggedLocations.contains(event.diagramElementId)) {
-            return
-        }
-
-        alreadyDraggedLocations += event.diagramElementId
-        result += event
     }
 
     override fun doResizeWithoutChildren(dw: Float, dh: Float) {
@@ -209,6 +178,29 @@ abstract class ShapeRenderElement(
         return viewTransform.transform(shape.rectBounds())
     }
 
+    open protected fun handlePossibleNestingTo(allDroppedOn: SortedMap<AreaType, BpmnElementId>,  cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {
+        val nests = allDroppedOn[AreaType.SHAPE_THAT_NESTS]
+        val parentProcess = allDroppedOn[AreaType.PARENT_PROCESS_SHAPE]
+        val currentParent = parents.firstOrNull()
+        val newEvents = mutableListOf<Event>()
+
+        if (allDroppedOn[allDroppedOn.firstKey()] == currentParent?.bpmnElementId) {
+            return newEvents
+        }
+
+        if (null != nests && nests != currentParent?.bpmnElementId) {
+            newEvents += BpmnParentChangedEvent(shape.bpmnElement, nests)
+            // Cascade parent change to waypoint owning edge
+            newEvents += cascadeTargets.mapNotNull { state.currentState.elementByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, nests) }
+
+        } else if (null != parentProcess && parentProcess != parents.firstOrNull()?.bpmnElementId) {
+            newEvents += BpmnParentChangedEvent(shape.bpmnElement, parentProcess)
+            // Cascade parent change to waypoint owning edge
+            newEvents += cascadeTargets.mapNotNull { state.currentState.elementByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, parentProcess) }
+        }
+        return newEvents
+    }
+
     protected fun computeCascadables(): Set<CascadeTranslationOrChangesToWaypoint> {
         val idCascadesTo = setOf(PropertyType.SOURCE_REF, PropertyType.TARGET_REF)
         val result = mutableSetOf<CascadeTranslationOrChangesToWaypoint>()
@@ -233,5 +225,19 @@ abstract class ShapeRenderElement(
                     val waypoint = it.waypoint[index]
                     CascadeTranslationOrChangesToWaypoint(cascadeTrigger, waypoint.id, Point2D.Float(waypoint.x, waypoint.y), it.id, waypoint.internalPhysicalPos)
                 }
+    }
+
+    private fun handleChildDrag(event: Event, alreadyDraggedLocations: MutableSet<DiagramElementId>, result: MutableList<Event>) {
+        if (event !is LocationUpdateWithId) {
+            result += event
+            return
+        }
+
+        if (alreadyDraggedLocations.contains(event.diagramElementId)) {
+            return
+        }
+
+        alreadyDraggedLocations += event.diagramElementId
+        result += event
     }
 }
