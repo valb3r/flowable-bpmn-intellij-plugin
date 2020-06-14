@@ -70,7 +70,11 @@ IntelliJ docs on this topic:
 
 **Q**: Some feature/bug was closed, but I can't find new release.
 
-**A**: Check [this link](https://github.com/valb3r/flowable-bpmn-intellij-plugin/projects/1) for the status of your feature. If it is in 'Done' (or Closed) column this doesn't mean it is released - it must proceed to next columns to appear in any kind of release-artifact. After feature is 'Closed' it will wait for GitHub release at [Releases](https://github.com/valb3r/flowable-bpmn-intellij-plugin/releases) page and after that it will be published to JetBrains marketplace. It can take up to two days for plugin to be available on JetBrains marketplace.
+**A**: Check [this link](https://github.com/valb3r/flowable-bpmn-intellij-plugin/projects/1) for the status of your feature. 
+If it is in 'Done' (or Closed) column this doesn't mean it is released - it must proceed to next columns to appear in 
+any kind of release-artifact. After feature is 'Closed' it will wait for GitHub release 
+at [Releases](https://github.com/valb3r/flowable-bpmn-intellij-plugin/releases) page and after that it will be 
+published to JetBrains marketplace. It can take up to two days for plugin to be available on JetBrains marketplace.
 
 
 # Flowable XML subset support
