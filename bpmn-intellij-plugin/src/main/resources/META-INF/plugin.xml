@@ -12,9 +12,10 @@
 
     <!-- Description of the plugin. -->
     <description><![CDATA[
-      <p>A plugin to edit and visualize Flowable BPMN diagrams with code navigation and process debugging support.
-      Provides necessary glue between code and BPMN diagram by allowing to jump directly from the element to its implementing class</p>
-      <p>Features</p>
+      <p>The plugin to bring BPMN world closer to developer needs. It supports editing and visualizing Flowable BPMN
+      diagrams with navigation and process debugging support. Provides necessary glue to jump between code and BPMN diagram
+      and bridges IntelliJ refactorings (changing bean names for example) to XML diagrams</p>
+      <p><strong>Key features</strong></p>
       <ul>
         <li>BPMN editing/viewing</li>
         <li>Jumping from delegate expression or class directly to code</li>
