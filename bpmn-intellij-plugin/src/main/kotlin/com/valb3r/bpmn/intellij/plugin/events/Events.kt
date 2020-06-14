@@ -22,7 +22,7 @@ data class BpmnShapeResizedAndMovedEvent(override val diagramElementId: DiagramE
     }
 }
 
-data class BpmnParentChangedEvent(override val bpmnElementId: BpmnElementId, override val newParentId: BpmnElementId): BpmnParentChanged
+data class BpmnParentChangedEvent(override val bpmnElementId: BpmnElementId, override val newParentId: BpmnElementId, override val propagateToXml: Boolean = true): BpmnParentChanged
 
 data class NewWaypointsEvent(override val edgeElementId: DiagramElementId, override val waypoints: List<IdentifiableWaypoint>, override val epoch: Int): NewWaypoints
 
