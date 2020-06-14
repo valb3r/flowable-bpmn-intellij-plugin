@@ -5,9 +5,9 @@ import java.awt.Color
 
 enum class Colors(val color: JBColor) {
     SERVICE_TASK_COLOR(JBColor(Color(0xF9F9F9), Color(0x535353))),
-    TRANSACTION_COLOR(JBColor(Color(0xF9F9F9), Color(0x292B2D))),
+    TRANSACTION_COLOR(JBColor(Color(0xFDFEFF), Color(0x292B2D))),
     TRANSACTION_ELEMENT_BORDER_COLOR(JBColor(Color(0x292B2D), Color(0xC9C9C9))),
-    PROCESS_COLOR(JBColor(Color(0xF9F9F9), Color(0x292B2D))),
+    PROCESS_COLOR(JBColor(Color(0xFDFEFF), Color(0x292B2D))),
     CALL_ACTIVITY_COLOR(JBColor(Color(0xF9F9F9), Color(0x535353))),
     ELEMENT_BORDER_COLOR(JBColor(Color(0xC9C9C9), Color(0x6E6E6E))),
     SUBPROCESS_TEXT_COLOR(JBColor(Color(0x292B2D), Color(0xBBBBBB))),
