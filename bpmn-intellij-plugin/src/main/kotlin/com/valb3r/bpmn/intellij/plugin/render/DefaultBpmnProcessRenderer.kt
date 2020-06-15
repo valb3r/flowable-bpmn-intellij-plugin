@@ -47,6 +47,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     private val undoRedoStartMargin = 20.0f
     private val anchorRadius = 5f
     private val actionsIcoSize = 15f
+    private val debugAnchorEdgeEpsilon = 6.0f
 
     private val undoId = DiagramElementId("UNDO")
     private val redoId = DiagramElementId("REDO")
@@ -56,9 +57,12 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
     override fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val elementsByDiagramId = mutableMapOf<DiagramElementId, BaseDiagramRenderElement>()
+        val currentState = ctx.stateProvider.currentState()
+        val history = currentDebugger()?.executionSequence(currentState.processId.id)?.history ?: emptyList()
         val state = RenderState(
                 elementsByDiagramId,
-                ctx.stateProvider.currentState(),
+                currentState,
+                history,
                 ctx,
                 icons
         )
@@ -80,7 +84,6 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         drawUndoRedo(state, rendered)
         drawSelectionRect(ctx)
         drawMultiremovalRect(state, rendered)
-        drawDebugElements(state, rendered)
 
         return rendered
     }
@@ -184,24 +187,6 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         state.interactionContext.dragSelectionRect?.let {
             val rect = it.toRect()
             state.canvas.drawRectNoCameraTransform(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
-        }
-    }
-
-    private fun drawDebugElements(state: RenderState, renderedArea: Map<DiagramElementId, AreaWithZindex>) {
-        currentDebugger()?.executionSequence(state.currentState.processId.id)?.history?.let { history ->
-            val elemToDiagramId = mutableMapOf<BpmnElementId, MutableSet<DiagramElementId>>()
-            state.currentState.elementByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
-            val elemOccurs = mutableMapOf<BpmnElementId, MutableList<Int>>()
-            history.forEachIndexed { index, elem -> elemOccurs.computeIfAbsent(elem) { mutableListOf() }.add(index) }
-
-            elemOccurs.forEach { (elem, indexes) ->
-                val targetElem = elemToDiagramId[elem]?.firstOrNull()
-                renderedArea[targetElem]?.apply {
-                    val bounds = this.area.bounds2D
-                    state.ctx.canvas.drawTextNoCameraTransform(Point2D.Float(bounds.x.toFloat(), bounds.y.toFloat()), indexes.toString(), Colors.INNER_TEXT_COLOR.color)
-                }
-            }
-
         }
     }
 

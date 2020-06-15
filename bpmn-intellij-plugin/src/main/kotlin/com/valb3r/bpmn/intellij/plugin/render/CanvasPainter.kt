@@ -419,14 +419,27 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(Rectangle2D.Float(textLocation.x + rect.x.toFloat(), textLocation.y + rect.y.toFloat(), rect.width.toFloat(), rect.height.toFloat()))
     }
 
-    fun drawTextNoCameraTransform(location: Point2D.Float, text: String, textColor: Color) {
+    fun drawTextNoCameraTransform(location: Point2D.Float, text: String, textColor: Color, background: Color? = null) {
+        val textLocation = camera.toCameraView(location)
         if ("" == text) {
             return
         }
 
+        val rect = graphics2D.fontMetrics.getStringBounds(text, graphics2D)
+        background.apply {
+            graphics2D.color = background
+            val radius = Math.max(rect.width.toFloat(), rect.height.toFloat())
+            graphics2D.fill(Ellipse2D.Float(
+                    textLocation.x + rect.x.toFloat() + (rect.width.toFloat() - radius) / 2.0f,
+                    textLocation.y + rect.y.toFloat() + (rect.height.toFloat() - radius) / 2.0f,
+                    radius,
+                    radius
+
+            ))
+        }
         graphics2D.font = font // for ellipsis
         graphics2D.color = textColor
-        graphics2D.drawString(text, location.x.toInt(), location.y.toInt())
+        graphics2D.drawString(text, textLocation.x.toInt(), textLocation.y.toInt())
     }
 
     fun drawWrappedText(shape: Rectangle2D.Float, text: String) {

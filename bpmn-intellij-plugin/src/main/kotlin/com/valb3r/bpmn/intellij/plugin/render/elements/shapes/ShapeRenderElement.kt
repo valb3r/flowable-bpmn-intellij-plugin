@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.render.elements.shapes
 
+import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
@@ -44,7 +45,14 @@ abstract class ShapeRenderElement(
             dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId> -> onDragEnd(dx, dy, droppedOn, allDroppedOn)
         }
 
-        return doRender(ctx, ShapeCtx(shape.id, elem, currentRect(ctx.canvas.camera), props, name))
+        val shapeCtx = ShapeCtx(shape.id, elem, currentRect(ctx.canvas.camera), props, name)
+        if (state.history.contains(bpmnElementId)) {
+            val indexes = state.history.mapIndexed {pos, id -> if (id == bpmnElementId) pos else null}.filterNotNull()
+            state.ctx.canvas.drawTextNoCameraTransform(
+                    Point2D.Float(shapeCtx.shape.x, shapeCtx.shape.y), indexes.toString(), Colors.INNER_TEXT_COLOR.color, Colors.DEBUG_ELEMENT_COLOR.color
+            )
+        }
+        return doRender(ctx, shapeCtx)
     }
 
     override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
