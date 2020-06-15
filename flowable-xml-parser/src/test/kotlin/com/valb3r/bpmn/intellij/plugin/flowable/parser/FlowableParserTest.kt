@@ -12,10 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import org.amshove.kluent.shouldContain
-import org.amshove.kluent.shouldContainAll
-import org.amshove.kluent.shouldHaveSize
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 import java.awt.geom.Point2D
 import java.nio.charset.StandardCharsets.UTF_8
@@ -258,6 +255,32 @@ internal class FlowableParserTest {
         )
 
         updated.shouldNotBeNull()
+    }
+
+    @Test
+    fun `Empty CDATA is removed`() {
+        val updated = FlowableParser().update(
+                "popurri.bpmn20.xml".asResource()!!,
+                listOf(StringValueUpdatedEvent(BpmnElementId("onGatewayOk"), PropertyType.CONDITION_EXPR_VALUE, ""))
+        )
+
+        updated.shouldNotBeNull()
+        val updatedProcess = FlowableParser().parse(updated)
+        val sequenceFlow = updatedProcess.process.body!!.sequenceFlow!!.filter { it.id.id == "onGatewayOk"}.shouldHaveSingleItem()
+        sequenceFlow.conditionExpression!!.text.shouldBeNull()
+    }
+
+    @Test
+    fun `Empty text is removed`() {
+        val updated = FlowableParser().update(
+                "popurri.bpmn20.xml".asResource()!!,
+                listOf(StringValueUpdatedEvent(BpmnElementId("onGatewayNokId"), PropertyType.CONDITION_EXPR_VALUE, ""))
+        )
+
+        updated.shouldNotBeNull()
+        val updatedProcess = FlowableParser().parse(updated)
+        val sequenceFlow = updatedProcess.process.body!!.sequenceFlow!!.filter { it.id.id == "onGatewayNokId"}.shouldHaveSingleItem()
+        sequenceFlow.conditionExpression!!.text.shouldBeNull()
     }
 
     fun String.asResource(): String? = object {}::class.java.classLoader.getResource(this)?.readText(UTF_8)

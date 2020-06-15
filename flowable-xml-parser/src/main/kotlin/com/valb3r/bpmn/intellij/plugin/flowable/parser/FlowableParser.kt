@@ -542,9 +542,8 @@ class FlowableParser : BpmnParser {
 
     private fun setCdata(node: Element, name: String, value: String?) {
         if (value.isNullOrEmpty()) {
-            if (node.text.isNotBlank()) {
-                node.text = null
-            }
+            node.content().filterIsInstance<CDATA>().forEach { node.remove(it) }
+            node.content().filterIsInstance<Text>().forEach { node.remove(it) }
             return
         }
 

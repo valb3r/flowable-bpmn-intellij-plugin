@@ -419,7 +419,7 @@
         </sequenceFlow>
         <sequenceFlow id="onGatewayNokId" name="On gateway NOK id" sourceRef="exclusiveGatewayId" targetRef="parallelGatewayId" skipExpression="${expression.skip}">
             <documentation>On gateway NOK docs</documentation>
-            <conditionExpression xsi:type="tFormalExpression"><![CDATA[${some.other.cond}]]></conditionExpression>
+            <conditionExpression xsi:type="tFormalExpression">${some.other.cond}</conditionExpression>
         </sequenceFlow>
         <sequenceFlow id="sid-99F42091-CFAA-4E13-BEE7-E3847B900351" sourceRef="intermediateTimerCatchingEventId" targetRef="intermediateSignalCatchingEventId"></sequenceFlow>
         <sequenceFlow id="sid-6981F788-C45B-4118-A683-FECC28380150" sourceRef="intermediateSignalCatchingEventId" targetRef="intermediateMessageCatchingEventId"></sequenceFlow>
