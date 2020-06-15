@@ -54,6 +54,11 @@ abstract class BaseEdgeRenderElement(
             }
         }
 
+        if (state.history.contains(bpmnElementId)) {
+            val indexes = state.history.mapIndexed {pos, id -> if (id == bpmnElementId) pos else null}.filterNotNull()
+            val midPoints = anchors.filterIsInstance<VirtualWaypoint>().map { it.transformedLocation }
+            state.ctx.canvas.drawTextNoCameraTransform(midPoints[midPoints.size / 2], indexes.toString(), Colors.INNER_TEXT_COLOR.color, Colors.DEBUG_ELEMENT_COLOR.color)
+        }
         area.add(renderDefaultMarkIfNeeded(ctx, anchors.filterIsInstance<PhysicalWaypoint>().map { it.transformedLocation }))
         return mapOf(elementId to AreaWithZindex(area, AreaType.EDGE, waypointAnchors(ctx.canvas.camera), index = zIndex()))
     }
