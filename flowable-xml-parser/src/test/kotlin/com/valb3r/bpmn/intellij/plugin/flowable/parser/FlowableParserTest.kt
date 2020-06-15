@@ -258,7 +258,7 @@ internal class FlowableParserTest {
     }
 
     @Test
-    fun `Empty CDATA can be removed`() {
+    fun `Empty CDATA is removed`() {
         val updated = FlowableParser().update(
                 "popurri.bpmn20.xml".asResource()!!,
                 listOf(StringValueUpdatedEvent(BpmnElementId("onGatewayOk"), PropertyType.CONDITION_EXPR_VALUE, ""))
@@ -267,6 +267,19 @@ internal class FlowableParserTest {
         updated.shouldNotBeNull()
         val updatedProcess = FlowableParser().parse(updated)
         val sequenceFlow = updatedProcess.process.body!!.sequenceFlow!!.filter { it.id.id == "onGatewayOk"}.shouldHaveSingleItem()
+        sequenceFlow.conditionExpression!!.text.shouldBeNull()
+    }
+
+    @Test
+    fun `Empty text is removed`() {
+        val updated = FlowableParser().update(
+                "popurri.bpmn20.xml".asResource()!!,
+                listOf(StringValueUpdatedEvent(BpmnElementId("onGatewayNokId"), PropertyType.CONDITION_EXPR_VALUE, ""))
+        )
+
+        updated.shouldNotBeNull()
+        val updatedProcess = FlowableParser().parse(updated)
+        val sequenceFlow = updatedProcess.process.body!!.sequenceFlow!!.filter { it.id.id == "onGatewayNokId"}.shouldHaveSingleItem()
         sequenceFlow.conditionExpression!!.text.shouldBeNull()
     }
 
