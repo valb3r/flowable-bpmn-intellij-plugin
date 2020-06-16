@@ -51,14 +51,21 @@ IntelliJ docs on this topic:
 
 ## Plugin usage:
 
+
 ### Basic usage
 
 [![Work with plugin](https://img.youtube.com/vi/fdl2JQuIWl8/0.jpg)](https://youtu.be/fdl2JQuIWl8)
 
 
+### Adding new elements
+
+[![Work with plugin](https://img.youtube.com/vi/cyLbEeaMDvI/0.jpg)](https://youtu.be/cyLbEeaMDvI)
+
+
 ### BPMN-Java-XML 'gluing' usage
 
 [![Work with plugin](https://img.youtube.com/vi/BQf0eglY2vo/0.jpg)](https://youtu.be/BQf0eglY2vo)
+
 
 ### Debugging BPMN process with the plugin
 
