@@ -46,6 +46,25 @@ IntelliJ docs on this topic:
 
 [How to configure and use alpha channel](https://plugins.jetbrains.com/docs/marketplace/custom-release-channels.html#CustomReleaseChannels-ConfiguringaCustomChannelinIntelliJPlatformBasedIDEs)
 
+
+# Building from sources
+
+If you want to build plugin directly from sources (i.e. from `master` branch `HEAD` for bugfixes), simply execute 
+in project root this command:
+
+```shell script
+./gradlew clean buildPlugin
+```
+
+It will create `bpmn-intellij-plugin/build/distributions/bpmn-intellij-plugin.zip` file that contains plugin distributive.
+You can install it by following steps [here](#from-github-releases).
+
+If you want just to run the plugin in the `sandbox` you can execute
+```shell script
+./gradlew clean bpmn-intellij-plugin:runIde
+```
+
+
 # Workflow
 
 
@@ -78,7 +97,7 @@ IntelliJ docs on this topic:
 1. To move diagram up/down/left/right - click mouse wheel and start moving your mouse - diagram will follow 
 (like dragging with mouse wheel) or Shift + Left Mouse Button
 1. Zoom in/out - mouse wheel rotation
-1. To **add new element** - click with right mouse button and popup menu with new element selection will appear 
+1. To **add a new element** - click with right mouse button and popup menu with new element selection will appear 
 1. To select element click on it with mouse
 
 
