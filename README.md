@@ -65,12 +65,13 @@ IntelliJ docs on this topic:
 [![Debug BPMN with plugin](https://img.youtube.com/vi/_zQ1zy_0Qfc/0.jpg)](https://youtu.be/_zQ1zy_0Qfc)
 
 
-# Navigation guideline
+# Navigation/editing guideline
 
 1. To open BPMN diagram in the plugin - left mouse button on XML file and select `View BPMN Diagram`
 1. To move diagram up/down/left/right - click mouse wheel and start moving your mouse - diagram will follow 
-(like dragging with mouse wheel)
+(like dragging with mouse wheel) or Shift + Left Mouse Button
 1. Zoom in/out - mouse wheel rotation
+1. To **add new element** - click with right mouse button and popup menu with new element selection will appear 
 1. To select element click on it with mouse
 
 
