@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
 
 
-internal class FlowableParserTest {
+internal class DumbFlowableParserTest {
 
     private val parentElemId = BpmnElementId("duplicates")
     private val bmpnElemId = BpmnElementId(UUID.randomUUID().toString())
