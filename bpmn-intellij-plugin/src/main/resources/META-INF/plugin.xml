@@ -14,7 +14,8 @@
     <description><![CDATA[
       <p>The plugin to bring BPMN world closer to developer needs. It supports editing and visualizing Flowable BPMN
       diagrams with navigation and process debugging support. Provides necessary glue to jump between code and BPMN diagram
-      and bridges IntelliJ refactorings (changing bean names for example) to XML diagrams</p>
+      and bridges IntelliJ refactorings (changing bean names for example) to XML diagrams.</p>
+      <p>See <a href="https://github.com/valb3r/flowable-bpmn-intellij-plugin">plugin repository</a> for how-to videos</p>
       <p><strong>Key features</strong></p>
       <ul>
         <li>BPMN editing/viewing</li>
