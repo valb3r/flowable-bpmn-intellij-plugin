@@ -2,12 +2,13 @@ package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BooleanValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.DraggedToEvent
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.*
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -20,10 +21,12 @@ internal class XmlUpdateEventApplyTest {
     private val flatEdgeDiagramId = DiagramElementId("BPMNEdge_linkToSubprocess")
     private val flatServiceTaskDiagramId = DiagramElementId("BPMNShape_serviceTask")
 
+    private val processId = BpmnElementId("simple-nested")
     private val startEventId = BpmnElementId("startEvent")
     private val subProcessId = BpmnElementId("subProcess")
     private val flatServiceTaskId = BpmnElementId("serviceTask")
     private val nestedServiceTaskFirstId = BpmnElementId("nestedServiceTaskFirst")
+    private val nestedServiceTaskSecondId = BpmnElementId("nestedServiceTaskSecond")
 
     private val parser = FlowableParser()
 
@@ -118,69 +121,153 @@ internal class XmlUpdateEventApplyTest {
         )
 
         val draggedElem = updatedProcess.diagram.filter { it.id == parentDiagramElementId }.shouldHaveSingleItem()
-                .bpmnPlane.bpmnEdge!!.filter {it.id == flatEdgeDiagramId}.shouldHaveSingleItem()
+                .bpmnPlane.bpmnEdge!!.filter { it.id == flatEdgeDiagramId }.shouldHaveSingleItem()
 
         draggedElem.waypoint!![0].x.shouldBeNear(114.95f, EPSILON)
         draggedElem.waypoint!![0].y.shouldBeNear(244.5f, EPSILON)
     }
 
+    // Nesting does not apply to diagram
     @Test
     fun `New waypoints event on flat element works`() {
+        val updatedProcess = readAndUpdateProcess(
+                NewWaypointsEvent(
+                        flatEdgeDiagramId,
+                        listOf(
+                                WaypointElementState(DiagramElementId(UUID.randomUUID().toString()), 100.0f, 100.0f, 0.0f, 0.0f, true, 0),
+                                WaypointElementState(DiagramElementId(UUID.randomUUID().toString()), 110.0f, 110.0f, 0.0f, 0.0f, true, 1),
+                                WaypointElementState(DiagramElementId(UUID.randomUUID().toString()), 120.0f, 120.0f, 0.0f, 0.0f, true, 2)
+                        ),
+                        1
+                )
+        )
 
-    }
+        val updatedElem = updatedProcess.diagram.filter { it.id == parentDiagramElementId }.shouldHaveSingleItem()
+                .bpmnPlane.bpmnEdge!!.filter { it.id == flatEdgeDiagramId }.shouldHaveSingleItem()
 
-    @Test
-    fun `New waypoints event on nested element works`() {
-
+        updatedElem.waypoint!![0].x.shouldBeNear(100.0f, EPSILON)
+        updatedElem.waypoint!![0].y.shouldBeNear(100.0f, EPSILON)
+        updatedElem.waypoint!![1].x.shouldBeNear(110.0f, EPSILON)
+        updatedElem.waypoint!![1].y.shouldBeNear(110.0f, EPSILON)
+        updatedElem.waypoint!![2].x.shouldBeNear(120.0f, EPSILON)
+        updatedElem.waypoint!![2].y.shouldBeNear(120.0f, EPSILON)
     }
 
     // Nesting does not apply to diagram
     @Test
     fun `Diagram element removed event on flat element works`() {
+        val updatedProcess = readAndUpdateProcess(DiagramElementRemovedEvent(flatEdgeDiagramId))
 
+        updatedProcess.diagram.filter { it.id == parentDiagramElementId }.shouldHaveSingleItem()
+                .bpmnPlane.bpmnEdge!!.filter { it.id == flatEdgeDiagramId }.shouldBeEmpty()
     }
-    
+
 
     @Test
     fun `BPMN element removed event on flat element works`() {
+        val updatedProcess = readAndUpdateProcess(BpmnElementRemovedEvent(flatServiceTaskId))
 
+        updatedProcess.process.body!!.serviceTask.shouldBeNull()
     }
 
     @Test
     fun `BPMN element removed event on nested element works`() {
+        val updatedProcess = readAndUpdateProcess(BpmnElementRemovedEvent(nestedServiceTaskFirstId))
 
+        updatedProcess.process.body!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldBeEmpty()
     }
 
-    // Object added is tested in XmlUpdateEventBpmnObjectAdded
+    // BPMN Object added is tested in XmlUpdateEventBpmnObjectAdded
 
     @Test
     fun `BPMN edge object added event on flat element works`() {
+        val id = BpmnElementId(UUID.randomUUID().toString())
+        val diagramId = DiagramElementId(UUID.randomUUID().toString())
+        val nameOnProp = "A prop name"
 
+        val updatedProcess = readAndUpdateProcess(BpmnEdgeObjectAddedEvent(
+                WithParentId(processId, BpmnSequenceFlow(BpmnElementId("foo"), null, null, null, null, null)),
+                EdgeElementState(
+                        diagramId,
+                        id,
+                        mutableListOf(
+                                WaypointElementState(DiagramElementId(UUID.randomUUID().toString()), 100.0f, 100.0f, 0.0f, 0.0f, true, 0),
+                                WaypointElementState(DiagramElementId(UUID.randomUUID().toString()), 110.0f, 110.0f, 0.0f, 0.0f, true, 1)
+                        ),
+                        0),
+                mutableMapOf(Pair(PropertyType.ID, Property(id.id)), Pair(PropertyType.NAME, Property(nameOnProp)))
+        ))
+
+        updatedProcess.process.body!!.sequenceFlow!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `BPMN edge object added event on nested element works`() {
+        val id = BpmnElementId(UUID.randomUUID().toString())
+        val diagramId = DiagramElementId(UUID.randomUUID().toString())
+        val nameOnProp = "A prop name"
 
+        val updatedProcess = readAndUpdateProcess(BpmnEdgeObjectAddedEvent(
+                WithParentId(subProcessId, BpmnSequenceFlow(BpmnElementId("foo"), null, null, null, null, null)),
+                EdgeElementState(
+                        diagramId,
+                        id,
+                        mutableListOf(
+                                WaypointElementState(DiagramElementId(UUID.randomUUID().toString()), 100.0f, 100.0f, 0.0f, 0.0f, true, 0),
+                                WaypointElementState(DiagramElementId(UUID.randomUUID().toString()), 110.0f, 110.0f, 0.0f, 0.0f, true, 1)
+                        ),
+                        0),
+                mutableMapOf(Pair(PropertyType.ID, Property(id.id)), Pair(PropertyType.NAME, Property(nameOnProp)))
+        ))
+
+        updatedProcess.process.children!![subProcessId]!!.sequenceFlow!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
+    // Nesting does not apply to diagram
     @Test
     fun `BPMN resize and move event on flat element works`() {
+        val updatedProcess = readAndUpdateProcess(BpmnShapeResizedAndMovedEvent(flatServiceTaskDiagramId, 0.0f, 0.0f, 2.0f, 2.0f))
 
+        val draggedElem = updatedProcess.diagram.filter { it.id == parentDiagramElementId }.shouldHaveSingleItem()
+                .bpmnPlane.bpmnShape!!.filter {it.id == flatServiceTaskDiagramId}.shouldHaveSingleItem()
+
+        draggedElem.rectBounds().x.shouldBeNear(1170.0f, EPSILON)
+        draggedElem.rectBounds().y.shouldBeNear(389.0f, EPSILON)
+        draggedElem.rectBounds().width.shouldBeNear(200.0f, EPSILON)
+        draggedElem.rectBounds().height.shouldBeNear(160.0f, EPSILON)
     }
 
-    @Test
-    fun `BPMN resize and move event on nested element works`() {
 
-    }
 
     @Test
     fun `BPMN parent changed event on flat element works`() {
+        val updatedProcess = readAndUpdateProcess(BpmnParentChangedEvent(flatServiceTaskId, subProcessId))
 
+        updatedProcess.process.body!!.serviceTask.shouldBeNull()
+        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.filter { it.id == flatServiceTaskId }.shouldHaveSingleItem()
+        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.map { it.id }.shouldContainSame(
+                listOf(flatServiceTaskId, nestedServiceTaskFirstId, nestedServiceTaskSecondId)
+        )
     }
 
     @Test
     fun `BPMN parent changed event on nested element works`() {
+        val updatedProcess = readAndUpdateProcess(BpmnParentChangedEvent(nestedServiceTaskFirstId, processId))
 
+        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldBeEmpty()
+        updatedProcess.process.body!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldHaveSingleItem()
+        updatedProcess.process.body!!.serviceTask!!.map { it.id }.shouldContainSame(
+                listOf(flatServiceTaskId, nestedServiceTaskFirstId)
+        )
+    }
+
+    @Test
+    fun `BPMN parent changed event without propagation flag on nested element works`() {
+        val updatedProcess = readAndUpdateProcess(BpmnParentChangedEvent(nestedServiceTaskFirstId, processId, false))
+
+        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldHaveSingleItem()
+        updatedProcess.process.body!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldBeEmpty()
+        updatedProcess.process.body!!.serviceTask!!.filter { it.id == flatServiceTaskId }.shouldHaveSingleItem()
     }
 
     private fun readAndUpdateProcess(event: Event): BpmnProcessObject {
