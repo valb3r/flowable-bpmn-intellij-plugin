@@ -13,7 +13,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.*
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
-import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
 
 
@@ -280,7 +279,5 @@ internal class FlowableParserDumbTest {
         val sequenceFlow = updatedProcess.process.body!!.sequenceFlow!!.filter { it.id.id == "onGatewayNokId"}.shouldHaveSingleItem()
         sequenceFlow.conditionExpression!!.text.shouldBeNull()
     }
-
-    fun String.asResource(): String? = object {}::class.java.classLoader.getResource(this)?.readText(UTF_8)
 }
 

@@ -5,7 +5,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
-import java.nio.charset.StandardCharsets
 
 /**
  * Test to validate that XML file structure is parsed correctly.
@@ -177,6 +176,4 @@ internal class XmlWithNestedStructureParserTest {
         body.inclusiveGateway.shouldBeNull()
         body.eventBasedGateway.shouldBeNull()
     }
-
-    private fun String.asResource(): String? = object {}::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
 }
