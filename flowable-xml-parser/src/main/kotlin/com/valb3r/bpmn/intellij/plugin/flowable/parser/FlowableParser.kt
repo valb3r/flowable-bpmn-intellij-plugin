@@ -325,9 +325,6 @@ class FlowableParser : BpmnParser {
             is BpmnInclusiveGateway -> diagramParent.addElement("inclusiveGateway")
             is BpmnEventGateway -> diagramParent.addElement("eventBasedGateway")
 
-            // Linking elements
-            is BpmnSequenceFlow -> diagramParent.addElement("sequenceFlow")
-
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 

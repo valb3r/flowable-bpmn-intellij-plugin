@@ -94,6 +94,17 @@ internal class XmlUpdateEventApplyTest {
         updatedProcess.process.children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldHaveSingleItem().async.shouldBeEqualTo(true)
     }
 
+    @Test
+    fun `Element type pdate event on flat element works (attribute)`() {
+        val updatedProcess = readAndUpdateProcess(BooleanValueUpdatedEvent(subProcessId, PropertyType.IS_TRANSACTIONAL_SUBPROCESS, true))
+
+        updatedProcess.process.body!!.transaction!!.filter { it.id == subProcessId }.shouldHaveSingleItem()
+        updatedProcess.process.body!!.subProcess.shouldBeNull()
+        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.shouldHaveSize(2)
+        updatedProcess.process.children!![subProcessId]!!.sequenceFlow!!.shouldHaveSize(1)
+    }
+
+
     // Nesting does not apply to diagram
     @Test
     fun `Dragged to event on flat shape element works`() {
@@ -221,6 +232,11 @@ internal class XmlUpdateEventApplyTest {
         ))
 
         updatedProcess.process.children!![subProcessId]!!.sequenceFlow!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        val addedEdge = updatedProcess.diagram.filter { it.id == parentDiagramElementId }.shouldHaveSingleItem().bpmnPlane.bpmnEdge!!.filter { it.id == diagramId }.shouldHaveSingleItem()
+        addedEdge.waypoint!![0].x.shouldBeNear(100.0f, EPSILON)
+        addedEdge.waypoint!![0].y.shouldBeNear(100.0f, EPSILON)
+        addedEdge.waypoint!![1].x.shouldBeNear(110.0f, EPSILON)
+        addedEdge.waypoint!![1].y.shouldBeNear(110.0f, EPSILON)
     }
 
     // Nesting does not apply to diagram
