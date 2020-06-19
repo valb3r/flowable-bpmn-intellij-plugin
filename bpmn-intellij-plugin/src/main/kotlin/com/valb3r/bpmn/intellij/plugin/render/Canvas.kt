@@ -152,7 +152,13 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
         val anchorsToSearchIn = areaByElement
                 ?.filter { !ctx.draggedIds.contains(it.key) }
                 // shape is not affected by waypoints
-                ?.filter { if (draggedType == AreaType.SHAPE) it.value.areaType == AreaType.SHAPE else true }
+                ?.filter {
+                    if (draggedType == AreaType.SHAPE || draggedType == AreaType.SHAPE_THAT_NESTS) {
+                        it.value.areaType == AreaType.SHAPE || it.value.areaType == AreaType.SHAPE_THAT_NESTS
+                    } else {
+                        true
+                    }
+                }
 
         for ((_, searchIn) in anchorsToSearchIn?.filter { it.value.index <= draggedArea.index }.orEmpty()) {
             for (draggedAnchor in draggedAnchors) {
