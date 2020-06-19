@@ -106,12 +106,12 @@ abstract class BaseDiagramRenderElement(
 
     protected open fun actionsAnchorRight(shapeRect: Rectangle2D.Float): Point2D.Float {
         val rect = actionsRect(shapeRect)
-        return Point2D.Float(rect.x + rect.width + actionsMargin, rect.y)
+        return Point2D.Float(rect.x + rect.width, rect.y + 2.0f * actionsMargin)
     }
 
     protected open fun actionsAnchorTopEnd(shapeRect: Rectangle2D.Float): Point2D.Float {
         val rect = actionsRect(shapeRect)
-        return Point2D.Float(rect.x + rect.width + actionsMargin, rect.y - actionsMargin)
+        return Point2D.Float(rect.x + rect.width, rect.y)
     }
 
     protected open fun dragTo(dx: Float, dy: Float) {

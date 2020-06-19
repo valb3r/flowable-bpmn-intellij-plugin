@@ -18,13 +18,17 @@ class EdgeExtractionAnchor(
 
     override fun currentRect(camera: Camera): Rectangle2D.Float {
         val icon = icon()
+        val left = camera.fromCameraView(Point2D.Float(0.0f, 0.0f))
+        val right = camera.fromCameraView(Point2D.Float(icon.iconWidth.toFloat(), icon.iconHeight.toFloat()))
+        val imageWidth = right.x - left.x
+        val imageHeight = right.y - left.y
 
         return viewTransform.transform(
                 Rectangle2D.Float(
-                        bottomPoint.x - icon.iconWidth.toFloat(),
-                        bottomPoint.y - icon.iconWidth.toFloat(),
-                        icon.iconWidth.toFloat(),
-                        icon.iconHeight.toFloat()
+                        bottomPoint.x - imageWidth,
+                        bottomPoint.y - imageHeight,
+                        imageWidth,
+                        imageHeight
                 )
         )
     }
