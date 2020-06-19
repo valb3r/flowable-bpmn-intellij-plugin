@@ -27,7 +27,7 @@ class NoIconShape(
         val area = ctx.canvas.drawRoundedRect(
                 shapeCtx.shape,
                 shapeCtx.name,
-                color(isActive(), backgroundColor),
+                color(backgroundColor),
                 borderColor.color,
                 textColor.color,
                 borderStroke

@@ -20,6 +20,7 @@ enum class Colors(val color: JBColor) {
     BACKGROUND_COLOR(JBColor(Color(0xFDFEFF), Color(0x2B2B2B))),
     ACTIONS_BORDER_COLOR(JBColor(Color(0x626466), Color(0x949698))),
     SELECTED_COLOR(JBColor(Color(0x00EE00), Color(0x009900))),
+    DRAG_SELECTED_COLOR(JBColor(Color(0xFFAA00), Color(0xFFAA00))),
     START_EVENT(JBColor(Color(0x00AA00), Color(0x009900))),
     END_EVENT(JBColor(Color(0xFF0000), Color(0xDD0000))),
 }

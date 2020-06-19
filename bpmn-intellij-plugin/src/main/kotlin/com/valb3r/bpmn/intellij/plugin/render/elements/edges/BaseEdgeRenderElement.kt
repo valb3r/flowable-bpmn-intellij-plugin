@@ -108,7 +108,7 @@ abstract class BaseEdgeRenderElement(
             return Area()
         }
 
-        return ctx.canvas.drawLineSlash(anchors[0], anchors[1], color(isActive(), edgeColor))
+        return ctx.canvas.drawLineSlash(anchors[0], anchors[1], color(edgeColor))
     }
 
     private fun isActiveEdge(endPos: Int, activeAnchors: List<AnchorElement>): Boolean {

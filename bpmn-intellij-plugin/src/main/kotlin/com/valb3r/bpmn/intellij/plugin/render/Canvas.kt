@@ -24,12 +24,12 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstants) : JPanel() {
+class Canvas(private val settings: CanvasConstants) : JPanel() {
     private val stateProvider = currentStateProvider()
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
-    private var interactionCtx: ElementInteractionContext = ElementInteractionContext(mutableSetOf(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
+    private var interactionCtx: ElementInteractionContext = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
     private var renderer: BpmnProcessRenderer? = null
     private var areaByElement: Map<DiagramElementId, AreaWithZindex>? = null
     private var propsVisualizer: PropertiesVisualizer? = null
@@ -69,7 +69,7 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         clickedElements.forEach { interactionCtx.clickCallbacks[it]?.invoke(updateEventsRegistry()) }
 
         this.selectedElements.clear()
-        interactionCtx = ElementInteractionContext(mutableSetOf(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
+        interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
         this.selectedElements.addAll(clickedElements)
 
         repaint()
@@ -97,7 +97,7 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         val point = camera.fromCameraView(current)
         val elemsUnderCursor = elemUnderCursor(current)
         if (selectedElements.intersect(elemsUnderCursor).isEmpty()) {
-            interactionCtx = ElementInteractionContext(emptySet(), mutableMapOf(), null, mutableMapOf(), null, point, point)
+            interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, point, point)
             return
         }
     }
@@ -106,7 +106,8 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         val point = camera.fromCameraView(current)
         if (selectedElements.isNotEmpty()) {
             interactionCtx = interactionCtx.copy(
-                    draggedIds = selectedElements.toMutableSet(),
+                    draggedIds = selectedElements,
+                    dragTargetedIds = emptySet(),
                     dragStart = point,
                     dragCurrent = point
             )
@@ -116,12 +117,13 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         val elemsUnderCursor = elemUnderCursor(current)
 
         if (elemsUnderCursor.isEmpty()) {
-            interactionCtx = ElementInteractionContext(emptySet(), mutableMapOf(), SelectionRect(current, current), mutableMapOf(), null, point, point)
+            interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), SelectionRect(current, current), mutableMapOf(), null, point, point)
             return
         }
 
         interactionCtx = interactionCtx.copy(
-                draggedIds = selectedElements.toMutableSet(),
+                draggedIds = selectedElements,
+                dragTargetedIds = emptySet(),
                 dragStart = point,
                 dragCurrent = point,
                 dragSelectionRect = SelectionRect(current, current)
@@ -141,6 +143,10 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
             areaByElement?.get(dragged)?.anchorsForShape.orEmpty()
         } else {
             areaByElement?.get(dragged)?.anchorsForWaypoints.orEmpty()
+        }
+
+        if (draggedType == AreaType.SELECTS_DRAG_TARGET) {
+            return selectDragTarget(dragged!!, ctx)
         }
 
         val anchorsToSearchIn = areaByElement
@@ -178,6 +184,18 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
         )
     }
 
+    private fun selectDragTarget(dragged: DiagramElementId, ctx: ElementInteractionContext): ElementInteractionContext {
+        val areas = areaByElement!!
+        val area = areas[dragged]!!.area
+        val point = Point2D.Float(area.bounds2D.centerX.toFloat(), area.bounds2D.centerY.toFloat())
+        val target = dragTargettableElements(cursorRect(point))
+                .filter { !ctx.draggedIds.contains(it) }
+                .filter { areas[it]?.areaType == AreaType.SHAPE || areas[it]?.areaType == AreaType.SHAPE_THAT_NESTS }
+                .maxBy { areas[it]?.index ?: ICON_Z_INDEX }
+
+        return ctx.copy(dragTargetedIds = if (null != target) setOf(target) else emptySet())
+    }
+
     fun dragWithWheel(previous: Point2D.Float, current: Point2D.Float) {
         dragCanvas(previous, current)
     }
@@ -207,7 +225,7 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
 
     fun stopDragOrSelect() {
         if (null != interactionCtx.dragSelectionRect) {
-            interactionCtx = ElementInteractionContext(mutableSetOf(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
+            interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
             repaint()
             return
         }
@@ -227,7 +245,7 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
             })
         }
 
-        interactionCtx = interactionCtx.copy(draggedIds = emptySet(), dragCurrent = interactionCtx.dragStart, dragSelectionRect = null)
+        interactionCtx = interactionCtx.copy(draggedIds = emptySet(), dragTargetedIds = mutableSetOf(), dragCurrent = interactionCtx.dragStart, dragSelectionRect = null)
         repaint()
     }
 
@@ -341,6 +359,17 @@ class Canvas(val iconProvider: IconProvider, private val settings: CanvasConstan
                 ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this } }
         return result
     }
+
+    private fun dragTargettableElements(withinRect: Rectangle2D, excludeAreas: Set<AreaType> = setOf(AreaType.PARENT_PROCESS_SHAPE)): List<DiagramElementId> {
+        val intersection = areaByElement?.filter { withinRect.intersects(it.value.area.bounds2D) }
+
+        val result = mutableListOf<DiagramElementId>()
+        intersection
+                ?.filter { !excludeAreas.contains(it.value.areaType) }
+                ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this } }
+        return result
+    }
+
 
     private fun setupGraphics(graphics: Graphics): Graphics2D {
         // set up the drawing panel

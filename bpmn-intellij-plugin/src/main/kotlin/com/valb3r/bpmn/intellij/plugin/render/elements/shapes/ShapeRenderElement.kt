@@ -11,13 +11,13 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.LocationUpdateWithId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.render.*
-import com.valb3r.bpmn.intellij.plugin.render.elements.ACTIONS_ICO_SIZE
-import com.valb3r.bpmn.intellij.plugin.render.elements.BaseBpmnRenderElement
-import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.*
+import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.EdgeExtractionAnchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationOrChangesToWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTransform
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
@@ -36,6 +36,10 @@ abstract class ShapeRenderElement(
 
     protected open val cascadeTo = computeCascadables()
 
+    protected val edgeExtractionAnchor = computeAnchorLocation(state)
+
+    override val children: MutableList<BaseDiagramRenderElement> = mutableListOf(edgeExtractionAnchor)
+
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val elem = state.currentState.elementByDiagramId[shape.id]
         val props = state.currentState.elemPropertiesByStaticElementId[elem]
@@ -52,15 +56,12 @@ abstract class ShapeRenderElement(
                     Point2D.Float(shapeCtx.shape.x, shapeCtx.shape.y), indexes.toString(), Colors.INNER_TEXT_COLOR.color, Colors.DEBUG_ELEMENT_COLOR.color
             )
         }
+
+        detectAndRenderNewSequenceAnchorMove()
         return doRender(ctx, shapeCtx)
     }
 
-    override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
-        val spaceCoeff = 1.3f
-        val start = state.ctx.canvas.camera.fromCameraView(Point2D.Float(0.0f, 0.0f))
-        val end = state.ctx.canvas.camera.fromCameraView(Point2D.Float(0.0f, ACTIONS_ICO_SIZE * spaceCoeff))
-        val ySpacing = end.y - start.y
-
+    override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         var currY = y
         val delId = DiagramElementId("DEL:$elementId")
         val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
@@ -68,36 +69,11 @@ abstract class ShapeRenderElement(
             dest.addElementRemovedEvent(listOf(DiagramElementRemovedEvent(elementId)), listOf(BpmnElementRemovedEvent(shape.bpmnElement)))
         }
 
-        currY += ySpacing
-        val newLinkId = DiagramElementId("NEWLINK:$elementId")
-        val newLinkArea = state.ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.sequence)
-        state.ctx.interactionContext.clickCallbacks[newLinkId] = { dest ->
-            state.currentState.elementByBpmnId[shape.bpmnElement]?.let { it: WithParentId ->
-                val newSequenceBpmn = newElementsFactory().newOutgoingSequence(it.element)
-                val bounds = currentRect(state.ctx.canvas.camera)
-                val width = bounds.width
-                val height = bounds.height
-
-                val newSequenceDiagram = newElementsFactory().newDiagramObject(EdgeElement::class, newSequenceBpmn)
-                        .copy(waypoint = listOf(
-                                WaypointElement(bounds.x + width, bounds.y + height / 2.0f),
-                                WaypointElement(bounds.x + width + WAYPOINT_LEN, bounds.y + height / 2.0f)
-                        ))
-                dest.addObjectEvent(
-                        BpmnEdgeObjectAddedEvent(
-                                WithParentId(parents.first().bpmnElementId, newSequenceBpmn),
-                                EdgeElementState(newSequenceDiagram),
-                                newElementsFactory().propertiesOf(newSequenceBpmn)
-                        )
-                )
-            }
-        }
-
         return mutableMapOf(
-                delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId),
-                newLinkId to AreaWithZindex(newLinkArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
+                delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
         )
     }
+
 
     abstract fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex>
 
@@ -240,6 +216,22 @@ abstract class ShapeRenderElement(
                 }
     }
 
+    private fun detectAndRenderNewSequenceAnchorMove() {
+        val expected = viewTransform.transform(edgeExtractionAnchor.location)
+        if (expected.distance(edgeExtractionAnchor.transformedLocation) > EPSILON) {
+            renderNewSequenceAnchorMove()
+        }
+    }
+
+    private fun renderNewSequenceAnchorMove() {
+        val bounds = currentRect(state.ctx.canvas.camera)
+        state.ctx.canvas.drawLineWithArrow(
+                Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat()),
+                edgeExtractionAnchor.transformedLocation,
+                Colors.ARROW_COLOR.color
+        )
+    }
+
     private fun handleChildDrag(event: Event, alreadyDraggedLocations: MutableSet<DiagramElementId>, result: MutableList<Event>) {
         if (event !is LocationUpdateWithId) {
             result += event
@@ -252,5 +244,49 @@ abstract class ShapeRenderElement(
 
         alreadyDraggedLocations += event.diagramElementId
         result += event
+    }
+
+    private fun computeAnchorLocation(state: RenderState): EdgeExtractionAnchor {
+        return EdgeExtractionAnchor(
+                DiagramElementId("NEW-SEQUENCE:" + shape.id.id),
+                actionsAnchorTopEnd(Rectangle2D.Float(
+                        shape.bounds().first.x,
+                        shape.bounds().first.y,
+                        shape.bounds().second.x - shape.bounds().first.x,
+                        shape.bounds().second.y - shape.bounds().first.y
+                )),
+                { droppedOn, allDroppedOn -> onWaypointAnchorDragEnd(droppedOn, allDroppedOn) },
+                state
+        )
+    }
+
+    private fun onWaypointAnchorDragEnd(droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
+        if (null == droppedOn) {
+            return mutableListOf()
+        }
+
+        val elem = state.currentState.elementByBpmnId[bpmnElementId] ?: return mutableListOf()
+
+        val newSequenceBpmn = newElementsFactory().newOutgoingSequence(elem.element)
+        val bounds = currentRect(state.ctx.canvas.camera)
+        val width = bounds.width
+        val height = bounds.height
+
+        val newSequenceDiagram = newElementsFactory().newDiagramObject(EdgeElement::class, newSequenceBpmn)
+                .copy(waypoint = listOf(
+                        WaypointElement(bounds.x + width, bounds.y + height / 2.0f),
+                        WaypointElement(bounds.x + width + WAYPOINT_LEN, bounds.y + height / 2.0f)
+                ))
+
+        val props = newElementsFactory().propertiesOf(newSequenceBpmn).toMutableMap()
+        props[PropertyType.TARGET_REF] = Property(droppedOn.id)
+
+        return mutableListOf(
+                BpmnEdgeObjectAddedEvent(
+                        WithParentId(parents.first().bpmnElementId, newSequenceBpmn),
+                        EdgeElementState(newSequenceDiagram),
+                        props
+                )
+        )
     }
 }

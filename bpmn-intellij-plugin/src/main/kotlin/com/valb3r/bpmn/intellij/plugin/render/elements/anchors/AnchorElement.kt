@@ -23,7 +23,7 @@ abstract class AnchorElement(
     val transformedLocation: Point2D.Float
         get() = viewTransform.transform(currentLocation)
 
-    override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
+    override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         // NOP
         return mutableMapOf()
     }

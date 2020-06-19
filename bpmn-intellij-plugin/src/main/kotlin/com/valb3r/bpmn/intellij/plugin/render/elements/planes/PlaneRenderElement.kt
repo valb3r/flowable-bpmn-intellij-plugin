@@ -60,7 +60,7 @@ class PlaneRenderElement(
         return mutableMapOf(elementId to AreaWithZindex(area, AreaType.PARENT_PROCESS_SHAPE, mutableSetOf(), mutableSetOf(), bpmnElementId = bpmnElementId, index = zIndex()))
     }
 
-    override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
+    override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         return mutableMapOf()
     }
 }

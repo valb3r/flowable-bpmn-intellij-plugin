@@ -45,7 +45,7 @@ abstract class CircleAnchorElement(
             )
         }
 
-        val currentColor = color(isActive(), bodyColor)
+        val currentColor = color(bodyColor)
         val area = ctx.canvas.drawEllipse(
                 rect,
                 currentColor,

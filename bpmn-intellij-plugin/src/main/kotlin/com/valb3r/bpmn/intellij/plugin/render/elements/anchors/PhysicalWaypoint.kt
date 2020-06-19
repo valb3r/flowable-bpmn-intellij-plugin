@@ -30,7 +30,7 @@ class PhysicalWaypoint(
         state: RenderState
 ): CircleAnchorElement(elementId, location, 3.0f, Colors.WAYPOINT_COLOR, state) {
 
-    override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
+    override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         if (isEdgeBeginOrEnd()) {
             return mutableMapOf()
         }

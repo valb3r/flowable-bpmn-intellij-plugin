@@ -12,6 +12,7 @@ enum class AreaType(val nests: Boolean = false) {
     POINT,
     EDGE,
     SHAPE,
+    SELECTS_DRAG_TARGET,
     SHAPE_THAT_NESTS(true),
     PARENT_PROCESS_SHAPE(true);
 }

@@ -27,7 +27,7 @@ class TopLeftIconShape(
                 shapeCtx.shape,
                 icon,
                 shapeCtx.name,
-                color(isActive(), backgroundColor),
+                color(backgroundColor),
                 borderColor.color,
                 textColor.color
         )

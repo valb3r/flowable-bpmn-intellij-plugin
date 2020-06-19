@@ -12,6 +12,7 @@ import kotlin.math.min
 
 data class ElementInteractionContext(
         val draggedIds: Set<DiagramElementId>,
+        val dragTargetedIds: Set<DiagramElementId>,
         val dragEndCallbacks: MutableMap<DiagramElementId, (dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>) -> List<Event>>,
         val dragSelectionRect: SelectionRect?,
         val clickCallbacks: MutableMap<DiagramElementId, (dest: ProcessModelUpdateEvents) -> Unit>,

@@ -24,8 +24,8 @@ class EllipticIconOnLayerShape(
         val area = ctx.canvas.drawWrappedIconWithLayer(
                 shapeCtx.shape,
                 icon,
-                isActive(),
-                Colors.SELECTED_COLOR.color,
+                isActive() || isTargetedByDrag(),
+                selectionColor(),
                 { Ellipse2D.Float(it.x, it.y, it.width, it.height) },
                 layerColor.color
         )
