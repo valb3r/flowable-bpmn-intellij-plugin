@@ -8,7 +8,6 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
-import java.util.*
 import javax.swing.Icon
 
 abstract class IconAnchorElement(
@@ -24,7 +23,7 @@ abstract class IconAnchorElement(
         val area = ctx.canvas.drawIcon(Point2D.Float(rect.x, rect.y), icon, if (active) Colors.SELECTED_COLOR.color else null)
 
         state.ctx.interactionContext.dragEndCallbacks[elementId] = {
-            dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId> -> onDragEnd(dx, dy, droppedOn, allDroppedOn)
+            dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: Map<BpmnElementId, AreaWithZindex> -> onDragEnd(dx, dy, droppedOn, allDroppedOn)
         }
 
         return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT, index = zIndex()))

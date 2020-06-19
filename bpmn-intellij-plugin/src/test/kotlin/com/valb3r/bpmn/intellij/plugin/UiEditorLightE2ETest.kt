@@ -101,7 +101,7 @@ internal class UiEditorLightE2ETest {
     private val icons = mock<IconProvider>()
     private val renderer = spy(DefaultBpmnProcessRenderer(icons))
     private val canvasBuilder = CanvasBuilder(renderer)
-    private val canvas = Canvas(icons, DefaultCanvasConstants().copy(baseCursorSize = 3.0f)) // Using small cursor size for clarity
+    private val canvas = Canvas(DefaultCanvasConstants().copy(baseCursorSize = 3.0f)) // Using small cursor size for clarity
     private var renderResult: Map<DiagramElementId, AreaWithZindex>? = null
 
     private val basicProcess = BpmnProcessObject(
@@ -142,7 +142,7 @@ internal class UiEditorLightE2ETest {
         whenever(project.messageBus).thenReturn(messageBus)
         whenever(messageBus.connect()).thenReturn(messageBusConnection)
 
-        whenever(icons.sequence).thenReturn(icon)
+        whenever(icons.sequence).thenReturn(mock())
         whenever(icons.recycleBin).thenReturn(icon)
         whenever(icons.exclusiveGateway).thenReturn(icon)
         whenever(icons.gear).thenReturn(mock())

@@ -25,7 +25,7 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.util.*
 
-const val WAYPOINT_LEN = 40.0f
+val WAYPOINT_OCCUPY_EPSILON = 1.0f
 
 abstract class ShapeRenderElement(
         override val elementId: DiagramElementId,
@@ -46,7 +46,7 @@ abstract class ShapeRenderElement(
         val name = props?.get(PropertyType.NAME)?.value as String?
 
         state.ctx.interactionContext.dragEndCallbacks[elementId] = {
-            dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId> -> onDragEnd(dx, dy, droppedOn, allDroppedOn)
+            dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex> -> onDragEnd(dx, dy, droppedOn, allDroppedOnAreas)
         }
 
         val shapeCtx = ShapeCtx(shape.id, elem, currentRect(ctx.canvas.camera), props, name)
@@ -62,9 +62,8 @@ abstract class ShapeRenderElement(
     }
 
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
-        var currY = y
         val delId = DiagramElementId("DEL:$elementId")
-        val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
+        val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, y, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
         state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
             dest.addElementRemovedEvent(listOf(DiagramElementRemovedEvent(elementId)), listOf(BpmnElementRemovedEvent(shape.bpmnElement)))
         }
@@ -81,12 +80,13 @@ abstract class ShapeRenderElement(
         // NOP
     }
 
-    override fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
+    override fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         // Avoid double dragging by cascade and then by children
-        val result = doOnDragEndWithoutChildren(dx, dy, null, allDroppedOn)
+        val emptySortedMap = mapOf<BpmnElementId, AreaWithZindex>().toSortedMap(Comparator.comparingInt {it.id.length}) // Quirk to create sorted map without comparable key
+        val result = doOnDragEndWithoutChildren(dx, dy, null, allDroppedOnAreas)
         val alreadyDraggedLocations = result.filterIsInstance<LocationUpdateWithId>().map { it.diagramElementId }.toMutableSet()
         children.forEach {
-            for (event in it.onDragEnd(dx, dy, null, sortedMapOf())) { // Children do not change parent - sortedMapOf()
+            for (event in it.onDragEnd(dx, dy, null, emptySortedMap)) { // Children do not change parent - sortedMapOf()
                 handleChildDrag(event, alreadyDraggedLocations, result)
             }
         }
@@ -95,18 +95,18 @@ abstract class ShapeRenderElement(
         return result
     }
 
-    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
+    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         val events = mutableListOf<Event>()
         events += DraggedToEvent(elementId, dx, dy, null, null)
         val cascadeTargets = cascadeTo.filter { target -> target.cascadeSource == shape.bpmnElement } // TODO check if this comparison is still needed
         events += cascadeTargets
                 .map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
 
-        if (allDroppedOn.isEmpty()) {
+        if (allDroppedOnAreas.isEmpty()) {
             return events
         }
 
-        events += handlePossibleNestingTo(allDroppedOn, cascadeTargets)
+        events += handlePossibleNestingTo(allDroppedOnAreas, cascadeTargets)
 
         return events
     }
@@ -167,13 +167,14 @@ abstract class ShapeRenderElement(
         return viewTransform.transform(shape.rectBounds())
     }
 
-    open protected fun handlePossibleNestingTo(allDroppedOn: SortedMap<AreaType, BpmnElementId>,  cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {
+    protected open fun handlePossibleNestingTo(allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>, cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {
+        val allDroppedOn = linkedMapOf(*allDroppedOnAreas.map { Pair(it.value.areaType, it.key) }.toTypedArray())
         val nests = allDroppedOn[AreaType.SHAPE_THAT_NESTS]
         val parentProcess = allDroppedOn[AreaType.PARENT_PROCESS_SHAPE]
         val currentParent = parents.firstOrNull()
         val newEvents = mutableListOf<Event>()
 
-        if (allDroppedOn[allDroppedOn.firstKey()] == currentParent?.bpmnElementId) {
+        if (allDroppedOn[allDroppedOn.keys.first()] == currentParent?.bpmnElementId) {
             return newEvents
         }
 
@@ -260,22 +261,20 @@ abstract class ShapeRenderElement(
         )
     }
 
-    private fun onWaypointAnchorDragEnd(droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
-        if (null == droppedOn) {
+    private fun onWaypointAnchorDragEnd(droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
+        val targetArea = allDroppedOnAreas[droppedOn]
+        if (null == droppedOn || null == targetArea) {
             return mutableListOf()
         }
 
         val elem = state.currentState.elementByBpmnId[bpmnElementId] ?: return mutableListOf()
 
         val newSequenceBpmn = newElementsFactory().newOutgoingSequence(elem.element)
-        val bounds = currentRect(state.ctx.canvas.camera)
-        val width = bounds.width
-        val height = bounds.height
-
+        val anchors = findSequenceAnchors(targetArea) ?: return mutableListOf()
         val newSequenceDiagram = newElementsFactory().newDiagramObject(EdgeElement::class, newSequenceBpmn)
                 .copy(waypoint = listOf(
-                        WaypointElement(bounds.x + width, bounds.y + height / 2.0f),
-                        WaypointElement(bounds.x + width + WAYPOINT_LEN, bounds.y + height / 2.0f)
+                        WaypointElement(anchors.first.x, anchors.first.y),
+                        WaypointElement(anchors.second.x, anchors.second.y)
                 ))
 
         val props = newElementsFactory().propertiesOf(newSequenceBpmn).toMutableMap()
@@ -288,5 +287,40 @@ abstract class ShapeRenderElement(
                         props
                 )
         )
+    }
+
+    private fun findSequenceAnchors(droppedOnTarget: AreaWithZindex): Pair<Point2D.Float, Point2D.Float>? {
+        val allStartWaypointsAnchors = waypointAnchors(state.ctx.canvas.camera)
+        val allEndWaypointsAnchors = droppedOnTarget.anchorsForWaypoints
+
+        var startAvailable = allStartWaypointsAnchors.filter { !isAnchorOccupated(it) }
+        var endAvailable = allEndWaypointsAnchors.filter { !isAnchorOccupated(it) }
+
+        if (startAvailable.isEmpty()) {
+            startAvailable = allStartWaypointsAnchors.toList()
+        }
+
+        if (endAvailable.isEmpty()) {
+            endAvailable = allEndWaypointsAnchors.toList()
+        }
+
+        return cartesianProduct(startAvailable, endAvailable).minBy { it.first.distance(it.second) }
+    }
+
+    private fun isAnchorOccupated(anchor: Point2D.Float): Boolean {
+        state.currentState.edges.forEach {
+            if (anchor.distance(Point2D.Float(it.waypoint[0].x, it.waypoint[0].y)) < WAYPOINT_OCCUPY_EPSILON) {
+                return true
+            }
+
+            if (anchor.distance(Point2D.Float(it.waypoint[it.waypoint.size - 1].x, it.waypoint[it.waypoint.size - 1].y)) < WAYPOINT_OCCUPY_EPSILON) {
+                return true
+            }
+        }
+        return false
+    }
+
+    fun <T, U> cartesianProduct(first: Collection<T>, second: Collection<U>): Sequence<Pair<T, U>> {
+        return first.asSequence().flatMap { lhsElem -> second.asSequence().map { rhsElem -> lhsElem to rhsElem } }
     }
 }

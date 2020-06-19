@@ -17,7 +17,6 @@ import java.awt.RenderingHints
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
-import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.swing.JPanel
 import kotlin.math.abs
@@ -239,7 +238,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
                 interactionCtx.dragEndCallbacks[it]?.invoke(
                         dx,
                         dy,
-                        if (droppedOn.isEmpty()) null else droppedOn[droppedOn.firstKey()],
+                        if (droppedOn.isEmpty()) null else droppedOn.keys.first(),
                         droppedOn)
                         ?: emptyList()
             })
@@ -294,7 +293,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
         return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(targetX, targetY), selectedAnchors)
     }
 
-    private fun bpmnElemsUnderDragCurrent(): SortedMap<AreaType, BpmnElementId> {
+    private fun bpmnElemsUnderDragCurrent(): Map<BpmnElementId, AreaWithZindex> {
         val onScreen = camera.toCameraView(interactionCtx.dragCurrent)
         val cursor = cursorRect(onScreen)
         // Correct order would require non-layered but computed z-index
@@ -304,9 +303,10 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
                 ?.sortedByDescending { it.second.index }
                 ?.filter { !interactionCtx.draggedIds.contains(it.first) && !selectedElements.contains(it.first) } ?: emptyList()
 
-        val result = sortedMapOf<AreaType, BpmnElementId>()
+        val result = linkedMapOf<BpmnElementId, AreaWithZindex>()
         for (elem in elems) {
-            if (result.containsKey(elem.second.areaType)) {
+            val elemId = elem.second.bpmnElementId
+            if (null == elemId || result.containsKey(elemId)) {
                 continue
             }
 
@@ -315,7 +315,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
             if (bpmnElem?.element is BpmnSequenceFlow) {
                 continue
             }
-            result[elem.second.areaType] = bpmnId
+            result[bpmnId] = elem.second
         }
 
         return result

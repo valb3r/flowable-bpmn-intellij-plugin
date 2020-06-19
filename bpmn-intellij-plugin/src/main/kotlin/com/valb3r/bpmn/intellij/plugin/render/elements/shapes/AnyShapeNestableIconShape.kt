@@ -8,11 +8,11 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.BpmnParentChangedEvent
 import com.valb3r.bpmn.intellij.plugin.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
+import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationOrChangesToWaypoint
 import java.awt.geom.Point2D
-import java.util.*
 
 class AnyShapeNestableIconShape(
         override val elementId: DiagramElementId,
@@ -22,13 +22,14 @@ class AnyShapeNestableIconShape(
         state: RenderState
 ) : IconShape(elementId, bpmnElementId, icon, shape, state) {
 
-    override fun handlePossibleNestingTo(allDroppedOn: SortedMap<AreaType, BpmnElementId>, cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {
+    override fun handlePossibleNestingTo(allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>, cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {
+        val allDroppedOn = linkedMapOf(*allDroppedOnAreas.map { Pair(it.value.areaType, it.key) }.toTypedArray())
         val nests = setOf(allDroppedOn[AreaType.SHAPE_THAT_NESTS], allDroppedOn[AreaType.SHAPE])
         val parentProcess = allDroppedOn[AreaType.PARENT_PROCESS_SHAPE]
         val currentParent = parents.firstOrNull()
         val newEvents = mutableListOf<Event>()
 
-        if (allDroppedOn[allDroppedOn.firstKey()] == currentParent?.bpmnElementId) {
+        if (allDroppedOn[allDroppedOn.keys.first()] == currentParent?.bpmnElementId) {
             return newEvents
         }
 

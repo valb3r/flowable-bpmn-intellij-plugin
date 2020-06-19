@@ -7,13 +7,12 @@ import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
-import java.util.*
 import javax.swing.Icon
 
 class EdgeExtractionAnchor(
         override val elementId: DiagramElementId,
         private val bottomPoint: Point2D.Float,
-        private val onDragEndCallback: ((droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>) -> MutableList<Event>),
+        private val onDragEndCallback: ((droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>) -> MutableList<Event>),
         state: RenderState
 ) : IconAnchorElement(elementId, bottomPoint, state) {
 
@@ -30,10 +29,10 @@ class EdgeExtractionAnchor(
         )
     }
 
-    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
+    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         val events = mutableListOf<Event>()
-        events += super.doOnDragEndWithoutChildren(dx, dy, droppedOn, allDroppedOn)
-        events += onDragEndCallback(droppedOn, allDroppedOn)
+        events += super.doOnDragEndWithoutChildren(dx, dy, droppedOn, allDroppedOnAreas)
+        events += onDragEndCallback(droppedOn, allDroppedOnAreas)
         return events
     }
 

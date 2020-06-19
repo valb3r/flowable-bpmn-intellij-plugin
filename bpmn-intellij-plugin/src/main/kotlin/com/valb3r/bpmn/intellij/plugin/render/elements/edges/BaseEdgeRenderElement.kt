@@ -19,7 +19,6 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.VirtualWaypoint
 import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
-import java.util.*
 
 abstract class BaseEdgeRenderElement(
         override val elementId: DiagramElementId,
@@ -67,7 +66,7 @@ abstract class BaseEdgeRenderElement(
         // NOP
     }
 
-    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
+    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         return mutableListOf()
     }
 
