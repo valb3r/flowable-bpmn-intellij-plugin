@@ -136,12 +136,13 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
             val bounds = areaByElement?.get(it)?.area?.bounds2D ?: Rectangle2D.Float()
             return@minBy Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat()).distance(cameraPoint)
         }
-        val draggedType = areaByElement?.get(dragged)?.areaType ?: AreaType.SHAPE
 
+        val draggedArea = areaByElement?.get(dragged) ?: return ctx
+        val draggedType =  draggedArea.areaType
         val draggedAnchors = if (AreaType.SHAPE == draggedType) {
-            areaByElement?.get(dragged)?.anchorsForShape.orEmpty()
+            draggedArea.anchorsForShape
         } else {
-            areaByElement?.get(dragged)?.anchorsForWaypoints.orEmpty()
+            draggedArea.anchorsForWaypoints
         }
 
         if (draggedType == AreaType.SELECTS_DRAG_TARGET) {
@@ -153,7 +154,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
                 // shape is not affected by waypoints
                 ?.filter { if (draggedType == AreaType.SHAPE) it.value.areaType == AreaType.SHAPE else true }
 
-        for ((_, searchIn) in anchorsToSearchIn.orEmpty()) {
+        for ((_, searchIn) in anchorsToSearchIn?.filter { it.value.index <= draggedArea.index }.orEmpty()) {
             for (draggedAnchor in draggedAnchors) {
                 val targetAnchors = if (AreaType.SHAPE == draggedType) searchIn.anchorsForShape else searchIn.anchorsForWaypoints
                 for (anchor in targetAnchors) {

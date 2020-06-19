@@ -1094,6 +1094,28 @@ internal class UiEditorLightE2ETest {
     }
 
     @Test
+    fun `Subprocess should ignore its child anchors`() {
+        val dx = 30.0f
+        val dy = 30.0f
+
+        prepareOneSubProcessThenNestedSubProcessWithOneServiceTaskView()
+
+        // Click on parent subprocess
+        val begin = Point2D.Float(subProcessSize - 10.0f, subProcessSize - 10.0f)
+        canvas.click(begin)
+        canvas.paintComponent(graphics)
+        // Drag rectangle
+        canvas.startSelectionOrDrag(begin)
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(begin.x + dx, begin.y + dy))
+        canvas.paintComponent(graphics)
+
+        argumentCaptor<RenderContext>().apply {
+            verify(renderer, atLeastOnce()).render(this.capture())
+            lastValue.interactionContext.anchorsHit!!.anchors.shouldBeEmpty()
+        }
+    }
+
+    @Test
     fun `Removing link from element in subprocess works`() {
         prepareOneSubProcessWithTwoServiceTasksView()
 
