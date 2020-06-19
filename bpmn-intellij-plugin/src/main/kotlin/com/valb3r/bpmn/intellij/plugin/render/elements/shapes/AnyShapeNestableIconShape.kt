@@ -23,7 +23,8 @@ class AnyShapeNestableIconShape(
 ) : IconShape(elementId, bpmnElementId, icon, shape, state) {
 
     override fun handlePossibleNestingTo(allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>, cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {
-        val allDroppedOn = linkedMapOf(*allDroppedOnAreas.map { Pair(it.value.areaType, it.key) }.toTypedArray())
+        val allDroppedOn = linkedMapOf<AreaType, BpmnElementId>()
+        allDroppedOnAreas.forEach { if (!allDroppedOn.containsKey(it.value.areaType)) allDroppedOn[it.value.areaType] = it.key}
         val nests = setOf(allDroppedOn[AreaType.SHAPE_THAT_NESTS], allDroppedOn[AreaType.SHAPE])
         val parentProcess = allDroppedOn[AreaType.PARENT_PROCESS_SHAPE]
         val currentParent = parents.firstOrNull()

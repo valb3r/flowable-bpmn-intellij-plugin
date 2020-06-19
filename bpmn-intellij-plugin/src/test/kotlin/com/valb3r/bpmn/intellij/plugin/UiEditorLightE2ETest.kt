@@ -89,20 +89,24 @@ internal class UiEditorLightE2ETest {
 
     private val optionalBoundaryErrorEventBpmnId = BpmnElementId("boundaryErrorEvent")
     private val subprocessBpmnId = BpmnElementId("subProcess")
+    private val subprocessInSubProcessBpmnId = BpmnElementId("nestedSubProcess")
     private val serviceTaskStartBpmnId = BpmnElementId("startServiceTask")
     private val serviceTaskEndBpmnId = BpmnElementId("endServiceTask")
 
     private val optionalBoundaryErrorEventDiagramId = DiagramElementId("DIAGRAM-boundaryErrorEvent")
+    private val subprocessInSubProcessDiagramId = DiagramElementId("DIAGRAM-nestedSubProcess")
     private val subprocessDiagramId = DiagramElementId("DIAGRAM-subProcess")
     private val serviceTaskStartDiagramId = DiagramElementId("DIAGRAM-startServiceTask")
     private val serviceTaskEndDiagramId = DiagramElementId("DIAGRAM-endServiceTask")
 
     private val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId, null, null, null, null, null, null, null, null, null, null, null)
     private val bpmnSubProcess = BpmnSubProcess(subprocessBpmnId, null, null, null, null, false, false)
+    private val bpmnNestedSubProcess = BpmnSubProcess(subprocessInSubProcessBpmnId, null, null, null, null, false, false)
     private val bpmnServiceTaskEnd = BpmnServiceTask(serviceTaskEndBpmnId, null, null, null, null, null, null, null, null, null, null, null)
     private val diagramServiceTaskStart = ShapeElement(serviceTaskStartDiagramId, bpmnServiceTaskStart.id, BoundsElement(startElemX, startElemY, serviceTaskSize, serviceTaskSize))
     private val diagramServiceTaskEnd = ShapeElement(serviceTaskEndDiagramId, bpmnServiceTaskEnd.id, BoundsElement(endElemX, endElemY, serviceTaskSize, serviceTaskSize))
     private val diagramSubProcess = ShapeElement(subprocessDiagramId, subprocessBpmnId, BoundsElement(subProcessElemX, subProcessElemY, subProcessSize, subProcessSize))
+    private val diagramNestedSubProcess = ShapeElement(subprocessInSubProcessDiagramId, subprocessInSubProcessBpmnId, BoundsElement(subProcessElemX, subProcessElemY, subProcessSize / 2.0f, subProcessSize / 2.0f))
 
     private val icons = mock<IconProvider>()
     private val renderer = spy(DefaultBpmnProcessRenderer(icons))
@@ -1057,6 +1061,39 @@ internal class UiEditorLightE2ETest {
     }
 
     @Test
+    fun `Rectangle selection dragging in subprocess within subprocess`() {
+        val dx = 30.0f
+        val dy = 30.0f
+
+        prepareOneSubProcessThenNestedSubProcessWithOneServiceTaskView()
+
+        // Select rectangle
+        val begin = Point2D.Float(-10.0f, -10.0f)
+        canvas.click(begin)
+        canvas.startSelectionOrDrag(begin)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize + 10.0f, endElemY + serviceTaskSize + 10.0f))
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+        // Drag rectangle
+        val dragStart = elementCenter(serviceTaskStartDiagramId)
+        canvas.startSelectionOrDrag(dragStart)
+        canvas.dragOrSelectWithLeftButton(dragStart, Point2D.Float(dragStart.x + dx, dragStart.y + dy))
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(1)
+            val draggedToEdge = lastValue.filterIsInstance<DraggedToEvent>().first()
+
+            draggedToEdge.diagramElementId.shouldBeEqualTo(serviceTaskStartDiagramId)
+            draggedToEdge.dx.shouldBeEqualTo(dx)
+            draggedToEdge.dy.shouldBeEqualTo(dy)
+        }
+    }
+
+    @Test
     fun `Removing link from element in subprocess works`() {
         prepareOneSubProcessWithTwoServiceTasksView()
 
@@ -1224,6 +1261,39 @@ internal class UiEditorLightE2ETest {
         whenever(parser.parse("")).thenReturn(process)
         initializeCanvas()
     }
+
+    private fun prepareOneSubProcessThenNestedSubProcessWithOneServiceTaskView() {
+        val process = basicProcess.copy(
+                basicProcess.process.copy(
+                        body = BpmnProcessBodyBuilder.builder()
+                                .setServiceTask(listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
+                                .setSubProcess(listOf(bpmnSubProcess))
+                                .create(),
+                        children = mapOf(
+                                subprocessBpmnId to BpmnProcessBodyBuilder.builder()
+                                        .setSubProcess(listOf(bpmnNestedSubProcess))
+                                        .create(),
+                                subprocessInSubProcessBpmnId to BpmnProcessBodyBuilder.builder()
+                                        .setServiceTask(listOf(bpmnServiceTaskStart))
+                                        .create()
+                        )
+                ),
+                listOf(
+                        DiagramElement(
+                                diagramMainElementId,
+                                PlaneElement(
+                                        diagramMainPlaneElementId,
+                                        basicProcess.process.id,
+                                        listOf(diagramSubProcess, diagramNestedSubProcess, diagramServiceTaskStart),
+                                        listOf()
+                                )
+                        )
+                )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
 
     private fun prepareTwoServiceTaskView() {
         val process = basicProcess.copy(

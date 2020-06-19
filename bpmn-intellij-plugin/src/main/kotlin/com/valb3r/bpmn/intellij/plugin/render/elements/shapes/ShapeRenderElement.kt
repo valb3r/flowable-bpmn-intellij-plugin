@@ -167,7 +167,8 @@ abstract class ShapeRenderElement(
     }
 
     protected open fun handlePossibleNestingTo(allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>, cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {
-        val allDroppedOn = linkedMapOf(*allDroppedOnAreas.map { Pair(it.value.areaType, it.key) }.toTypedArray())
+        val allDroppedOn = linkedMapOf<AreaType, BpmnElementId>()
+        allDroppedOnAreas.forEach { if (!allDroppedOn.containsKey(it.value.areaType)) allDroppedOn[it.value.areaType] = it.key}
         val nests = allDroppedOn[AreaType.SHAPE_THAT_NESTS]
         val parentProcess = allDroppedOn[AreaType.PARENT_PROCESS_SHAPE]
         val currentParent = parents.firstOrNull()
