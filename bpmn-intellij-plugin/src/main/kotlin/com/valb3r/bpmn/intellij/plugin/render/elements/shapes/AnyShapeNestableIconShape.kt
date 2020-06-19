@@ -55,4 +55,8 @@ class AnyShapeNestableIconShape(
     override fun shapeAnchors(camera: Camera): MutableSet<Point2D.Float> {
         return mutableSetOf()
     }
+
+    override fun areaType(): AreaType {
+        return AreaType.SHAPE_ATTACHED_TO_ELEMENT
+    }
 }

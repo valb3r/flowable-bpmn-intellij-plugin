@@ -14,6 +14,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBodyBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryErrorEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
@@ -74,6 +75,7 @@ internal class UiEditorLightE2ETest {
     private val startElemX = 0.0f
     private val startElemY = 0.0f
     private val serviceTaskSize = 60.0f
+    private val boundaryEventSize = 15.0f
     private val subProcessElemX = 0.0f
     private val subProcessElemY = 0.0f
     private val subProcessSize = 200.0f
@@ -85,9 +87,12 @@ internal class UiEditorLightE2ETest {
     private val diagramMainElementId = DiagramElementId("diagramMainElement")
     private val diagramMainPlaneElementId = DiagramElementId("diagramMainPlaneElement")
 
+    private val optionalBoundaryErrorEventBpmnId = BpmnElementId("boundaryErrorEvent")
     private val subprocessBpmnId = BpmnElementId("subProcess")
     private val serviceTaskStartBpmnId = BpmnElementId("startServiceTask")
     private val serviceTaskEndBpmnId = BpmnElementId("endServiceTask")
+
+    private val optionalBoundaryErrorEventDiagramId = DiagramElementId("DIAGRAM-boundaryErrorEvent")
     private val subprocessDiagramId = DiagramElementId("DIAGRAM-subProcess")
     private val serviceTaskStartDiagramId = DiagramElementId("DIAGRAM-startServiceTask")
     private val serviceTaskEndDiagramId = DiagramElementId("DIAGRAM-endServiceTask")
@@ -149,6 +154,7 @@ internal class UiEditorLightE2ETest {
         whenever(icons.sequence).thenReturn(sequenceIcon)
         whenever(icons.recycleBin).thenReturn(icon)
         whenever(icons.exclusiveGateway).thenReturn(icon)
+        whenever(icons.boundaryErrorEvent).thenReturn(icon)
         whenever(icons.gear).thenReturn(mock())
         whenever(icons.redo).thenReturn(mock())
         whenever(icons.undo).thenReturn(mock())
@@ -653,6 +659,57 @@ internal class UiEditorLightE2ETest {
             dragEdge.diagramElementId.shouldBeEqualTo(addedEdge.edge.waypoint.first().id)
             dragEdge.dx.shouldBeNear(dragDelta.x, 0.1f)
             dragEdge.dy.shouldBeNear(dragDelta.y, 0.1f)
+        }
+    }
+
+    @Test
+    fun `Selecting element with boundary event using rectangle and dragging them works`() {
+        prepareServiceTaskWithAttachedBoundaryEventView()
+
+        selectRectDragAndVerify()
+    }
+
+    @Test
+    fun `Dragging service task with attached boundary event using rectangle inside subprocess should maintain correct parents`() {
+        prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView()
+
+        selectRectDragAndVerify()
+    }
+
+    private fun selectRectDragAndVerify() {
+        val begin = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
+        canvas.paintComponent(graphics)
+        canvas.startSelectionOrDrag(begin)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize, endElemY + serviceTaskSize))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        val startCenterX = startElemX + serviceTaskSize / 2.0f
+        val startCenterY = startElemY
+        val dragDelta = Point2D.Float(100.0f, 100.0f)
+        canvas.startSelectionOrDrag(Point2D.Float(startCenterX, startCenterY))
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startCenterX + dragDelta.x, startCenterY + dragDelta.y))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(2)
+            val dragStart = lastValue.filterIsInstance<DraggedToEvent>().first()
+            val dragEnd = lastValue.filterIsInstance<DraggedToEvent>().last()
+            lastValue.shouldContainSame(listOf(dragStart, dragEnd))
+
+            dragStart.diagramElementId.shouldBeEqualTo(serviceTaskStartDiagramId)
+            dragStart.dx.shouldBeNear(dragDelta.x, 0.1f)
+            dragStart.dy.shouldBeNear(dragDelta.y, 0.1f)
+
+            dragEnd.diagramElementId.shouldBeEqualTo(optionalBoundaryErrorEventDiagramId)
+            dragEnd.dx.shouldBeNear(dragDelta.x, 0.1f)
+            dragEnd.dy.shouldBeNear(dragDelta.y, 0.1f)
         }
     }
 
@@ -1178,6 +1235,59 @@ internal class UiEditorLightE2ETest {
                 listOf(DiagramElement(
                         diagramMainElementId,
                         PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, diagramServiceTaskEnd), listOf()))
+                )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
+    private fun prepareServiceTaskWithAttachedBoundaryEventView() {
+        val boundaryEventOnServiceTask = BpmnBoundaryErrorEvent(optionalBoundaryErrorEventBpmnId, null, serviceTaskStartBpmnId, null)
+        val boundaryEventOnServiceTaskShape = ShapeElement(
+                optionalBoundaryErrorEventDiagramId,
+                optionalBoundaryErrorEventBpmnId,
+                BoundsElement(startElemX + serviceTaskSize / 2.0f, startElemX + serviceTaskSize / 2.0f, boundaryEventSize, boundaryEventSize)
+        )
+
+        val process = basicProcess.copy(
+                basicProcess.process.copy(
+                        body = BpmnProcessBodyBuilder.builder()
+                                .setServiceTask(listOf(bpmnServiceTaskStart))
+                                .setBoundaryErrorEvent(listOf(boundaryEventOnServiceTask))
+                                .create()
+                ),
+                listOf(DiagramElement(
+                        diagramMainElementId,
+                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, boundaryEventOnServiceTaskShape), listOf()))
+                )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
+    private fun prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView() {
+        val boundaryEventOnServiceTask = BpmnBoundaryErrorEvent(optionalBoundaryErrorEventBpmnId, null, serviceTaskStartBpmnId, null)
+        val boundaryEventOnServiceTaskShape = ShapeElement(
+                optionalBoundaryErrorEventDiagramId,
+                optionalBoundaryErrorEventBpmnId,
+                BoundsElement(startElemX + serviceTaskSize / 2.0f, startElemX + serviceTaskSize / 2.0f, boundaryEventSize, boundaryEventSize)
+        )
+
+        val process = basicProcess.copy(
+                basicProcess.process.copy(
+                        body = BpmnProcessBodyBuilder.builder()
+                                .setSubProcess(listOf(bpmnSubProcess))
+                                .create(),
+                        children = mapOf(
+                                subprocessBpmnId to BpmnProcessBodyBuilder.builder()
+                                        .setServiceTask(listOf(bpmnServiceTaskStart))
+                                        .setBoundaryErrorEvent(listOf(boundaryEventOnServiceTask))
+                                        .create()
+                        )
+                ),
+                listOf(DiagramElement(
+                        diagramMainElementId,
+                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSubProcess, diagramServiceTaskStart, boundaryEventOnServiceTaskShape), listOf()))
                 )
         )
         whenever(parser.parse("")).thenReturn(process)
