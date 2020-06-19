@@ -20,7 +20,7 @@ class EdgeRenderElement(
         state: RenderState
 ): BaseEdgeRenderElement(elementId, bpmnElementId, edge, Colors.ARROW_COLOR, state) {
 
-    override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
+    override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         val delId = DiagramElementId("DEL:$elementId")
         val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
         state.ctx.interactionContext.clickCallbacks[delId] = { dest ->

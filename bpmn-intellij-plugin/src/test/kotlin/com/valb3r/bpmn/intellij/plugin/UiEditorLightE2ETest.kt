@@ -40,6 +40,7 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.nio.charset.StandardCharsets
 import java.util.*
+import javax.swing.Icon
 import javax.swing.JTable
 import javax.swing.table.TableColumn
 import javax.swing.table.TableColumnModel
@@ -65,7 +66,7 @@ private val checkboxFieldFactory = { id: BpmnElementId, type: PropertyType, valu
 
 internal class UiEditorLightE2ETest {
 
-    private val newLink = "NEWLINK"
+    private val newLink = "NEW-SEQUENCE"
     private val doDel = "DEL"
 
     private val icon = "dummy-icon.svg".asResource()
@@ -101,7 +102,7 @@ internal class UiEditorLightE2ETest {
     private val icons = mock<IconProvider>()
     private val renderer = spy(DefaultBpmnProcessRenderer(icons))
     private val canvasBuilder = CanvasBuilder(renderer)
-    private val canvas = Canvas(icons, DefaultCanvasConstants().copy(baseCursorSize = 3.0f)) // Using small cursor size for clarity
+    private val canvas = Canvas(DefaultCanvasConstants().copy(baseCursorSize = 3.0f)) // Using small cursor size for clarity
     private var renderResult: Map<DiagramElementId, AreaWithZindex>? = null
 
     private val basicProcess = BpmnProcessObject(
@@ -116,6 +117,7 @@ internal class UiEditorLightE2ETest {
             mutableListOf()
     )
 
+    private val sequenceIcon = mock<Icon>()
     private val graphics = mock<Graphics2D>()
     private val fontMetrics = mock<FontMetrics>()
     private val messageBus = mock<MessageBus>()
@@ -142,7 +144,9 @@ internal class UiEditorLightE2ETest {
         whenever(project.messageBus).thenReturn(messageBus)
         whenever(messageBus.connect()).thenReturn(messageBusConnection)
 
-        whenever(icons.sequence).thenReturn(icon)
+        whenever(sequenceIcon.iconWidth).thenReturn(15)
+        whenever(sequenceIcon.iconHeight).thenReturn(15)
+        whenever(icons.sequence).thenReturn(sequenceIcon)
         whenever(icons.recycleBin).thenReturn(icon)
         whenever(icons.exclusiveGateway).thenReturn(icon)
         whenever(icons.gear).thenReturn(mock())
@@ -155,7 +159,7 @@ internal class UiEditorLightE2ETest {
             val result = it.callRealMethod()!! as Map<DiagramElementId, AreaWithZindex>
             renderResult = result
             return@doAnswer result
-        }.whenever(renderer).render(any());
+        }.whenever(renderer).render(any())
     }
 
     @Test
@@ -252,7 +256,8 @@ internal class UiEditorLightE2ETest {
         val lastEndpointId = addedEdge.edge.waypoint.last().id
         val point = clickOnId(lastEndpointId)
 
-        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX, endElemMidY), lastEndpointId)
+        // Move to the end of service task
+        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX + serviceTaskSize, endElemMidY), lastEndpointId)
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
@@ -269,7 +274,7 @@ internal class UiEditorLightE2ETest {
             sequence.targetRef.shouldBe("")
 
             draggedTo.diagramElementId.shouldBe(lastEndpointId)
-            draggedTo.dx.shouldBeNear(endElemX - point.x, 0.1f)
+            draggedTo.dx.shouldBeNear(endElemX + serviceTaskSize - point.x, 0.1f)
             draggedTo.dy.shouldBeNear(0.0f, 0.1f)
 
             propUpdated.bpmnElementId.shouldBe(edgeBpmn.bpmnObject.id)
@@ -287,7 +292,7 @@ internal class UiEditorLightE2ETest {
         val lastEndpointId = addedEdge.edge.waypoint.last().id
         val point = clickOnId(lastEndpointId)
 
-        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX, endElemMidY), lastEndpointId)
+        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX + serviceTaskSize, endElemMidY), lastEndpointId)
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<Event>>().apply {
@@ -304,7 +309,7 @@ internal class UiEditorLightE2ETest {
             sequence.targetRef.shouldBe("")
 
             draggedTo.diagramElementId.shouldBe(lastEndpointId)
-            draggedTo.dx.shouldBeNear(endElemX - point.x, 0.1f)
+            draggedTo.dx.shouldBeNear(endElemX + serviceTaskSize - point.x, 0.1f)
             draggedTo.dy.shouldBeNear(0.0f, 0.1f)
 
             propUpdated.bpmnElementId.shouldBe(edgeBpmn.bpmnObject.id)
@@ -387,7 +392,7 @@ internal class UiEditorLightE2ETest {
             newWaypoint.edgeElementId.shouldBeEqualTo(addedEdge.edge.id)
             newWaypoint.waypoints.shouldHaveSize(3)
             newWaypoint.waypoints.filter { it.physical }.shouldHaveSize(3)
-            newWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 100.0f, 100.0f))
+            newWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 100.0f, 600.0f))
             newWaypoint.waypoints.map { it.y }.shouldContainSame(listOf(30.0f, 100.0f, 30.0f))
         }
     }
@@ -440,13 +445,13 @@ internal class UiEditorLightE2ETest {
             newMidWaypoint.edgeElementId.shouldBeEqualTo(addedEdge.edge.id)
             newMidWaypoint.waypoints.shouldHaveSize(3)
             newMidWaypoint.waypoints.filter { it.physical }.shouldHaveSize(3)
-            newMidWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 80.0f, 100.0f))
+            newMidWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 330.0f, 600.0f))
             newMidWaypoint.waypoints.map { it.y }.shouldContainSame(listOf(30.0f, 10.0f, 30.0f))
 
             newQuarterWaypoint.edgeElementId.shouldBeEqualTo(addedEdge.edge.id)
             newQuarterWaypoint.waypoints.shouldHaveSize(4)
             newQuarterWaypoint.waypoints.filter { it.physical }.shouldHaveSize(4)
-            newQuarterWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 70.0f, 80.0f, 100.0f))
+            newQuarterWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 195.0f, 330.0f, 600.0f))
             newQuarterWaypoint.waypoints.map { it.y }.shouldContainSame(listOf(30.0f, 0.0f, 10.0f, 30.0f))
         }
     }
@@ -718,13 +723,13 @@ internal class UiEditorLightE2ETest {
             newWaypoint.edgeElementId.shouldBeEqualTo(addedEdge.edge.id)
             newWaypoint.waypoints.shouldHaveSize(3)
             newWaypoint.waypoints.filter { it.physical }.shouldHaveSize(3)
-            newWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 100.0f, 100.0f))
+            newWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 100.0f, 600.0f))
             newWaypoint.waypoints.map { it.y }.shouldContainSame(listOf(30.0f, 100.0f, 30.0f))
 
             removeWaypoint.edgeElementId.shouldBeEqualTo(addedEdge.edge.id)
             removeWaypoint.waypoints.shouldHaveSize(2)
             removeWaypoint.waypoints.filter { it.physical }.shouldHaveSize(2)
-            removeWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 100.0f))
+            removeWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 600.0f))
             removeWaypoint.waypoints.map { it.y }.shouldContainSame(listOf(30.0f, 30.0f))
         }
     }
@@ -860,13 +865,6 @@ internal class UiEditorLightE2ETest {
         prepareOneSubProcessWithTwoServiceTasksView()
 
         val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
-        // Link to second sub-task
-        clickOnId(addedEdge.edge.id)
-        val lastEndpointId = addedEdge.edge.waypoint.last().id
-        val point = clickOnId(lastEndpointId)
-        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX, endElemMidY), lastEndpointId)
-        canvas.stopDragOrSelect()
-        canvas.paintComponent(graphics)
         // Add midpoint
         clickOnId(addedEdge.edge.id)
         val newWaypointAnchor = addedEdge.edge.waypoint.first { !it.physical }.id
@@ -881,14 +879,12 @@ internal class UiEditorLightE2ETest {
         canvas.paintComponent(graphics)
 
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(4)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(10)
+            verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(8)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
-            val draggedToEdge = lastValue.filterIsInstance<DraggedToEvent>().first()
-            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
             val newWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().first()
             val allDraggeds = lastValue.filterIsInstance<DraggedToEvent>()
-            val cascadedDrags = allDraggeds.subList(1, allDraggeds.size).shouldHaveSize(6)
+            val cascadedDrags = allDraggeds.subList(0, allDraggeds.size).shouldHaveSize(6)
             val subprocessDragSelf = cascadedDrags.filter { it.diagramElementId == subprocessDiagramId }.shouldHaveSingleItem()
             val subprocessDragStartServiceTask = cascadedDrags.filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()
             val subprocessDragEndServiceTask = cascadedDrags.filter { it.diagramElementId == serviceTaskEndDiagramId }.shouldHaveSingleItem()
@@ -899,12 +895,6 @@ internal class UiEditorLightE2ETest {
             edgeBpmn.bpmnObject.parent.shouldBe(subprocessBpmnId)
             edgeBpmn.bpmnObject.id.shouldBe(addedEdge.bpmnObject.id)
             edgeBpmn.props[PropertyType.SOURCE_REF].shouldNotBeNull().value.shouldBe(serviceTaskStartBpmnId.id)
-
-            draggedToEdge.parentElementId.shouldBe(addedEdge.edge.id)
-
-            propUpdated.bpmnElementId.shouldBe(addedEdge.bpmnObject.id)
-            propUpdated.property.shouldBe(PropertyType.TARGET_REF)
-            propUpdated.newValue.shouldBeEqualTo(serviceTaskEndBpmnId.id)
 
             newWaypoint.edgeElementId.shouldBeEqualTo(addedEdge.edge.id)
 
@@ -950,7 +940,7 @@ internal class UiEditorLightE2ETest {
         clickOnId(addedEdge.edge.id)
         val lastEndpointId = addedEdge.edge.waypoint.last().id
         val point = clickOnId(lastEndpointId)
-        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX, endElemMidY), lastEndpointId)
+        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX + serviceTaskSize, endElemMidY), lastEndpointId)
         canvas.stopDragOrSelect()
         // Add midpoint
         clickOnId(addedEdge.edge.id)
@@ -1084,7 +1074,11 @@ internal class UiEditorLightE2ETest {
         clickOnId(serviceTaskStartDiagramId)
         verifyServiceTasksAreDrawn()
         val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
-        clickOnId(newLink)
+        val newLinkLocation = clickOnId(newLink)
+        dragToButDontStop(newLinkLocation, elementCenter(serviceTaskEndDiagramId))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
 
         argumentCaptor<List<Event>>().let {
             verify(fileCommitter, atLeastOnce()).executeCommitAndGetHash(any(), it.capture(), any(), any())
@@ -1096,7 +1090,11 @@ internal class UiEditorLightE2ETest {
         clickOnId(serviceTaskStartDiagramId)
         verifyServiceTasksAreDrawn()
         val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
-        clickOnId(newLink)
+        val newLinkLocation = clickOnId(newLink)
+        dragToButDontStop(newLinkLocation, elementCenter(serviceTaskEndDiagramId))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
     }
 
     private fun clickOnId(elemId: DiagramElementId): Point2D.Float {

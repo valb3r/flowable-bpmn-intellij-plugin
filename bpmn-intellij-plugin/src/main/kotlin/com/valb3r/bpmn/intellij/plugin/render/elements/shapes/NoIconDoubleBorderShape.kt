@@ -30,14 +30,14 @@ class NoIconDoubleBorderShape(
         val area = ctx.canvas.drawRoundedRect(
                 shapeCtx.shape,
                 null,
-                color(isActive(), backgroundColor),
+                color(backgroundColor),
                 borderColor.color,
                 textColor.color)
 
         ctx.canvas.drawRoundedRect(
                 wrapInto(shapeCtx.shape, transactionalBoundaryMargin),
                 shapeCtx.name,
-                color(isActive(),innerBackgroundColor),
+                color(innerBackgroundColor),
                 innerBorderColor.color,
                 textColor.color
         )

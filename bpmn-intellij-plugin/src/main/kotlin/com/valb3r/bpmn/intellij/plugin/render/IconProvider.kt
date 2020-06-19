@@ -20,6 +20,7 @@ interface IconProvider {
     val tilde: Icon
     val dragToResizeTop: Icon
     val dragToResizeBottom: Icon
+    val sequence: Icon
     val exclusiveGateway: String
     val parallelGateway: String
     val inclusiveGateway: String
@@ -51,7 +52,6 @@ interface IconProvider {
     val boundaryMessageEvent: String
     val boundarySignalEvent: String
     val boundaryTimerEvent: String
-    val sequence: String
     val recycleBin: String
 }
 
@@ -73,6 +73,7 @@ data class IconProviderImpl(
         override val tilde: Icon = IconLoader.getIcon("/icons/ui-icons/tilde.png"),
         override val dragToResizeTop: Icon = IconLoader.getIcon("/icons/ui-icons/drag-to-resize-top.png"),
         override val dragToResizeBottom: Icon = IconLoader.getIcon("/icons/ui-icons/drag-to-resize-bottom.png"),
+        override val sequence: Icon = IconLoader.getIcon("/icons/ui-icons/sequence.png"),
         override val exclusiveGateway: String = "/icons/ui-icons/svg/exclusive-gateway.svg".asResource()!!,
         override val parallelGateway: String = "/icons/ui-icons/svg/parallel-gateway.svg".asResource()!!,
         override val inclusiveGateway: String = "/icons/ui-icons/svg/inclusive-gateway.svg".asResource()!!,
@@ -104,6 +105,5 @@ data class IconProviderImpl(
         override val boundaryMessageEvent: String = "/icons/ui-icons/svg/message-boundary-event.svg".asResource()!!,
         override val boundarySignalEvent: String = "/icons/ui-icons/svg/signal-boundary-event.svg".asResource()!!,
         override val boundaryTimerEvent: String = "/icons/ui-icons/svg/timer-boundary-event.svg".asResource()!!,
-        override val sequence: String = "/icons/ui-icons/svg/sequence.svg".asResource()!!,
         override val recycleBin: String = "/icons/ui-icons/svg/recycle-bin.svg".asResource()!!
 ): IconProvider

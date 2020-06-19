@@ -4,7 +4,6 @@ import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
-import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
@@ -15,7 +14,6 @@ import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
-import java.util.*
 import kotlin.math.abs
 
 val EPSILON = 0.1f
@@ -51,6 +49,10 @@ abstract class BaseDiagramRenderElement(
         return state.ctx.selectedIds.contains(elementId)
     }
 
+    open fun isTargetedByDrag(): Boolean {
+        return state.ctx.interactionContext.dragTargetedIds.contains(elementId)
+    }
+
     open fun isDragged(): Boolean {
         return state.ctx.interactionContext.draggedIds.contains(elementId)
     }
@@ -82,25 +84,35 @@ abstract class BaseDiagramRenderElement(
         return result
     }
 
-    open fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event>  {
-        val result = doOnDragEndWithoutChildren(dx, dy, droppedOn, allDroppedOn)
-        children.forEach { result += it.onDragEnd(dx, dy, droppedOn, allDroppedOn) }
+    open fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event>  {
+        val result = doOnDragEndWithoutChildren(dx, dy, droppedOn, allDroppedOnAreas)
+        children.forEach { result += it.onDragEnd(dx, dy, droppedOn, allDroppedOnAreas) }
         viewTransform = NullViewTransform()
         return result
     }
 
-    protected fun actionsRect(): Rectangle2D.Float {
-        val rect = currentRect(state.ctx.canvas.camera)
-        return Rectangle2D.Float(rect.x - actionsMargin, rect.y - actionsMargin, rect.width + 2.0f * actionsMargin, rect.height + 2.0f * actionsMargin)
+    protected fun actionsRect(shapeRect: Rectangle2D.Float): Rectangle2D.Float {
+        return Rectangle2D.Float(shapeRect.x - actionsMargin, shapeRect.y - actionsMargin, shapeRect.width + 2.0f * actionsMargin, shapeRect.height + 2.0f * actionsMargin)
     }
 
-    open protected fun drawActionsElement(): Map<DiagramElementId, AreaWithZindex> {
-        val rect = actionsRect()
+    protected open fun drawActionsElement(): Map<DiagramElementId, AreaWithZindex> {
+        val rect = actionsRect(currentRect(state.ctx.canvas.camera))
         state.ctx.canvas.drawRectNoFill(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
-        return drawActions(rect.x + rect.width + actionsMargin, rect.y)
+        val rightActionsLocation = actionsAnchorRight(rect)
+        return drawActionsRight(rightActionsLocation.x, rightActionsLocation.y).toMutableMap()
     }
 
-    protected abstract fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex>
+    protected abstract fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex>
+
+    protected open fun actionsAnchorRight(shapeRect: Rectangle2D.Float): Point2D.Float {
+        val rect = actionsRect(shapeRect)
+        return Point2D.Float(rect.x + rect.width, rect.y + 2.0f * actionsMargin)
+    }
+
+    protected open fun actionsAnchorTopEnd(shapeRect: Rectangle2D.Float): Point2D.Float {
+        val rect = actionsRect(shapeRect)
+        return Point2D.Float(rect.x + rect.width, rect.y)
+    }
 
     protected open fun dragTo(dx: Float, dy: Float) {
         viewTransform = DragViewTransform(dx, dy)
@@ -115,6 +127,30 @@ abstract class BaseDiagramRenderElement(
         } else {
             children.forEach { it.propagateActivityStateToChildren() }
         }
+    }
+
+    protected open fun selectionColor(): Color {
+        if (isActive()) {
+            return Colors.SELECTED_COLOR.color
+        }
+
+        if (isTargetedByDrag()) {
+            return Colors.DRAG_SELECTED_COLOR.color
+        }
+
+        return Colors.SELECTED_COLOR.color
+    }
+
+    protected open fun color(notSelectedColor: Colors): Color {
+        if (isActive()) {
+            return Colors.SELECTED_COLOR.color
+        }
+
+        if (isTargetedByDrag()) {
+            return Colors.DRAG_SELECTED_COLOR.color
+        }
+
+        return notSelectedColor.color
     }
 
     protected open fun color(active: Boolean, color: Colors): Color {
@@ -140,7 +176,7 @@ abstract class BaseDiagramRenderElement(
     }
 
     abstract fun doDragToWithoutChildren(dx: Float, dy: Float)
-    abstract fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event>
+    abstract fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event>
 
     abstract fun doResizeWithoutChildren(dw: Float, dh: Float)
     abstract fun doResizeEndWithoutChildren(dw: Float, dh: Float): MutableList<Event>

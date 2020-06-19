@@ -14,7 +14,6 @@ import java.awt.Rectangle
 import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
-import java.util.*
 
 class PlaneRenderElement(
         override val elementId: DiagramElementId,
@@ -31,7 +30,7 @@ class PlaneRenderElement(
         // NOP
     }
 
-    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>): MutableList<Event> {
+    override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         return mutableListOf()
     }
 
@@ -60,7 +59,7 @@ class PlaneRenderElement(
         return mutableMapOf(elementId to AreaWithZindex(area, AreaType.PARENT_PROCESS_SHAPE, mutableSetOf(), mutableSetOf(), bpmnElementId = bpmnElementId, index = zIndex()))
     }
 
-    override fun drawActions(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
+    override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         return mutableMapOf()
     }
 }

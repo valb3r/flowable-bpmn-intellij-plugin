@@ -6,13 +6,13 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
-import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
 data class ElementInteractionContext(
         val draggedIds: Set<DiagramElementId>,
-        val dragEndCallbacks: MutableMap<DiagramElementId, (dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId>) -> List<Event>>,
+        val dragTargetedIds: Set<DiagramElementId>,
+        val dragEndCallbacks: MutableMap<DiagramElementId, (dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>) -> List<Event>>,
         val dragSelectionRect: SelectionRect?,
         val clickCallbacks: MutableMap<DiagramElementId, (dest: ProcessModelUpdateEvents) -> Unit>,
         val anchorsHit: AnchorHit?,

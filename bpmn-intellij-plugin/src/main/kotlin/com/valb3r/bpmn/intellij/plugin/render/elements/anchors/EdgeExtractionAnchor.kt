@@ -3,31 +3,32 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.anchors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
-import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
-import com.valb3r.bpmn.intellij.plugin.render.Camera
-import com.valb3r.bpmn.intellij.plugin.render.ICON_Z_INDEX
-import com.valb3r.bpmn.intellij.plugin.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.Icon
 
-class ShapeResizeAnchorBottom(
+class EdgeExtractionAnchor(
         override val elementId: DiagramElementId,
-        private val topPoint: Point2D.Float,
-        private val onDragEndCallback: (() -> MutableList<Event>),
+        private val bottomPoint: Point2D.Float,
+        private val onDragEndCallback: ((droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>) -> MutableList<Event>),
         state: RenderState
-) : IconAnchorElement(elementId, topPoint, state) {
+) : IconAnchorElement(elementId, bottomPoint, state) {
 
     override fun currentRect(camera: Camera): Rectangle2D.Float {
         val icon = icon()
+        val left = camera.fromCameraView(Point2D.Float(0.0f, 0.0f))
+        val right = camera.fromCameraView(Point2D.Float(icon.iconWidth.toFloat(), icon.iconHeight.toFloat()))
+        val imageWidth = right.x - left.x
+        val imageHeight = right.y - left.y
 
         return viewTransform.transform(
                 Rectangle2D.Float(
-                        topPoint.x,
-                        topPoint.y,
-                        icon.iconWidth.toFloat(),
-                        icon.iconHeight.toFloat()
+                        bottomPoint.x - imageWidth,
+                        bottomPoint.y - imageHeight,
+                        imageWidth,
+                        imageHeight
                 )
         )
     }
@@ -35,7 +36,7 @@ class ShapeResizeAnchorBottom(
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         val events = mutableListOf<Event>()
         events += super.doOnDragEndWithoutChildren(dx, dy, droppedOn, allDroppedOnAreas)
-        events += onDragEndCallback()
+        events += onDragEndCallback(droppedOn, allDroppedOnAreas)
         return events
     }
 
@@ -44,11 +45,15 @@ class ShapeResizeAnchorBottom(
             return mutableMapOf()
         }
 
-        return super.doRenderWithoutChildren(ctx)
+        val result = super.doRenderWithoutChildren(ctx).toMutableMap()
+        result[elementId]?.let {
+            result[elementId] = it.copy(areaType = AreaType.SELECTS_DRAG_TARGET, anchorsForWaypoints = waypointAnchors(ctx.canvas.camera))
+        }
+        return result
     }
 
     override fun icon(): Icon {
-        return state.icons.dragToResizeBottom
+        return state.icons.sequence
     }
 
     override fun acceptsInternalEvents(): Boolean {
@@ -57,5 +62,9 @@ class ShapeResizeAnchorBottom(
 
     override fun zIndex(): Int {
         return ICON_Z_INDEX
+    }
+
+    override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
+        return mutableSetOf(transformedLocation)
     }
 }

@@ -14,8 +14,8 @@
    viewBox="0 0 16 16"
    preserveAspectRatio="xMidYMid meet"
    style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);"
-   height="1em"
-   width="1em"
+   height="32px"
+   width="32px"
    focusable="false"
    aria-hidden="true">
   <metadata

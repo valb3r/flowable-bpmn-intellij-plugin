@@ -27,11 +27,11 @@ class TopLeftIconShape(
                 shapeCtx.shape,
                 icon,
                 shapeCtx.name,
-                color(isActive(), backgroundColor),
+                color(backgroundColor),
                 borderColor.color,
                 textColor.color
         )
 
-        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex()))
+        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = bpmnElementId))
     }
 }

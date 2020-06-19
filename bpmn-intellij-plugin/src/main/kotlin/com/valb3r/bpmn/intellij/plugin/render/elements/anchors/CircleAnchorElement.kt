@@ -11,7 +11,6 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
-import java.util.*
 
 abstract class CircleAnchorElement(
         override val elementId: DiagramElementId,
@@ -45,7 +44,7 @@ abstract class CircleAnchorElement(
             )
         }
 
-        val currentColor = color(isActive(), bodyColor)
+        val currentColor = color(bodyColor)
         val area = ctx.canvas.drawEllipse(
                 rect,
                 currentColor,
@@ -53,7 +52,7 @@ abstract class CircleAnchorElement(
         )
 
         state.ctx.interactionContext.dragEndCallbacks[elementId] = {
-            dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: SortedMap<AreaType, BpmnElementId> -> onDragEnd(dx, dy, droppedOn, allDroppedOn)
+            dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: Map<BpmnElementId, AreaWithZindex> -> onDragEnd(dx, dy, droppedOn, allDroppedOn)
         }
         return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT, waypointAnchors(ctx.canvas.camera), index = zIndex()))
     }

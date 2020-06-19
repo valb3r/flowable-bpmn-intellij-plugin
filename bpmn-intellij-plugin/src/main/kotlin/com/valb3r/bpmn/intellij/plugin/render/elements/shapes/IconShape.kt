@@ -1,6 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.render.elements.shapes
 
-import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
@@ -24,11 +23,11 @@ open class IconShape(
         val area = ctx.canvas.drawWrappedIcon(
                 shapeCtx.shape,
                 icon,
-                isActive(),
-                Colors.SELECTED_COLOR.color
+                isActive() || isTargetedByDrag(),
+                selectionColor()
         )
 
-        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex()))
+        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = bpmnElementId))
     }
 
     override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {

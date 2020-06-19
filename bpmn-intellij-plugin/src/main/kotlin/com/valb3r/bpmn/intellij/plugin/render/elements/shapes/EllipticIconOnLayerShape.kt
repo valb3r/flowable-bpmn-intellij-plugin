@@ -24,12 +24,12 @@ class EllipticIconOnLayerShape(
         val area = ctx.canvas.drawWrappedIconWithLayer(
                 shapeCtx.shape,
                 icon,
-                isActive(),
-                Colors.SELECTED_COLOR.color,
+                isActive() || isTargetedByDrag(),
+                selectionColor(),
                 { Ellipse2D.Float(it.x, it.y, it.width, it.height) },
                 layerColor.color
         )
 
-        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex()))
+        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = bpmnElementId))
     }
 }
