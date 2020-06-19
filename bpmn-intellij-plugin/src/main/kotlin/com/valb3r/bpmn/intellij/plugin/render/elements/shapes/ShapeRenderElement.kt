@@ -23,9 +23,8 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTra
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
-import java.util.*
 
-val WAYPOINT_OCCUPY_EPSILON = 1.0f
+const val WAYPOINT_OCCUPY_EPSILON = 1.0f
 
 abstract class ShapeRenderElement(
         override val elementId: DiagramElementId,
@@ -82,7 +81,7 @@ abstract class ShapeRenderElement(
 
     override fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         // Avoid double dragging by cascade and then by children
-        val emptySortedMap = mapOf<BpmnElementId, AreaWithZindex>().toSortedMap(Comparator.comparingInt {it.id.length}) // Quirk to create sorted map without comparable key
+        val emptySortedMap = linkedMapOf<BpmnElementId, AreaWithZindex>() // Quirk to create sorted map without comparable key
         val result = doOnDragEndWithoutChildren(dx, dy, null, allDroppedOnAreas)
         val alreadyDraggedLocations = result.filterIsInstance<LocationUpdateWithId>().map { it.diagramElementId }.toMutableSet()
         children.forEach {

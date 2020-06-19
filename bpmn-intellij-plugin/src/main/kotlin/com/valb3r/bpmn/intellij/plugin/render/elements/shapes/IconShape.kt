@@ -27,7 +27,7 @@ open class IconShape(
                 selectionColor()
         )
 
-        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = bpmnElementId))
+        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, areaType(), waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = bpmnElementId))
     }
 
     override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
@@ -43,5 +43,9 @@ open class IconShape(
                 Point2D.Float(cx, cy - halfHeight),
                 Point2D.Float(cx, cy + halfHeight)
         )
+    }
+
+    protected open fun areaType(): AreaType {
+        return AreaType.SHAPE
     }
 }
