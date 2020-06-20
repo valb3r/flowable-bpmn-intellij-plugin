@@ -59,7 +59,7 @@ class FlowableObjectFactory: BpmnObjectFactory {
             BpmnBoundaryTimerEvent::class -> BpmnBoundaryTimerEvent(generateBpmnId(), null, null, null)
             BpmnUserTask::class -> BpmnUserTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null)
             BpmnScriptTask::class -> BpmnScriptTask(generateBpmnId(), null, null, null, null, null, null, null)
-            BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null)
+            BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null, null, null)
             BpmnBusinessRuleTask::class -> BpmnBusinessRuleTask(generateBpmnId(), null, null, null, null, null, null, null, null)
             BpmnReceiveTask::class -> BpmnReceiveTask(generateBpmnId(), null, null, null, null)
             BpmnCamelTask::class -> BpmnCamelTask(generateBpmnId(), null, null, null, null, null)

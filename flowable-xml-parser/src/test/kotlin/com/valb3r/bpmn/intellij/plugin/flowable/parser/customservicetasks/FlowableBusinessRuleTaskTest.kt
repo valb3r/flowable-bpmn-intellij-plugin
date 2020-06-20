@@ -15,6 +15,8 @@ import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldHaveSingleItem
 import org.junit.jupiter.api.Test
 
+private const val FILE = "custom-service-tasks/business-rule-task.bpmn20.xml"
+
 internal class FlowableBusinessRuleTaskTest {
 
     private val parser = FlowableParser()
@@ -22,7 +24,7 @@ internal class FlowableBusinessRuleTaskTest {
 
     @Test
     fun `Business rule task is parseable`() {
-        val processObject = parser.parse("custom-service-tasks/business-rule-task.bpmn20.xml".asResource()!!)
+        val processObject = parser.parse(FILE.asResource()!!)
 
         val task = readBusinessRuleTask(processObject)
         task.id.shouldBeEqualTo(elementId)
@@ -61,11 +63,11 @@ internal class FlowableBusinessRuleTaskTest {
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: String): BpmnBusinessRuleTask {
-        return readBusinessRuleTask(readAndUpdateProcess(parser, "custom-service-tasks/business-rule-task.bpmn20.xml", StringValueUpdatedEvent(elementId, property, newValue)))
+        return readBusinessRuleTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue)))
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: Boolean): BpmnBusinessRuleTask {
-        return readBusinessRuleTask(readAndUpdateProcess(parser, "custom-service-tasks/business-rule-task.bpmn20.xml", BooleanValueUpdatedEvent(elementId, property, newValue)))
+        return readBusinessRuleTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
     private fun readBusinessRuleTask(processObject: BpmnProcessObject): BpmnBusinessRuleTask {

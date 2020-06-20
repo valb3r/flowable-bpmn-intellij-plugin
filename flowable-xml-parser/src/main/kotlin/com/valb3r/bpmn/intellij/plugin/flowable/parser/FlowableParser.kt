@@ -81,6 +81,7 @@ enum class PropertyTypeDetails(
     RULE_VARIABLES_INPUT(PropertyType.RULE_VARIABLES_INPUT, "flowable:ruleVariablesInput", XmlType.ATTRIBUTE),
     RULES(PropertyType.RULES, "flowable:rules", XmlType.ATTRIBUTE),
     RESULT_VARIABLE(PropertyType.RESULT_VARIABLE, "flowable:resultVariable", XmlType.ATTRIBUTE),
+    RESULT_VARIABLE_NAME(PropertyType.RESULT_VARIABLE_NAME, "flowable:resultVariableName", XmlType.ATTRIBUTE),
     EXCLUDE(PropertyType.EXCLUDE, "flowable:exclude", XmlType.ATTRIBUTE),
     SOURCE_REF(PropertyType.SOURCE_REF,"sourceRef", XmlType.ATTRIBUTE),
     TARGET_REF(PropertyType.TARGET_REF, "targetRef", XmlType.ATTRIBUTE),
@@ -89,7 +90,8 @@ enum class PropertyTypeDetails(
     CONDITION_EXPR_TYPE(PropertyType.CONDITION_EXPR_TYPE, "conditionExpression.xsi:type", XmlType.ATTRIBUTE),
     COMPLETION_CONDITION(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA),
     DEFAULT_FLOW(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE),
-    IS_TRANSACTIONAL_SUBPROCESS(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT)
+    IS_TRANSACTIONAL_SUBPROCESS(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT),
+    IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, "flowable:useLocalScopeForResultVariable", XmlType.ATTRIBUTE)
 }
 
 enum class XmlType {

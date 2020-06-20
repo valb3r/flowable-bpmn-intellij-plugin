@@ -40,6 +40,7 @@ enum class PropertyType(
     RULE_VARIABLES_INPUT("ruleVariablesInput", "Rule variables input", STRING),
     RULES("rules", "Rules", STRING),
     RESULT_VARIABLE("resultVariable", "Result variable", STRING),
+    RESULT_VARIABLE_NAME("resultVariableName", "Result variable name", STRING),
     EXCLUDE("exclude", "Exclude", BOOLEAN),
     SOURCE_REF("sourceRef","Source reference", STRING, "sourceRef", false, ID),
     TARGET_REF("targetRef", "Target reference", STRING, "targetRef", false, ID),
@@ -48,5 +49,6 @@ enum class PropertyType(
     CONDITION_EXPR_TYPE("conditionExpression.type", "Condition expression type", STRING, "conditionExpression.type"),
     COMPLETION_CONDITION("completionCondition.condition", "Completion condition", PropertyValueType.EXPRESSION, "completionCondition.condition"),
     DEFAULT_FLOW("defaultElement", "Default flow element", PropertyValueType.ATTACHED_SEQUENCE_SELECT, "defaultElement", false, ID),
-    IS_TRANSACTIONAL_SUBPROCESS("transactionalSubprocess", "Is transactional subprocess", BOOLEAN, "transactionalSubprocess", elementUpdateChangesClass = true)
+    IS_TRANSACTIONAL_SUBPROCESS("transactionalSubprocess", "Is transactional subprocess", BOOLEAN, "transactionalSubprocess", elementUpdateChangesClass = true),
+    IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE("useLocalScopeForResultVariable", "Use local scope for result varaible", BOOLEAN)
 }

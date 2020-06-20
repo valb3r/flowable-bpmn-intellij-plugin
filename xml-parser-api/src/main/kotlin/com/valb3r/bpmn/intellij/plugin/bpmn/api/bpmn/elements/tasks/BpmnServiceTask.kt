@@ -14,9 +14,11 @@ data class BpmnServiceTask(
         val expression: String?,
         val delegateExpression: String?,
         val clazz: String?,
+        val resultVariableName: String?,
         val skipExpression: String?,
         val triggerable: Boolean?,
         val isForCompensation: Boolean?,
+        val useLocalScopeForResultVariable: Boolean?,
         // Customizations (Flowable) - http task, camel task,...:
         val type: String?
 ): WithBpmnId {
