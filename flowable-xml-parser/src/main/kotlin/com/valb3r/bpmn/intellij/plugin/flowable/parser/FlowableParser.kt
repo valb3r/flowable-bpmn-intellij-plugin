@@ -91,7 +91,8 @@ enum class PropertyTypeDetails(
     COMPLETION_CONDITION(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA),
     DEFAULT_FLOW(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE),
     IS_TRANSACTIONAL_SUBPROCESS(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT),
-    IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, "flowable:useLocalScopeForResultVariable", XmlType.ATTRIBUTE)
+    IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, "flowable:useLocalScopeForResultVariable", XmlType.ATTRIBUTE),
+    CAMEL_CONTEXT(PropertyType.CAMEL_CONTEXT, "extensionElements.flowable:field?name=camelContext.flowable:string.text", XmlType.CDATA)
 }
 
 enum class XmlType {
@@ -463,24 +464,30 @@ class FlowableParser : BpmnParser {
 
     private fun setNestedToNode(node: Element, type: PropertyType, details: PropertyTypeDetails, value: Any?) {
         val segments = details.xmlPath.split(".")
-        val childOf: ((Element, String) -> Element?) = {target, name -> nodeChildByName(target, name)}
+        val childOf: ((Element, String, String?) -> Element?) = {target, name, attributeSelector -> nodeChildByName(target, name, attributeSelector)}
 
         var currentNode = node
         for (segment in 0 until segments.size - 1) {
-            val name = segments[segment]
+            val nameParts = segments[segment].split("?")
+            val name = nameParts[0]
+            val attributeSelector = nameParts.getOrNull(1)
             if ("" == name) {
                 continue
             }
 
-            val child = childOf(currentNode, name)
+            val child = childOf(currentNode, name, attributeSelector)
             if (null == child) {
                 // do not create elements for null values
                 if (null == value ) {
                     return
                 }
 
-                val newElem = node.addElement(name)
+                val newElem = currentNode.addElement(name)
                 currentNode = newElem
+                attributeSelector?.apply {
+                    val (attrName, attrValue) = this.split("=")
+                    newElem.addAttribute(attrName, attrValue)
+                }
             } else {
                 currentNode = child
             }
@@ -489,10 +496,27 @@ class FlowableParser : BpmnParser {
         setAttributeOrValueOrCdataOrRemoveIfNull(currentNode, segments[segments.size - 1], details, asString(type.valueType, value))
     }
 
+    private fun nodeChildByName(target: Element, name: String, attributeSelector: String?): Element? {
+        if (null == attributeSelector) {
+            return nodeChildByName(target, name)
+        }
+
+        val (attrName, attrValue) = attributeSelector.split("=")
+        val children = target.selectNodes("*")
+        for (pos in 0 until children.size) {
+            val elem = children[pos] as Element
+            if (elem.qualifiedName.contains(name) && attrValue == elem.attribute(attrName)?.value) {
+                return children[pos] as Element
+            }
+        }
+        return null
+    }
+
     private fun nodeChildByName(target: Element, name: String): Element? {
         val children = target.selectNodes("*")
         for (pos in 0 until children.size) {
-            if (children[pos].name.contains(name)) {
+            val elem = children[pos] as Element
+            if (elem.qualifiedName.contains(name)) {
                 return children[pos] as Element
             }
         }

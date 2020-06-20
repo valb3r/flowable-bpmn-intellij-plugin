@@ -22,7 +22,10 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.DiagramElem
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.Plane
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.*
 import org.mapstruct.Mapper
+import org.mapstruct.Mapping
+import org.mapstruct.Mappings
 import org.mapstruct.factory.Mappers
+
 
 // For mixed lists in XML we need to have JsonSetter/JsonMerge on field
 // https://github.com/FasterXML/jackson-dataformat-xml/issues/363
@@ -109,7 +112,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     @JacksonXmlProperty(isAttribute = true) var isExecutable: Boolean? = null
 
     override fun toElement(): BpmnProcess {
-        val result = Mappers.getMapper(Mapping::class.java).convertToDto(this)
+        val result = Mappers.getMapper(ProcessNodeMapping::class.java).convertToDto(this)
         val mappedBody = mapBody(this)
 
         return result.copy(
@@ -285,7 +288,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
 
     @Mapper(uses = [BpmnElementIdMapper::class, BodyMapping::class])
-    interface Mapping {
+    interface ProcessNodeMapping {
         fun convertToDto(input: ProcessNode): BpmnProcess
     }
 
@@ -304,7 +307,19 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     interface EventSubProcessMapper: SubProcessMapper<BpmnEventSubprocess>
 
     @Mapper
-    interface CamelMapper: ServiceTaskMapper<BpmnCamelTask>
+    interface CamelMapper: ServiceTaskMapper<BpmnCamelTask> {
+
+        @Mappings(
+            Mapping(source = "forCompensation", target = "isForCompensation"),
+            Mapping(expression = "java(" +
+                    "null == input.getExtensionElements() ? null " +
+                    ": input.getExtensionElements().stream().filter(it -> \"camelContext\".equals(it.getName())).map(it -> it.getString())" +
+                    ".findFirst()" +
+                    ".get())",
+                    target = "camelContext")
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnCamelTask
+    }
 
     @Mapper
     interface HttpMapper: ServiceTaskMapper<BpmnHttpTask>
@@ -319,6 +334,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     interface ShellMapper: ServiceTaskMapper<BpmnShellTask>
 
     interface ServiceTaskMapper<T> {
+        @Mapping(source = "forCompensation", target = "isForCompensation")
         fun convertToDto(input: BpmnServiceTask): T
     }
 
