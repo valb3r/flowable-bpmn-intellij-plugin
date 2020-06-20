@@ -31,6 +31,7 @@ internal class FlowableBusinessRuleTaskTest {
         task.name.shouldBeEqualTo("Business rule task")
         task.documentation.shouldBeEqualTo("Docs for business rule task")
         task.async!!.shouldBeTrue()
+        // TODO 'exclusive' ?
         task.isForCompensation!!.shouldBeTrue()
         task.ruleVariablesInput.shouldBeEqualTo("INPUT_VAR")
         task.rules.shouldBeEqualTo("Rule1,Rule2")
