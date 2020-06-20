@@ -289,7 +289,12 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         fun convertToDto(input: ProcessNode): BpmnProcess
     }
 
-    @Mapper(uses = [BpmnElementIdMapper::class, SubProcess.SubProcessMapping::class, Transaction.TransactionMapping::class])
+    @Mapper(uses = [
+        BpmnElementIdMapper::class,
+        SubProcess.SubProcessMapping::class,
+        Transaction.TransactionMapping::class,
+        BusinessRuleTask.BusinessRuleTaskMapping::class
+    ])
     interface BodyMapping {
         fun convertToDto(input: ProcessBody): BpmnProcessBody
     }
