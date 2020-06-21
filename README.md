@@ -75,6 +75,12 @@ If you want just to run the plugin in the `sandbox` you can execute
 
 [![Work with plugin](https://img.youtube.com/vi/pBfAGdp169s/0.jpg)](https://youtu.be/pBfAGdp169s)
 
+<details><summary><b>Basic usage for older versions (< 0.3.2)</b></summary>
+
+[![Work with plugin](https://img.youtube.com/vi/fdl2JQuIWl8/0.jpg)](https://youtu.be/fdl2JQuIWl8)
+
+</details>
+
 
 ### Adding new elements
 
