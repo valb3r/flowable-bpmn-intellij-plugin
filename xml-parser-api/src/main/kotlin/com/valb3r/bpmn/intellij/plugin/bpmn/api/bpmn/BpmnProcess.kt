@@ -67,11 +67,13 @@ data class BpmnProcessBody(
         val scriptTask: List<BpmnScriptTask>?,
         val serviceTask: List<BpmnServiceTask>?,
         val businessRuleTask: List<BpmnBusinessRuleTask>?,
+        val manualTask: List<BpmnManualTask>?,
         val receiveTask: List<BpmnReceiveTask>?,
 
         // Customizations of ServiceTask
         val camelTask: List<BpmnCamelTask>?,
         val httpTask: List<BpmnHttpTask>?,
+        val mailTask: List<BpmnMailTask>?,
         val muleTask: List<BpmnMuleTask>?,
         val decisionTask: List<BpmnDecisionTask>?,
         val shellTask: List<BpmnShellTask>?,

@@ -81,6 +81,7 @@ enum class PropertyTypeDetails(
     RULE_VARIABLES_INPUT(PropertyType.RULE_VARIABLES_INPUT, "flowable:ruleVariablesInput", XmlType.ATTRIBUTE),
     RULES(PropertyType.RULES, "flowable:rules", XmlType.ATTRIBUTE),
     RESULT_VARIABLE(PropertyType.RESULT_VARIABLE, "flowable:resultVariable", XmlType.ATTRIBUTE),
+    RESULT_VARIABLE_NAME(PropertyType.RESULT_VARIABLE_NAME, "flowable:resultVariableName", XmlType.ATTRIBUTE),
     EXCLUDE(PropertyType.EXCLUDE, "flowable:exclude", XmlType.ATTRIBUTE),
     SOURCE_REF(PropertyType.SOURCE_REF,"sourceRef", XmlType.ATTRIBUTE),
     TARGET_REF(PropertyType.TARGET_REF, "targetRef", XmlType.ATTRIBUTE),
@@ -89,7 +90,53 @@ enum class PropertyTypeDetails(
     CONDITION_EXPR_TYPE(PropertyType.CONDITION_EXPR_TYPE, "conditionExpression.xsi:type", XmlType.ATTRIBUTE),
     COMPLETION_CONDITION(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA),
     DEFAULT_FLOW(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE),
-    IS_TRANSACTIONAL_SUBPROCESS(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT)
+    IS_TRANSACTIONAL_SUBPROCESS(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT),
+    IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, "flowable:useLocalScopeForResultVariable", XmlType.ATTRIBUTE),
+    CAMEL_CONTEXT(PropertyType.CAMEL_CONTEXT, "extensionElements.flowable:field?name=camelContext.flowable:string.text", XmlType.CDATA),
+    DECISION_TABLE_REFERENCE_KEY(PropertyType.DECISION_TABLE_REFERENCE_KEY, "extensionElements.flowable:field?name=decisionTableReferenceKey.flowable:string.text", XmlType.CDATA),
+    DECISION_TASK_THROW_ERROR_ON_NO_HITS(PropertyType.DECISION_TASK_THROW_ERROR_ON_NO_HITS, "extensionElements.flowable:field?name=decisionTaskThrowErrorOnNoHits.flowable:string.text", XmlType.CDATA),
+    FALLBACK_TO_DEF_TENANT_CDATA(PropertyType.FALLBACK_TO_DEF_TENANT_CDATA, "extensionElements.flowable:field?name=fallbackToDefaultTenant.flowable:string.text", XmlType.CDATA),
+    REQUEST_METHOD(PropertyType.REQUEST_METHOD, "extensionElements.flowable:field?name=requestMethod.flowable:string.text", XmlType.CDATA),
+    REQUEST_URL(PropertyType.REQUEST_URL, "extensionElements.flowable:field?name=requestUrl.flowable:string.text", XmlType.CDATA),
+    REQUEST_HEADERS(PropertyType.REQUEST_HEADERS, "extensionElements.flowable:field?name=requestHeaders.flowable:string.text", XmlType.CDATA),
+    REQUEST_BODY(PropertyType.REQUEST_BODY, "extensionElements.flowable:field?name=requestBody.flowable:string.text", XmlType.CDATA),
+    REQUEST_BODY_ENCODING(PropertyType.REQUEST_BODY_ENCODING, "extensionElements.flowable:field?name=requestBodyEncoding.flowable:string.text", XmlType.CDATA),
+    REQUEST_TIMEOUT(PropertyType.REQUEST_TIMEOUT, "extensionElements.flowable:field?name=requestTimeout.flowable:string.text", XmlType.CDATA),
+    DISALLOW_REDIRECTS(PropertyType.DISALLOW_REDIRECTS, "extensionElements.flowable:field?name=disallowRedirects.flowable:string.text", XmlType.CDATA),
+    FAIL_STATUS_CODES(PropertyType.FAIL_STATUS_CODES, "extensionElements.flowable:field?name=failStatusCodes.flowable:string.text", XmlType.CDATA),
+    HANDLE_STATUS_CODES(PropertyType.HANDLE_STATUS_CODES, "extensionElements.flowable:field?name=handleStatusCodes.flowable:string.text", XmlType.CDATA),
+    RESPONSE_VARIABLE_NAME(PropertyType.RESPONSE_VARIABLE_NAME, "extensionElements.flowable:field?name=responseVariableName.flowable:string.text", XmlType.CDATA),
+    IGNORE_EXCEPTION(PropertyType.IGNORE_EXCEPTION, "extensionElements.flowable:field?name=ignoreException.flowable:string.text", XmlType.CDATA),
+    SAVE_REQUEST_VARIABLES(PropertyType.SAVE_REQUEST_VARIABLES, "extensionElements.flowable:field?name=saveRequestVariables.flowable:string.text", XmlType.CDATA),
+    SAVE_RESPONSE_PARAMETERS(PropertyType.SAVE_RESPONSE_PARAMETERS, "extensionElements.flowable:field?name=saveResponseParameters.flowable:string.text", XmlType.CDATA),
+    RESULT_VARIABLE_PREFIX(PropertyType.RESULT_VARIABLE_PREFIX, "extensionElements.flowable:field?name=resultVariablePrefix.flowable:string.text", XmlType.CDATA),
+    SAVE_RESPONSE_PARAMETERS_TRANSIENT(PropertyType.SAVE_RESPONSE_PARAMETERS_TRANSIENT, "extensionElements.flowable:field?name=saveResponseParametersTransient.flowable:string.text", XmlType.CDATA),
+    SAVE_RESPONSE_VARIABLE_AS_JSON(PropertyType.SAVE_RESPONSE_VARIABLE_AS_JSON, "extensionElements.flowable:field?name=saveResponseVariableAsJson.flowable:string.text", XmlType.CDATA),
+    HEADERS(PropertyType.HEADERS, "extensionElements.flowable:field?name=headers.flowable:string.text", XmlType.CDATA),
+    TO(PropertyType.TO, "extensionElements.flowable:field?name=to.flowable:string.text", XmlType.CDATA),
+    FROM(PropertyType.FROM, "extensionElements.flowable:field?name=from.flowable:string.text", XmlType.CDATA),
+    SUBJECT(PropertyType.SUBJECT, "extensionElements.flowable:field?name=subject.flowable:string.text", XmlType.CDATA),
+    CC(PropertyType.CC, "extensionElements.flowable:field?name=cc.flowable:string.text", XmlType.CDATA),
+    BCC(PropertyType.BCC, "extensionElements.flowable:field?name=bcc.flowable:string.text", XmlType.CDATA),
+    TEXT(PropertyType.TEXT, "extensionElements.flowable:field?name=text.flowable:string.text", XmlType.CDATA),
+    HTML(PropertyType.HTML, "extensionElements.flowable:field?name=html.flowable:string.text", XmlType.CDATA),
+    CHARSET(PropertyType.CHARSET, "extensionElements.flowable:field?name=charset.flowable:string.text", XmlType.CDATA),
+    ENDPOINT_URL(PropertyType.ENDPOINT_URL, "extensionElements.flowable:field?name=endpointUrl.flowable:string.text", XmlType.CDATA),
+    LANGUAGE(PropertyType.LANGUAGE, "extensionElements.flowable:field?name=language.flowable:string.text", XmlType.CDATA),
+    PAYLOAD_EXPRESSION(PropertyType.PAYLOAD_EXPRESSION, "extensionElements.flowable:field?name=payloadExpression.flowable:expression.text", XmlType.CDATA),
+    RESULT_VARIABLE_CDATA(PropertyType.RESULT_VARIABLE_CDATA, "extensionElements.flowable:field?name=resultVariable.flowable:string.text", XmlType.CDATA),
+    COMMAND(PropertyType.COMMAND, "extensionElements.flowable:field?name=command.flowable:string.text", XmlType.CDATA),
+    ARG_1(PropertyType.ARG_1, "extensionElements.flowable:field?name=arg1.flowable:string.text", XmlType.CDATA),
+    ARG_2(PropertyType.ARG_2, "extensionElements.flowable:field?name=arg2.flowable:string.text", XmlType.CDATA),
+    ARG_3(PropertyType.ARG_3, "extensionElements.flowable:field?name=arg3.flowable:string.text", XmlType.CDATA),
+    ARG_4(PropertyType.ARG_4, "extensionElements.flowable:field?name=arg4.flowable:string.text", XmlType.CDATA),
+    ARG_5(PropertyType.ARG_5, "extensionElements.flowable:field?name=arg5.flowable:string.text", XmlType.CDATA),
+    WAIT(PropertyType.WAIT, "extensionElements.flowable:field?name=wait.flowable:string.text", XmlType.CDATA),
+    CLEAN_ENV(PropertyType.CLEAN_ENV, "extensionElements.flowable:field?name=cleanEnv.flowable:string.text", XmlType.CDATA),
+    ERROR_CODE_VARIABLE(PropertyType.ERROR_CODE_VARIABLE, "extensionElements.flowable:field?name=errorCodeVariable.flowable:string.text", XmlType.CDATA),
+    OUTPUT_VARIABLE(PropertyType.OUTPUT_VARIABLE, "extensionElements.flowable:field?name=outputVariable.flowable:string.text", XmlType.CDATA),
+    DIRECTORY(PropertyType.DIRECTORY, "extensionElements.flowable:field?name=directory.flowable:string.text", XmlType.CDATA)
+
 }
 
 enum class XmlType {
@@ -306,8 +353,10 @@ class FlowableParser : BpmnParser {
             is BpmnServiceTask -> createServiceTask(diagramParent)
             is BpmnBusinessRuleTask -> diagramParent.addElement("businessRuleTask")
             is BpmnReceiveTask -> diagramParent.addElement("receiveTask")
+            is BpmnManualTask -> diagramParent.addElement("manualTask")
             is BpmnCamelTask -> createServiceTaskWithType(diagramParent, "camel")
             is BpmnHttpTask -> createServiceTaskWithType(diagramParent, "http")
+            is BpmnMailTask -> createServiceTaskWithType(diagramParent, "mail")
             is BpmnMuleTask -> createServiceTaskWithType(diagramParent, "mule")
             is BpmnDecisionTask -> createServiceTaskWithType(diagramParent, "dmn")
             is BpmnShellTask -> createServiceTaskWithType(diagramParent, "shell")
@@ -461,24 +510,30 @@ class FlowableParser : BpmnParser {
 
     private fun setNestedToNode(node: Element, type: PropertyType, details: PropertyTypeDetails, value: Any?) {
         val segments = details.xmlPath.split(".")
-        val childOf: ((Element, String) -> Element?) = {target, name -> nodeChildByName(target, name)}
+        val childOf: ((Element, String, String?) -> Element?) = {target, name, attributeSelector -> nodeChildByName(target, name, attributeSelector)}
 
         var currentNode = node
         for (segment in 0 until segments.size - 1) {
-            val name = segments[segment]
+            val nameParts = segments[segment].split("?")
+            val name = nameParts[0]
+            val attributeSelector = nameParts.getOrNull(1)
             if ("" == name) {
                 continue
             }
 
-            val child = childOf(currentNode, name)
+            val child = childOf(currentNode, name, attributeSelector)
             if (null == child) {
                 // do not create elements for null values
                 if (null == value ) {
                     return
                 }
 
-                val newElem = node.addElement(name)
+                val newElem = currentNode.addElement(name)
                 currentNode = newElem
+                attributeSelector?.apply {
+                    val (attrName, attrValue) = this.split("=")
+                    newElem.addAttribute(attrName, attrValue)
+                }
             } else {
                 currentNode = child
             }
@@ -487,10 +542,27 @@ class FlowableParser : BpmnParser {
         setAttributeOrValueOrCdataOrRemoveIfNull(currentNode, segments[segments.size - 1], details, asString(type.valueType, value))
     }
 
+    private fun nodeChildByName(target: Element, name: String, attributeSelector: String?): Element? {
+        if (null == attributeSelector) {
+            return nodeChildByName(target, name)
+        }
+
+        val (attrName, attrValue) = attributeSelector.split("=")
+        val children = target.selectNodes("*")
+        for (pos in 0 until children.size) {
+            val elem = children[pos] as Element
+            if (elem.qualifiedName.contains(name) && attrValue == elem.attribute(attrName)?.value) {
+                return children[pos] as Element
+            }
+        }
+        return null
+    }
+
     private fun nodeChildByName(target: Element, name: String): Element? {
         val children = target.selectNodes("*")
         for (pos in 0 until children.size) {
-            if (children[pos].name.contains(name)) {
+            val elem = children[pos] as Element
+            if (elem.qualifiedName.contains(name)) {
                 return children[pos] as Element
             }
         }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.flowable.org/processdef">
+    <process id="custom-service-task" name="custom-service-task" isExecutable="true">
+        <startEvent id="startEvent1" flowable:formFieldValidation="true"></startEvent>
+        <userTask id="userTaskId" name="A user task" flowable:async="true" flowable:exclusive="false" isForCompensation="true" flowable:assignee="$INITIATOR" flowable:dueDate="2020-01-01" flowable:category="SOME_CATEGORY" flowable:formKey="FORM_KEY" flowable:formFieldValidation="true" flowable:priority="1" flowable:skipExpression="#{do.skip}">
+            <documentation>A user task to do</documentation>
+            <extensionElements>
+                <flowable:formProperty id="formPropertyId" name="A form property" type="string" expression="some expression" variable="some variable" default="123" required="true"></flowable:formProperty>
+                <modeler:activiti-idm-initiator xmlns:modeler="http://flowable.org/modeler"><![CDATA[true]]></modeler:activiti-idm-initiator>
+            </extensionElements>
+        </userTask>
+    </process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_custom-service-task">
+        <bpmndi:BPMNPlane bpmnElement="custom-service-task" id="BPMNPlane_custom-service-task">
+            <bpmndi:BPMNShape bpmnElement="startEvent1" id="BPMNShape_startEvent1">
+                <omgdc:Bounds height="30.0" width="30.0" x="100.0" y="163.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="userTask" id="BPMNShape_userTask">
+                <omgdc:Bounds height="80.0" width="100.0" x="240.0" y="138.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</definitions>

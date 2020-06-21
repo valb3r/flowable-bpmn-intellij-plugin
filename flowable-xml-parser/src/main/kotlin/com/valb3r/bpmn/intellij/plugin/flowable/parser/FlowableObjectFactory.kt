@@ -59,11 +59,13 @@ class FlowableObjectFactory: BpmnObjectFactory {
             BpmnBoundaryTimerEvent::class -> BpmnBoundaryTimerEvent(generateBpmnId(), null, null, null)
             BpmnUserTask::class -> BpmnUserTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null)
             BpmnScriptTask::class -> BpmnScriptTask(generateBpmnId(), null, null, null, null, null, null, null)
-            BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null)
+            BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId(), null, null, null, null, null, null, null, null, null, null, null, null, null, null)
             BpmnBusinessRuleTask::class -> BpmnBusinessRuleTask(generateBpmnId(), null, null, null, null, null, null, null, null)
             BpmnReceiveTask::class -> BpmnReceiveTask(generateBpmnId(), null, null, null, null)
-            BpmnCamelTask::class -> BpmnCamelTask(generateBpmnId(), null, null, null, null, null)
+            BpmnManualTask::class -> BpmnManualTask(generateBpmnId(), null, null, null, null, null)
+            BpmnCamelTask::class -> BpmnCamelTask(generateBpmnId(), null, null, null, null, null, null)
             BpmnHttpTask::class -> BpmnHttpTask(generateBpmnId(), null, null, null, null, null)
+            BpmnMailTask::class -> BpmnMailTask(generateBpmnId(), null, null, null, null)
             BpmnMuleTask::class -> BpmnMuleTask(generateBpmnId(), null, null, null, null, null)
             BpmnDecisionTask::class -> BpmnDecisionTask(generateBpmnId(), null, null, null, null, null)
             BpmnShellTask::class -> BpmnShellTask(generateBpmnId(), null, null, null, null, null)
@@ -119,7 +121,8 @@ class FlowableObjectFactory: BpmnObjectFactory {
             is BpmnEndTerminateEvent, is BpmnBoundaryCancelEvent, is BpmnBoundaryCompensationEvent,
             is BpmnBoundaryConditionalEvent, is BpmnBoundaryEscalationEvent, is BpmnBoundaryMessageEvent, is BpmnBoundaryErrorEvent,
             is BpmnBoundarySignalEvent, is BpmnBoundaryTimerEvent, is BpmnUserTask,  is BpmnScriptTask, is BpmnServiceTask, is BpmnBusinessRuleTask,
-            is BpmnReceiveTask, is BpmnCamelTask, is BpmnHttpTask, is BpmnMuleTask, is BpmnDecisionTask, is BpmnShellTask,
+            is BpmnReceiveTask, is BpmnCamelTask, is BpmnHttpTask, is BpmnMuleTask, is BpmnDecisionTask, is BpmnShellTask, is BpmnMailTask,
+            is BpmnManualTask,
             is BpmnSubProcess, is BpmnEventSubprocess, is BpmnTransactionalSubProcess, is BpmnAdHocSubProcess, is BpmnExclusiveGateway,
             is BpmnParallelGateway, is BpmnInclusiveGateway, is BpmnEventGateway, is BpmnIntermediateTimerCatchingEvent,
             is BpmnIntermediateMessageCatchingEvent, is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent,

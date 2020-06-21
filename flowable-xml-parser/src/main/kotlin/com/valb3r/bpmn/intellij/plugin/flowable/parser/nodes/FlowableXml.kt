@@ -22,7 +22,15 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.DiagramElem
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.Plane
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.*
 import org.mapstruct.Mapper
+import org.mapstruct.Mapping
+import org.mapstruct.Mappings
 import org.mapstruct.factory.Mappers
+
+
+const val EXTENSION_ELEM_STREAM = "java(null == input.getExtensionElements() ? null : input.getExtensionElements().stream()"
+const val EXTENSION_STRING_EXTRACTOR = ".map(it -> it.getString()).filter(java.util.Objects::nonNull).findFirst().orElse(null))"
+const val EXTENSION_EXPRESSION_EXTRACTOR = ".map(it -> it.getExpression()).filter(java.util.Objects::nonNull).findFirst().orElse(null))"
+const val EXTENSION_BOOLEAN_EXTRACTOR = ".map(it -> Boolean.valueOf(it.getString())).findFirst().orElse(null))"
 
 // For mixed lists in XML we need to have JsonSetter/JsonMerge on field
 // https://github.com/FasterXML/jackson-dataformat-xml/issues/363
@@ -71,6 +79,8 @@ open class ProcessBody {
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
     var businessRuleTask: List<BusinessRuleTask>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var manualTask: List<ManualTask>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
     var receiveTask: List<ReceiveTask>? = null
 
     // Sub process alike
@@ -109,7 +119,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     @JacksonXmlProperty(isAttribute = true) var isExecutable: Boolean? = null
 
     override fun toElement(): BpmnProcess {
-        val result = Mappers.getMapper(Mapping::class.java).convertToDto(this)
+        val result = Mappers.getMapper(ProcessNodeMapping::class.java).convertToDto(this)
         val mappedBody = mapBody(this)
 
         return result.copy(
@@ -158,6 +168,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         var result = process
         result = extractTasksBasedOnType(result, "camel",  Mappers.getMapper(CamelMapper::class.java)) { updates, target -> target.copy(camelTask = updates) }
         result = extractTasksBasedOnType(result, "http",  Mappers.getMapper(HttpMapper::class.java)) { updates, target -> target.copy(httpTask = updates) }
+        result = extractTasksBasedOnType(result, "mail",  Mappers.getMapper(MailMapper::class.java)) { updates, target -> target.copy(mailTask = updates) }
         result = extractTasksBasedOnType(result, "mule",  Mappers.getMapper(MuleMapper::class.java)) { updates, target -> target.copy(muleTask = updates) }
         result = extractTasksBasedOnType(result, "dmn",  Mappers.getMapper(DecisionMapper::class.java)) { updates, target -> target.copy(decisionTask = updates) }
         result = extractTasksBasedOnType(result, "shell",  Mappers.getMapper(ShellMapper::class.java)) { updates, target -> target.copy(shellTask = updates) }
@@ -285,11 +296,21 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
 
     @Mapper(uses = [BpmnElementIdMapper::class, BodyMapping::class])
-    interface Mapping {
+    interface ProcessNodeMapping {
         fun convertToDto(input: ProcessNode): BpmnProcess
     }
 
-    @Mapper(uses = [BpmnElementIdMapper::class, SubProcess.SubProcessMapping::class, Transaction.TransactionMapping::class])
+    @Mapper(uses = [
+        BpmnElementIdMapper::class,
+        SubProcess.SubProcessMapping::class,
+        Transaction.TransactionMapping::class,
+        BusinessRuleTask.BusinessRuleTaskMapping::class,
+        ServiceTask.ServiceTaskMapping::class,
+        ManualTask.ManualTaskMapping::class,
+        ReceiveTask.ReceiveTaskMapping::class,
+        ScriptTask.ScriptTaskMapping::class,
+        UserTask.UserTaskMapping::class
+    ])
     interface BodyMapping {
         fun convertToDto(input: ProcessBody): BpmnProcessBody
     }
@@ -298,21 +319,148 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     interface EventSubProcessMapper: SubProcessMapper<BpmnEventSubprocess>
 
     @Mapper
-    interface CamelMapper: ServiceTaskMapper<BpmnCamelTask>
+    interface CamelMapper: ServiceTaskMapper<BpmnCamelTask> {
+
+        @Mappings(
+            Mapping(source = "forCompensation", target = "isForCompensation"),
+            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"camelContext\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                    target = "camelContext")
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnCamelTask
+    }
 
     @Mapper
-    interface HttpMapper: ServiceTaskMapper<BpmnHttpTask>
+    interface HttpMapper: ServiceTaskMapper<BpmnHttpTask> {
+
+        @Mappings(
+                Mapping(source = "forCompensation", target = "isForCompensation"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"requestMethod\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "requestMethod"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"requestUrl\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "requestUrl"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"requestHeaders\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "requestHeaders"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"requestBody\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "requestBody"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"requestBodyEncoding\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "requestBodyEncoding"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"requestTimeout\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "requestTimeout"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"disallowRedirects\".equals(it.getName()))$EXTENSION_BOOLEAN_EXTRACTOR",
+                        target = "disallowRedirects"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"failStatusCodes\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "failStatusCodes"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"handleStatusCodes\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "handleStatusCodes"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"responseVariableName\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "responseVariableName"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"ignoreException\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "ignoreException"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"saveRequestVariables\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "saveRequestVariables"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"saveResponseParameters\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "saveResponseParameters"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"resultVariablePrefix\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "resultVariablePrefix"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"saveResponseParametersTransient\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "saveResponseParametersTransient"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"saveResponseVariableAsJson\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "saveResponseVariableAsJson")
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnHttpTask
+    }
 
     @Mapper
-    interface MuleMapper: ServiceTaskMapper<BpmnMuleTask>
+    interface MailMapper: ServiceTaskMapper<BpmnMailTask> {
+
+        @Mappings(
+                Mapping(source = "forCompensation", target = "isForCompensation"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"headers\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "headers"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"to\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "to"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"from\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "from"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"subject\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "subject"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"cc\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "cc"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"bcc\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "bcc"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"text\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "text"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"html\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "html"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"charset\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "charset")
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnMailTask
+    }
 
     @Mapper
-    interface DecisionMapper: ServiceTaskMapper<BpmnDecisionTask>
+    interface MuleMapper: ServiceTaskMapper<BpmnMuleTask> {
+        @Mappings(
+                Mapping(source = "forCompensation", target = "isForCompensation"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"endpointUrl\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "endpointUrl"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"language\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "language"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"payloadExpression\".equals(it.getName()))$EXTENSION_EXPRESSION_EXTRACTOR",
+                        target = "payloadExpression"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"resultVariable\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "resultVariableCdata")
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnMuleTask
+    }
 
     @Mapper
-    interface ShellMapper: ServiceTaskMapper<BpmnShellTask>
+    interface DecisionMapper: ServiceTaskMapper<BpmnDecisionTask> {
+
+        @Mappings(
+                Mapping(source = "forCompensation", target = "isForCompensation"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"decisionTableReferenceKey\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "decisionTableReferenceKey"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"decisionTaskThrowErrorOnNoHits\".equals(it.getName()))$EXTENSION_BOOLEAN_EXTRACTOR",
+                        target = "decisionTaskThrowErrorOnNoHits"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"fallbackToDefaultTenant\".equals(it.getName()))$EXTENSION_BOOLEAN_EXTRACTOR",
+                        target = "fallbackToDefaultTenantCdata")
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnDecisionTask
+    }
+
+    @Mapper
+    interface ShellMapper: ServiceTaskMapper<BpmnShellTask> {
+
+        @Mappings(
+                Mapping(source = "forCompensation", target = "isForCompensation"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"command\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "command"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"arg1\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "arg1"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"arg2\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "arg2"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"arg3\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "arg3"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"arg4\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "arg4"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"arg5\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "arg5"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"wait\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "wait"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"cleanEnv\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "cleanEnv"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"errorCodeVariable\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "errorCodeVariable"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"outputVariable\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "outputVariable"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"directory\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "directory")
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnShellTask
+    }
 
     interface ServiceTaskMapper<T> {
+        @Mapping(source = "forCompensation", target = "isForCompensation")
         fun convertToDto(input: BpmnServiceTask): T
     }
 
