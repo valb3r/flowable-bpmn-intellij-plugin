@@ -111,7 +111,17 @@ enum class PropertyTypeDetails(
     SAVE_RESPONSE_PARAMETERS(PropertyType.SAVE_RESPONSE_PARAMETERS, "extensionElements.flowable:field?name=saveResponseParameters.flowable:string.text", XmlType.CDATA),
     RESULT_VARIABLE_PREFIX(PropertyType.RESULT_VARIABLE_PREFIX, "extensionElements.flowable:field?name=resultVariablePrefix.flowable:string.text", XmlType.CDATA),
     SAVE_RESPONSE_PARAMETERS_TRANSIENT(PropertyType.SAVE_RESPONSE_PARAMETERS_TRANSIENT, "extensionElements.flowable:field?name=saveResponseParametersTransient.flowable:string.text", XmlType.CDATA),
-    SAVE_RESPONSE_VARIABLE_AS_JSON(PropertyType.SAVE_RESPONSE_VARIABLE_AS_JSON, "extensionElements.flowable:field?name=saveResponseVariableAsJson.flowable:string.text", XmlType.CDATA)
+    SAVE_RESPONSE_VARIABLE_AS_JSON(PropertyType.SAVE_RESPONSE_VARIABLE_AS_JSON, "extensionElements.flowable:field?name=saveResponseVariableAsJson.flowable:string.text", XmlType.CDATA),
+    HEADERS(PropertyType.HEADERS, "extensionElements.flowable:field?name=headers.flowable:string.text", XmlType.CDATA),
+    TO(PropertyType.TO, "extensionElements.flowable:field?name=to.flowable:string.text", XmlType.CDATA),
+    FROM(PropertyType.FROM, "extensionElements.flowable:field?name=from.flowable:string.text", XmlType.CDATA),
+    SUBJECT(PropertyType.SUBJECT, "extensionElements.flowable:field?name=subject.flowable:string.text", XmlType.CDATA),
+    CC(PropertyType.CC, "extensionElements.flowable:field?name=cc.flowable:string.text", XmlType.CDATA),
+    BCC(PropertyType.BCC, "extensionElements.flowable:field?name=bcc.flowable:string.text", XmlType.CDATA),
+    TEXT(PropertyType.TEXT, "extensionElements.flowable:field?name=text.flowable:string.text", XmlType.CDATA),
+    HTML(PropertyType.HTML, "extensionElements.flowable:field?name=html.flowable:string.text", XmlType.CDATA),
+    CHARSET(PropertyType.CHARSET, "extensionElements.flowable:field?name=charset.flowable:string.text", XmlType.CDATA)
+
 }
 
 enum class XmlType {

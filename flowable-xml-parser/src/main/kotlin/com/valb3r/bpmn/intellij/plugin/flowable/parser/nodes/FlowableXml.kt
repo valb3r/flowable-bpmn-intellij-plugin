@@ -364,7 +364,31 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     }
 
     @Mapper
-    interface MailMapper: ServiceTaskMapper<BpmnMailTask>
+    interface MailMapper: ServiceTaskMapper<BpmnMailTask> {
+
+        @Mappings(
+                Mapping(source = "forCompensation", target = "isForCompensation"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"headers\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "headers"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"to\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "to"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"from\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "from"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"subject\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "subject"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"cc\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "cc"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"bcc\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "bcc"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"text\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "text"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"html\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "html"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"charset\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "charset")
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnMailTask
+    }
 
     @Mapper
     interface MuleMapper: ServiceTaskMapper<BpmnMuleTask>

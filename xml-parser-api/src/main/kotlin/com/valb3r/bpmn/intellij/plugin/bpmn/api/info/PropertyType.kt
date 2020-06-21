@@ -70,5 +70,14 @@ enum class PropertyType(
     SAVE_RESPONSE_PARAMETERS("saveResponseParameters", "Save response,status,headers to", STRING),
     RESULT_VARIABLE_PREFIX("resultVariablePrefix", "Result variable prefix", STRING),
     SAVE_RESPONSE_PARAMETERS_TRANSIENT("saveResponseParametersTransient", "Save response as transient variable", STRING),
-    SAVE_RESPONSE_VARIABLE_AS_JSON("saveResponseVariableAsJson", "Save response as json", STRING)
+    SAVE_RESPONSE_VARIABLE_AS_JSON("saveResponseVariableAsJson", "Save response as json", STRING),
+    HEADERS("headers", "Headers", STRING),
+    TO("to", "To", STRING),
+    FROM("from", "From", STRING),
+    SUBJECT("subject", "Subject", STRING),
+    CC("cc", "CC", STRING),
+    BCC("bcc", "BCC", STRING),
+    TEXT("text", "Text", STRING),
+    HTML("html", "Html", STRING),
+    CHARSET("charset", "Charset", STRING)
 }
