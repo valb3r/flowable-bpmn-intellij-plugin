@@ -35,7 +35,7 @@ internal class FlowableDecisionTaskTest {
         task.isForCompensation!!.shouldBeTrue()
         task.decisionTableReferenceKey.shouldBeEqualTo("Tablekey")
         task.decisionTaskThrowErrorOnNoHits.shouldBeEqualTo(true)
-        task.fallbackToDefaultTenant.shouldBeEqualTo(true)
+        task.fallbackToDefaultTenantCdata.shouldBeEqualTo(true)
 
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
@@ -45,7 +45,7 @@ internal class FlowableDecisionTaskTest {
         props[PropertyType.IS_FOR_COMPENSATION]!!.value.shouldBeEqualTo(task.isForCompensation)
         props[PropertyType.DECISION_TABLE_REFERENCE_KEY]!!.value.shouldBeEqualTo(task.decisionTableReferenceKey)
         props[PropertyType.DECISION_TASK_THROW_ERROR_ON_NO_HITS]!!.value.shouldBeEqualTo(task.decisionTaskThrowErrorOnNoHits)
-        props[PropertyType.FALLBACK_TO_DEF_TENANT_CDATA]!!.value.shouldBeEqualTo(task.fallbackToDefaultTenant)
+        props[PropertyType.FALLBACK_TO_DEF_TENANT_CDATA]!!.value.shouldBeEqualTo(task.fallbackToDefaultTenantCdata)
     }
 
     @Test
@@ -57,7 +57,7 @@ internal class FlowableDecisionTaskTest {
         {value: Boolean -> readAndUpdate(PropertyType.IS_FOR_COMPENSATION, value).isForCompensation.shouldBeEqualTo(value)} (false);
         {value: String -> readAndUpdate(PropertyType.DECISION_TABLE_REFERENCE_KEY, value).decisionTableReferenceKey.shouldBeEqualTo(value)} ("My table");
         {value: Boolean -> readAndUpdate(PropertyType.DECISION_TASK_THROW_ERROR_ON_NO_HITS, value).decisionTaskThrowErrorOnNoHits.shouldBeEqualTo(value)} (false);
-        {value: Boolean -> readAndUpdate(PropertyType.FALLBACK_TO_DEF_TENANT_CDATA, value).fallbackToDefaultTenant.shouldBeEqualTo(value)} (false);
+        {value: Boolean -> readAndUpdate(PropertyType.FALLBACK_TO_DEF_TENANT_CDATA, value).fallbackToDefaultTenantCdata.shouldBeEqualTo(value)} (false);
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: String): BpmnDecisionTask {

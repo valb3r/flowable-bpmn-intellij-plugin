@@ -54,5 +54,21 @@ enum class PropertyType(
     CAMEL_CONTEXT("camelContext", "Camel context", STRING),
     DECISION_TABLE_REFERENCE_KEY("decisionTableReferenceKey", "Decision table reference key", STRING),
     DECISION_TASK_THROW_ERROR_ON_NO_HITS("decisionTaskThrowErrorOnNoHits", "Throw error if no rule hit", BOOLEAN),
-    FALLBACK_TO_DEF_TENANT_CDATA("fallbackToDefaultTenant", "Fallback to default tenant", BOOLEAN)
+    FALLBACK_TO_DEF_TENANT_CDATA("fallbackToDefaultTenantCdata", "Fallback to default tenant", BOOLEAN),
+    REQUEST_METHOD("requestMethod", "Request method", STRING),
+    REQUEST_URL("requestUrl", "Request URL", STRING),
+    REQUEST_HEADERS("requestHeaders", "Request headers", STRING),
+    REQUEST_BODY("requestBody", "Request body", STRING),
+    REQUEST_BODY_ENCODING("requestBodyEncoding", "Request encoding", STRING),
+    REQUEST_TIMEOUT("requestTimeout", "Request timeout", STRING),
+    DISALLOW_REDIRECTS("disallowRedirects", "Disallow redirects", BOOLEAN),
+    FAIL_STATUS_CODES("failStatusCodes", "Fail status codes", STRING),
+    HANDLE_STATUS_CODES("handleStatusCodes", "Handle status codes", STRING),
+    RESPONSE_VARIABLE_NAME("responseVariableName", "Response variable name", STRING),
+    IGNORE_EXCEPTION("ignoreException", "Ignore exception", STRING),
+    SAVE_REQUEST_VARIABLES("saveRequestVariables", "Save request variables to", STRING),
+    SAVE_RESPONSE_PARAMETERS("saveResponseParameters", "Save response,status,headers to", STRING),
+    RESULT_VARIABLE_PREFIX("resultVariablePrefix", "Result variable prefix", STRING),
+    SAVE_RESPONSE_PARAMETERS_TRANSIENT("saveResponseParametersTransient", "Save response as transient variable", STRING),
+    SAVE_RESPONSE_VARIABLE_AS_JSON("saveResponseVariableAsJson", "Save response as json", STRING)
 }

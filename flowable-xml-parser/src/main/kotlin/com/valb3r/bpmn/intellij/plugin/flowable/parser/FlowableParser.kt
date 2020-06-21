@@ -95,7 +95,23 @@ enum class PropertyTypeDetails(
     CAMEL_CONTEXT(PropertyType.CAMEL_CONTEXT, "extensionElements.flowable:field?name=camelContext.flowable:string.text", XmlType.CDATA),
     DECISION_TABLE_REFERENCE_KEY(PropertyType.DECISION_TABLE_REFERENCE_KEY, "extensionElements.flowable:field?name=decisionTableReferenceKey.flowable:string.text", XmlType.CDATA),
     DECISION_TASK_THROW_ERROR_ON_NO_HITS(PropertyType.DECISION_TASK_THROW_ERROR_ON_NO_HITS, "extensionElements.flowable:field?name=decisionTaskThrowErrorOnNoHits.flowable:string.text", XmlType.CDATA),
-    FALLBACK_TO_DEF_TENANT_CDATA(PropertyType.FALLBACK_TO_DEF_TENANT_CDATA, "extensionElements.flowable:field?name=fallbackToDefaultTenant.flowable:string.text", XmlType.CDATA)
+    FALLBACK_TO_DEF_TENANT_CDATA(PropertyType.FALLBACK_TO_DEF_TENANT_CDATA, "extensionElements.flowable:field?name=fallbackToDefaultTenant.flowable:string.text", XmlType.CDATA),
+    REQUEST_METHOD(PropertyType.REQUEST_METHOD, "extensionElements.flowable:field?name=requestMethod.flowable:string.text", XmlType.CDATA),
+    REQUEST_URL(PropertyType.REQUEST_URL, "extensionElements.flowable:field?name=requestUrl.flowable:string.text", XmlType.CDATA),
+    REQUEST_HEADERS(PropertyType.REQUEST_HEADERS, "extensionElements.flowable:field?name=requestHeaders.flowable:string.text", XmlType.CDATA),
+    REQUEST_BODY(PropertyType.REQUEST_BODY, "extensionElements.flowable:field?name=requestBody.flowable:string.text", XmlType.CDATA),
+    REQUEST_BODY_ENCODING(PropertyType.REQUEST_BODY_ENCODING, "extensionElements.flowable:field?name=requestBodyEncoding.flowable:string.text", XmlType.CDATA),
+    REQUEST_TIMEOUT(PropertyType.REQUEST_TIMEOUT, "extensionElements.flowable:field?name=requestTimeout.flowable:string.text", XmlType.CDATA),
+    DISALLOW_REDIRECTS(PropertyType.DISALLOW_REDIRECTS, "extensionElements.flowable:field?name=disallowRedirects.flowable:string.text", XmlType.CDATA),
+    FAIL_STATUS_CODES(PropertyType.FAIL_STATUS_CODES, "extensionElements.flowable:field?name=failStatusCodes.flowable:string.text", XmlType.CDATA),
+    HANDLE_STATUS_CODES(PropertyType.HANDLE_STATUS_CODES, "extensionElements.flowable:field?name=handleStatusCodes.flowable:string.text", XmlType.CDATA),
+    RESPONSE_VARIABLE_NAME(PropertyType.RESPONSE_VARIABLE_NAME, "extensionElements.flowable:field?name=responseVariableName.flowable:string.text", XmlType.CDATA),
+    IGNORE_EXCEPTION(PropertyType.IGNORE_EXCEPTION, "extensionElements.flowable:field?name=ignoreException.flowable:string.text", XmlType.CDATA),
+    SAVE_REQUEST_VARIABLES(PropertyType.SAVE_REQUEST_VARIABLES, "extensionElements.flowable:field?name=saveRequestVariables.flowable:string.text", XmlType.CDATA),
+    SAVE_RESPONSE_PARAMETERS(PropertyType.SAVE_RESPONSE_PARAMETERS, "extensionElements.flowable:field?name=saveResponseParameters.flowable:string.text", XmlType.CDATA),
+    RESULT_VARIABLE_PREFIX(PropertyType.RESULT_VARIABLE_PREFIX, "extensionElements.flowable:field?name=resultVariablePrefix.flowable:string.text", XmlType.CDATA),
+    SAVE_RESPONSE_PARAMETERS_TRANSIENT(PropertyType.SAVE_RESPONSE_PARAMETERS_TRANSIENT, "extensionElements.flowable:field?name=saveResponseParametersTransient.flowable:string.text", XmlType.CDATA),
+    SAVE_RESPONSE_VARIABLE_AS_JSON(PropertyType.SAVE_RESPONSE_VARIABLE_AS_JSON, "extensionElements.flowable:field?name=saveResponseVariableAsJson.flowable:string.text", XmlType.CDATA)
 }
 
 enum class XmlType {

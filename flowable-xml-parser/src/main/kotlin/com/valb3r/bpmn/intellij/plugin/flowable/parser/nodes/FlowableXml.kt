@@ -27,6 +27,10 @@ import org.mapstruct.Mappings
 import org.mapstruct.factory.Mappers
 
 
+const val EXTENSION_ELEM_STREAM = "java(null == input.getExtensionElements() ? null : input.getExtensionElements().stream()"
+const val EXTENSION_STRING_EXTRACTOR = ".map(it -> it.getString()).findFirst().orElse(null))"
+const val EXTENSION_BOOLEAN_EXTRACTOR = ".map(it -> Boolean.valueOf(it.getString())).findFirst().orElse(null))"
+
 // For mixed lists in XML we need to have JsonSetter/JsonMerge on field
 // https://github.com/FasterXML/jackson-dataformat-xml/issues/363
 // unfortunately this has failed with Kotlin 'data' classes
@@ -311,18 +315,52 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
         @Mappings(
             Mapping(source = "forCompensation", target = "isForCompensation"),
-            Mapping(expression = "java(" +
-                    "null == input.getExtensionElements() ? null " +
-                    ": input.getExtensionElements().stream().filter(it -> \"camelContext\".equals(it.getName())).map(it -> it.getString())" +
-                    ".findFirst()" +
-                    ".orElse(null))",
+            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"camelContext\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
                     target = "camelContext")
         )
         override fun convertToDto(input: BpmnServiceTask): BpmnCamelTask
     }
 
     @Mapper
-    interface HttpMapper: ServiceTaskMapper<BpmnHttpTask>
+    interface HttpMapper: ServiceTaskMapper<BpmnHttpTask> {
+
+        @Mappings(
+                Mapping(source = "forCompensation", target = "isForCompensation"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"requestMethod\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "requestMethod"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"requestUrl\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "requestUrl"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"requestHeaders\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "requestHeaders"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"requestBody\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "requestBody"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"requestBodyEncoding\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "requestBodyEncoding"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"requestTimeout\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "requestTimeout"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"disallowRedirects\".equals(it.getName()))$EXTENSION_BOOLEAN_EXTRACTOR",
+                        target = "disallowRedirects"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"failStatusCodes\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "failStatusCodes"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"handleStatusCodes\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "handleStatusCodes"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"responseVariableName\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "responseVariableName"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"ignoreException\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "ignoreException"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"saveRequestVariables\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "saveRequestVariables"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"saveResponseParameters\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "saveResponseParameters"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"resultVariablePrefix\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "resultVariablePrefix"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"saveResponseParametersTransient\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "saveResponseParametersTransient"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"saveResponseVariableAsJson\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "saveResponseVariableAsJson")
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnHttpTask
+    }
 
     @Mapper
     interface MuleMapper: ServiceTaskMapper<BpmnMuleTask>
@@ -332,24 +370,12 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
         @Mappings(
                 Mapping(source = "forCompensation", target = "isForCompensation"),
-                Mapping(expression = "java(" +
-                        "null == input.getExtensionElements() ? null " +
-                        ": input.getExtensionElements().stream().filter(it -> \"decisionTableReferenceKey\".equals(it.getName())).map(it -> it.getString())" +
-                        ".findFirst()" +
-                        ".orElse(null))",
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"decisionTableReferenceKey\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
                         target = "decisionTableReferenceKey"),
-                Mapping(expression = "java(" +
-                        "null == input.getExtensionElements() ? null " +
-                        ": input.getExtensionElements().stream().filter(it -> \"decisionTaskThrowErrorOnNoHits\".equals(it.getName())).map(it -> Boolean.valueOf(it.getString()))" +
-                        ".findFirst()" +
-                        ".orElse(false))",
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"decisionTaskThrowErrorOnNoHits\".equals(it.getName()))$EXTENSION_BOOLEAN_EXTRACTOR",
                         target = "decisionTaskThrowErrorOnNoHits"),
-                Mapping(expression = "java(" +
-                        "null == input.getExtensionElements() ? null " +
-                        ": input.getExtensionElements().stream().filter(it -> \"fallbackToDefaultTenant\".equals(it.getName())).map(it -> Boolean.valueOf(it.getString()))" +
-                        ".findFirst()" +
-                        ".orElse(false))",
-                        target = "fallbackToDefaultTenant")
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"fallbackToDefaultTenant\".equals(it.getName()))$EXTENSION_BOOLEAN_EXTRACTOR",
+                        target = "fallbackToDefaultTenantCdata")
         )
         override fun convertToDto(input: BpmnServiceTask): BpmnDecisionTask
     }
