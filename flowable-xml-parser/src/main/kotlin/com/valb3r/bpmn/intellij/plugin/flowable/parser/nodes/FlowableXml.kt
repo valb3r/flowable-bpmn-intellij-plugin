@@ -308,7 +308,8 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         ServiceTask.ServiceTaskMapping::class,
         ManualTask.ManualTaskMapping::class,
         ReceiveTask.ReceiveTaskMapping::class,
-        ScriptTask.ScriptTaskMapping::class
+        ScriptTask.ScriptTaskMapping::class,
+        UserTask.UserTaskMapping::class
     ])
     interface BodyMapping {
         fun convertToDto(input: ProcessBody): BpmnProcessBody
