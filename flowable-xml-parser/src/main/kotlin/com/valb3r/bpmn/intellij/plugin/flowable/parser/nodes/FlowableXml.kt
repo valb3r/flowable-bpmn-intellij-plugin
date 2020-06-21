@@ -428,7 +428,35 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     }
 
     @Mapper
-    interface ShellMapper: ServiceTaskMapper<BpmnShellTask>
+    interface ShellMapper: ServiceTaskMapper<BpmnShellTask> {
+
+        @Mappings(
+                Mapping(source = "forCompensation", target = "isForCompensation"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"command\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "command"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"arg1\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "arg1"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"arg2\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "arg2"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"arg3\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "arg3"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"arg4\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "arg4"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"arg5\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "arg5"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"wait\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "wait"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"cleanEnv\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "cleanEnv"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"errorCodeVariable\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "errorCodeVariable"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"outputVariable\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "outputVariable"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"directory\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "directory")
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnShellTask
+    }
 
     interface ServiceTaskMapper<T> {
         @Mapping(source = "forCompensation", target = "isForCompensation")

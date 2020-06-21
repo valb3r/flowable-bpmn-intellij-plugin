@@ -124,7 +124,18 @@ enum class PropertyTypeDetails(
     ENDPOINT_URL(PropertyType.ENDPOINT_URL, "extensionElements.flowable:field?name=endpointUrl.flowable:string.text", XmlType.CDATA),
     LANGUAGE(PropertyType.LANGUAGE, "extensionElements.flowable:field?name=language.flowable:string.text", XmlType.CDATA),
     PAYLOAD_EXPRESSION(PropertyType.PAYLOAD_EXPRESSION, "extensionElements.flowable:field?name=payloadExpression.flowable:expression.text", XmlType.CDATA),
-    RESULT_VARIABLE_CDATA(PropertyType.RESULT_VARIABLE_CDATA, "extensionElements.flowable:field?name=resultVariable.flowable:string.text", XmlType.CDATA)
+    RESULT_VARIABLE_CDATA(PropertyType.RESULT_VARIABLE_CDATA, "extensionElements.flowable:field?name=resultVariable.flowable:string.text", XmlType.CDATA),
+    COMMAND(PropertyType.COMMAND, "extensionElements.flowable:field?name=command.flowable:string.text", XmlType.CDATA),
+    ARG_1(PropertyType.ARG_1, "extensionElements.flowable:field?name=arg1.flowable:string.text", XmlType.CDATA),
+    ARG_2(PropertyType.ARG_2, "extensionElements.flowable:field?name=arg2.flowable:string.text", XmlType.CDATA),
+    ARG_3(PropertyType.ARG_3, "extensionElements.flowable:field?name=arg3.flowable:string.text", XmlType.CDATA),
+    ARG_4(PropertyType.ARG_4, "extensionElements.flowable:field?name=arg4.flowable:string.text", XmlType.CDATA),
+    ARG_5(PropertyType.ARG_5, "extensionElements.flowable:field?name=arg5.flowable:string.text", XmlType.CDATA),
+    WAIT(PropertyType.WAIT, "extensionElements.flowable:field?name=wait.flowable:string.text", XmlType.CDATA),
+    CLEAN_ENV(PropertyType.CLEAN_ENV, "extensionElements.flowable:field?name=cleanEnv.flowable:string.text", XmlType.CDATA),
+    ERROR_CODE_VARIABLE(PropertyType.ERROR_CODE_VARIABLE, "extensionElements.flowable:field?name=errorCodeVariable.flowable:string.text", XmlType.CDATA),
+    OUTPUT_VARIABLE(PropertyType.OUTPUT_VARIABLE, "extensionElements.flowable:field?name=outputVariable.flowable:string.text", XmlType.CDATA),
+    DIRECTORY(PropertyType.DIRECTORY, "extensionElements.flowable:field?name=directory.flowable:string.text", XmlType.CDATA)
 
 }
 

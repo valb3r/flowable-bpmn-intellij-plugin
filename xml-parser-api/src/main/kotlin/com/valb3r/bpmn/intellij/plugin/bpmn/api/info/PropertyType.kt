@@ -83,5 +83,16 @@ enum class PropertyType(
     ENDPOINT_URL("endpointUrl", "Endpoint url", STRING),
     LANGUAGE("language", "Language", STRING),
     PAYLOAD_EXPRESSION("payloadExpression", "Payload expression", STRING),
-    RESULT_VARIABLE_CDATA("resultVariableCdata", "Result variable", STRING)
+    RESULT_VARIABLE_CDATA("resultVariableCdata", "Result variable", STRING),
+    COMMAND("command", "Command to run", STRING),
+    ARG_1("arg1", "Argument 1", STRING),
+    ARG_2("arg2", "Argument 2", STRING),
+    ARG_3("arg3", "Argument 3", STRING),
+    ARG_4("arg4", "Argument 4", STRING),
+    ARG_5("arg5", "Argument 5", STRING),
+    WAIT("wait", "Wait", STRING),
+    CLEAN_ENV("cleanEnv", "Clean environment", STRING),
+    ERROR_CODE_VARIABLE("errorCodeVariable", "Error code variable", STRING),
+    OUTPUT_VARIABLE("outputVariable", "Output variable", STRING),
+    DIRECTORY("directory", "Working directory", STRING)
 }

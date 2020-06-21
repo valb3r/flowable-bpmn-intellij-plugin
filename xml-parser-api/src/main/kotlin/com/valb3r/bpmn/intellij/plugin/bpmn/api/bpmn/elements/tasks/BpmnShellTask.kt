@@ -14,7 +14,18 @@ data class BpmnShellTask(
         val documentation: String?,
         val async: Boolean?,
         val exclusive: Boolean?,
-        val isForCompensation: Boolean?
+        val isForCompensation: Boolean?,
+        val command: String? = null,
+        val arg1: String? = null,
+        val arg2: String? = null,
+        val arg3: String? = null,
+        val arg4: String? = null,
+        val arg5: String? = null,
+        val wait: String? = null,
+        val cleanEnv: String? = null,
+        val errorCodeVariable: String? = null,
+        val outputVariable: String? = null,
+        val directory: String? = null
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
