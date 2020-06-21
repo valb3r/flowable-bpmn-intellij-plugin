@@ -52,4 +52,7 @@ enum class PropertyType(
     IS_TRANSACTIONAL_SUBPROCESS("transactionalSubprocess", "Is transactional subprocess", BOOLEAN, "transactionalSubprocess", elementUpdateChangesClass = true),
     IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE("useLocalScopeForResultVariable", "Use local scope for result varaible", BOOLEAN),
     CAMEL_CONTEXT("camelContext", "Camel context", STRING),
+    DECISION_TABLE_REFERENCE_KEY("decisionTableReferenceKey", "Decision table reference key", STRING),
+    DECISION_TASK_THROW_ERROR_ON_NO_HITS("decisionTaskThrowErrorOnNoHits", "Throw error if no rule hit", BOOLEAN),
+    FALLBACK_TO_DEF_TENANT_CDATA("fallbackToDefaultTenant", "Fallback to default tenant", BOOLEAN)
 }

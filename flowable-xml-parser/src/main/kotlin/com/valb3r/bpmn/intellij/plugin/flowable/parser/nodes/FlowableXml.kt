@@ -328,7 +328,31 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     interface MuleMapper: ServiceTaskMapper<BpmnMuleTask>
 
     @Mapper
-    interface DecisionMapper: ServiceTaskMapper<BpmnDecisionTask>
+    interface DecisionMapper: ServiceTaskMapper<BpmnDecisionTask> {
+
+        @Mappings(
+                Mapping(source = "forCompensation", target = "isForCompensation"),
+                Mapping(expression = "java(" +
+                        "null == input.getExtensionElements() ? null " +
+                        ": input.getExtensionElements().stream().filter(it -> \"decisionTableReferenceKey\".equals(it.getName())).map(it -> it.getString())" +
+                        ".findFirst()" +
+                        ".get())",
+                        target = "decisionTableReferenceKey"),
+                Mapping(expression = "java(" +
+                        "null == input.getExtensionElements() ? null " +
+                        ": input.getExtensionElements().stream().filter(it -> \"decisionTaskThrowErrorOnNoHits\".equals(it.getName())).map(it -> Boolean.valueOf(it.getString()))" +
+                        ".findFirst()" +
+                        ".get())",
+                        target = "decisionTaskThrowErrorOnNoHits"),
+                Mapping(expression = "java(" +
+                        "null == input.getExtensionElements() ? null " +
+                        ": input.getExtensionElements().stream().filter(it -> \"fallbackToDefaultTenant\".equals(it.getName())).map(it -> Boolean.valueOf(it.getString()))" +
+                        ".findFirst()" +
+                        ".get())",
+                        target = "fallbackToDefaultTenant")
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnDecisionTask
+    }
 
     @Mapper
     interface ShellMapper: ServiceTaskMapper<BpmnShellTask>

@@ -21,8 +21,8 @@ data class BpmnServiceTask(
         val isForCompensation: Boolean?,
         val useLocalScopeForResultVariable: Boolean?,
         // Customizations (Flowable) - http task, camel task,...:
-        val type: String?,
-        val extensionElements: List<ExtensionElement>?
+        val type: String?  = null,
+        val extensionElements: List<ExtensionElement>? = null
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

@@ -92,7 +92,10 @@ enum class PropertyTypeDetails(
     DEFAULT_FLOW(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE),
     IS_TRANSACTIONAL_SUBPROCESS(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT),
     IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, "flowable:useLocalScopeForResultVariable", XmlType.ATTRIBUTE),
-    CAMEL_CONTEXT(PropertyType.CAMEL_CONTEXT, "extensionElements.flowable:field?name=camelContext.flowable:string.text", XmlType.CDATA)
+    CAMEL_CONTEXT(PropertyType.CAMEL_CONTEXT, "extensionElements.flowable:field?name=camelContext.flowable:string.text", XmlType.CDATA),
+    DECISION_TABLE_REFERENCE_KEY(PropertyType.DECISION_TABLE_REFERENCE_KEY, "extensionElements.flowable:field?name=decisionTableReferenceKey.flowable:string.text", XmlType.CDATA),
+    DECISION_TASK_THROW_ERROR_ON_NO_HITS(PropertyType.DECISION_TASK_THROW_ERROR_ON_NO_HITS, "extensionElements.flowable:field?name=decisionTaskThrowErrorOnNoHits.flowable:string.text", XmlType.CDATA),
+    FALLBACK_TO_DEF_TENANT_CDATA(PropertyType.FALLBACK_TO_DEF_TENANT_CDATA, "extensionElements.flowable:field?name=fallbackToDefaultTenant.flowable:string.text", XmlType.CDATA)
 }
 
 enum class XmlType {
