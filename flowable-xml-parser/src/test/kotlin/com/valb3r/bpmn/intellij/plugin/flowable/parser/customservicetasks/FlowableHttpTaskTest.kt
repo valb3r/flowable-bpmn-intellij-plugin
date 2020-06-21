@@ -23,7 +23,7 @@ internal class FlowableHttpTaskTest {
     private val elementId = BpmnElementId("httpTaskId")
 
     @Test
-    fun `Camel task is parseable`() {
+    fun `Http task is parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
 
         val task = readHttpTask(processObject)
@@ -80,7 +80,7 @@ internal class FlowableHttpTaskTest {
     }
 
     @Test
-    fun `Camel task is updatable`() {
+    fun `Http task is updatable`() {
         {value: String -> readAndUpdate(PropertyType.ID, value).id.id.shouldBeEqualTo(value)} ("new Id");
         {value: String -> readAndUpdate(PropertyType.NAME, value).name.shouldBeEqualTo(value)} ("new Name");
         {value: String -> readAndUpdate(PropertyType.DOCUMENTATION, value).documentation.shouldBeEqualTo(value)} ("new docs");

@@ -330,6 +330,7 @@ class FlowableParser : BpmnParser {
             is BpmnReceiveTask -> diagramParent.addElement("receiveTask")
             is BpmnCamelTask -> createServiceTaskWithType(diagramParent, "camel")
             is BpmnHttpTask -> createServiceTaskWithType(diagramParent, "http")
+            is BpmnMailTask -> createServiceTaskWithType(diagramParent, "mail")
             is BpmnMuleTask -> createServiceTaskWithType(diagramParent, "mule")
             is BpmnDecisionTask -> createServiceTaskWithType(diagramParent, "dmn")
             is BpmnShellTask -> createServiceTaskWithType(diagramParent, "shell")

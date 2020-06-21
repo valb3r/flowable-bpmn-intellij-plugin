@@ -165,6 +165,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         var result = process
         result = extractTasksBasedOnType(result, "camel",  Mappers.getMapper(CamelMapper::class.java)) { updates, target -> target.copy(camelTask = updates) }
         result = extractTasksBasedOnType(result, "http",  Mappers.getMapper(HttpMapper::class.java)) { updates, target -> target.copy(httpTask = updates) }
+        result = extractTasksBasedOnType(result, "mail",  Mappers.getMapper(MailMapper::class.java)) { updates, target -> target.copy(mailTask = updates) }
         result = extractTasksBasedOnType(result, "mule",  Mappers.getMapper(MuleMapper::class.java)) { updates, target -> target.copy(muleTask = updates) }
         result = extractTasksBasedOnType(result, "dmn",  Mappers.getMapper(DecisionMapper::class.java)) { updates, target -> target.copy(decisionTask = updates) }
         result = extractTasksBasedOnType(result, "shell",  Mappers.getMapper(ShellMapper::class.java)) { updates, target -> target.copy(shellTask = updates) }
@@ -361,6 +362,9 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         )
         override fun convertToDto(input: BpmnServiceTask): BpmnHttpTask
     }
+
+    @Mapper
+    interface MailMapper: ServiceTaskMapper<BpmnMailTask>
 
     @Mapper
     interface MuleMapper: ServiceTaskMapper<BpmnMuleTask>

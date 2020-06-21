@@ -47,7 +47,6 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     private val undoRedoStartMargin = 20.0f
     private val anchorRadius = 5f
     private val actionsIcoSize = 15f
-    private val debugAnchorEdgeEpsilon = 6.0f
 
     private val undoId = DiagramElementId("UNDO")
     private val redoId = DiagramElementId("REDO")
@@ -155,6 +154,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             is BpmnReceiveTask -> TopLeftIconShape(id, bpmn.id, icons.receive, shape, state)
             is BpmnCamelTask -> TopLeftIconShape(id, bpmn.id, icons.camel, shape, state)
             is BpmnHttpTask -> TopLeftIconShape(id, bpmn.id, icons.http, shape, state)
+            is BpmnMailTask -> TopLeftIconShape(id, bpmn.id, icons.mail, shape, state)
             is BpmnMuleTask -> TopLeftIconShape(id, bpmn.id, icons.mule, shape, state)
             is BpmnDecisionTask -> TopLeftIconShape(id, bpmn.id, icons.decision, shape, state)
             is BpmnShellTask -> TopLeftIconShape(id, bpmn.id, icons.shell, shape, state)
