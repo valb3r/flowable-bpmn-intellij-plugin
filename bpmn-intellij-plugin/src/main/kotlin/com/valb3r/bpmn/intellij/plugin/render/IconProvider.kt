@@ -11,6 +11,7 @@ interface IconProvider {
     val script: Icon
     val businessRule: Icon
     val receive: Icon
+    val manual: Icon
     val user: Icon
     val camel: Icon
     val http: Icon
@@ -65,6 +66,7 @@ data class IconProviderImpl(
         override val script: Icon = IconLoader.getIcon("/icons/ui-icons/script.png"),
         override val businessRule: Icon = IconLoader.getIcon("/icons/ui-icons/business-rule.png"),
         override val receive: Icon = IconLoader.getIcon("/icons/ui-icons/receive.png"),
+        override val manual: Icon = IconLoader.getIcon("/icons/ui-icons/manual.png"),
         override val user: Icon = IconLoader.getIcon("/icons/ui-icons/user.png"),
         override val camel: Icon = IconLoader.getIcon("/icons/ui-icons/camel.png"),
         override val http: Icon = IconLoader.getIcon("/icons/ui-icons/http.png"),

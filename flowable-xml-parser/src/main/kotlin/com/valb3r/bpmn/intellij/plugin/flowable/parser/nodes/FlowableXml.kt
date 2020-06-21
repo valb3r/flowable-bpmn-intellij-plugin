@@ -78,6 +78,8 @@ open class ProcessBody {
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
     var businessRuleTask: List<BusinessRuleTask>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var manualTask: List<ManualTask>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
     var receiveTask: List<ReceiveTask>? = null
 
     // Sub process alike
@@ -302,7 +304,8 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         SubProcess.SubProcessMapping::class,
         Transaction.TransactionMapping::class,
         BusinessRuleTask.BusinessRuleTaskMapping::class,
-        ServiceTask.ServiceTaskMapping::class
+        ServiceTask.ServiceTaskMapping::class,
+        ManualTask.ManualTaskMapping::class
     ])
     interface BodyMapping {
         fun convertToDto(input: ProcessBody): BpmnProcessBody
