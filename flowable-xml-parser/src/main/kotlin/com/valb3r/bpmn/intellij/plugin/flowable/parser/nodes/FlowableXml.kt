@@ -28,8 +28,8 @@ import org.mapstruct.factory.Mappers
 
 
 const val EXTENSION_ELEM_STREAM = "java(null == input.getExtensionElements() ? null : input.getExtensionElements().stream()"
-const val EXTENSION_STRING_EXTRACTOR = ".map(it -> it.getString()).findFirst().orElse(null))"
-const val EXTENSION_EXPRESSION_EXTRACTOR = ".map(it -> it.getExpression()).findFirst().orElse(null))"
+const val EXTENSION_STRING_EXTRACTOR = ".map(it -> it.getString()).filter(java.util.Objects::nonNull).findFirst().orElse(null))"
+const val EXTENSION_EXPRESSION_EXTRACTOR = ".map(it -> it.getExpression()).filter(java.util.Objects::nonNull).findFirst().orElse(null))"
 const val EXTENSION_BOOLEAN_EXTRACTOR = ".map(it -> Boolean.valueOf(it.getString())).findFirst().orElse(null))"
 
 // For mixed lists in XML we need to have JsonSetter/JsonMerge on field
