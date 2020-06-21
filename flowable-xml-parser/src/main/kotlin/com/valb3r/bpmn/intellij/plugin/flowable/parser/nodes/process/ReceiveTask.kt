@@ -4,6 +4,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnReceiveTask
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import org.mapstruct.Mapper
+import org.mapstruct.Mapping
 import org.mapstruct.factory.Mappers
 
 data class ReceiveTask(
@@ -15,11 +16,13 @@ data class ReceiveTask(
 ): BpmnMappable<BpmnReceiveTask> {
 
     override fun toElement(): BpmnReceiveTask {
-        return Mappers.getMapper(Mapping::class.java).convertToDto(this)
+        return Mappers.getMapper(ReceiveTaskMapping::class.java).convertToDto(this)
     }
 
     @Mapper(uses = [BpmnElementIdMapper::class])
-    interface Mapping {
+    interface ReceiveTaskMapping {
+
+        @Mapping(source = "forCompensation", target = "isForCompensation")
         fun convertToDto(input: ReceiveTask) : BpmnReceiveTask
     }
 }
