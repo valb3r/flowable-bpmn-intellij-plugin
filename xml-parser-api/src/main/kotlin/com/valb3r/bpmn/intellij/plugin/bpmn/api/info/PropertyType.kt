@@ -79,5 +79,9 @@ enum class PropertyType(
     BCC("bcc", "BCC", STRING),
     TEXT("text", "Text", STRING),
     HTML("html", "Html", STRING),
-    CHARSET("charset", "Charset", STRING)
+    CHARSET("charset", "Charset", STRING),
+    ENDPOINT_URL("endpointUrl", "Endpoint url", STRING),
+    LANGUAGE("language", "Language", STRING),
+    PAYLOAD_EXPRESSION("payloadExpression", "Payload expression", STRING),
+    RESULT_VARIABLE_CDATA("resultVariableCdata", "Result variable", STRING)
 }

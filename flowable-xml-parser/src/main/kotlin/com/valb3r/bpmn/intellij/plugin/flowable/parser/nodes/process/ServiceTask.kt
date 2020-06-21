@@ -39,6 +39,7 @@ data class ServiceTask(
 
     data class ExtensionElement(
             @JacksonXmlProperty(isAttribute = true) val name: String?,
-            @JacksonXmlProperty(isAttribute = false) val string: String?
+            @JacksonXmlProperty(isAttribute = false) val string: String?,
+            @JacksonXmlProperty(isAttribute = false) val expression: String?
     )
 }

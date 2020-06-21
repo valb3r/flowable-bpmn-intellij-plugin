@@ -14,7 +14,11 @@ data class BpmnMuleTask(
         val documentation: String?,
         val async: Boolean?,
         val exclusive: Boolean?,
-        val isForCompensation: Boolean?
+        val isForCompensation: Boolean?,
+        val endpointUrl: String? = null,
+        val language: String? = null,
+        val payloadExpression: String? = null,
+        val resultVariableCdata: String? = null
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

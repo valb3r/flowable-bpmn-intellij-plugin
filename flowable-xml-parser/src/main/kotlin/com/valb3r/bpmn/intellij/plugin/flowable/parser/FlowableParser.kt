@@ -120,7 +120,11 @@ enum class PropertyTypeDetails(
     BCC(PropertyType.BCC, "extensionElements.flowable:field?name=bcc.flowable:string.text", XmlType.CDATA),
     TEXT(PropertyType.TEXT, "extensionElements.flowable:field?name=text.flowable:string.text", XmlType.CDATA),
     HTML(PropertyType.HTML, "extensionElements.flowable:field?name=html.flowable:string.text", XmlType.CDATA),
-    CHARSET(PropertyType.CHARSET, "extensionElements.flowable:field?name=charset.flowable:string.text", XmlType.CDATA)
+    CHARSET(PropertyType.CHARSET, "extensionElements.flowable:field?name=charset.flowable:string.text", XmlType.CDATA),
+    ENDPOINT_URL(PropertyType.ENDPOINT_URL, "extensionElements.flowable:field?name=endpointUrl.flowable:string.text", XmlType.CDATA),
+    LANGUAGE(PropertyType.LANGUAGE, "extensionElements.flowable:field?name=language.flowable:string.text", XmlType.CDATA),
+    PAYLOAD_EXPRESSION(PropertyType.PAYLOAD_EXPRESSION, "extensionElements.flowable:field?name=payloadExpression.flowable:expression.text", XmlType.CDATA),
+    RESULT_VARIABLE_CDATA(PropertyType.RESULT_VARIABLE_CDATA, "extensionElements.flowable:field?name=resultVariable.flowable:string.text", XmlType.CDATA)
 
 }
 

@@ -29,6 +29,7 @@ import org.mapstruct.factory.Mappers
 
 const val EXTENSION_ELEM_STREAM = "java(null == input.getExtensionElements() ? null : input.getExtensionElements().stream()"
 const val EXTENSION_STRING_EXTRACTOR = ".map(it -> it.getString()).findFirst().orElse(null))"
+const val EXTENSION_EXPRESSION_EXTRACTOR = ".map(it -> it.getExpression()).findFirst().orElse(null))"
 const val EXTENSION_BOOLEAN_EXTRACTOR = ".map(it -> Boolean.valueOf(it.getString())).findFirst().orElse(null))"
 
 // For mixed lists in XML we need to have JsonSetter/JsonMerge on field
@@ -394,7 +395,20 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     }
 
     @Mapper
-    interface MuleMapper: ServiceTaskMapper<BpmnMuleTask>
+    interface MuleMapper: ServiceTaskMapper<BpmnMuleTask> {
+        @Mappings(
+                Mapping(source = "forCompensation", target = "isForCompensation"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"endpointUrl\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "endpointUrl"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"language\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "language"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"payloadExpression\".equals(it.getName()))$EXTENSION_EXPRESSION_EXTRACTOR",
+                        target = "payloadExpression"),
+                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"resultVariable\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                        target = "resultVariableCdata")
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnMuleTask
+    }
 
     @Mapper
     interface DecisionMapper: ServiceTaskMapper<BpmnDecisionTask> {
