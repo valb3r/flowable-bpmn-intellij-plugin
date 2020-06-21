@@ -4,7 +4,7 @@
     <name>Flowable BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.3.1</version>
+    <version>0.3.2</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -29,6 +29,24 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+     <p>0.3.2:</p>
+      <ul>
+        <li>
+          New mechanism to create linking edge elements (sequenceFlow), like in Flowable-Web
+        </li>
+        <li>
+          More properties supported for serviceTask-like elements (Mule task, Shell task, etc.)
+        </li>
+        <li>
+          Fixed: Multi-element drag caused wrong parent element selection
+        </li>
+        <li>
+          Fixed: Audit log (debug) elements position
+        </li>
+        <li>
+          Fixed: Condition of sequence flow can't be changed
+        </li>
+      </ul>
      <p>0.3.1:</p>
       <ul>
         <li>
@@ -66,81 +84,6 @@
         </li>
         <li>
           More stable XML persistence that is independent from Java Runtime
-        </li>
-      </ul>
-    <p>0.2.1:</p>
-      <ul>
-        <li>
-          BPMN process debugging feature (initial), see repository for details
-        </li>
-        <li>
-          Basic support (id, documentation, icons) of entire Flowable BPMN-elements set
-        </li>
-        <li>
-          Bulk removal of multiple selected elements
-        </li>
-        <li>
-          Much better Darcula colors
-        </li>
-      </ul>
-    <p>0.1.0-b2:</p>
-      <ul>
-        <li>
-          Capability to select multiple elements with rectangle selector and drag them somewhere
-        </li>
-        <li>
-          Undo/redo in plugin UI
-        </li>
-        <li>
-          Automatic diagram update if XML file changes
-        </li>
-        <li>
-          Support for Local changes view in IntelliJ - each action is accounted as local change and is revertible
-        </li>
-      </ul>
-    <p>0.1.0-b1:</p>
-      <ul>
-        <li>
-          Fixed: issue with wrong element ID format
-        </li>
-        <li>
-          Fixed: Cascade ID update to exclusive gateway default element id
-        </li>
-        <li>
-          Fixed: Better visual anchor highlighting and selection for edge entry
-        </li>
-        <li>
-          Service task and alike elements dragging causes attached edges to follow
-        </li>
-        <li>
-          Support for 'class' and 'expression' in properties
-        </li>
-      </ul>
-      <p>0.1.0-b0:</p>
-      <ul>
-        <li>
-          MVP baseline release.
-        </li>
-        <li>
-          IntelliJ dark theme support
-        </li>
-        <li>
-          Support for BPMN diagram editing
-        </li>
-        <li>
-          Support for BPMN properties editing.
-        </li>
-      </ul>
-      <p>0.0.1:</p>
-      <ul>
-        <li>
-          Alpha version release.
-        </li>
-        <li>
-          Support navigating from BPMN diagram to <code>Spring beans</code>.
-        </li>
-        <li>
-          Support drawing BPMN diagrams from Flowable XML format.
         </li>
       </ul>
     ]]></change-notes>
