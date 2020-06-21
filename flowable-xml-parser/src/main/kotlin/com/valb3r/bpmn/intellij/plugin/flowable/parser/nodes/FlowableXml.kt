@@ -315,7 +315,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
                     "null == input.getExtensionElements() ? null " +
                     ": input.getExtensionElements().stream().filter(it -> \"camelContext\".equals(it.getName())).map(it -> it.getString())" +
                     ".findFirst()" +
-                    ".get())",
+                    ".orElse(null))",
                     target = "camelContext")
         )
         override fun convertToDto(input: BpmnServiceTask): BpmnCamelTask
@@ -336,19 +336,19 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
                         "null == input.getExtensionElements() ? null " +
                         ": input.getExtensionElements().stream().filter(it -> \"decisionTableReferenceKey\".equals(it.getName())).map(it -> it.getString())" +
                         ".findFirst()" +
-                        ".get())",
+                        ".orElse(null))",
                         target = "decisionTableReferenceKey"),
                 Mapping(expression = "java(" +
                         "null == input.getExtensionElements() ? null " +
                         ": input.getExtensionElements().stream().filter(it -> \"decisionTaskThrowErrorOnNoHits\".equals(it.getName())).map(it -> Boolean.valueOf(it.getString()))" +
                         ".findFirst()" +
-                        ".get())",
+                        ".orElse(false))",
                         target = "decisionTaskThrowErrorOnNoHits"),
                 Mapping(expression = "java(" +
                         "null == input.getExtensionElements() ? null " +
                         ": input.getExtensionElements().stream().filter(it -> \"fallbackToDefaultTenant\".equals(it.getName())).map(it -> Boolean.valueOf(it.getString()))" +
                         ".findFirst()" +
-                        ".get())",
+                        ".orElse(false))",
                         target = "fallbackToDefaultTenant")
         )
         override fun convertToDto(input: BpmnServiceTask): BpmnDecisionTask
