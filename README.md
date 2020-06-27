@@ -20,8 +20,12 @@ aiming for code navigation support between BPMN diagram and your classes includi
 
 # Installation
 
-You can install the plugin from ZIP file provided at releases page of this repository or from alpha-channel of JetBrains
-plugin repository.
+You can install the plugin from JetBrains plugin repository (just search for `Flowable BPMN visualizer`) like any
+other plugin.
+
+**Bleeding edge**:
+You can install the latest build of the plugin from ZIP file provided at releases page of this repository 
+or from alpha-channel of JetBrains plugin repository.
 
 ## From GitHub releases
 
