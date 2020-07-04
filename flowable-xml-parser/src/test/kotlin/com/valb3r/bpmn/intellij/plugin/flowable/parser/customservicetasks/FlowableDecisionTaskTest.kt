@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNullOrEmpty
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldHaveSingleItem
 import org.junit.jupiter.api.Test
@@ -58,6 +59,17 @@ internal class FlowableDecisionTaskTest {
         {value: String -> readAndUpdate(PropertyType.DECISION_TABLE_REFERENCE_KEY, value).decisionTableReferenceKey.shouldBeEqualTo(value)} ("My table");
         {value: Boolean -> readAndUpdate(PropertyType.DECISION_TASK_THROW_ERROR_ON_NO_HITS, value).decisionTaskThrowErrorOnNoHits.shouldBeEqualTo(value)} (false);
         {value: Boolean -> readAndUpdate(PropertyType.FALLBACK_TO_DEF_TENANT_CDATA, value).fallbackToDefaultTenantCdata.shouldBeEqualTo(value)} (false);
+    }
+
+    @Test
+    fun `Decision task fields are emptyable`() {
+        readAndSetNullString(PropertyType.NAME).name.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.DECISION_TABLE_REFERENCE_KEY).decisionTableReferenceKey.shouldBeNullOrEmpty()
+    }
+
+    private fun readAndSetNullString(property: PropertyType): BpmnDecisionTask {
+        return readDecisionTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "")))
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: String): BpmnDecisionTask {

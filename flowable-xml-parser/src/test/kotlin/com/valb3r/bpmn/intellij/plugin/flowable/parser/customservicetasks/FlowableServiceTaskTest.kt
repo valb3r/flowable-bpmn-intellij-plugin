@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNullOrEmpty
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldHaveSingleItem
 import org.junit.jupiter.api.Test
@@ -71,6 +72,21 @@ internal class FlowableServiceTaskTest {
         {value: String -> readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeEqualTo(value)} ("#{skipStuff.yes()}");
         {value: Boolean -> readAndUpdate(PropertyType.IS_TRIGGERABLE, value).triggerable.shouldBeEqualTo(value)} (false);
         {value: Boolean -> readAndUpdate(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, value).useLocalScopeForResultVariable.shouldBeEqualTo(value)} (false);
+    }
+
+    @Test
+    fun `Service task fields are emptyable`() {
+        readAndSetNullString(PropertyType.NAME).name.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.DELEGATE_EXPRESSION).delegateExpression.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.CLASS).clazz.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.EXPRESSION).expression.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.RESULT_VARIABLE_NAME).resultVariableName.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.SKIP_EXPRESSION).skipExpression.shouldBeNullOrEmpty()
+    }
+
+    private fun readAndSetNullString(property: PropertyType): BpmnServiceTask {
+        return readServiceTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "")))
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: String): BpmnServiceTask {

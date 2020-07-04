@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNullOrEmpty
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldHaveSingleItem
 import org.junit.jupiter.api.Test
@@ -103,6 +104,32 @@ internal class FlowableHttpTaskTest {
         {value: String -> readAndUpdate(PropertyType.RESULT_VARIABLE_PREFIX, value).resultVariablePrefix.shouldBeEqualTo(value)} ("RES_VAR_PREFIX");
         {value: String -> readAndUpdate(PropertyType.SAVE_RESPONSE_PARAMETERS_TRANSIENT, value).saveResponseParametersTransient.shouldBeEqualTo(value)} ("TRANSIENT_DATA");
         {value: String -> readAndUpdate(PropertyType.SAVE_RESPONSE_VARIABLE_AS_JSON, value).saveResponseVariableAsJson.shouldBeEqualTo(value)} ("AS_OTHER_JSON")
+    }
+
+    @Test
+    fun `Http task fields are emptyable`() {
+        readAndSetNullString(PropertyType.NAME).name.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
+
+        readAndSetNullString(PropertyType.REQUEST_METHOD).requestMethod.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.REQUEST_URL).requestUrl.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.REQUEST_HEADERS).requestHeaders.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.REQUEST_BODY).requestBody.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.REQUEST_BODY_ENCODING).requestBodyEncoding.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.REQUEST_TIMEOUT).requestTimeout.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.FAIL_STATUS_CODES).failStatusCodes.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.HANDLE_STATUS_CODES).handleStatusCodes.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.RESPONSE_VARIABLE_NAME).responseVariableName.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.IGNORE_EXCEPTION).ignoreException.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.SAVE_REQUEST_VARIABLES).saveRequestVariables.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.SAVE_RESPONSE_PARAMETERS).saveResponseParameters.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.RESULT_VARIABLE_PREFIX).resultVariablePrefix.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.SAVE_RESPONSE_PARAMETERS_TRANSIENT).saveResponseParametersTransient.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.SAVE_RESPONSE_VARIABLE_AS_JSON).saveResponseVariableAsJson.shouldBeNullOrEmpty()
+    }
+
+    private fun readAndSetNullString(property: PropertyType): BpmnHttpTask {
+        return readHttpTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "")))
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: String): BpmnHttpTask {

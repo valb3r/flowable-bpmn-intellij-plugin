@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNullOrEmpty
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldHaveSingleItem
 import org.junit.jupiter.api.Test
@@ -26,7 +27,7 @@ internal class FlowableMailTaskTest {
     fun `Mail task is parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
 
-        val task = readCamelTask(processObject)
+        val task = readMailTask(processObject)
         task.id.shouldBeEqualTo(elementId)
         task.name.shouldBeEqualTo("Mail task name")
         task.documentation.shouldBeEqualTo("Docs for mail task")
@@ -78,15 +79,34 @@ internal class FlowableMailTaskTest {
         {value: String -> readAndUpdate(PropertyType.CHARSET, value).charset.shouldBeEqualTo(value)} ("ISO-8859-1");
     }
 
+    @Test
+    fun `Mail task fields are emptyable`() {
+        readAndSetNullString(PropertyType.NAME).name.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.HEADERS).headers.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.TO).to.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.FROM).from.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.SUBJECT).subject.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.CC).cc.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.BCC).bcc.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.TEXT).text.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.HTML).html.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.CHARSET).charset.shouldBeNullOrEmpty()
+    }
+
+    private fun readAndSetNullString(property: PropertyType): BpmnMailTask {
+        return readMailTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "")))
+    }
+
     private fun readAndUpdate(property: PropertyType, newValue: String): BpmnMailTask {
-        return readCamelTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue)))
+        return readMailTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue)))
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: Boolean): BpmnMailTask {
-        return readCamelTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
+        return readMailTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readCamelTask(processObject: BpmnProcessObject): BpmnMailTask {
+    private fun readMailTask(processObject: BpmnProcessObject): BpmnMailTask {
         val task = processObject.process.body!!.mailTask!!.shouldHaveSingleItem()
         return task
     }

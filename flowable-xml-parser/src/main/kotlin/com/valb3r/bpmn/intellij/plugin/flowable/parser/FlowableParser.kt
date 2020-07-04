@@ -590,23 +590,29 @@ class FlowableParser : BpmnParser {
     }
 
     private fun setAttribute(node: Element, name: String, value: String?) {
+        val qname = qname(name)
+
         if (value.isNullOrEmpty()) {
-            val attr = node.attribute(name)
+            val attr = node.attribute(qname)
             if (null != attr) {
                 node.remove(attr)
             }
             return
         }
 
-        if (name.contains(":")) {
-            val parts = name.split(":")
-            val ns = parts[0]
-            val localName = parts[1]
+        node.addAttribute(qname, value)
+    }
 
-            node.addAttribute(byPrefix(ns).named(localName), value)
-        } else {
-            node.addAttribute(name, value)
+    private fun qname(name: String): QName {
+        if (!name.contains(":")) {
+            return QName(name)
         }
+
+        val parts = name.split(":")
+        val ns = parts[0]
+        val localName = parts[1]
+
+        return byPrefix(ns).named(localName)
     }
 
     private fun setCdata(node: Element, name: String, value: String?) {
