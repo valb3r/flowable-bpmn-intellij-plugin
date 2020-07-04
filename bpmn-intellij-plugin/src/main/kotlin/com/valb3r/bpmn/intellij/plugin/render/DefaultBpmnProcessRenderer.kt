@@ -234,7 +234,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             val color = if (isActive(undoId, state)) Colors.SELECTED_COLOR else null
             val areaUndo = color?.let { state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo, it.color) }
                     ?: state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo)
-            renderedArea[undoId] = AreaWithZindex(areaUndo, AreaType.SHAPE)
+            renderedArea[undoId] = AreaWithZindex(areaUndo, AreaType.SHAPE, index = ICON_Z_INDEX)
             locationX += icons.undo.iconWidth + undoRedoStartMargin
             state.ctx.interactionContext.clickCallbacks[undoId] = { dest -> dest.undo() }
         }
@@ -243,7 +243,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             val color = if (isActive(redoId, state)) Colors.SELECTED_COLOR else null
             val areaRedo = color?.let { state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo, it.color) }
                     ?: state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo)
-            renderedArea[redoId] = AreaWithZindex(areaRedo, AreaType.SHAPE)
+            renderedArea[redoId] = AreaWithZindex(areaRedo, AreaType.SHAPE, index = ICON_Z_INDEX)
             locationX += icons.redo.iconWidth + undoRedoStartMargin
             state.ctx.interactionContext.clickCallbacks[redoId] = { dest -> dest.redo() }
         }
