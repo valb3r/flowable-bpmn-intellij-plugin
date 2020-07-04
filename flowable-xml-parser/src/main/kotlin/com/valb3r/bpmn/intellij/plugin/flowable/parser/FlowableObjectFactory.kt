@@ -189,8 +189,8 @@ class FlowableObjectFactory: BpmnObjectFactory {
     }
 
     private fun doParse(node: JsonNode?, result: MutableMap<PropertyType, Property>, type: PropertyType) {
-        if (null == node) {
-            result[type] = Property(null)
+        if (null == node || node.isNull) {
+            result[type] = Property(type.defaultValueIfNull)
             return
         }
 
