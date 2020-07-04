@@ -1137,6 +1137,26 @@ internal class UiEditorLightE2ETest {
         }
     }
 
+    @Test
+    fun `Virtual (midpoint) edge anchors does not attract other elements`() {
+        prepareOneSubProcessWithTwoServiceTasksView()
+
+        val firstEdge = addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne()
+        val secondEdge = addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne()
+        // Click on sequence element midpoint
+        val start = clickOnId(firstEdge.edge.waypoint[1].id)
+        val virtualMidpointLocation = elementCenter(secondEdge.edge.waypoint[1].id)
+        dragToButDontStop(start, elementCenter(secondEdge.edge.waypoint[1].id))
+        canvas.paintComponent(graphics)
+
+        argumentCaptor<RenderContext>().apply {
+            verify(renderer, atLeastOnce()).render(capture())
+            lastValue.interactionContext.anchorsHit!!.anchors[AnchorType.POINT].shouldBeNull()
+            lastValue.interactionContext.anchorsHit!!.anchors[AnchorType.HORIZONTAL].shouldBeNull()
+            lastValue.interactionContext.anchorsHit!!.anchors[AnchorType.VERTICAL]!!.distance(virtualMidpointLocation).shouldBeGreaterThan(10.0)
+        }
+    }
+
     private fun changeIdViaPropertiesVisualizer(diagramElementId: DiagramElementId, elementId: BpmnElementId, newId: String) {
         val id = Pair(elementId, PropertyType.ID)
         clickOnId(diagramElementId)

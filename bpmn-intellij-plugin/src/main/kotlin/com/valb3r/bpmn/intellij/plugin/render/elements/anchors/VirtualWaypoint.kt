@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypo
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.events.NewWaypointsEvent
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
+import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
 
@@ -31,5 +32,9 @@ class VirtualWaypoint(
                         .toList(),
                 edge.epoch + 1
         ))
+    }
+
+    override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
+        return if (isActiveOrDragged()) return super.waypointAnchors(camera) else mutableSetOf()
     }
 }
