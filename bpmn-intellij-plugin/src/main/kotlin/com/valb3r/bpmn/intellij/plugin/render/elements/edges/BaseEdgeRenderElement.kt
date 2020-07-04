@@ -54,11 +54,9 @@ abstract class BaseEdgeRenderElement(
             }
         }
 
-        if (state.history.contains(bpmnElementId)) {
-            val indexes = state.history.mapIndexed {pos, id -> if (id == bpmnElementId) pos else null}.filterNotNull()
-            val midPoints = anchors.filterIsInstance<VirtualWaypoint>().map { it.transformedLocation }
-            state.ctx.canvas.drawTextNoCameraTransform(midPoints[midPoints.size / 2], indexes.toString(), Colors.INNER_TEXT_COLOR.color, Colors.DEBUG_ELEMENT_COLOR.color)
-        }
+        drawHistoricalLabel()
+        drawNameIfAvailable(updatedAnchors)
+
         area.add(renderDefaultMarkIfNeeded(ctx, anchors.filterIsInstance<PhysicalWaypoint>().map { it.transformedLocation }))
         return mapOf(elementId to AreaWithZindex(area, AreaType.EDGE, waypointAnchors(ctx.canvas.camera), index = zIndex()))
     }
@@ -100,6 +98,21 @@ abstract class BaseEdgeRenderElement(
                 maxX - minX,
                 maxY - minY
         )
+    }
+
+    private fun drawNameIfAvailable(waypoints: List<Point2D.Float>) {
+        val name = state.currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.NAME)?.value as String? ?: return
+        state.ctx.canvas.drawWrappedSingleLine(waypoints[0], waypoints[1], name, Colors.INNER_TEXT_COLOR.color)
+    }
+
+    private fun drawHistoricalLabel() {
+        if (!state.history.contains(bpmnElementId)) {
+            return
+        }
+
+        val indexes = state.history.mapIndexed { pos, id -> if (id == bpmnElementId) pos else null }.filterNotNull()
+        val midPoints = anchors.filterIsInstance<VirtualWaypoint>().map { it.transformedLocation }
+        state.ctx.canvas.drawTextNoCameraTransform(midPoints[midPoints.size / 2], indexes.toString(), Colors.INNER_TEXT_COLOR.color, Colors.DEBUG_ELEMENT_COLOR.color)
     }
 
     private fun renderDefaultMarkIfNeeded(ctx: RenderContext, anchors: List<Point2D.Float>): Area {

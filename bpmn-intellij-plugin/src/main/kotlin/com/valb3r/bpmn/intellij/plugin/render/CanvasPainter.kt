@@ -441,6 +441,48 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         graphics2D.drawString(text, textLocation.x.toInt(), textLocation.y.toInt())
     }
 
+    fun drawWrappedSingleLine(start: Point2D.Float, end: Point2D.Float, text: String, textColor: Color) {
+        if ("" == text) {
+            return
+        }
+
+        val st = camera.toCameraView(start)
+        val en = camera.toCameraView(end)
+        val maxWidth = en.distance(st).toFloat()
+
+        graphics2D.font = font // for ellipsis
+        val transform = graphics2D.transform
+        val rotTransform = AffineTransform(transform)
+
+        val shouldInvert = st.x - en.x > 0
+        if (shouldInvert) {
+            rotTransform.translate(en.x.toDouble(), en.y.toDouble() - textMargin)
+            rotTransform.rotate(st.x.toDouble() - en.x.toDouble(), st.y.toDouble() - en.y.toDouble())
+        } else {
+            rotTransform.translate(st.x.toDouble(), st.y.toDouble() - textMargin)
+            rotTransform.rotate(en.x.toDouble() - st.x.toDouble(), en.y.toDouble() - st.y.toDouble())
+        }
+        val rotatedFont: Font = font.deriveFont(rotTransform)
+        graphics2D.font = rotatedFont
+
+        val attributedString = AttributedString(text, mutableMapOf(TextAttribute.FONT to rotatedFont))
+        val paragraph: AttributedCharacterIterator = attributedString.iterator
+        val paragraphStart = paragraph.beginIndex
+        val frc: FontRenderContext = graphics2D.fontRenderContext
+        val lineMeasurer = LineBreakMeasurer(paragraph, frc)
+
+        if (maxWidth < font.size * 2) {
+            return
+        }
+
+        val layout = lineMeasurer.nextLayout(maxWidth - 10.0f)
+        val size = -layout.descent - layout.leading
+        lineMeasurer.position = paragraphStart
+
+        layout.draw(graphics2D, 0.0f, size)
+        graphics2D.font = font
+    }
+
     fun drawWrappedText(shape: Rectangle2D.Float, text: String) {
         if ("" == text) {
             return
@@ -454,7 +496,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         val paragraph: AttributedCharacterIterator = attributedString.iterator
         val paragraphStart = paragraph.beginIndex
         val paragraphEnd = paragraph.endIndex
-        val frc: FontRenderContext = graphics2D.getFontRenderContext()
+        val frc: FontRenderContext = graphics2D.fontRenderContext
         val lineMeasurer = LineBreakMeasurer(paragraph, frc)
 
         val height = rightBottom.y - leftTop.y
