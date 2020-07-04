@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNullOrEmpty
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldHaveSingleItem
 import org.junit.jupiter.api.Test
@@ -61,6 +62,20 @@ internal class FlowableMuleTaskTest {
         {value: String -> readAndUpdate(PropertyType.LANGUAGE, value).language.shouldBeEqualTo(value)} ("Unknown language");
         {value: String -> readAndUpdate(PropertyType.PAYLOAD_EXPRESSION, value).payloadExpression.shouldBeEqualTo(value)} ("val aaa = 1");
         {value: String -> readAndUpdate(PropertyType.RESULT_VARIABLE_CDATA, value).resultVariableCdata.shouldBeEqualTo(value)} ("RESULT_VAR_999");
+    }
+
+    @Test
+    fun `Mule task fields are emptyable`() {
+        readAndSetNullString(PropertyType.NAME).name.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.ENDPOINT_URL).endpointUrl.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.LANGUAGE).language.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.PAYLOAD_EXPRESSION).payloadExpression.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.RESULT_VARIABLE_CDATA).resultVariableCdata.shouldBeNullOrEmpty()
+    }
+
+    private fun readAndSetNullString(property: PropertyType): BpmnMuleTask {
+        return readMuleTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "")))
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: String): BpmnMuleTask {

@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNullOrEmpty
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldHaveSingleItem
 import org.junit.jupiter.api.Test
@@ -55,6 +56,13 @@ internal class FlowableCamelTaskTest {
     }
 
     @Test
+    fun `Camel rule task fields are emptyable`() {
+        readAndSetNullString(PropertyType.NAME).name.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.CAMEL_CONTEXT).camelContext.shouldBeNullOrEmpty()
+    }
+    
+    @Test
     fun `Camel task is addable when no extension`() {
         {value: String -> readAndUpdate(PropertyType.CAMEL_CONTEXT, "custom-service-tasks/custom/camel-task-no-ext.bpmn20.xml", value).camelContext.shouldBeEqualTo(value)} ("NEW<>CAMEL-CTX");
     }
@@ -69,6 +77,10 @@ internal class FlowableCamelTaskTest {
         {value: String -> readAndUpdate(PropertyType.CAMEL_CONTEXT, "custom-service-tasks/custom/camel-task-no-string.bpmn20.xml", value).camelContext.shouldBeEqualTo(value)} ("NEW<>CAMEL-CTX");
     }
 
+    private fun readAndSetNullString(property: PropertyType): BpmnCamelTask {
+        return readCamelTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "")))
+    }
+    
     private fun readAndUpdate(property: PropertyType, file: String, newValue: String): BpmnCamelTask {
         return readCamelTask(readAndUpdateProcess(parser, file, StringValueUpdatedEvent(elementId, property, newValue)))
     }

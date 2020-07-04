@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNullOrEmpty
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldHaveSingleItem
 import org.junit.jupiter.api.Test
@@ -60,6 +61,18 @@ internal class FlowableScriptTaskTest {
         {value: String -> readAndUpdate(PropertyType.SCRIPT, value).scriptBody.shouldBeEqualTo(value)} ("{def aa = 1}")
     }
 
+    @Test
+    fun `Script task fields are emptyable`() {
+        readAndSetNullString(PropertyType.NAME).name.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.SCRIPT_FORMAT).scriptFormat.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.SCRIPT).scriptBody.shouldBeNullOrEmpty()
+    }
+    
+    private fun readAndSetNullString(property: PropertyType): BpmnScriptTask {
+        return readScriptTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "")))
+    }
+    
     private fun readAndUpdate(property: PropertyType, newValue: String): BpmnScriptTask {
         return readScriptTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue)))
     }

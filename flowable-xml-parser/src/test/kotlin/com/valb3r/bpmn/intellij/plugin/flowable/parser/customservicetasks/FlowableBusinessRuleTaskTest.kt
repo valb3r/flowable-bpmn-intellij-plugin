@@ -10,9 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeTrue
-import org.amshove.kluent.shouldHaveSingleItem
+import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 
 private const val FILE = "custom-service-tasks/business-rule-task.bpmn20.xml"
@@ -61,6 +59,19 @@ internal class FlowableBusinessRuleTaskTest {
         {value: String -> readAndUpdate(PropertyType.RULES, value).rules.shouldBeEqualTo(value)} ("Rules");
         {value: String -> readAndUpdate(PropertyType.RESULT_VARIABLE, value).resultVariable.shouldBeEqualTo(value)} ("New result variable");
         {value: Boolean -> readAndUpdate(PropertyType.EXCLUDE, value).exclude.shouldBeEqualTo(value)} (false)
+    }
+
+    @Test
+    fun `Business rule task fields are emptyable or removable if null`() {
+        readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.IS_FOR_COMPENSATION).isForCompensation.shouldBeNull()
+        readAndSetNullString(PropertyType.RULE_VARIABLES_INPUT).ruleVariablesInput.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.RULES).rules.shouldBeNull()
+        readAndSetNullString(PropertyType.RESULT_VARIABLE).resultVariable.shouldBeNullOrEmpty()
+    }
+
+    private fun readAndSetNullString(property: PropertyType): BpmnBusinessRuleTask {
+        return readBusinessRuleTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "")))
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: String): BpmnBusinessRuleTask {

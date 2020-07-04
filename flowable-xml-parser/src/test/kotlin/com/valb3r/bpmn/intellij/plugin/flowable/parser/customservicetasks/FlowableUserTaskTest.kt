@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNullOrEmpty
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldHaveSingleItem
 import org.junit.jupiter.api.Test
@@ -72,6 +73,22 @@ internal class FlowableUserTaskTest {
         {value: String -> readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeEqualTo(value)} ("#{something.wrong()}");
     }
 
+    @Test
+    fun `User task is fields are emptyable`() {
+        readAndSetNullString(PropertyType.NAME).name.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.ASSIGNEE).assignee.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.DUE_DATE).dueDate.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.CATEGORY).category.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.FORM_KEY).formKey.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.PRIORITY).priority.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.SKIP_EXPRESSION).skipExpression.shouldBeNullOrEmpty()
+    }
+
+    private fun readAndSetNullString(property: PropertyType): BpmnUserTask {
+        return readUserTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "")))
+    }
+    
     private fun readAndUpdate(property: PropertyType, newValue: String): BpmnUserTask {
         return readUserTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue)))
     }

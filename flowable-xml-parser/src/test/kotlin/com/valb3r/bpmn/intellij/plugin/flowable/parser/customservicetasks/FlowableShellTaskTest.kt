@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNullOrEmpty
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldHaveSingleItem
 import org.junit.jupiter.api.Test
@@ -26,7 +27,7 @@ internal class FlowableShellTaskTest {
     fun `Shell task is parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
 
-        val task = readCamelTask(processObject)
+        val task = readShellTask(processObject)
         task.id.shouldBeEqualTo(elementId)
         task.name.shouldBeEqualTo("Shell task name")
         task.documentation.shouldBeEqualTo("Docs for shell task")
@@ -84,15 +85,36 @@ internal class FlowableShellTaskTest {
         {value: String -> readAndUpdate(PropertyType.DIRECTORY, value).directory.shouldBeEqualTo(value)} ("/tmp/work/result")
     }
 
+    @Test
+    fun `Shell task is fields are emptyable`() {
+        readAndSetNullString(PropertyType.NAME).name.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.COMMAND).command.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.ARG_1).arg1.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.ARG_2).arg2.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.ARG_3).arg3.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.ARG_4).arg4.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.ARG_5).arg5.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.WAIT).wait.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.CLEAN_ENV).cleanEnv.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.ERROR_CODE_VARIABLE).errorCodeVariable.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.OUTPUT_VARIABLE).outputVariable.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.DIRECTORY).directory.shouldBeNullOrEmpty()
+    }
+
+    private fun readAndSetNullString(property: PropertyType): BpmnShellTask {
+        return readShellTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "")))
+    }
+
     private fun readAndUpdate(property: PropertyType, newValue: String): BpmnShellTask {
-        return readCamelTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue)))
+        return readShellTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue)))
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: Boolean): BpmnShellTask {
-        return readCamelTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
+        return readShellTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readCamelTask(processObject: BpmnProcessObject): BpmnShellTask {
+    private fun readShellTask(processObject: BpmnProcessObject): BpmnShellTask {
         val task = processObject.process.body!!.shellTask!!.shouldHaveSingleItem()
         return task
     }
