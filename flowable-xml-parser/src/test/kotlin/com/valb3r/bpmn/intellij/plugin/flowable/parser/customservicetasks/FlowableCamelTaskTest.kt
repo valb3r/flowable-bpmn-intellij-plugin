@@ -52,7 +52,7 @@ internal class FlowableCamelTaskTest {
         {value: String -> readAndUpdate(PropertyType.DOCUMENTATION, value).documentation.shouldBeEqualTo(value)} ("new docs");
         {value: Boolean -> readAndUpdate(PropertyType.ASYNC, value).async.shouldBeEqualTo(value)} (false);
         {value: Boolean -> readAndUpdate(PropertyType.IS_FOR_COMPENSATION, value).isForCompensation.shouldBeEqualTo(value)} (false);
-        {value: String -> readAndUpdate(PropertyType.CAMEL_CONTEXT, value).camelContext.shouldBeEqualTo(value)} ("NEW<>CAMEL-CTX");
+        {value: String -> readAndUpdate(PropertyType.CAMEL_CONTEXT, value).camelContext.shouldBeEqualTo(value)} ("NEW<>CAMEL-CTX")
     }
 
     @Test
@@ -64,17 +64,17 @@ internal class FlowableCamelTaskTest {
     
     @Test
     fun `Camel task is addable when no extension`() {
-        {value: String -> readAndUpdate(PropertyType.CAMEL_CONTEXT, "custom-service-tasks/custom/camel-task-no-ext.bpmn20.xml", value).camelContext.shouldBeEqualTo(value)} ("NEW<>CAMEL-CTX");
+        {value: String -> readAndUpdate(PropertyType.CAMEL_CONTEXT, "custom-service-tasks/custom/camel-task-no-ext.bpmn20.xml", value).camelContext.shouldBeEqualTo(value)} ("NEW<>CAMEL-CTX")
     }
 
     @Test
     fun `Camel task is addable when no field`() {
-        {value: String -> readAndUpdate(PropertyType.CAMEL_CONTEXT, "custom-service-tasks/custom/camel-task-no-field.bpmn20.xml", value).camelContext.shouldBeEqualTo(value)} ("NEW<>CAMEL-CTX");
+        {value: String -> readAndUpdate(PropertyType.CAMEL_CONTEXT, "custom-service-tasks/custom/camel-task-no-field.bpmn20.xml", value).camelContext.shouldBeEqualTo(value)} ("NEW<>CAMEL-CTX")
     }
 
     @Test
     fun `Camel task is addable when no string`() {
-        {value: String -> readAndUpdate(PropertyType.CAMEL_CONTEXT, "custom-service-tasks/custom/camel-task-no-string.bpmn20.xml", value).camelContext.shouldBeEqualTo(value)} ("NEW<>CAMEL-CTX");
+        {value: String -> readAndUpdate(PropertyType.CAMEL_CONTEXT, "custom-service-tasks/custom/camel-task-no-string.bpmn20.xml", value).camelContext.shouldBeEqualTo(value)} ("NEW<>CAMEL-CTX")
     }
 
     private fun readAndSetNullString(property: PropertyType): BpmnCamelTask {
@@ -94,7 +94,6 @@ internal class FlowableCamelTaskTest {
     }
 
     private fun readCamelTask(processObject: BpmnProcessObject): BpmnCamelTask {
-        val task = processObject.process.body!!.camelTask!!.shouldHaveSingleItem()
-        return task
+        return processObject.process.body!!.camelTask!!.shouldHaveSingleItem()
     }
 }

@@ -82,7 +82,6 @@ internal class FlowableScriptTaskTest {
     }
 
     private fun readScriptTask(processObject: BpmnProcessObject): BpmnScriptTask {
-        val task = processObject.process.body!!.scriptTask!!.shouldHaveSingleItem()
-        return task
+        return processObject.process.body!!.scriptTask!!.shouldHaveSingleItem()
     }
 }

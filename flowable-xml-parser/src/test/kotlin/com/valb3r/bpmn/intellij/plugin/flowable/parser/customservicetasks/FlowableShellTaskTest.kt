@@ -115,7 +115,6 @@ internal class FlowableShellTaskTest {
     }
 
     private fun readShellTask(processObject: BpmnProcessObject): BpmnShellTask {
-        val task = processObject.process.body!!.shellTask!!.shouldHaveSingleItem()
-        return task
+        return processObject.process.body!!.shellTask!!.shouldHaveSingleItem()
     }
 }

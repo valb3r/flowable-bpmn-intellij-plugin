@@ -61,7 +61,7 @@ internal class FlowableMuleTaskTest {
         {value: String -> readAndUpdate(PropertyType.ENDPOINT_URL, value).endpointUrl.shouldBeEqualTo(value)} ("http://example.com/another");
         {value: String -> readAndUpdate(PropertyType.LANGUAGE, value).language.shouldBeEqualTo(value)} ("Unknown language");
         {value: String -> readAndUpdate(PropertyType.PAYLOAD_EXPRESSION, value).payloadExpression.shouldBeEqualTo(value)} ("val aaa = 1");
-        {value: String -> readAndUpdate(PropertyType.RESULT_VARIABLE_CDATA, value).resultVariableCdata.shouldBeEqualTo(value)} ("RESULT_VAR_999");
+        {value: String -> readAndUpdate(PropertyType.RESULT_VARIABLE_CDATA, value).resultVariableCdata.shouldBeEqualTo(value)} ("RESULT_VAR_999")
     }
 
     @Test
@@ -87,7 +87,6 @@ internal class FlowableMuleTaskTest {
     }
 
     private fun readMuleTask(processObject: BpmnProcessObject): BpmnMuleTask {
-        val task = processObject.process.body!!.muleTask!!.shouldHaveSingleItem()
-        return task
+        return processObject.process.body!!.muleTask!!.shouldHaveSingleItem()
     }
 }

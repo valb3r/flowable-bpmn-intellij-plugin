@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets.UTF_8
 import java.text.AttributedCharacterIterator
 import java.text.AttributedString
+import java.text.BreakIterator
 import javax.swing.Icon
 
 
@@ -28,7 +29,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
     private val iconMargin = 5.0f
     private val textMargin = 5.0f
     private val font = Font("Courier", Font.PLAIN, 10)
-    private val arrowWidth = 10;
+    private val arrowWidth = 10
     private val arrowStyle = Polygon(intArrayOf(0, -arrowWidth, -arrowWidth), intArrayOf(0, 5, -5), 3)
     private val regularLineWidth = 2f
     private val nodeRadius = 25f
@@ -441,6 +442,42 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         graphics2D.drawString(text, textLocation.x.toInt(), textLocation.y.toInt())
     }
 
+    fun drawWrappedSingleLine(start: Point2D.Float, end: Point2D.Float, text: String, textColor: Color) {
+        if ("" == text) {
+            return
+        }
+
+        val st = camera.toCameraView(start)
+        val en = camera.toCameraView(end)
+        val maxWidth = en.distance(st).toFloat()
+        graphics2D.font = font // for ellipsis
+        val rotTransform = AffineTransform()
+
+        if (maxWidth < font.size * 2) {
+            return
+        }
+
+        rotTransform.translate(st.x.toDouble(), st.y.toDouble())
+        rotTransform.rotate(en.x.toDouble() - st.x.toDouble(), en.y.toDouble() - st.y.toDouble())
+        rotTransform.translate(textMargin.toDouble(), -textMargin.toDouble())
+        val rotatedFont: Font = font.deriveFont(rotTransform)
+        graphics2D.font = rotatedFont
+
+        val attributedString = AttributedString(text, mutableMapOf(TextAttribute.FONT to rotatedFont))
+        val paragraph: AttributedCharacterIterator = attributedString.iterator
+        val paragraphStart = paragraph.beginIndex
+        val frc: FontRenderContext = graphics2D.fontRenderContext
+        val lineMeasurer = LineBreakMeasurer(paragraph, BreakIterator.getCharacterInstance(), frc)
+
+
+        val layout = lineMeasurer.nextLayout(maxWidth - 10.0f)
+        lineMeasurer.position = paragraphStart
+
+        graphics2D.color = textColor
+        layout.draw(graphics2D, 0.0f, 0.0f)
+        graphics2D.font = font
+    }
+
     fun drawWrappedText(shape: Rectangle2D.Float, text: String) {
         if ("" == text) {
             return
@@ -454,7 +491,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         val paragraph: AttributedCharacterIterator = attributedString.iterator
         val paragraphStart = paragraph.beginIndex
         val paragraphEnd = paragraph.endIndex
-        val frc: FontRenderContext = graphics2D.getFontRenderContext()
+        val frc: FontRenderContext = graphics2D.fontRenderContext
         val lineMeasurer = LineBreakMeasurer(paragraph, frc)
 
         val height = rightBottom.y - leftTop.y

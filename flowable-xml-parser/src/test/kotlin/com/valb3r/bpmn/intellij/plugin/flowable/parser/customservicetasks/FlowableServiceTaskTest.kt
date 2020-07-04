@@ -71,7 +71,7 @@ internal class FlowableServiceTaskTest {
         {value: String -> readAndUpdate(PropertyType.RESULT_VARIABLE_NAME, value).resultVariableName.shouldBeEqualTo(value)} ("NEW_RESULT_TO");
         {value: String -> readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeEqualTo(value)} ("#{skipStuff.yes()}");
         {value: Boolean -> readAndUpdate(PropertyType.IS_TRIGGERABLE, value).triggerable.shouldBeEqualTo(value)} (false);
-        {value: Boolean -> readAndUpdate(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, value).useLocalScopeForResultVariable.shouldBeEqualTo(value)} (false);
+        {value: Boolean -> readAndUpdate(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, value).useLocalScopeForResultVariable.shouldBeEqualTo(value)} (false)
     }
 
     @Test
@@ -98,7 +98,6 @@ internal class FlowableServiceTaskTest {
     }
 
     private fun readServiceTask(processObject: BpmnProcessObject): BpmnServiceTask {
-        val task = processObject.process.body!!.serviceTask!!.shouldHaveSingleItem()
-        return task
+        return processObject.process.body!!.serviceTask!!.shouldHaveSingleItem()
     }
 }

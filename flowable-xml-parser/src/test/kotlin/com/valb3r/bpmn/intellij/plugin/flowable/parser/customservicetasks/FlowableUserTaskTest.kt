@@ -70,7 +70,7 @@ internal class FlowableUserTaskTest {
         {value: String -> readAndUpdate(PropertyType.FORM_KEY, value).formKey.shouldBeEqualTo(value)} ("KEY_90");
         {value: Boolean -> readAndUpdate(PropertyType.FORM_FIELD_VALIDATION, value).formFieldValidation.shouldBeEqualTo(value)} (false);
         {value: String -> readAndUpdate(PropertyType.PRIORITY, value).priority.shouldBeEqualTo(value)} ("22");
-        {value: String -> readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeEqualTo(value)} ("#{something.wrong()}");
+        {value: String -> readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeEqualTo(value)} ("#{something.wrong()}")
     }
 
     @Test
@@ -98,7 +98,6 @@ internal class FlowableUserTaskTest {
     }
 
     private fun readUserTask(processObject: BpmnProcessObject): BpmnUserTask {
-        val task = processObject.process.body!!.userTask!!.shouldHaveSingleItem()
-        return task
+        return processObject.process.body!!.userTask!!.shouldHaveSingleItem()
     }
 }
