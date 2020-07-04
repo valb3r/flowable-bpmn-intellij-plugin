@@ -5,6 +5,7 @@ import com.intellij.database.psi.DbElement
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
+import com.valb3r.bpmn.intellij.plugin.CANVAS_PAINT_TOPIC
 import com.valb3r.bpmn.intellij.plugin.debugger.prepareDebugger
 
 class AttachBpmnDebuggerToDbAction : AnAction() {
@@ -13,6 +14,7 @@ class AttachBpmnDebuggerToDbAction : AnAction() {
         anActionEvent.project ?: return
         val schema = properElem(anActionEvent) ?: return
         prepareDebugger(schema)
+        anActionEvent.project!!.messageBus.syncPublisher(CANVAS_PAINT_TOPIC).repaint()
     }
 
     override fun update(anActionEvent: AnActionEvent) {
