@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.util.messages.MessageBusConnection
+import com.intellij.util.messages.Topic
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -23,13 +24,20 @@ import com.valb3r.bpmn.intellij.plugin.render.BpmnProcessRenderer
 import com.valb3r.bpmn.intellij.plugin.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.xmlnav.newXmlNavigator
 import java.nio.charset.StandardCharsets.UTF_8
+import java.util.*
 import javax.swing.JTable
 
+interface PaintTopicListener: EventListener {
+    fun repaint()
+}
+
+val CANVAS_PAINT_TOPIC = Topic<PaintTopicListener>("BPMN Flowable plugin repaint topic", PaintTopicListener::class.java)
 
 class CanvasBuilder(val bpmnProcessRenderer: BpmnProcessRenderer) {
 
     private var newObjectsFactory: NewElementsProvider? = null
-    private var currentConnection: MessageBusConnection? = null
+    private var currentVfsConnection: MessageBusConnection? = null
+    private var currentPaintConnection: MessageBusConnection? = null
 
     fun build(
             committerFactory: (BpmnParser) -> FileCommitter, parser: BpmnParser, properties: JTable,
@@ -51,10 +59,12 @@ class CanvasBuilder(val bpmnProcessRenderer: BpmnProcessRenderer) {
         newPropertiesVisualizer(properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
         canvas.reset(data, process.toView(newObjectsFactory!!), bpmnProcessRenderer)
 
-        currentConnection?.let { it.disconnect(); it.dispose() }
-        currentConnection = attachFileChangeListener(project, bpmnFile) {
+        currentVfsConnection?.let { it.disconnect(); it.dispose() }
+        currentPaintConnection?.let { it.disconnect(); it.dispose() }
+        currentVfsConnection = attachFileChangeListener(project, bpmnFile) {
             build(committerFactory, parser, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory, canvas, project, it)
         }
+        currentPaintConnection = attachPaintListener(project, canvas)
     }
 
     private fun attachFileChangeListener(project: Project, bpmnFile: VirtualFile, onUpdate: ((bpmnFile: VirtualFile) -> Unit)): MessageBusConnection {
@@ -73,6 +83,18 @@ class CanvasBuilder(val bpmnProcessRenderer: BpmnProcessRenderer) {
                 if (!registry.fileStateMatches(readFile(event.file))) {
                     onUpdate(event.file)
                 }
+            }
+        })
+
+        return connection
+    }
+
+    private fun attachPaintListener(project: Project, canvas: Canvas): MessageBusConnection {
+        val connection = project.messageBus.connect()
+
+        connection.subscribe(CANVAS_PAINT_TOPIC, object : PaintTopicListener {
+            override fun repaint() {
+                canvas.repaint()
             }
         })
 

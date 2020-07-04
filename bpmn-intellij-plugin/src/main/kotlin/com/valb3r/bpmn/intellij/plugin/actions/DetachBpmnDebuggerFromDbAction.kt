@@ -5,6 +5,8 @@ import com.intellij.database.psi.DbElement
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
+import com.intellij.openapi.application.ApplicationManager
+import com.valb3r.bpmn.intellij.plugin.CANVAS_PAINT_TOPIC
 import com.valb3r.bpmn.intellij.plugin.debugger.currentDebugger
 import com.valb3r.bpmn.intellij.plugin.debugger.detachDebugger
 
@@ -13,6 +15,9 @@ class DetachBpmnDebuggerFromDbAction : AnAction() {
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         anActionEvent.project ?: return
         detachDebugger()
+        ApplicationManager.getApplication().invokeLater {
+            anActionEvent.project!!.messageBus.syncPublisher(CANVAS_PAINT_TOPIC).repaint()
+        }
     }
 
     override fun update(anActionEvent: AnActionEvent) {
