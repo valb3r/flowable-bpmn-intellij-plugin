@@ -58,7 +58,7 @@ internal class FlowableDecisionTaskTest {
         {value: Boolean -> readAndUpdate(PropertyType.IS_FOR_COMPENSATION, value).isForCompensation.shouldBeEqualTo(value)} (false);
         {value: String -> readAndUpdate(PropertyType.DECISION_TABLE_REFERENCE_KEY, value).decisionTableReferenceKey.shouldBeEqualTo(value)} ("My table");
         {value: Boolean -> readAndUpdate(PropertyType.DECISION_TASK_THROW_ERROR_ON_NO_HITS, value).decisionTaskThrowErrorOnNoHits.shouldBeEqualTo(value)} (false);
-        {value: Boolean -> readAndUpdate(PropertyType.FALLBACK_TO_DEF_TENANT_CDATA, value).fallbackToDefaultTenantCdata.shouldBeEqualTo(value)} (false);
+        {value: Boolean -> readAndUpdate(PropertyType.FALLBACK_TO_DEF_TENANT_CDATA, value).fallbackToDefaultTenantCdata.shouldBeEqualTo(value)} (false)
     }
 
     @Test
@@ -81,7 +81,6 @@ internal class FlowableDecisionTaskTest {
     }
 
     private fun readDecisionTask(processObject: BpmnProcessObject): BpmnDecisionTask {
-        val task = processObject.process.body!!.decisionTask!!.shouldHaveSingleItem()
-        return task
+        return processObject.process.body!!.decisionTask!!.shouldHaveSingleItem()
     }
 }

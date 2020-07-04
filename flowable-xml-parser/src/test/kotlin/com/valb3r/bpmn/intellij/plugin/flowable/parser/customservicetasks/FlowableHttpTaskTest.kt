@@ -141,7 +141,6 @@ internal class FlowableHttpTaskTest {
     }
 
     private fun readHttpTask(processObject: BpmnProcessObject): BpmnHttpTask {
-        val task = processObject.process.body!!.httpTask!!.shouldHaveSingleItem()
-        return task
+        return processObject.process.body!!.httpTask!!.shouldHaveSingleItem()
     }
 }

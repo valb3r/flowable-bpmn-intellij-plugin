@@ -76,7 +76,7 @@ internal class FlowableMailTaskTest {
         {value: String -> readAndUpdate(PropertyType.BCC, value).bcc.shouldBeEqualTo(value)} ("jane@example.com");
         {value: String -> readAndUpdate(PropertyType.TEXT, value).text.shouldBeEqualTo(value)} ("A message?");
         {value: String -> readAndUpdate(PropertyType.HTML, value).html.shouldBeEqualTo(value)} ("<html></html>");
-        {value: String -> readAndUpdate(PropertyType.CHARSET, value).charset.shouldBeEqualTo(value)} ("ISO-8859-1");
+        {value: String -> readAndUpdate(PropertyType.CHARSET, value).charset.shouldBeEqualTo(value)} ("ISO-8859-1")
     }
 
     @Test
@@ -107,7 +107,6 @@ internal class FlowableMailTaskTest {
     }
 
     private fun readMailTask(processObject: BpmnProcessObject): BpmnMailTask {
-        val task = processObject.process.body!!.mailTask!!.shouldHaveSingleItem()
-        return task
+        return processObject.process.body!!.mailTask!!.shouldHaveSingleItem()
     }
 }

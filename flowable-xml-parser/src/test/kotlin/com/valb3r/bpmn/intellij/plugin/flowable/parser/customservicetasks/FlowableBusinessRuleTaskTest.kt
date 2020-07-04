@@ -83,7 +83,6 @@ internal class FlowableBusinessRuleTaskTest {
     }
 
     private fun readBusinessRuleTask(processObject: BpmnProcessObject): BpmnBusinessRuleTask {
-        val task = processObject.process.body!!.businessRuleTask!!.shouldHaveSingleItem()
-        return task
+        return processObject.process.body!!.businessRuleTask!!.shouldHaveSingleItem()
     }
 }

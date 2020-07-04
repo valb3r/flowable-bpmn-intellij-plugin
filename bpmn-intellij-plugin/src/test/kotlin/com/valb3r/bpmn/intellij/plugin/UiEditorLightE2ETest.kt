@@ -1247,8 +1247,7 @@ internal class UiEditorLightE2ETest {
         argumentCaptor<List<Event>>().let {
             verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any())
             it.firstValue.shouldHaveSize(1)
-            val edgeBpmn = it.firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
-            return edgeBpmn
+            return it.firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
         }
     }
 
@@ -1289,8 +1288,7 @@ internal class UiEditorLightE2ETest {
     private fun elementCenter(elemId: DiagramElementId): Point2D.Float {
         val area = renderResult?.get(elemId).shouldNotBeNull()
         val bounds = area.area.bounds2D.shouldNotBeNull()
-        val point = Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat())
-        return point
+        return Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat())
     }
 
     private fun initializeCanvas() {

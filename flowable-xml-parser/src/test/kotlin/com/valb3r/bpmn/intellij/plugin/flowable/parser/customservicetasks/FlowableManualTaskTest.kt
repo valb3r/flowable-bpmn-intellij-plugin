@@ -49,7 +49,7 @@ internal class FlowableManualTaskTest {
         {value: String -> readAndUpdate(PropertyType.NAME, value).name.shouldBeEqualTo(value)} ("new Name");
         {value: String -> readAndUpdate(PropertyType.DOCUMENTATION, value).documentation.shouldBeEqualTo(value)} ("new docs");
         {value: Boolean -> readAndUpdate(PropertyType.ASYNC, value).async.shouldBeEqualTo(value)} (false);
-        {value: Boolean -> readAndUpdate(PropertyType.IS_FOR_COMPENSATION, value).isForCompensation.shouldBeEqualTo(value)} (false);
+        {value: Boolean -> readAndUpdate(PropertyType.IS_FOR_COMPENSATION, value).isForCompensation.shouldBeEqualTo(value)} (false)
     }
 
     @Test
@@ -71,7 +71,6 @@ internal class FlowableManualTaskTest {
     }
 
     private fun readManualTask(processObject: BpmnProcessObject): BpmnManualTask {
-        val task = processObject.process.body!!.manualTask!!.shouldHaveSingleItem()
-        return task
+        return processObject.process.body!!.manualTask!!.shouldHaveSingleItem()
     }
 }

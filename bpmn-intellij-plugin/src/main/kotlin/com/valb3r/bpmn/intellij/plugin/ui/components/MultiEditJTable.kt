@@ -145,7 +145,7 @@ class LabelTextFieldCellRenderer(val field: String): TableCellRenderer {
     override fun getTableCellRendererComponent(
             table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
         val label = JLabel(field)
-        label.font = Font("Consolas", Font.BOLD, 12);
+        label.font = Font("Consolas", Font.BOLD, 12)
         return label
     }
 }
