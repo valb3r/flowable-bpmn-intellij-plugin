@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
+import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
@@ -43,11 +44,11 @@ abstract class AnchorElement(
         return mutableListOf()
     }
 
-    override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
+    override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
         return mutableSetOf()
     }
 
-    override fun shapeAnchors(camera: Camera): MutableSet<Point2D.Float> {
+    override fun shapeAnchors(camera: Camera): MutableSet<Anchor> {
         return mutableSetOf()
     }
 }

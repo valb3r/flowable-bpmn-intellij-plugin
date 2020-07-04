@@ -10,6 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseBpmnRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
@@ -78,15 +79,15 @@ abstract class BaseEdgeRenderElement(
         TODO("Not yet implemented")
     }
 
-    override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
-        return edge.waypoint.filter { it.physical && !state.ctx.selectedIds.contains(it.id) }.map { Point2D.Float(it.x, it.y) }.toMutableSet()
+    override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
+        return edge.waypoint.filter { it.physical && !state.ctx.selectedIds.contains(it.id) }.map { Anchor(Point2D.Float(it.x, it.y)) }.toMutableSet()
     }
 
-    override fun shapeAnchors(camera: Camera): MutableSet<Point2D.Float> {
+    override fun shapeAnchors(camera: Camera): MutableSet<Anchor> {
         return mutableSetOf()
     }
 
-    override fun currentRect(camera: Camera): Rectangle2D.Float {
+    override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         val minX = edge.waypoint.minBy { it.x }?.x ?: 0.0f
         val minY = edge.waypoint.minBy { it.y }?.y ?: 0.0f
         val maxX = edge.waypoint.maxBy { it.x }?.x ?: 0.0f

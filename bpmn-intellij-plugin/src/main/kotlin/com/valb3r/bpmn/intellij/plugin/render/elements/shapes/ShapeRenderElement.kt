@@ -21,6 +21,7 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.EdgeExtractionAnc
 import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationOrChangesToWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTransform
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
+import java.awt.geom.Line2D
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
@@ -48,7 +49,7 @@ abstract class ShapeRenderElement(
             dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex> -> onDragEnd(dx, dy, droppedOn, allDroppedOnAreas)
         }
 
-        val shapeCtx = ShapeCtx(shape.id, elem, currentRect(ctx.canvas.camera), props, name)
+        val shapeCtx = ShapeCtx(shape.id, elem, currentOnScreenRect(ctx.canvas.camera), props, name)
         if (state.history.contains(bpmnElementId)) {
             val indexes = state.history.mapIndexed {pos, id -> if (id == bpmnElementId) pos else null}.filterNotNull()
             state.ctx.canvas.drawTextNoCameraTransform(
@@ -128,41 +129,39 @@ abstract class ShapeRenderElement(
         }
     }
 
-    override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
-        val rect = currentRect(camera)
+    override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
+        val rect = currentOnScreenRect(camera)
         val halfWidth = rect.width / 2.0f
         val halfHeight = rect.height / 2.0f
 
         val cx = rect.x + rect.width / 2.0f
         val cy = rect.y + rect.height / 2.0f
         return mutableSetOf(
-                Point2D.Float(cx - halfWidth, cy),
-                Point2D.Float(cx + halfWidth, cy),
-                Point2D.Float(cx, cy - halfHeight),
-                Point2D.Float(cx, cy + halfHeight),
+                Anchor(Point2D.Float(cx - halfWidth, cy), 10),
+                Anchor(Point2D.Float(cx + halfWidth, cy), 10),
+                Anchor(Point2D.Float(cx, cy - halfHeight), 10),
+                Anchor(Point2D.Float(cx, cy + halfHeight), 10),
 
-                Point2D.Float(cx - halfWidth / 2.0f, cy - halfHeight),
-                Point2D.Float(cx + halfWidth / 2.0f, cy - halfHeight),
-                Point2D.Float(cx - halfWidth / 2.0f, cy + halfHeight),
-                Point2D.Float(cx + halfWidth / 2.0f, cy + halfHeight),
+                Anchor(Point2D.Float(cx - halfWidth / 2.0f, cy - halfHeight)),
+                Anchor(Point2D.Float(cx + halfWidth / 2.0f, cy - halfHeight)),
+                Anchor(Point2D.Float(cx - halfWidth / 2.0f, cy + halfHeight)),
+                Anchor(Point2D.Float(cx + halfWidth / 2.0f, cy + halfHeight)),
 
-                Point2D.Float(cx - halfWidth, cy - halfHeight / 2.0f),
-                Point2D.Float(cx - halfWidth, cy + halfHeight / 2.0f),
-                Point2D.Float(cx + halfWidth, cy - halfHeight / 2.0f),
-                Point2D.Float(cx + halfWidth, cy + halfHeight / 2.0f)
+                Anchor(Point2D.Float(cx - halfWidth, cy - halfHeight / 2.0f)),
+                Anchor(Point2D.Float(cx - halfWidth, cy + halfHeight / 2.0f)),
+                Anchor(Point2D.Float(cx + halfWidth, cy - halfHeight / 2.0f)),
+                Anchor(Point2D.Float(cx + halfWidth, cy + halfHeight / 2.0f))
         )
     }
 
-    override fun shapeAnchors(camera: Camera): MutableSet<Point2D.Float> {
-        val rect = currentRect(camera)
+    override fun shapeAnchors(camera: Camera): MutableSet<Anchor> {
+        val rect = currentOnScreenRect(camera)
         val cx = rect.x + rect.width / 2.0f
         val cy = rect.y + rect.height / 2.0f
-        return mutableSetOf(
-                Point2D.Float(cx, cy)
-        )
+        return mutableSetOf(Anchor(Point2D.Float(cx, cy)))
     }
 
-    override fun currentRect(camera: Camera): Rectangle2D.Float {
+    override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         return viewTransform.transform(shape.rectBounds())
     }
 
@@ -225,7 +224,7 @@ abstract class ShapeRenderElement(
     }
 
     private fun renderNewSequenceAnchorMove() {
-        val bounds = currentRect(state.ctx.canvas.camera)
+        val bounds = currentOnScreenRect(state.ctx.canvas.camera)
         state.ctx.canvas.drawLineWithArrow(
                 Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat()),
                 edgeExtractionAnchor.transformedLocation,
@@ -293,8 +292,32 @@ abstract class ShapeRenderElement(
         val allStartWaypointsAnchors = waypointAnchors(state.ctx.canvas.camera)
         val allEndWaypointsAnchors = droppedOnTarget.anchorsForWaypoints
 
-        var startAvailable = allStartWaypointsAnchors.filter { !isAnchorOccupated(it) }
-        var endAvailable = allEndWaypointsAnchors.filter { !isAnchorOccupated(it) }
+        val fromCenters = findBestSequenceElement(
+                allStartWaypointsAnchors.filter { it.priority > 0 }.toMutableSet(),
+                allEndWaypointsAnchors.filter { it.priority > 0 }.toMutableSet(),
+                droppedOnTarget,
+                false
+        )
+
+        if (null != fromCenters) {
+            return fromCenters
+        }
+
+        return findBestSequenceElement(allStartWaypointsAnchors, allEndWaypointsAnchors, droppedOnTarget, true)
+    }
+
+    private fun findBestSequenceElement(
+            allStartWaypointsAnchors: MutableSet<Anchor>,
+            allEndWaypointsAnchors: MutableSet<Anchor>,
+            droppedOnTarget: AreaWithZindex,
+            allowShapeIntersection: Boolean
+    ): Pair<Point2D.Float, Point2D.Float>? {
+        if (allStartWaypointsAnchors.isEmpty() || allEndWaypointsAnchors.isEmpty()) {
+            return null
+        }
+
+        var startAvailable = allStartWaypointsAnchors.filter { !isAnchorOccupated(it.point) }
+        var endAvailable = allEndWaypointsAnchors.filter { !isAnchorOccupated(it.point) }
 
         if (startAvailable.isEmpty()) {
             startAvailable = allStartWaypointsAnchors.toList()
@@ -304,7 +327,16 @@ abstract class ShapeRenderElement(
             endAvailable = allEndWaypointsAnchors.toList()
         }
 
-        return cartesianProduct(startAvailable, endAvailable).minBy { it.first.distance(it.second) }
+        val doesNotIntersectArea = { anchor: Pair<Anchor, Anchor> -> Boolean
+            val current = currentOnScreenRect(state.ctx.canvas.camera)
+            val line = Line2D.Float(anchor.first.point, anchor.second.point)
+            !line.intersects(current) && !line.intersects(droppedOnTarget.area.bounds2D)
+        }
+
+        return cartesianProduct(startAvailable, endAvailable)
+                .filter { if (allowShapeIntersection) true else doesNotIntersectArea(it) }
+                .minBy { it.first.point.distance(it.second.point) }
+                ?.let { Pair(it.first.point, it.second.point) }
     }
 
     private fun isAnchorOccupated(anchor: Point2D.Float): Boolean {

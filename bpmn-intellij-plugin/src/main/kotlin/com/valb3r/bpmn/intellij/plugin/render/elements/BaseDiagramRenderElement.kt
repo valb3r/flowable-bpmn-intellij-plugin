@@ -96,7 +96,7 @@ abstract class BaseDiagramRenderElement(
     }
 
     protected open fun drawActionsElement(): Map<DiagramElementId, AreaWithZindex> {
-        val rect = actionsRect(currentRect(state.ctx.canvas.camera))
+        val rect = actionsRect(currentOnScreenRect(state.ctx.canvas.camera))
         state.ctx.canvas.drawRectNoFill(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
         val rightActionsLocation = actionsAnchorRight(rect)
         return drawActionsRight(rightActionsLocation.x, rightActionsLocation.y).toMutableMap()
@@ -181,10 +181,10 @@ abstract class BaseDiagramRenderElement(
     abstract fun doResizeWithoutChildren(dw: Float, dh: Float)
     abstract fun doResizeEndWithoutChildren(dw: Float, dh: Float): MutableList<Event>
 
-    protected abstract fun currentRect(camera: Camera): Rectangle2D.Float
+    protected abstract fun currentOnScreenRect(camera: Camera): Rectangle2D.Float
 
-    protected abstract fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float>
-    protected abstract fun shapeAnchors(camera: Camera): MutableSet<Point2D.Float>
+    protected abstract fun waypointAnchors(camera: Camera): MutableSet<Anchor>
+    protected abstract fun shapeAnchors(camera: Camera): MutableSet<Anchor>
 
     protected abstract fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
 

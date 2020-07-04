@@ -10,9 +10,9 @@ import com.valb3r.bpmn.intellij.plugin.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
+import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationOrChangesToWaypoint
-import java.awt.geom.Point2D
 
 class AnyShapeNestableIconShape(
         override val elementId: DiagramElementId,
@@ -49,11 +49,11 @@ class AnyShapeNestableIconShape(
         return newEvents
     }
 
-    override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
+    override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
         return mutableSetOf()
     }
 
-    override fun shapeAnchors(camera: Camera): MutableSet<Point2D.Float> {
+    override fun shapeAnchors(camera: Camera): MutableSet<Anchor> {
         return mutableSetOf()
     }
 

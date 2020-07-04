@@ -4,6 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.render.*
+import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -16,7 +17,7 @@ class EdgeExtractionAnchor(
         state: RenderState
 ) : IconAnchorElement(elementId, bottomPoint, state) {
 
-    override fun currentRect(camera: Camera): Rectangle2D.Float {
+    override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         val icon = icon()
         val left = camera.fromCameraView(Point2D.Float(0.0f, 0.0f))
         val right = camera.fromCameraView(Point2D.Float(icon.iconWidth.toFloat(), icon.iconHeight.toFloat()))
@@ -64,7 +65,7 @@ class EdgeExtractionAnchor(
         return ICON_Z_INDEX
     }
 
-    override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
-        return mutableSetOf(transformedLocation)
+    override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
+        return mutableSetOf(Anchor(transformedLocation))
     }
 }

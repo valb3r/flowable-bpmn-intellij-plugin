@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Area
 import java.awt.geom.Point2D
@@ -20,7 +21,7 @@ abstract class CircleAnchorElement(
         state: RenderState
 ) : AnchorElement(elementId, currentLocation, state) {
 
-    override fun currentRect(camera: Camera): Rectangle2D.Float {
+    override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         return viewTransform.transform(
                 Rectangle2D.Float(
                         location.x - radius,
@@ -36,7 +37,7 @@ abstract class CircleAnchorElement(
             return mutableMapOf()
         }
 
-        val rect = currentRect(ctx.canvas.camera)
+        val rect = currentOnScreenRect(ctx.canvas.camera)
         if (!isVisible() || ifVisibleNoRenderIf()) {
             val point = ctx.canvas.camera.toCameraView(Point2D.Float(rect.x, rect.y))
             return mutableMapOf(
@@ -57,8 +58,8 @@ abstract class CircleAnchorElement(
         return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT, waypointAnchors(ctx.canvas.camera), index = zIndex()))
     }
 
-    override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
-        return mutableSetOf(transformedLocation)
+    override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
+        return mutableSetOf(Anchor(transformedLocation))
     }
 
     open protected fun ifVisibleNoRenderIf(): Boolean {
