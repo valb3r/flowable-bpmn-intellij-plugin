@@ -450,10 +450,12 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         val st = camera.toCameraView(start)
         val en = camera.toCameraView(end)
         val maxWidth = en.distance(st).toFloat()
-
         graphics2D.font = font // for ellipsis
-        val transform = graphics2D.transform
-        val rotTransform = AffineTransform(transform)
+        val rotTransform = AffineTransform()
+
+        if (maxWidth < font.size * 2) {
+            return
+        }
 
         rotTransform.translate(st.x.toDouble(), st.y.toDouble())
         rotTransform.rotate(en.x.toDouble() - st.x.toDouble(), en.y.toDouble() - st.y.toDouble())
@@ -467,13 +469,11 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         val frc: FontRenderContext = graphics2D.fontRenderContext
         val lineMeasurer = LineBreakMeasurer(paragraph, BreakIterator.getCharacterInstance(), frc)
 
-        if (maxWidth < font.size * 2) {
-            return
-        }
 
         val layout = lineMeasurer.nextLayout(maxWidth - 10.0f)
         lineMeasurer.position = paragraphStart
 
+        graphics2D.color = textColor
         layout.draw(graphics2D, 0.0f, 0.0f)
         graphics2D.font = font
     }

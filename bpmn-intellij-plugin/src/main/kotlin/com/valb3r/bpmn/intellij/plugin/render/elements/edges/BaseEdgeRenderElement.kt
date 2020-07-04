@@ -17,6 +17,7 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.AnchorElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.PhysicalWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.VirtualWaypoint
+import java.awt.Color
 import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -55,7 +56,7 @@ abstract class BaseEdgeRenderElement(
         }
 
         drawHistoricalLabel()
-        drawNameIfAvailable(updatedAnchors)
+        drawNameIfAvailable(updatedAnchors, color(isActive(), edgeColor))
 
         area.add(renderDefaultMarkIfNeeded(ctx, anchors.filterIsInstance<PhysicalWaypoint>().map { it.transformedLocation }))
         return mapOf(elementId to AreaWithZindex(area, AreaType.EDGE, waypointAnchors(ctx.canvas.camera), index = zIndex()))
@@ -100,12 +101,12 @@ abstract class BaseEdgeRenderElement(
         )
     }
 
-    private fun drawNameIfAvailable(waypoints: List<Point2D.Float>) {
+    private fun drawNameIfAvailable(waypoints: List<Point2D.Float>, color: Color) {
         val name = state.currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.NAME)?.value as String? ?: return
         val longestSegment = waypoints
                 .mapIndexedNotNull {pos, it -> if (0 == pos) null else Pair(waypoints[pos - 1], it)}
                 .maxBy { it.first.distance(it.second) } ?: return
-        state.ctx.canvas.drawWrappedSingleLine(longestSegment.first, longestSegment.second, name, Colors.INNER_TEXT_COLOR.color)
+        state.ctx.canvas.drawWrappedSingleLine(longestSegment.first, longestSegment.second, name, color)
     }
 
     private fun drawHistoricalLabel() {

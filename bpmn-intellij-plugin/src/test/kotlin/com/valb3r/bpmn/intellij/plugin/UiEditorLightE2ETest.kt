@@ -38,6 +38,9 @@ import org.mockito.ArgumentMatchers.anyInt
 import java.awt.FontMetrics
 import java.awt.Graphics2D
 import java.awt.Shape
+import java.awt.font.FontRenderContext
+import java.awt.font.GlyphVector
+import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.nio.charset.StandardCharsets
@@ -1197,8 +1200,28 @@ internal class UiEditorLightE2ETest {
         }
     }
 
+    @Test
+    fun `Name should be rendered on sequence element`() {
+        prepareTwoServiceTaskView()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
+        updateEventsRegistry().addPropertyUpdateEvent(StringValueUpdatedEvent(addedEdge.bpmnObject.id, PropertyType.NAME, "test"))
+
+        val capturingGraphics = mock<Graphics2D>()
+        prepareGraphics(capturingGraphics)
+        canvas.paintComponent(capturingGraphics)
+
+        argumentCaptor<GlyphVector>().apply {
+            verify(capturingGraphics, atLeastOnce()).drawGlyphVector(capture(), any(), any())
+            lastValue.numGlyphs.shouldBeEqualTo(4)
+        }
+    }
+
     private fun prepareGraphics(graphics2D: Graphics2D) {
         whenever(graphics2D.fontMetrics).thenReturn(fontMetrics)
+        val frc = mock<FontRenderContext>()
+        whenever(frc.transform).thenReturn(AffineTransform())
+        whenever(graphics2D.fontRenderContext).thenReturn(frc)
+        whenever(graphics2D.transform).thenReturn(AffineTransform())
         whenever(fontMetrics.getStringBounds(any(), eq(graphics2D))).thenReturn(Rectangle2D.Float())
         whenever(graphics2D.create()).thenReturn(graphics2D)
     }
