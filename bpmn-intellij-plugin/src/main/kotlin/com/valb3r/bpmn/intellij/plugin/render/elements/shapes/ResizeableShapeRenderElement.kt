@@ -48,7 +48,7 @@ abstract class ResizeableShapeRenderElement(
         val end = state.ctx.canvas.camera.fromCameraView(Point2D.Float(0.0f, ACTIONS_ICO_SIZE * spaceCoeff))
         val ySpacing = end.y - start.y
 
-        val rect = currentRect(state.ctx.canvas.camera)
+        val rect = currentOnScreenRect(state.ctx.canvas.camera)
         val left = state.ctx.canvas.camera.toCameraView(Point2D.Float(rect.x, rect.y))
         val right = state.ctx.canvas.camera.toCameraView(Point2D.Float(rect.x + rect.width, rect.y + rect.height))
 

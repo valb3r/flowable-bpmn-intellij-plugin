@@ -8,6 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.events.NewWaypointsEvent
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
+import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
 
@@ -34,7 +35,7 @@ class VirtualWaypoint(
         ))
     }
 
-    override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
+    override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
         return if (isActiveOrDragged()) return super.waypointAnchors(camera) else mutableSetOf()
     }
 }

@@ -20,7 +20,7 @@ class ShapeResizeAnchorTop(
         state: RenderState
 ) : IconAnchorElement(elementId, bottomPoint, state) {
 
-    override fun currentRect(camera: Camera): Rectangle2D.Float {
+    override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         val icon = icon()
         val iconLeft = camera.fromCameraView(Point2D.Float(0.0f, 0.0f))
         val iconRight = camera.fromCameraView(Point2D.Float(icon.iconWidth.toFloat(), icon.iconHeight.toFloat()))

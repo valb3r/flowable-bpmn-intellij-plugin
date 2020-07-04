@@ -164,15 +164,15 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
             for (draggedAnchor in draggedAnchors) {
                 val targetAnchors = if (AreaType.SHAPE == draggedType) searchIn.anchorsForShape else searchIn.anchorsForWaypoints
                 for (anchor in targetAnchors) {
-                    val attractsX = abs(draggedAnchor.x - anchor.x) < settings.anchorAttractionThreshold
-                    val attractsY = abs(draggedAnchor.y - anchor.y) < settings.anchorAttractionThreshold
+                    val attractsX = abs(draggedAnchor.point.x - anchor.point.x) < settings.anchorAttractionThreshold
+                    val attractsY = abs(draggedAnchor.point.y - anchor.point.y) < settings.anchorAttractionThreshold
 
                     if (attractsX && attractsY) {
-                        anchors += AnchorDetails(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), AnchorType.POINT)
+                        anchors += AnchorDetails(anchor.point, draggedAnchor.point, AnchorType.POINT)
                     } else if (attractsX) {
-                        anchors += AnchorDetails(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), AnchorType.HORIZONTAL)
+                        anchors += AnchorDetails(anchor.point, draggedAnchor.point, AnchorType.HORIZONTAL)
                     } else if (attractsY) {
-                        anchors += AnchorDetails(Point2D.Float(anchor.x, anchor.y), Point2D.Float(draggedAnchor.x, draggedAnchor.y), AnchorType.VERTICAL)
+                        anchors += AnchorDetails(anchor.point, draggedAnchor.point, AnchorType.VERTICAL)
                     }
                 }
             }

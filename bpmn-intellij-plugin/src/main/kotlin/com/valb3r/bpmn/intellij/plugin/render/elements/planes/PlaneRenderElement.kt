@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseBpmnRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
@@ -42,15 +43,15 @@ class PlaneRenderElement(
         return mutableListOf()
     }
 
-    override fun currentRect(camera: Camera): Rectangle2D.Float {
+    override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         return Rectangle2D.Float()
     }
 
-    override fun waypointAnchors(camera: Camera): MutableSet<Point2D.Float> {
+    override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
         return mutableSetOf()
     }
 
-    override fun shapeAnchors(camera: Camera): MutableSet<Point2D.Float> {
+    override fun shapeAnchors(camera: Camera): MutableSet<Anchor> {
         return mutableSetOf()
     }
 

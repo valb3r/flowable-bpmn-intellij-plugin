@@ -19,7 +19,7 @@ abstract class IconAnchorElement(
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val icon = icon()
         val active = isActive()
-        val rect = currentRect(ctx.canvas.camera)
+        val rect = currentOnScreenRect(ctx.canvas.camera)
         val area = ctx.canvas.drawIcon(Point2D.Float(rect.x, rect.y), icon, if (active) Colors.SELECTED_COLOR.color else null)
 
         state.ctx.interactionContext.dragEndCallbacks[elementId] = {
