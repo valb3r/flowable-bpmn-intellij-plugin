@@ -4,6 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.render.ANCHOR_Z_INDEX
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
@@ -76,7 +77,7 @@ abstract class BaseDiagramRenderElement(
 
     open fun render(): MutableMap<DiagramElementId, AreaWithZindex> {
         val result = doRenderWithoutChildren(state.ctx).toMutableMap()
-        children.forEach { result += it.render() }
+        children.sortedBy { it.zIndex() }.forEach { result += it.render() }
         if (isActive() && !multipleElementsSelected()) {
             result += drawActionsElement()
         }
@@ -203,6 +204,6 @@ abstract class BaseDiagramRenderElement(
     }
 
     protected open fun zIndex(): Int {
-        return (parents.firstOrNull()?.zIndex() ?: -1) + 1
+        return if (isActiveOrDragged()) ANCHOR_Z_INDEX else (parents.firstOrNull()?.zIndex() ?: -1) + 1
     }
 }

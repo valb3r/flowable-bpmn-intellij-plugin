@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyInt
 import java.awt.FontMetrics
 import java.awt.Graphics2D
+import java.awt.Shape
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.nio.charset.StandardCharsets
@@ -146,9 +147,7 @@ internal class UiEditorLightE2ETest {
 
         whenever(propertiesTable.columnModel).thenReturn(columnModel)
         whenever(columnModel.getColumn(anyInt())).thenReturn(tableColumn)
-        whenever(graphics.fontMetrics).thenReturn(fontMetrics)
-        whenever(fontMetrics.getStringBounds(any(), eq(graphics))).thenReturn(Rectangle2D.Float())
-        whenever(graphics.create()).thenReturn(graphics)
+        prepareGraphics(graphics)
         whenever(virtualFile.contentsToByteArray()).thenReturn(ByteArray(0))
         whenever(project.messageBus).thenReturn(messageBus)
         whenever(messageBus.connect()).thenReturn(messageBusConnection)
@@ -1157,6 +1156,53 @@ internal class UiEditorLightE2ETest {
         }
     }
 
+    @Test
+    fun `Dragged subprocess element is always visible`() {
+        prepareOneSubProcessThenNestedSubProcessWithReversedChildParentOrder()
+
+        val start = clickOnId(diagramNestedSubProcess.id)
+        dragToButDontStop(start, Point2D.Float(1000.0f, 1000.0f))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        val draggedStart = clickOnId(diagramNestedSubProcess.id)
+        dragToButDontStop(draggedStart, elementCenter(subprocessDiagramId))
+        val capturingGraphics = mock<Graphics2D>()
+        prepareGraphics(capturingGraphics)
+        canvas.paintComponent(capturingGraphics)
+
+        // Child component is rendered after parent (they have different sizes)
+        argumentCaptor<Shape>().apply {
+            verify(capturingGraphics, atLeastOnce()).fill(capture())
+            val parent = allValues
+                    .mapIndexedNotNull {pos, it ->
+                        if (it.bounds.width == diagramSubProcess.rectBounds().width.toInt()
+                                && it.bounds.height == diagramSubProcess.rectBounds().height.toInt()) {
+                            return@mapIndexedNotNull pos
+                        }
+                        return@mapIndexedNotNull null
+                    }.shouldHaveSingleItem()
+
+            val subProcess = allValues
+                    .mapIndexedNotNull {pos, it ->
+                        if (it.bounds.width == diagramNestedSubProcess.rectBounds().width.toInt()
+                                && it.bounds.height == diagramNestedSubProcess.rectBounds().height.toInt()) {
+                            return@mapIndexedNotNull pos
+                        }
+                        return@mapIndexedNotNull null
+                    }.shouldHaveSingleItem()
+
+            (parent < subProcess).shouldBeTrue()
+        }
+    }
+
+    private fun prepareGraphics(graphics2D: Graphics2D) {
+        whenever(graphics2D.fontMetrics).thenReturn(fontMetrics)
+        whenever(fontMetrics.getStringBounds(any(), eq(graphics2D))).thenReturn(Rectangle2D.Float())
+        whenever(graphics2D.create()).thenReturn(graphics2D)
+    }
+
     private fun changeIdViaPropertiesVisualizer(diagramElementId: DiagramElementId, elementId: BpmnElementId, newId: String) {
         val id = Pair(elementId, PropertyType.ID)
         clickOnId(diagramElementId)
@@ -1327,6 +1373,36 @@ internal class UiEditorLightE2ETest {
                                         diagramMainPlaneElementId,
                                         basicProcess.process.id,
                                         listOf(diagramSubProcess, diagramNestedSubProcess, diagramServiceTaskStart),
+                                        listOf()
+                                )
+                        )
+                )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
+    private fun prepareOneSubProcessThenNestedSubProcessWithReversedChildParentOrder() {
+        val process = basicProcess.copy(
+                basicProcess.process.copy(
+                        body = BpmnProcessBodyBuilder.builder()
+                                .setSubProcess(listOf(bpmnSubProcess))
+                                .create(),
+                        children = mapOf(
+                                subprocessBpmnId to BpmnProcessBodyBuilder.builder()
+                                        .setSubProcess(listOf(bpmnNestedSubProcess))
+                                        .create(),
+                                subprocessInSubProcessBpmnId to BpmnProcessBodyBuilder.builder()
+                                        .create()
+                        )
+                ),
+                listOf(
+                        DiagramElement(
+                                diagramMainElementId,
+                                PlaneElement(
+                                        diagramMainPlaneElementId,
+                                        basicProcess.process.id,
+                                        listOf(diagramNestedSubProcess, diagramSubProcess),
                                         listOf()
                                 )
                         )
