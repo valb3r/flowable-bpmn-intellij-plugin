@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets.UTF_8
 import java.text.AttributedCharacterIterator
 import java.text.AttributedString
+import java.text.BreakIterator
 import javax.swing.Icon
 
 
@@ -454,14 +455,9 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         val transform = graphics2D.transform
         val rotTransform = AffineTransform(transform)
 
-        val shouldInvert = st.x - en.x > 0
-        if (shouldInvert) {
-            rotTransform.translate(en.x.toDouble(), en.y.toDouble() - textMargin)
-            rotTransform.rotate(st.x.toDouble() - en.x.toDouble(), st.y.toDouble() - en.y.toDouble())
-        } else {
-            rotTransform.translate(st.x.toDouble(), st.y.toDouble() - textMargin)
-            rotTransform.rotate(en.x.toDouble() - st.x.toDouble(), en.y.toDouble() - st.y.toDouble())
-        }
+        rotTransform.translate(st.x.toDouble(), st.y.toDouble())
+        rotTransform.rotate(en.x.toDouble() - st.x.toDouble(), en.y.toDouble() - st.y.toDouble())
+        rotTransform.translate(textMargin.toDouble(), -textMargin.toDouble())
         val rotatedFont: Font = font.deriveFont(rotTransform)
         graphics2D.font = rotatedFont
 
@@ -469,17 +465,16 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         val paragraph: AttributedCharacterIterator = attributedString.iterator
         val paragraphStart = paragraph.beginIndex
         val frc: FontRenderContext = graphics2D.fontRenderContext
-        val lineMeasurer = LineBreakMeasurer(paragraph, frc)
+        val lineMeasurer = LineBreakMeasurer(paragraph, BreakIterator.getCharacterInstance(), frc)
 
         if (maxWidth < font.size * 2) {
             return
         }
 
         val layout = lineMeasurer.nextLayout(maxWidth - 10.0f)
-        val size = -layout.descent - layout.leading
         lineMeasurer.position = paragraphStart
 
-        layout.draw(graphics2D, 0.0f, size)
+        layout.draw(graphics2D, 0.0f, 0.0f)
         graphics2D.font = font
     }
 
