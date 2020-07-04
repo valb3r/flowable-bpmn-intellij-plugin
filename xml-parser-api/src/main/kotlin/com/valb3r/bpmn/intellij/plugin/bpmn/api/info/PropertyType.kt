@@ -11,7 +11,8 @@ enum class PropertyType(
         val cascades: Boolean = false,
         val updatedBy: PropertyType? = null,
         val updateOrder: Int = 0,
-        val elementUpdateChangesClass: Boolean = false
+        val elementUpdateChangesClass: Boolean = false,
+        val defaultValueIfNull: Any? = null
 ) {
     ID("id", "ID", STRING, "id.id", true, null, 1000), // ID should fire last
     NAME("name", "Name", STRING),
@@ -23,7 +24,7 @@ enum class PropertyType(
     CALLED_ELEM_TYPE("calledElementType", "Called element type", STRING),
     INHERIT_VARS("inheritVariables", "Inherit parent variables", BOOLEAN),
     FALLBACK_TO_DEF_TENANT("fallbackToDefaultTenant", "Fallback to default tenant", BOOLEAN),
-    EXCLUSIVE("exclusive", "Exclusive", BOOLEAN),
+    EXCLUSIVE("exclusive", "Exclusive", BOOLEAN, defaultValueIfNull = true),
     EXPRESSION("expression", "Expression", PropertyValueType.EXPRESSION),
     DELEGATE_EXPRESSION("delegateExpression", "Delegate expression", PropertyValueType.EXPRESSION),
     CLASS("clazz", "Class", PropertyValueType.CLASS),
