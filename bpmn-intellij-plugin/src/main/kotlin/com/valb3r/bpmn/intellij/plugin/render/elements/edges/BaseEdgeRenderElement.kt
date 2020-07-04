@@ -102,7 +102,10 @@ abstract class BaseEdgeRenderElement(
 
     private fun drawNameIfAvailable(waypoints: List<Point2D.Float>) {
         val name = state.currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.NAME)?.value as String? ?: return
-        state.ctx.canvas.drawWrappedSingleLine(waypoints[0], waypoints[1], name, Colors.INNER_TEXT_COLOR.color)
+        val longestSegment = waypoints
+                .mapIndexedNotNull {pos, it -> if (0 == pos) null else Pair(waypoints[pos - 1], it)}
+                .maxBy { it.first.distance(it.second) } ?: return
+        state.ctx.canvas.drawWrappedSingleLine(longestSegment.first, longestSegment.second, name, Colors.INNER_TEXT_COLOR.color)
     }
 
     private fun drawHistoricalLabel() {
