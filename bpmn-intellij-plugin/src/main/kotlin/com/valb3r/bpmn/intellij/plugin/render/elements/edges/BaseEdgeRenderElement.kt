@@ -34,6 +34,9 @@ abstract class BaseEdgeRenderElement(
 
     override val children: MutableList<BaseDiagramRenderElement> = anchors as MutableList<BaseDiagramRenderElement>
 
+    val edgeElem: EdgeWithIdentifiableWaypoints
+        get() = edge
+
     override fun dragTo(dx: Float, dy: Float) {
         if (multipleElementsSelected() && isActiveOrDragged()) {
             return

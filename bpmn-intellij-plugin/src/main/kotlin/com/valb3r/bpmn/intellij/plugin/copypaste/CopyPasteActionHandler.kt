@@ -1,6 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.copypaste
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.util.concurrent.atomic.AtomicReference
@@ -19,12 +21,12 @@ fun copyPasteActionHandler(): CopyPasteActionHandler {
 
 class CopyPasteActionHandler {
 
-    fun copy(state: RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+    fun copy(idsToCopy: MutableList<DiagramElementId>, ctx: RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
     }
 
-    fun cut(state: RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+    fun cut(idsToCut: MutableList<DiagramElementId>, ctx: RenderState, updateEvents: ProcessModelUpdateEvents, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
     }
 
-    fun paste(state: RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+    fun paste(updateEvents: ProcessModelUpdateEvents, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
     }
 }

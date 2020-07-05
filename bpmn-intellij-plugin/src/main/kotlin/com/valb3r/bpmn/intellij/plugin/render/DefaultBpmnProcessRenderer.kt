@@ -26,6 +26,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.debugger.currentDebugger
 import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
@@ -85,7 +86,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
         // Overlay system elements on top of rendered BPMN diagram
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
-        drawUndoRedoCutCopyPaste(state, rendered)
+        drawUndoRedoCutCopyPaste(state, elementsById, rendered)
         drawSelectionRect(ctx)
         drawMultiremovalRect(state, rendered)
 
@@ -231,7 +232,11 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         }
     }
 
-    private fun drawUndoRedoCutCopyPaste(state: RenderState, renderedArea: MutableMap<DiagramElementId, AreaWithZindex>) {
+    private fun drawUndoRedoCutCopyPaste(
+            state: RenderState,
+            elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>,
+            renderedArea: MutableMap<DiagramElementId, AreaWithZindex>
+    ) {
         var locationX = undoRedoStartMargin
         val locationY = undoRedoStartMargin
 
@@ -243,26 +248,27 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             locationX += drawIconWithAction(state, redoId, locationX, locationY, renderedArea, { dest -> dest.redo() }, icons.redo)
         }
 
-        drawCutCopyPaste(locationX, locationY, state, renderedArea)
+        drawCutCopyPaste(locationX, locationY, state, elementsById, renderedArea)
     }
 
     private fun drawCutCopyPaste(
             locationX: Float,
             locationY: Float,
             state: RenderState,
+            elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>,
             renderedArea: MutableMap<DiagramElementId, AreaWithZindex>
     ) {
-        val idsToCopy = mutableListOf<DiagramElementId>()
-        idsToCopy += state.ctx.selectedIds.filter { renderedArea.containsKey(it) }
-        idsToCopy += state.ctx.interactionContext.draggedIds.filter { renderedArea.containsKey(it) }
+        val idsToWorkWith = mutableListOf<DiagramElementId>()
+        idsToWorkWith += state.ctx.selectedIds.filter { renderedArea.containsKey(it) }
+        idsToWorkWith += state.ctx.interactionContext.draggedIds.filter { renderedArea.containsKey(it) }
 
-        if (idsToCopy.isEmpty()) {
+        if (idsToWorkWith.isEmpty()) {
             return
         }
 
         var x = locationX
-        x += drawIconWithAction(state, cutId, x, locationY, renderedArea, { dest -> dest.undo() }, icons.cut)
-        drawIconWithAction(state, copyId, x, locationY, renderedArea, { dest -> dest.undo() }, icons.copy)
+        x += drawIconWithAction(state, cutId, x, locationY, renderedArea, { dest -> copyPasteActionHandler().cut(idsToWorkWith, state, dest, elementsById) }, icons.cut)
+        drawIconWithAction(state, copyId, x, locationY, renderedArea, { copyPasteActionHandler().copy(idsToWorkWith, state, elementsById) }, icons.copy)
     }
 
 
