@@ -39,6 +39,7 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.shapes.*
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
+import javax.swing.Icon
 
 interface BpmnProcessRenderer {
     fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
@@ -51,6 +52,9 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
     private val undoId = DiagramElementId("UNDO")
     private val redoId = DiagramElementId("REDO")
+
+    private val cutId = DiagramElementId("CUT")
+    private val copyId = DiagramElementId("COPY")
 
     private val DASHED_STROKE = BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(5.0f), 0.0f)
     private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
@@ -81,7 +85,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
         // Overlay system elements on top of rendered BPMN diagram
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
-        drawUndoRedo(state, rendered)
+        drawUndoRedoCutCopyPaste(state, rendered)
         drawSelectionRect(ctx)
         drawMultiremovalRect(state, rendered)
 
@@ -227,28 +231,57 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         }
     }
 
-    private fun drawUndoRedo(state: RenderState, renderedArea: MutableMap<DiagramElementId, AreaWithZindex>) {
-        val start = Point2D.Float(undoRedoStartMargin, undoRedoStartMargin)
-        var locationX = start.x
-        val locationY = start.y
+    private fun drawUndoRedoCutCopyPaste(state: RenderState, renderedArea: MutableMap<DiagramElementId, AreaWithZindex>) {
+        var locationX = undoRedoStartMargin
+        val locationY = undoRedoStartMargin
 
         if (state.currentState.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.UNDO)) {
-            val color = if (isActive(undoId, state)) Colors.SELECTED_COLOR else null
-            val areaUndo = color?.let { state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo, it.color) }
-                    ?: state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo)
-            renderedArea[undoId] = AreaWithZindex(areaUndo, AreaType.SHAPE, index = ICON_Z_INDEX)
-            locationX += icons.undo.iconWidth + undoRedoStartMargin
-            state.ctx.interactionContext.clickCallbacks[undoId] = { dest -> dest.undo() }
+            locationX += drawIconWithAction(state, undoId, locationX, locationY, renderedArea, { dest -> dest.undo() }, icons.undo)
         }
 
         if (state.currentState.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.REDO)) {
-            val color = if (isActive(redoId, state)) Colors.SELECTED_COLOR else null
-            val areaRedo = color?.let { state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo, it.color) }
-                    ?: state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo)
-            renderedArea[redoId] = AreaWithZindex(areaRedo, AreaType.SHAPE, index = ICON_Z_INDEX)
-            locationX += icons.redo.iconWidth + undoRedoStartMargin
-            state.ctx.interactionContext.clickCallbacks[redoId] = { dest -> dest.redo() }
+            locationX += drawIconWithAction(state, redoId, locationX, locationY, renderedArea, { dest -> dest.redo() }, icons.redo)
         }
+
+        drawCutCopyPaste(locationX, locationY, state, renderedArea)
+    }
+
+    private fun drawCutCopyPaste(
+            locationX: Float,
+            locationY: Float,
+            state: RenderState,
+            renderedArea: MutableMap<DiagramElementId, AreaWithZindex>
+    ) {
+        val idsToCopy = mutableListOf<DiagramElementId>()
+        idsToCopy += state.ctx.selectedIds.filter { renderedArea.containsKey(it) }
+        idsToCopy += state.ctx.interactionContext.draggedIds.filter { renderedArea.containsKey(it) }
+
+        if (idsToCopy.isEmpty()) {
+            return
+        }
+
+        var x = locationX
+        x += drawIconWithAction(state, cutId, x, locationY, renderedArea, { dest -> dest.undo() }, icons.cut)
+        drawIconWithAction(state, copyId, x, locationY, renderedArea, { dest -> dest.undo() }, icons.copy)
+    }
+
+
+    private fun drawIconWithAction(
+            state: RenderState,
+            actionElementId: DiagramElementId,
+            locationX: Float,
+            locationY: Float,
+            renderedArea:
+            MutableMap<DiagramElementId, AreaWithZindex>,
+            onClick: (ProcessModelUpdateEvents) -> Unit,
+            icon: Icon
+    ): Float {
+        val color = if (isActive(actionElementId, state)) Colors.SELECTED_COLOR else null
+        val areaRedo = color?.let { state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icon, it.color) }
+                ?: state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icon)
+        renderedArea[actionElementId] = AreaWithZindex(areaRedo, AreaType.SHAPE, index = ICON_Z_INDEX)
+        state.ctx.interactionContext.clickCallbacks[actionElementId] = onClick
+        return icon.iconWidth + undoRedoStartMargin
     }
 
     private fun drawAnchorsHit(canvas: CanvasPainter, anchors: AnchorHit) {
