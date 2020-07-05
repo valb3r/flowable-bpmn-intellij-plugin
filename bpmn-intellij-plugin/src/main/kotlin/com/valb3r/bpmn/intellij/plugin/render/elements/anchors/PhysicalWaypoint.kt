@@ -15,6 +15,7 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.ICON_Z_INDEX
 import com.valb3r.bpmn.intellij.plugin.render.elements.ACTIONS_ICO_SIZE
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ResizeViewTransform
 import java.awt.geom.Point2D
 
@@ -34,7 +35,7 @@ class PhysicalWaypoint(
             return mutableMapOf()
         }
 
-        val delId = DiagramElementId("DEL:$elementId")
+        val delId = elementId.elemIdToRemove()
         val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
         state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
             dest.addEvents(listOf(NewWaypointsEvent(

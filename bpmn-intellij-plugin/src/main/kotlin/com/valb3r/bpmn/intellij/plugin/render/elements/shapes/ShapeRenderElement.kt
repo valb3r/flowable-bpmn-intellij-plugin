@@ -13,7 +13,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.LocationUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.events.*
+import com.valb3r.bpmn.intellij.plugin.events.BpmnEdgeObjectAddedEvent
+import com.valb3r.bpmn.intellij.plugin.events.BpmnParentChangedEvent
+import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
 import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.*
@@ -62,10 +64,10 @@ abstract class ShapeRenderElement(
     }
 
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
-        val delId = DiagramElementId("DEL:$elementId")
+        val delId = elementId.elemIdToRemove()
         val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, y, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
         state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
-            dest.addElementRemovedEvent(listOf(DiagramElementRemovedEvent(elementId)), listOf(BpmnElementRemovedEvent(shape.bpmnElement)))
+            dest.addElementRemovedEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement())
         }
 
         return mutableMapOf(

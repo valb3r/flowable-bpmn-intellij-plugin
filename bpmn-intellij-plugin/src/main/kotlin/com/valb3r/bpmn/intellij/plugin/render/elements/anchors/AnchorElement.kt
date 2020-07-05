@@ -3,6 +3,8 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.anchors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
+import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
@@ -50,5 +52,13 @@ abstract class AnchorElement(
 
     override fun shapeAnchors(camera: Camera): MutableSet<Anchor> {
         return mutableSetOf()
+    }
+
+    override fun getEventsToDeleteDiagram(): List<DiagramElementRemovedEvent> {
+        return listOf()
+    }
+
+    override fun getEventsToDeleteElement(): List<BpmnElementRemovedEvent> {
+        return listOf()
     }
 }
