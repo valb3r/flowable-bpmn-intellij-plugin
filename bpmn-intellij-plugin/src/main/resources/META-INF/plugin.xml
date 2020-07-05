@@ -4,7 +4,7 @@
     <name>Flowable BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.3.2</version>
+    <version>0.3.3</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -29,6 +29,33 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+    <p>0.3.3:</p>
+      <ul>
+        <li>
+          Now names on sequence flow elements are shown
+        </li>
+        <li>
+          Better start and end point selection for sequence flow element
+        </li>
+        <li>
+          Bugfix: When subprocess its child diagram elements might stay
+        </li>
+        <li>
+          Bugfix: Unable to remove 'expression' value completely
+        </li>
+        <li>
+          Bugfix: Process audit now works properly with subprocesses
+        </li>
+        <li>
+          Bugfix: Dragged subprocess might get overlaid until drag ended
+        </li>
+        <li>
+          Bugfix: Removed middle points of sequence elements from anchors
+        </li>
+        <li>
+          Bugfix: Certain fields that already do have default values could appear in XML
+        </li>
+      </ul>
      <p>0.3.2:</p>
       <ul>
         <li>
@@ -45,45 +72,6 @@
         </li>
         <li>
           Fixed: Condition of sequence flow can't be changed
-        </li>
-      </ul>
-     <p>0.3.1:</p>
-      <ul>
-        <li>
-          First GA release of the plugin
-        </li>
-        <li>
-          SubProcess/Transaction rendering and modification support
-        </li>
-        <li>
-          XML language injection allowing refactoring and navigation code-to-XML
-        </li>
-        <li>
-          Jump to element in XML file feature
-        </li>
-        <li>
-          Boundary events can be attached to the target element now
-        </li>
-        <li>
-          Default gateway outgoing sequence selection
-        </li>
-         <li>
-          Edit parent process documentation, ID and name
-        </li>
-      </ul>
-    <p>0.2.3:</p>
-      <ul>
-        <li>
-          Fixed bug with global language injection causing wrong IntelliJ warnings
-        </li>
-      </ul>
-     <p>0.2.2:</p>
-      <ul>
-        <li>
-          MacOS and HiDPI diagram rendering fix
-        </li>
-        <li>
-          More stable XML persistence that is independent from Java Runtime
         </li>
       </ul>
     ]]></change-notes>
