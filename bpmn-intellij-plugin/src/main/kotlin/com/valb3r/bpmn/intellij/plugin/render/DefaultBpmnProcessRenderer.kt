@@ -34,6 +34,7 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.BaseBpmnRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.edges.EdgeRenderElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.shapes.*
 import java.awt.BasicStroke
@@ -209,10 +210,11 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         val maxX = areas.map { it.area.bounds2D.maxX }.max()?.toFloat()
         val maxY = areas.map { it.area.bounds2D.maxY }.max()?.toFloat()
 
+        // TODO: This currently does not support event cascading, so only plain elements can be removed
         if (null != minX && null != minY && null != maxX && null != maxY) {
             val ownerId = state.ctx.selectedIds.joinToString { it.id }
             state.ctx.canvas.drawRectNoCameraTransform(Point2D.Float(minX, minY), maxX - minX, maxY - minY, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
-            val delId = DiagramElementId("DEL:$ownerId")
+            val delId = DiagramElementId(ownerId).elemIdToRemove()
             val deleteIconArea = state.ctx.canvas.drawIconNoCameraTransform(BoundsElement(maxX, minY, actionsIcoSize, actionsIcoSize), icons.recycleBin)
             state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
                 val targetIds = state.ctx.selectedIds.filter { renderedArea[it]?.areaType == AreaType.SHAPE || renderedArea[it]?.areaType == AreaType.EDGE }

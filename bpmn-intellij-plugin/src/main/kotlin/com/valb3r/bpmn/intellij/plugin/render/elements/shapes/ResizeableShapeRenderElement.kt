@@ -6,16 +6,11 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
-import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.events.BpmnShapeResizedAndMovedEvent
-import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.ICON_Z_INDEX
-import com.valb3r.bpmn.intellij.plugin.render.elements.ACTIONS_ICO_SIZE
-import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
-import com.valb3r.bpmn.intellij.plugin.render.elements.EPSILON
-import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorBottom
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorTop
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ResizeViewTransform
@@ -57,10 +52,10 @@ abstract class ResizeableShapeRenderElement(
         }
 
         var currY = y
-        val delId = DiagramElementId("DEL:$elementId")
+        val delId = elementId.elemIdToRemove()
         val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
         state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
-            dest.addElementRemovedEvent(listOf(DiagramElementRemovedEvent(elementId)), listOf(BpmnElementRemovedEvent(shape.bpmnElement)))
+            dest.addElementRemovedEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement())
         }
 
         currY += spaceCoeff * ySpacing

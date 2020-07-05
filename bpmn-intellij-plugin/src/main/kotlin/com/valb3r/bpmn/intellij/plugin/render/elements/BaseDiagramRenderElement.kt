@@ -4,6 +4,8 @@ import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
+import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.render.ANCHOR_Z_INDEX
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
@@ -21,6 +23,10 @@ val EPSILON = 0.1f
 private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
 const val ACTIONS_ICO_SIZE = 15f
 private const val actionsMargin = 5f
+
+fun DiagramElementId.elemIdToRemove(): DiagramElementId {
+    return DiagramElementId("DEL:" + this.id)
+}
 
 abstract class BaseDiagramRenderElement(
         open val elementId: DiagramElementId,
@@ -90,6 +96,17 @@ abstract class BaseDiagramRenderElement(
         children.forEach { result += it.onDragEnd(dx, dy, droppedOn, allDroppedOnAreas) }
         viewTransform = NullViewTransform()
         return result
+    }
+
+    open fun getEventsToDeleteDiagram(): List<DiagramElementRemovedEvent> {
+        val delete = mutableListOf<DiagramElementRemovedEvent>()
+        children.forEach {delete += it.getEventsToDeleteDiagram()}
+        delete += DiagramElementRemovedEvent(elementId)
+        return delete
+    }
+
+    open fun getEventsToDeleteElement(): List<BpmnElementRemovedEvent> {
+        return listOf()
     }
 
     protected fun actionsRect(shapeRect: Rectangle2D.Float): Rectangle2D.Float {
