@@ -218,7 +218,7 @@ abstract class ShapeRenderElement(
 
     private fun detectAndRenderNewSequenceAnchorMove() {
         val expected = viewTransform.transform(edgeExtractionAnchor.location)
-        if (expected.distance(edgeExtractionAnchor.transformedLocation) > EPSILON) {
+        if (expected.distance(edgeExtractionAnchor.transformedLocation) > EPSILON && edgeExtractionAnchor.isActiveOrDragged()) {
             renderNewSequenceAnchorMove()
         }
     }
