@@ -189,12 +189,10 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
     }
 
     private fun addObjectShapeEvent(toStore: Order<BpmnShapeObjectAddedEvent>) {
-        updates.add(toStore)
         newShapeElements.add(toStore)
     }
 
     private fun addObjectEdgeEvent(toStore: Order<BpmnEdgeObjectAddedEvent>) {
-        updates.add(toStore)
         newDiagramElements.add(toStore)
     }
 
