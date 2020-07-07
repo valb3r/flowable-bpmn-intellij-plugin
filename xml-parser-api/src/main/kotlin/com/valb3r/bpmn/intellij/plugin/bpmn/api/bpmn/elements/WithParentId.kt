@@ -4,5 +4,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 
 data class WithParentId(
         val parent: BpmnElementId,
-        val element: WithBpmnId
+        val element: WithBpmnId,
+        val parentIdForCopying: BpmnElementId = parent
 ): WithBpmnId by element

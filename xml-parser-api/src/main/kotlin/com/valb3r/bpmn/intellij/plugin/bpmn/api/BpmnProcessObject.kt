@@ -162,7 +162,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
             computedParent?.let { parentId = it.id }
         }
 
-        elementById[activity.id] = WithParentId(parentId, activity)
+        elementById[activity.id] = WithParentId(parentId, activity, defaultParentId)
     }
 }
 

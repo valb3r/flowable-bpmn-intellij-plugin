@@ -53,8 +53,9 @@ class CopyPasteActionHandler {
     fun copy(idsToCopy: MutableList<DiagramElementId>, ctx: RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
         val orderedIds = ensureRootElementsComeFirst(idsToCopy, ctx, elementsById)
         val toCopy = ClipboardAddEvents(mutableListOf(), mutableListOf())
+        val idReplacements = mutableMapOf<BpmnElementId, BpmnElementId>()
         for (diagramId in orderedIds) {
-            elementToAddEvents(ctx, diagramId, elementsById, toCopy, false)
+            elementToAddEvents(ctx, diagramId, elementsById, toCopy, false, idReplacements)
         }
 
         val clipboard: Clipboard = clipboard()
@@ -174,12 +175,19 @@ class CopyPasteActionHandler {
             diagramId: DiagramElementId,
             elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>,
             events: ClipboardAddEvents,
-            preserveRoot: Boolean) {
+            preserveRoot: Boolean,
+            idReplacements: MutableMap<BpmnElementId, BpmnElementId>
+    ) {
         val bpmnId = ctx.currentState.elementByDiagramId[diagramId] ?: return
         val withParentId = ctx.currentState.elementByBpmnId[bpmnId] ?: return
         val props = ctx.currentState.elemPropertiesByStaticElementId[bpmnId] ?: return
         val renderElem = elementsById[bpmnId] ?: return
-        fun detachParentIfNeeded() = if (preserveRoot) withParentId else withParentId.copy(parent = BpmnElementId(ROOT_NAME))
+        fun detachParentIfNeeded() = if (preserveRoot) {
+            withParentId.copy(parent = idReplacements[withParentId.parentIdForCopying] ?: withParentId.parentIdForCopying)
+        } else {
+            idReplacements[withParentId.parentIdForCopying] = BpmnElementId(ROOT_NAME)
+            withParentId.copy(parent = BpmnElementId(ROOT_NAME))
+        }
 
         when (renderElem) {
             is ShapeRenderElement -> {
@@ -188,7 +196,7 @@ class CopyPasteActionHandler {
                         renderElem.shapeElem,
                         props
                 )
-                renderElem.children.forEach {elementToAddEvents(ctx, it.elementId, elementsById, events, true)}
+                renderElem.children.forEach {elementToAddEvents(ctx, it.elementId, elementsById, events, true, idReplacements)}
             }
             is BaseEdgeRenderElement -> {
                 events.edges += BpmnEdgeObjectAddedEvent(
