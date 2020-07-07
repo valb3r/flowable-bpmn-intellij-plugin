@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
@@ -116,7 +117,7 @@ class CopyPasteActionHandler {
         val diagramId = DiagramElementId("sid-" + UUID.randomUUID().toString())
         val bpmnElementId = updatedIds[edge.bpmnElement]
 
-        return EdgeElementState(diagramId, bpmnElementId, edge.waypoint.map { it.moveTo(delta.x, delta.y) }.toMutableList(), 0)
+        return EdgeElementState(EdgeElement(diagramId, bpmnElementId, edge.waypoint.map { it.asWaypointElement().copyAndTranslate(delta.x, delta.y) }) )
     }
 
     private fun copied(props: Map<PropertyType, Property>, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): Map<PropertyType, Property> {
