@@ -116,9 +116,9 @@ class CopyPasteActionHandler {
     private fun copied(props: Map<PropertyType, Property>, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): Map<PropertyType, Property> {
         val result = mutableMapOf<PropertyType, Property>()
         props.forEach {
-            when {
-                PropertyType.ID == it.key -> result[it.key] = Property(copied(BpmnElementId(it.value.value as String), updatedIds).id)
-                PropertyType.ID == it.key.updatedBy -> result[it.key] = Property(copied(BpmnElementId(it.value.value as String), updatedIds).id)
+            when (PropertyType.ID) {
+                it.key -> result[it.key] = Property(copied(BpmnElementId(it.value.value as String), updatedIds).id)
+                it.key.updatedBy -> result[it.key] = Property(copied(BpmnElementId(it.value.value as String), updatedIds).id)
                 else -> result[it.key] = it.value
             }
         }
