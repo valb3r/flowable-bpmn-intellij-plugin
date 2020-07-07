@@ -27,6 +27,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSub
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.events.BpmnShapeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
@@ -36,6 +37,7 @@ import java.awt.geom.Point2D
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.Icon
 import javax.swing.JMenu
+import javax.swing.JPopupMenu
 import kotlin.reflect.KClass
 
 
@@ -66,6 +68,9 @@ private fun <T: WithBpmnId> newShapeElement(sceneLocation: Point2D.Float, forObj
 }
 
 class CanvasPopupMenuProvider {
+
+    // Functional
+    private val PASTE = IconLoader.getIcon("/icons/actions/paste.png")
 
     // Events
     // Start
@@ -130,6 +135,10 @@ class CanvasPopupMenuProvider {
 
     fun popupMenu(sceneLocation: Point2D.Float, parent: BpmnElementId): JBPopupMenu {
         val popup = JBPopupMenu()
+        if (copyPasteActionHandler().hasDataToPaste()) {
+            addItem(popup, "Paste", PASTE,  ClipboardPaster(sceneLocation, parent))
+        }
+
         popup.add(startEvents(sceneLocation, parent))
         popup.add(activities(sceneLocation, parent))
         popup.add(structural(sceneLocation, parent))
@@ -232,6 +241,21 @@ class CanvasPopupMenuProvider {
         val item = JBMenuItem(text, icon)
         item.addActionListener(listener)
         menu.add(item)
+    }
+
+    private fun addItem(menu: JPopupMenu, text: String, icon: Icon, listener: ActionListener) {
+        val item = JBMenuItem(text, icon)
+        item.addActionListener(listener)
+        menu.add(item)
+    }
+
+    private class ClipboardPaster(private val sceneLocation: Point2D.Float, private val parent: BpmnElementId): ActionListener {
+
+        override fun actionPerformed(e: ActionEvent?) {
+            val data = copyPasteActionHandler().paste(sceneLocation, parent) ?: return
+            // TODO - cursor position update
+            updateEventsRegistry().addEvents( data.shapes.toMutableList() + data.edges.toMutableList())
+        }
     }
 
     private class ShapeCreator<T : WithBpmnId> (private val clazz: KClass<T>, private val sceneLocation: Point2D.Float, private val parent: BpmnElementId): ActionListener {

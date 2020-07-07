@@ -1,11 +1,20 @@
 package com.valb3r.bpmn.intellij.plugin.copypaste
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.BpmnEdgeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.events.BpmnShapeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
+import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.edges.BaseEdgeRenderElement
@@ -14,7 +23,10 @@ import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.StringSelection
+import java.awt.geom.Point2D
+import java.util.*
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.math.min
 
 private val copyPasteActionHandler = AtomicReference<CopyPasteActionHandler>()
 
@@ -36,7 +48,7 @@ class CopyPasteActionHandler {
 
     private val ROOT_NAME = "__:-:-:ROOT"
 
-    private val mapper = ObjectMapper()
+    private val mapper = constructMapper()
 
     fun copy(idsToCopy: MutableList<DiagramElementId>, ctx: RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
         val orderedIds = ensureRootElementsComeFirst(idsToCopy, ctx, elementsById)
@@ -45,20 +57,110 @@ class CopyPasteActionHandler {
             elementToAddEvents(ctx, diagramId, elementsById, toCopy, false)
         }
 
-        val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
+        val clipboard: Clipboard = clipboard()
         clipboard.setContents(FlowableClipboardFlavor(mapper.writeValueAsString(toCopy)), null)
     }
 
     fun cut(idsToCut: MutableList<DiagramElementId>, ctx: RenderState, updateEvents: ProcessModelUpdateEvents, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
     }
 
-    fun paste(updateEvents: ProcessModelUpdateEvents, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
-        val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
-        try {
-            val data: FlowableClipboardFlavor = clipboard.getData(DATA_FLAVOR) as FlowableClipboardFlavor
+    fun hasDataToPaste(): Boolean {
+        return clipboard().isDataFlavorAvailable(DATA_FLAVOR)
+    }
+
+    fun paste(sceneLocation: Point2D.Float, parent: BpmnElementId): ClipboardAddEvents? {
+        val clipboard: Clipboard = clipboard()
+        return try {
+            val data = clipboard.getData(DATA_FLAVOR) as String
+            val events = mapper.readValue(data, ClipboardAddEvents::class.java)
+            val updatedIds = mutableMapOf(BpmnElementId(ROOT_NAME) to parent)
+            events.copy(
+                    shapes = updateShapes(sceneLocation, events.shapes, updatedIds),
+                    edges = updateEdges(sceneLocation, events.edges, updatedIds))
         } catch (ex: Exception) {
-            // NOP
+            null
         }
+    }
+
+    private fun copied(objId: BpmnElementId, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): BpmnElementId {
+        return updatedIds.computeIfAbsent(objId) {BpmnElementId("sid-" + UUID.randomUUID().toString())}
+    }
+
+    private fun copied(obj: WithBpmnId, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): WithBpmnId {
+        val id = updatedIds.computeIfAbsent(obj.id) {BpmnElementId("sid-" + UUID.randomUUID().toString())}
+        return obj.updateBpmnElemId(id)
+    }
+
+    private fun copied(shape: ShapeElement, delta: Point2D.Float, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): ShapeElement {
+        val diagramId = DiagramElementId("sid-" + UUID.randomUUID().toString())
+        val bpmnElementId = updatedIds[shape.bpmnElement]!!
+        return shape.copy(
+                id = diagramId,
+                bpmnElement = bpmnElementId,
+                bounds = BoundsElement(
+                        shape.rectBounds().x + delta.x,
+                        shape.rectBounds().y + delta.y,
+                        shape.rectBounds().width,
+                        shape.rectBounds().height
+                )
+        )
+    }
+
+    private fun copied(edge: EdgeWithIdentifiableWaypoints, delta: Point2D.Float, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): EdgeWithIdentifiableWaypoints {
+        val diagramId = DiagramElementId("sid-" + UUID.randomUUID().toString())
+        val bpmnElementId = updatedIds[edge.bpmnElement]
+
+        return EdgeElementState(diagramId, bpmnElementId, edge.waypoint.map { it.moveTo(delta.x, delta.y) }.toMutableList(), 0)
+    }
+
+    private fun copied(props: Map<PropertyType, Property>, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): Map<PropertyType, Property> {
+        val result = mutableMapOf<PropertyType, Property>()
+        props.forEach {
+            when {
+                PropertyType.ID == it.key -> result[it.key] = Property(copied(BpmnElementId(it.value.value as String), updatedIds).id)
+                PropertyType.ID == it.key.updatedBy -> result[it.key] = Property(copied(BpmnElementId(it.value.value as String), updatedIds).id)
+                else -> result[it.key] = it.value
+            }
+        }
+        return result
+    }
+
+    private fun updateShapes(sceneLocation: Point2D.Float, shapes: MutableList<BpmnShapeObjectAddedEvent>, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): MutableList<BpmnShapeObjectAddedEvent> {
+        val minX = shapes.map {it.shape.rectBounds().x}.min() ?: return mutableListOf()
+        val minY = shapes.map { it.shape.rectBounds().y }.min() ?: return mutableListOf()
+        val delta = Point2D.Float(sceneLocation.x - minX, sceneLocation.y - minY)
+
+        val result = shapes.map {
+            it.copy(
+                    bpmnObject = it.bpmnObject.copy(
+                            parent = copied(it.bpmnObject.parent, updatedIds),
+                            element = copied(it.bpmnObject.element, updatedIds)
+                    )
+            )
+        }
+
+        return result.map { it.copy(props = copied(it.props, updatedIds), shape = copied(it.shape, delta, updatedIds)) }.toMutableList()
+    }
+
+    private fun updateEdges(sceneLocation: Point2D.Float, edges: MutableList<BpmnEdgeObjectAddedEvent>, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): MutableList<BpmnEdgeObjectAddedEvent> {
+        val minX = edges.map { min(it.edge.waypoint[0].x, it.edge.waypoint[it.edge.waypoint.size - 1].x) }.min() ?: return mutableListOf()
+        val minY = edges.map { min(it.edge.waypoint[0].y, it.edge.waypoint[it.edge.waypoint.size - 1].y) }.min() ?: return mutableListOf()
+        val delta = Point2D.Float(sceneLocation.x - minX, sceneLocation.y - minY)
+
+        val result = edges.map {
+            it.copy(
+                    bpmnObject = it.bpmnObject.copy(
+                            parent = copied(it.bpmnObject.parent, updatedIds),
+                            element = copied(it.bpmnObject.element, updatedIds)
+                    )
+            )
+        }
+
+        return result.map { it.copy(props = copied(it.props, updatedIds), edge = copied(it.edge, delta, updatedIds)) }.toMutableList()
+    }
+
+    private fun clipboard(): Clipboard {
+        return Toolkit.getDefaultToolkit().systemClipboard
     }
 
     private fun ensureRootElementsComeFirst(idsToCopy: MutableList<DiagramElementId>, ctx: RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>): MutableList<DiagramElementId> {
@@ -96,6 +198,16 @@ class CopyPasteActionHandler {
                 )
             }
         }
+    }
+
+    private fun constructMapper(): ObjectMapper {
+        val builtMapper: ObjectMapper = ObjectMapper().registerModule(KotlinModule())
+        builtMapper.setVisibility(builtMapper.serializationConfig.defaultVisibilityChecker
+                .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+                .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+                .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
+                .withCreatorVisibility(JsonAutoDetect.Visibility.NONE))
+        return builtMapper
     }
 
     private class FlowableClipboardFlavor(data: String): StringSelection(data) {

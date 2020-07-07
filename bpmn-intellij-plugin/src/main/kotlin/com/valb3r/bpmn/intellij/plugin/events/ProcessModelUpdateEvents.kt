@@ -149,7 +149,8 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
             when (event) {
                 is PropertyUpdateWithId -> propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
                 is LocationUpdateWithId, is BpmnShapeResizedAndMoved, is NewWaypoints, is BpmnParentChanged -> { /*NOP*/ }
-                is BpmnEdgeObjectAddedEvent -> addObjectEvent(toStore as Order<BpmnEdgeObjectAddedEvent>)
+                is BpmnShapeObjectAddedEvent -> addObjectShapeEvent(toStore as Order<BpmnShapeObjectAddedEvent>)
+                is BpmnEdgeObjectAddedEvent -> addObjectEdgeEvent(toStore as Order<BpmnEdgeObjectAddedEvent>)
                 else -> throw IllegalArgumentException("Can't bulk add: " + event::class.qualifiedName)
             }
         }
@@ -187,7 +188,12 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
         commitToFile()
     }
 
-    private fun addObjectEvent(toStore: Order<BpmnEdgeObjectAddedEvent>) {
+    private fun addObjectShapeEvent(toStore: Order<BpmnShapeObjectAddedEvent>) {
+        updates.add(toStore)
+        newShapeElements.add(toStore)
+    }
+
+    private fun addObjectEdgeEvent(toStore: Order<BpmnEdgeObjectAddedEvent>) {
         updates.add(toStore)
         newDiagramElements.add(toStore)
     }
