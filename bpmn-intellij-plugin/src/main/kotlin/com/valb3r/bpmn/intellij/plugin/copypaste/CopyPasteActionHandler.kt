@@ -75,9 +75,14 @@ class CopyPasteActionHandler {
             val data = clipboard.getData(DATA_FLAVOR) as String
             val events = mapper.readValue(data, ClipboardAddEvents::class.java)
             val updatedIds = mutableMapOf(BpmnElementId(ROOT_NAME) to parent)
+
+            val minX = events.shapes.map { it.shape.rectBounds().x}.min() ?: events.edges.map { min(it.edge.waypoint[0].x, it.edge.waypoint[it.edge.waypoint.size - 1].x) }.min() ?: 0.0f
+            val minY = events.shapes.map { it.shape.rectBounds().y}.min() ?: events.edges.map { min(it.edge.waypoint[0].y, it.edge.waypoint[it.edge.waypoint.size - 1].y) }.min() ?: 0.0f
+            val delta = Point2D.Float(sceneLocation.x - minX, sceneLocation.y - minY)
+
             events.copy(
-                    shapes = updateShapes(sceneLocation, events.shapes, updatedIds),
-                    edges = updateEdges(sceneLocation, events.edges, updatedIds))
+                    shapes = updateShapes(delta, events.shapes, updatedIds),
+                    edges = updateEdges(delta, events.edges, updatedIds))
         } catch (ex: Exception) {
             null
         }
@@ -117,20 +122,17 @@ class CopyPasteActionHandler {
     private fun copied(props: Map<PropertyType, Property>, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): Map<PropertyType, Property> {
         val result = mutableMapOf<PropertyType, Property>()
         props.forEach {
-            when (PropertyType.ID) {
-                it.key -> result[it.key] = Property(copied(BpmnElementId(it.value.value as String), updatedIds).id)
-                it.key.updatedBy -> result[it.key] = Property(copied(BpmnElementId(it.value.value as String), updatedIds).id)
+            when {
+                it.value.value == null -> result[it.key] = it.value
+                PropertyType.ID == it.key -> result[it.key] = Property(copied(BpmnElementId(it.value.value as String), updatedIds).id)
+                PropertyType.ID == it.key.updatedBy -> result[it.key] = Property(copied(BpmnElementId(it.value.value as String), updatedIds).id)
                 else -> result[it.key] = it.value
             }
         }
         return result
     }
 
-    private fun updateShapes(sceneLocation: Point2D.Float, shapes: MutableList<BpmnShapeObjectAddedEvent>, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): MutableList<BpmnShapeObjectAddedEvent> {
-        val minX = shapes.map {it.shape.rectBounds().x}.min() ?: return mutableListOf()
-        val minY = shapes.map { it.shape.rectBounds().y }.min() ?: return mutableListOf()
-        val delta = Point2D.Float(sceneLocation.x - minX, sceneLocation.y - minY)
-
+    private fun updateShapes(delta: Point2D.Float, shapes: MutableList<BpmnShapeObjectAddedEvent>, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): MutableList<BpmnShapeObjectAddedEvent> {
         val result = shapes.map {
             it.copy(
                     bpmnObject = it.bpmnObject.copy(
@@ -143,11 +145,7 @@ class CopyPasteActionHandler {
         return result.map { it.copy(props = copied(it.props, updatedIds), shape = copied(it.shape, delta, updatedIds)) }.toMutableList()
     }
 
-    private fun updateEdges(sceneLocation: Point2D.Float, edges: MutableList<BpmnEdgeObjectAddedEvent>, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): MutableList<BpmnEdgeObjectAddedEvent> {
-        val minX = edges.map { min(it.edge.waypoint[0].x, it.edge.waypoint[it.edge.waypoint.size - 1].x) }.min() ?: return mutableListOf()
-        val minY = edges.map { min(it.edge.waypoint[0].y, it.edge.waypoint[it.edge.waypoint.size - 1].y) }.min() ?: return mutableListOf()
-        val delta = Point2D.Float(sceneLocation.x - minX, sceneLocation.y - minY)
-
+    private fun updateEdges(delta: Point2D.Float, edges: MutableList<BpmnEdgeObjectAddedEvent>, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): MutableList<BpmnEdgeObjectAddedEvent> {
         val result = edges.map {
             it.copy(
                     bpmnObject = it.bpmnObject.copy(
