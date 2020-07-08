@@ -139,7 +139,8 @@ class CopyPasteActionHandler {
             it.copy(
                     bpmnObject = it.bpmnObject.copy(
                             parent = copied(it.bpmnObject.parent, updatedIds),
-                            element = copied(it.bpmnObject.element, updatedIds)
+                            element = copied(it.bpmnObject.element, updatedIds),
+                            parentIdForXml = copied(it.bpmnObject.parent, updatedIds)
                     )
             )
         }
@@ -152,7 +153,8 @@ class CopyPasteActionHandler {
             it.copy(
                     bpmnObject = it.bpmnObject.copy(
                             parent = copied(it.bpmnObject.parent, updatedIds),
-                            element = copied(it.bpmnObject.element, updatedIds)
+                            element = copied(it.bpmnObject.element, updatedIds),
+                            parentIdForXml = copied(it.bpmnObject.parent, updatedIds)
                     )
             )
         }
@@ -188,10 +190,14 @@ class CopyPasteActionHandler {
 
         val renderElem = elementsById[bpmnId] ?: return
         fun detachParentIfNeeded() = if (preserveRoot) {
-            withParentId.copy(parent = idReplacements[withParentId.parentIdForCopying] ?: withParentId.parentIdForCopying)
+            withParentId.copy(
+                    parent = idReplacements[withParentId.parent] ?: withParentId.parent,
+                    parentIdForXml = idReplacements[withParentId.parentIdForXml] ?: withParentId.parentIdForXml
+            )
         } else {
-            idReplacements[withParentId.parentIdForCopying] = BpmnElementId(ROOT_NAME)
-            withParentId.copy(parent = BpmnElementId(ROOT_NAME))
+            val rootId = BpmnElementId(ROOT_NAME)
+            idReplacements[withParentId.parent] = rootId
+            withParentId.copy(parent = rootId, parentIdForXml = rootId)
         }
 
         when (renderElem) {
