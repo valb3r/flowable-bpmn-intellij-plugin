@@ -62,11 +62,11 @@ abstract class CircleAnchorElement(
         return mutableSetOf(Anchor(transformedLocation))
     }
 
-    open protected fun ifVisibleNoRenderIf(): Boolean {
+    protected open fun ifVisibleNoRenderIf(): Boolean {
         return multipleElementsSelected()
     }
 
-    open protected fun isRenderable(): Boolean {
+    protected open fun isRenderable(): Boolean {
         return true
     }
 }

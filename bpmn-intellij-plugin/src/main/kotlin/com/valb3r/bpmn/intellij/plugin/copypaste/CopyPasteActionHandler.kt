@@ -55,8 +55,9 @@ class CopyPasteActionHandler {
         val orderedIds = ensureRootElementsComeFirst(idsToCopy, ctx, elementsById)
         val toCopy = ClipboardAddEvents(mutableListOf(), mutableListOf())
         val idReplacements = mutableMapOf<BpmnElementId, BpmnElementId>()
+        val processedElementIds = mutableSetOf<BpmnElementId>()
         for (diagramId in orderedIds) {
-            elementToAddEvents(ctx, diagramId, elementsById, toCopy, false, idReplacements)
+            elementToAddEvents(ctx, diagramId, elementsById, toCopy, false, idReplacements, processedElementIds)
         }
 
         val clipboard: Clipboard = clipboard()
@@ -175,11 +176,16 @@ class CopyPasteActionHandler {
             elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>,
             events: ClipboardAddEvents,
             preserveRoot: Boolean,
-            idReplacements: MutableMap<BpmnElementId, BpmnElementId>
+            idReplacements: MutableMap<BpmnElementId, BpmnElementId>,
+            processedElementIds: MutableSet<BpmnElementId>
     ) {
         val bpmnId = ctx.currentState.elementByDiagramId[diagramId] ?: return
         val withParentId = ctx.currentState.elementByBpmnId[bpmnId] ?: return
         val props = ctx.currentState.elemPropertiesByStaticElementId[bpmnId] ?: return
+        if (processedElementIds.contains(bpmnId)) {
+            return
+        }
+
         val renderElem = elementsById[bpmnId] ?: return
         fun detachParentIfNeeded() = if (preserveRoot) {
             withParentId.copy(parent = idReplacements[withParentId.parentIdForCopying] ?: withParentId.parentIdForCopying)
@@ -195,7 +201,7 @@ class CopyPasteActionHandler {
                         renderElem.shapeElem,
                         props
                 )
-                renderElem.children.forEach {elementToAddEvents(ctx, it.elementId, elementsById, events, true, idReplacements)}
+                renderElem.children.forEach { elementToAddEvents(ctx, it.elementId, elementsById, events, true, idReplacements, processedElementIds) }
             }
             is BaseEdgeRenderElement -> {
                 events.edges += BpmnEdgeObjectAddedEvent(
@@ -205,6 +211,7 @@ class CopyPasteActionHandler {
                 )
             }
         }
+        processedElementIds += bpmnId
     }
 
     private fun constructMapper(): ObjectMapper {

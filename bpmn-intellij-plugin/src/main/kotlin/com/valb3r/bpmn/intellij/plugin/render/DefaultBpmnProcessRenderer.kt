@@ -34,6 +34,7 @@ import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseBpmnRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.PhysicalWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.edges.EdgeRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.render.elements.planes.PlaneRenderElement
@@ -259,8 +260,8 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             renderedArea: MutableMap<DiagramElementId, AreaWithZindex>
     ) {
         val idsToWorkWith = mutableListOf<DiagramElementId>()
-        idsToWorkWith += state.ctx.selectedIds.filter { renderedArea.containsKey(it) }
-        idsToWorkWith += state.ctx.interactionContext.draggedIds.filter { renderedArea.containsKey(it) }
+        idsToWorkWith += state.ctx.selectedIds.mapNotNull { getElementToBeIncluded(it, state, renderedArea) }
+        idsToWorkWith += state.ctx.interactionContext.draggedIds.mapNotNull { getElementToBeIncluded(it, state, renderedArea) }
 
         if (idsToWorkWith.isEmpty()) {
             return
@@ -269,6 +270,19 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         var x = locationX
         x += drawIconWithAction(state, cutId, x, locationY, renderedArea, { dest -> copyPasteActionHandler().cut(idsToWorkWith, state, dest, elementsById) }, icons.cut)
         drawIconWithAction(state, copyId, x, locationY, renderedArea, { copyPasteActionHandler().copy(idsToWorkWith, state, elementsById) }, icons.copy)
+    }
+
+    private fun getElementToBeIncluded(id: DiagramElementId, state: RenderState, renderedArea: MutableMap<DiagramElementId, AreaWithZindex>): DiagramElementId? {
+        if (renderedArea.containsKey(id)) {
+            return id
+        }
+
+        // For sequence elements - handle them specially
+        val elem = state.elemMap[id] ?: return null
+        return when (elem) {
+            is PhysicalWaypoint -> elem.owningEdgeId
+            else -> null
+        }
     }
 
 
