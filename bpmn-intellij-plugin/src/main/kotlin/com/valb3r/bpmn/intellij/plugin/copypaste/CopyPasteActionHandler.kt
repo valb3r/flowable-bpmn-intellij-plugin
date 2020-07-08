@@ -18,6 +18,7 @@ import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
 import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.PhysicalWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.edges.BaseEdgeRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.shapes.ShapeRenderElement
 import java.awt.Toolkit
@@ -51,8 +52,9 @@ class CopyPasteActionHandler {
 
     private val mapper = constructMapper()
 
-    fun copy(idsToCopy: MutableList<DiagramElementId>, ctx: RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
-        val orderedIds = ensureRootElementsComeFirst(idsToCopy, ctx, elementsById)
+    fun copy(ctx: RenderState, elementsById: Map<BpmnElementId, BaseDiagramRenderElement>) {
+        val idsToCopy = elementIdsToCopyOrCut(ctx)
+        val orderedIds = ensureRootElementsComeFirst(idsToCopy.toMutableList(), ctx, elementsById)
         val toCopy = ClipboardAddEvents(mutableListOf(), mutableListOf())
         val idReplacements = mutableMapOf<BpmnElementId, BpmnElementId>()
         val processedElementIds = mutableSetOf<BpmnElementId>()
@@ -166,16 +168,32 @@ class CopyPasteActionHandler {
         return Toolkit.getDefaultToolkit().systemClipboard
     }
 
-    private fun ensureRootElementsComeFirst(idsToCopy: MutableList<DiagramElementId>, ctx: RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>): MutableList<DiagramElementId> {
+    private fun ensureRootElementsComeFirst(idsToCopy: MutableList<DiagramElementId>, ctx: RenderState, elementsById: Map<BpmnElementId, BaseDiagramRenderElement>): MutableList<DiagramElementId> {
         return idsToCopy
                 .sortedByDescending { ctx.currentState.elementByDiagramId[it]?.let {id -> elementsById[id] }?.zIndex() ?: 0 }
                 .toMutableList()
     }
 
+    private fun elementIdsToCopyOrCut(state: RenderState): List<DiagramElementId> {
+        val idsToWorkWith = mutableListOf<DiagramElementId>()
+        idsToWorkWith += state.ctx.selectedIds.mapNotNull { getElementToBeIncluded(it, state) }
+        idsToWorkWith += state.ctx.interactionContext.draggedIds.mapNotNull { getElementToBeIncluded(it, state) }
+        return idsToWorkWith
+    }
+
+    private fun getElementToBeIncluded(id: DiagramElementId, state: RenderState): DiagramElementId? {
+        // For sequence elements - handle them specially
+        val elem = state.elemMap[id] ?: return null
+        return when (elem) {
+            is PhysicalWaypoint -> elem.owningEdgeId
+            else -> elem.elementId
+        }
+    }
+
     private fun elementToAddEvents(
             ctx: RenderState,
             diagramId: DiagramElementId,
-            elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>,
+            elementsById: Map<BpmnElementId, BaseDiagramRenderElement>,
             events: ClipboardAddEvents,
             preserveRoot: Boolean,
             idReplacements: MutableMap<BpmnElementId, BpmnElementId>,

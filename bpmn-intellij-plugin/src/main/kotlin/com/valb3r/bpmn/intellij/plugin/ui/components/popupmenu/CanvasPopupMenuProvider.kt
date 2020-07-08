@@ -31,6 +31,7 @@ import com.valb3r.bpmn.intellij.plugin.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.events.BpmnShapeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
+import com.valb3r.bpmn.intellij.plugin.render.lastRenderedState
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.geom.Point2D
@@ -70,6 +71,8 @@ private fun <T: WithBpmnId> newShapeElement(sceneLocation: Point2D.Float, forObj
 class CanvasPopupMenuProvider {
 
     // Functional
+    private val COPY = IconLoader.getIcon("/icons/actions/copy.png")
+    private val CUT = IconLoader.getIcon("/icons/actions/cut.png")
     private val PASTE = IconLoader.getIcon("/icons/actions/paste.png")
 
     // Events
@@ -135,10 +138,8 @@ class CanvasPopupMenuProvider {
 
     fun popupMenu(sceneLocation: Point2D.Float, parent: BpmnElementId): JBPopupMenu {
         val popup = JBPopupMenu()
-        if (copyPasteActionHandler().hasDataToPaste()) {
-            addItem(popup, "Paste", PASTE,  ClipboardPaster(sceneLocation, parent))
-        }
 
+        addCopyAndpasteIfNeeded(popup, sceneLocation, parent)
         popup.add(startEvents(sceneLocation, parent))
         popup.add(activities(sceneLocation, parent))
         popup.add(structural(sceneLocation, parent))
@@ -148,6 +149,16 @@ class CanvasPopupMenuProvider {
         popup.add(intermediateThrowingEvents(sceneLocation, parent))
         popup.add(endEvents(sceneLocation, parent))
         return popup
+    }
+
+    private fun addCopyAndpasteIfNeeded(popup: JBPopupMenu, sceneLocation: Point2D.Float, parent: BpmnElementId) {
+        if (lastRenderedState()?.state?.ctx?.selectedIds?.isNotEmpty() == true) {
+            addItem(popup, "Copy", COPY, ClipboardCopier())
+        }
+
+        if (copyPasteActionHandler().hasDataToPaste()) {
+            addItem(popup, "Paste", PASTE, ClipboardPaster(sceneLocation, parent))
+        }
     }
 
     private fun startEvents(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
@@ -247,6 +258,14 @@ class CanvasPopupMenuProvider {
         val item = JBMenuItem(text, icon)
         item.addActionListener(listener)
         menu.add(item)
+    }
+
+    private class ClipboardCopier: ActionListener {
+
+        override fun actionPerformed(e: ActionEvent?) {
+            val state = lastRenderedState() ?: return
+            copyPasteActionHandler().copy(state.state, state.elementsById)
+        }
     }
 
     private class ClipboardPaster(private val sceneLocation: Point2D.Float, private val parent: BpmnElementId): ActionListener {

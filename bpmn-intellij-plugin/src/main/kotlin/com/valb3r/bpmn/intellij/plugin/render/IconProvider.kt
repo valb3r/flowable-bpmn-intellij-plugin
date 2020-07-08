@@ -7,8 +7,6 @@ import javax.swing.Icon
 interface IconProvider {
     val undo: Icon
     val redo: Icon
-    val cut: Icon
-    val copy: Icon
     val gear: Icon
     val script: Icon
     val businessRule: Icon
@@ -64,8 +62,6 @@ private fun String.asResource(): String? = DefaultBpmnProcessRenderer::class.jav
 data class IconProviderImpl(
         override val undo: Icon = IconLoader.getIcon("/icons/actions/undo.png"),
         override val redo: Icon = IconLoader.getIcon("/icons/actions/redo.png"),
-        override val cut: Icon = IconLoader.getIcon("/icons/actions/cut.png"),
-        override val copy: Icon = IconLoader.getIcon("/icons/actions/copy.png"),
         override val gear: Icon = IconLoader.getIcon("/icons/ui-icons/gear.png"),
         override val script: Icon = IconLoader.getIcon("/icons/ui-icons/script.png"),
         override val businessRule: Icon = IconLoader.getIcon("/icons/ui-icons/business-rule.png"),

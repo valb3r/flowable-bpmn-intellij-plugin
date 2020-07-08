@@ -26,7 +26,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
-import com.valb3r.bpmn.intellij.plugin.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.debugger.currentDebugger
 import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
@@ -34,17 +33,24 @@ import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseBpmnRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
-import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.PhysicalWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.edges.EdgeRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.shapes.*
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
+import java.util.concurrent.atomic.AtomicReference
 import javax.swing.Icon
 
 interface BpmnProcessRenderer {
     fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
+}
+
+private val lastState = AtomicReference<RenderedState>()
+data class RenderedState(val state: RenderState, val elementsById: Map<BpmnElementId, BaseDiagramRenderElement>)
+
+fun lastRenderedState(): RenderedState? {
+    return lastState.get()
 }
 
 class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer {
@@ -54,9 +60,6 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
     private val undoId = DiagramElementId("UNDO")
     private val redoId = DiagramElementId("REDO")
-
-    private val cutId = DiagramElementId("CUT")
-    private val copyId = DiagramElementId("COPY")
 
     private val DASHED_STROKE = BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(5.0f), 0.0f)
     private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
@@ -87,10 +90,11 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
         // Overlay system elements on top of rendered BPMN diagram
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
-        drawUndoRedoCutCopyPaste(state, elementsById, rendered)
+        drawUndoRedo(state, rendered)
         drawSelectionRect(ctx)
         drawMultiremovalRect(state, rendered)
 
+        lastState.set(RenderedState(state, elementsById))
         return rendered
     }
 
@@ -233,9 +237,8 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         }
     }
 
-    private fun drawUndoRedoCutCopyPaste(
+    private fun drawUndoRedo(
             state: RenderState,
-            elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>,
             renderedArea: MutableMap<DiagramElementId, AreaWithZindex>
     ) {
         var locationX = undoRedoStartMargin
@@ -248,43 +251,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         if (state.currentState.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.REDO)) {
             locationX += drawIconWithAction(state, redoId, locationX, locationY, renderedArea, { dest -> dest.redo() }, icons.redo)
         }
-
-        drawCutCopyPaste(locationX, locationY, state, elementsById, renderedArea)
     }
-
-    private fun drawCutCopyPaste(
-            locationX: Float,
-            locationY: Float,
-            state: RenderState,
-            elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>,
-            renderedArea: MutableMap<DiagramElementId, AreaWithZindex>
-    ) {
-        val idsToWorkWith = mutableListOf<DiagramElementId>()
-        idsToWorkWith += state.ctx.selectedIds.mapNotNull { getElementToBeIncluded(it, state, renderedArea) }
-        idsToWorkWith += state.ctx.interactionContext.draggedIds.mapNotNull { getElementToBeIncluded(it, state, renderedArea) }
-
-        if (idsToWorkWith.isEmpty()) {
-            return
-        }
-
-        var x = locationX
-        x += drawIconWithAction(state, cutId, x, locationY, renderedArea, { dest -> copyPasteActionHandler().cut(idsToWorkWith, state, dest, elementsById) }, icons.cut)
-        drawIconWithAction(state, copyId, x, locationY, renderedArea, { copyPasteActionHandler().copy(idsToWorkWith, state, elementsById) }, icons.copy)
-    }
-
-    private fun getElementToBeIncluded(id: DiagramElementId, state: RenderState, renderedArea: MutableMap<DiagramElementId, AreaWithZindex>): DiagramElementId? {
-        if (renderedArea.containsKey(id)) {
-            return id
-        }
-
-        // For sequence elements - handle them specially
-        val elem = state.elemMap[id] ?: return null
-        return when (elem) {
-            is PhysicalWaypoint -> elem.owningEdgeId
-            else -> null
-        }
-    }
-
 
     private fun drawIconWithAction(
             state: RenderState,
