@@ -142,7 +142,7 @@ class CopyPasteActionHandler {
                     bpmnObject = it.bpmnObject.copy(
                             parent = copied(it.bpmnObject.parent, updatedIds),
                             element = copied(it.bpmnObject.element, updatedIds),
-                            parentIdForXml = copied(it.bpmnObject.parent, updatedIds)
+                            parentIdForXml = copied(it.bpmnObject.parentIdForXml, updatedIds)
                     )
             )
         }
@@ -156,7 +156,7 @@ class CopyPasteActionHandler {
                     bpmnObject = it.bpmnObject.copy(
                             parent = copied(it.bpmnObject.parent, updatedIds),
                             element = copied(it.bpmnObject.element, updatedIds),
-                            parentIdForXml = copied(it.bpmnObject.parent, updatedIds)
+                            parentIdForXml = copied(it.bpmnObject.parentIdForXml, updatedIds)
                     )
             )
         }
