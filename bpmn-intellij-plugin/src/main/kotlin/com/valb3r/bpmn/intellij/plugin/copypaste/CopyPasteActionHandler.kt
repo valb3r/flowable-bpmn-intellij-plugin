@@ -31,20 +31,24 @@ import kotlin.math.min
 private val copyPasteActionHandler = AtomicReference<CopyPasteActionHandler>()
 
 fun copyPasteActionHandler(): CopyPasteActionHandler {
+    return copyPasteActionHandler(Toolkit.getDefaultToolkit().systemClipboard)
+}
+
+fun copyPasteActionHandler(clipboard: Clipboard): CopyPasteActionHandler {
     return copyPasteActionHandler.updateAndGet {
         if (null == it) {
-            return@updateAndGet CopyPasteActionHandler()
+            return@updateAndGet CopyPasteActionHandler(clipboard)
         }
 
         return@updateAndGet it
     }
 }
 
-private val DATA_FLAVOR = DataFlavor(String::class.java, "Flowable BPMN IntelliJ editor plugin clipboard data")
+internal val DATA_FLAVOR = DataFlavor(String::class.java, "Flowable BPMN IntelliJ editor plugin clipboard data")
 
 data class ClipboardAddEvents(val shapes: MutableList<BpmnShapeObjectAddedEvent>, val edges: MutableList<BpmnEdgeObjectAddedEvent>)
 
-class CopyPasteActionHandler {
+class CopyPasteActionHandler(private val clipboard: Clipboard) {
 
     private val ROOT_NAME = "__:-:-:ROOT"
 
@@ -52,8 +56,6 @@ class CopyPasteActionHandler {
 
     fun copy(ctx: RenderState, elementsById: Map<BpmnElementId, BaseDiagramRenderElement>) {
         val toCopy = extractDataToCopy(ctx, elementsById)
-
-        val clipboard: Clipboard = clipboard()
         clipboard.setContents(FlowableClipboardFlavor(mapper.writeValueAsString(toCopy)), null)
     }
 
@@ -71,17 +73,14 @@ class CopyPasteActionHandler {
         diagramToRemove += toDelete.edges.map { DiagramElementRemovedEvent(it.edge.id) }
 
         updateEvents.addElementRemovedEvent(diagramToRemove, bpmnToRemove)
-
-        val clipboard: Clipboard = clipboard()
         clipboard.setContents(FlowableClipboardFlavor(mapper.writeValueAsString(toCopy)), null)
     }
 
     fun hasDataToPaste(): Boolean {
-        return clipboard().isDataFlavorAvailable(DATA_FLAVOR)
+        return clipboard.isDataFlavorAvailable(DATA_FLAVOR)
     }
 
     fun paste(sceneLocation: Point2D.Float, parent: BpmnElementId): ClipboardAddEvents? {
-        val clipboard: Clipboard = clipboard()
         return try {
             val data = clipboard.getData(DATA_FLAVOR) as String
             val events = mapper.readValue(data, ClipboardAddEvents::class.java)
@@ -181,10 +180,6 @@ class CopyPasteActionHandler {
         }
 
         return result.map { it.copy(props = copied(it.props, updatedIds), edge = copied(it.edge, delta, updatedIds)) }.toMutableList()
-    }
-
-    private fun clipboard(): Clipboard {
-        return Toolkit.getDefaultToolkit().systemClipboard
     }
 
     private fun ensureRootElementsComeFirst(idsToCopy: MutableList<DiagramElementId>, ctx: RenderState, elementsById: Map<BpmnElementId, BaseDiagramRenderElement>): MutableList<DiagramElementId> {

@@ -89,6 +89,7 @@ internal abstract class BaseUiTest {
     protected val diagramMainElementId = DiagramElementId("diagramMainElement")
     protected val diagramMainPlaneElementId = DiagramElementId("diagramMainPlaneElement")
 
+    protected val parentProcessBpmnId = BpmnElementId("processElem")
     protected val optionalBoundaryErrorEventBpmnId = BpmnElementId("boundaryErrorEvent")
     protected val subprocessBpmnId = BpmnElementId("subProcess")
     protected val subprocessInSubProcessBpmnId = BpmnElementId("nestedSubProcess")
@@ -122,7 +123,7 @@ internal abstract class BaseUiTest {
 
     protected val basicProcess = BpmnProcessObject(
             BpmnProcess(
-                    BpmnElementId("processElem"),
+                    parentProcessBpmnId,
                     "mainProcess",
                     null,
                     null,

@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.ui.components.popupmenu
 
+import com.google.common.annotations.VisibleForTesting
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.openapi.util.IconLoader
@@ -262,7 +263,8 @@ class CanvasPopupMenuProvider {
         menu.add(item)
     }
 
-    private class ClipboardCopier: ActionListener {
+    @VisibleForTesting
+    internal class ClipboardCopier: ActionListener {
 
         override fun actionPerformed(e: ActionEvent?) {
             val state = lastRenderedState() ?: return
@@ -270,7 +272,8 @@ class CanvasPopupMenuProvider {
         }
     }
 
-    private class ClipboardCutter: ActionListener {
+    @VisibleForTesting
+    internal class ClipboardCutter: ActionListener {
 
         override fun actionPerformed(e: ActionEvent?) {
             val state = lastRenderedState() ?: return
@@ -279,7 +282,8 @@ class CanvasPopupMenuProvider {
         }
     }
 
-    private class ClipboardPaster(private val sceneLocation: Point2D.Float, private val parent: BpmnElementId): ActionListener {
+    @VisibleForTesting
+    internal class ClipboardPaster(private val sceneLocation: Point2D.Float, private val parent: BpmnElementId): ActionListener {
 
         override fun actionPerformed(e: ActionEvent?) {
             val data = copyPasteActionHandler().paste(sceneLocation, parent) ?: return
