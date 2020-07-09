@@ -12,9 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.events.BpmnEdgeObjectAddedEvent
-import com.valb3r.bpmn.intellij.plugin.events.BpmnShapeObjectAddedEvent
-import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
+import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
@@ -53,20 +51,29 @@ class CopyPasteActionHandler {
     private val mapper = constructMapper()
 
     fun copy(ctx: RenderState, elementsById: Map<BpmnElementId, BaseDiagramRenderElement>) {
-        val idsToCopy = elementIdsToCopyOrCut(ctx)
-        val orderedIds = ensureRootElementsComeFirst(idsToCopy.toMutableList(), ctx, elementsById)
-        val toCopy = ClipboardAddEvents(mutableListOf(), mutableListOf())
-        val idReplacements = mutableMapOf<BpmnElementId, BpmnElementId>()
-        val processedElementIds = mutableSetOf<BpmnElementId>()
-        for (diagramId in orderedIds) {
-            elementToAddEvents(ctx, diagramId, elementsById, toCopy, false, idReplacements, processedElementIds)
-        }
+        val toCopy = extractDataToCopy(ctx, elementsById)
 
         val clipboard: Clipboard = clipboard()
         clipboard.setContents(FlowableClipboardFlavor(mapper.writeValueAsString(toCopy)), null)
     }
 
-    fun cut(idsToCut: MutableList<DiagramElementId>, ctx: RenderState, updateEvents: ProcessModelUpdateEvents, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+    fun cut(ctx: RenderState, updateEvents: ProcessModelUpdateEvents, elementsById: Map<BpmnElementId, BaseDiagramRenderElement>) {
+        val toCopy = extractDataToCopy(ctx, elementsById)
+        val toDelete = extractDataToCopy(ctx, elementsById, false)
+
+        val bpmnToRemove = mutableListOf<BpmnElementRemovedEvent>()
+        val diagramToRemove = mutableListOf<DiagramElementRemovedEvent>()
+
+        bpmnToRemove += toDelete.shapes.map { BpmnElementRemovedEvent(it.bpmnObject.id) }
+        bpmnToRemove += toDelete.edges.map { BpmnElementRemovedEvent(it.bpmnObject.id) }
+
+        diagramToRemove += toDelete.shapes.map { DiagramElementRemovedEvent(it.shape.id) }
+        diagramToRemove += toDelete.edges.map { DiagramElementRemovedEvent(it.edge.id) }
+
+        updateEvents.addElementRemovedEvent(diagramToRemove, bpmnToRemove)
+
+        val clipboard: Clipboard = clipboard()
+        clipboard.setContents(FlowableClipboardFlavor(mapper.writeValueAsString(toCopy)), null)
     }
 
     fun hasDataToPaste(): Boolean {
@@ -90,6 +97,18 @@ class CopyPasteActionHandler {
         } catch (ex: Exception) {
             null
         }
+    }
+
+    private fun extractDataToCopy(ctx: RenderState, elementsById: Map<BpmnElementId, BaseDiagramRenderElement>, recursionAllowed: Boolean = true): ClipboardAddEvents {
+        val idsToCopy = elementIdsToCopyOrCut(ctx)
+        val orderedIds = ensureRootElementsComeFirst(idsToCopy.toMutableList(), ctx, elementsById)
+        val toCopy = ClipboardAddEvents(mutableListOf(), mutableListOf())
+        val idReplacements = mutableMapOf<BpmnElementId, BpmnElementId>()
+        val processedElementIds = mutableSetOf<BpmnElementId>()
+        for (diagramId in orderedIds) {
+            elementToAddEvents(ctx, diagramId, elementsById, toCopy, false, idReplacements, processedElementIds, recursionAllowed)
+        }
+        return toCopy
     }
 
     private fun copied(objId: BpmnElementId, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): BpmnElementId {
@@ -197,7 +216,8 @@ class CopyPasteActionHandler {
             events: ClipboardAddEvents,
             preserveRoot: Boolean,
             idReplacements: MutableMap<BpmnElementId, BpmnElementId>,
-            processedElementIds: MutableSet<BpmnElementId>
+            processedElementIds: MutableSet<BpmnElementId>,
+            recursionAllowed: Boolean
     ) {
         val bpmnId = ctx.currentState.elementByDiagramId[diagramId] ?: return
         val withParentId = ctx.currentState.elementByBpmnId[bpmnId] ?: return
@@ -225,7 +245,9 @@ class CopyPasteActionHandler {
                         renderElem.shapeElem,
                         props
                 )
-                renderElem.children.forEach { elementToAddEvents(ctx, it.elementId, elementsById, events, true, idReplacements, processedElementIds) }
+                if (recursionAllowed) {
+                    renderElem.children.forEach { elementToAddEvents(ctx, it.elementId, elementsById, events, true, idReplacements, processedElementIds, true) }
+                }
             }
             is BaseEdgeRenderElement -> {
                 events.edges += BpmnEdgeObjectAddedEvent(
