@@ -20,8 +20,8 @@ import com.valb3r.bpmn.intellij.plugin.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.render.DefaultBpmnProcessRenderer
-import com.valb3r.bpmn.intellij.plugin.render.DefaultCanvasConstants
 import com.valb3r.bpmn.intellij.plugin.render.IconProviderImpl
+import com.valb3r.bpmn.intellij.plugin.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.ui.components.MultiEditJTable
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -38,7 +38,7 @@ class BpmnPluginToolWindow {
     private lateinit var canvasPanel: JPanel
 
     private val canvasBuilder = CanvasBuilder(DefaultBpmnProcessRenderer(IconProviderImpl()))
-    private val canvas: Canvas = Canvas(DefaultCanvasConstants())
+    private val canvas: Canvas = currentCanvas()
 
     init {
         // attach event listeners to canvas

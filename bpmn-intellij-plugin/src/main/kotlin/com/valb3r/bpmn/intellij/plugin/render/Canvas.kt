@@ -18,10 +18,24 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import javax.swing.JPanel
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+
+private val currentCanvas = AtomicReference<Canvas>()
+
+fun currentCanvas(): Canvas {
+    return currentCanvas.updateAndGet {
+        if (null == it) {
+            return@updateAndGet Canvas(DefaultCanvasConstants())
+        }
+
+        return@updateAndGet it
+    }
+}
+
 
 class Canvas(private val settings: CanvasConstants) : JPanel() {
     private val stateProvider = currentStateProvider()
@@ -188,6 +202,11 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
                 dragCurrent = Point2D.Float(selectedAnchors.dragged.x, selectedAnchors.dragged.y),
                 anchorsHit = selectedAnchors
         )
+    }
+
+    fun clearSelection() {
+        this.selectedElements.clear()
+        interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
     }
 
     private fun selectDragTarget(dragged: DiagramElementId, ctx: ElementInteractionContext): ElementInteractionContext {

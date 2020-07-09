@@ -31,6 +31,7 @@ import com.valb3r.bpmn.intellij.plugin.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.events.BpmnShapeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.newelements.newElementsFactory
+import com.valb3r.bpmn.intellij.plugin.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.render.lastRenderedState
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -274,6 +275,7 @@ class CanvasPopupMenuProvider {
         override fun actionPerformed(e: ActionEvent?) {
             val state = lastRenderedState() ?: return
             copyPasteActionHandler().cut(state.state, updateEventsRegistry(), state.elementsById)
+            currentCanvas().clearSelection()
         }
     }
 
