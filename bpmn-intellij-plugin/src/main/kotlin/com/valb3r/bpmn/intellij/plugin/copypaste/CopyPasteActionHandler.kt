@@ -139,7 +139,7 @@ class CopyPasteActionHandler {
         val diagramId = DiagramElementId("sid-" + UUID.randomUUID().toString())
         val bpmnElementId = updatedIds[edge.bpmnElement]
 
-        return EdgeElementState(EdgeElement(diagramId, bpmnElementId, edge.waypoint.map { it.asWaypointElement().copyAndTranslate(delta.x, delta.y) }) )
+        return EdgeElementState(EdgeElement(diagramId, bpmnElementId, edge.waypoint.filter { it.physical }.map { it.asWaypointElement().copyAndTranslate(delta.x, delta.y) }) )
     }
 
     private fun copied(props: Map<PropertyType, Property>, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): Map<PropertyType, Property> {
