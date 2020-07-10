@@ -7,10 +7,8 @@ import com.nhaarman.mockitokotlin2.verify
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.copypaste.copyPasteActionHandler
-import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
-import com.valb3r.bpmn.intellij.plugin.events.BpmnShapeObjectAddedEvent
-import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
-import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
+import com.valb3r.bpmn.intellij.plugin.events.*
+import com.valb3r.bpmn.intellij.plugin.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.ui.components.popupmenu.CanvasPopupMenuProvider
 import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
@@ -21,6 +19,10 @@ import java.awt.geom.Point2D
 internal class UiCopyPasteTest: BaseUiTest() {
 
     private val clipboard = Clipboard("1234")
+    private val delta = Point2D.Float(10.0f, 10.0f)
+    private val pasteStart = Point2D.Float(-1000.0f, -1000.0f)
+    private val pastedElemCenter = Point2D.Float(pasteStart.x + serviceTaskSize / 2.0f, pasteStart.y + serviceTaskSize / 2.0f)
+    private val end = Point2D.Float(pasteStart.x + delta.x, pasteStart.y + delta.y)
 
     @BeforeEach
     fun init() {
@@ -33,23 +35,46 @@ internal class UiCopyPasteTest: BaseUiTest() {
         clickOnId(serviceTaskStartDiagramId)
 
         CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
+        canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
         verifyServiceTaskWasCut()
 
         updateEventsRegistry().reset("")
-        CanvasPopupMenuProvider.ClipboardPaster(Point2D.Float(0.0f, 0.0f), parentProcessBpmnId).actionPerformed(null)
-        verifyServiceTaskWasPasted()
+        CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        verifyServiceTaskWasPasted(2)
     }
 
     @Test
     fun `Flat service task can be copied and pasted`() {
-    }
+        prepareTwoServiceTaskView()
+        clickOnId(serviceTaskStartDiagramId)
 
-    @Test
-    fun `Flat service task can be cut and after cut canvas has no selection ids`() {
+        CanvasPopupMenuProvider.ClipboardCopier().actionPerformed(null)
+
+        CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        canvas.paintComponent(graphics)
+        verifyServiceTaskWasPasted(1)
     }
 
     @Test
     fun `Flat service task can be copied and pasted and translated to new location after paste`() {
+        `Flat service task can be copied and pasted`()
+
+        canvas.click(pastedElemCenter)
+        canvas.startSelectionOrDrag(pastedElemCenter)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(pasteStart, end)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            val shapeBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().shouldHaveSingleItem()
+            val translateBpmn = lastValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
+            lastValue.shouldContainSame(listOf(shapeBpmn, translateBpmn))
+
+            translateBpmn.diagramElementId.shouldBeEqualTo(shapeBpmn.shape.id)
+        }
     }
 
     @Test
@@ -84,9 +109,9 @@ internal class UiCopyPasteTest: BaseUiTest() {
     fun `Subprocess with children can be copied and pasted and translated to new location after paste`() {
     }
 
-    private fun verifyServiceTaskWasPasted() {
+    private fun verifyServiceTaskWasPasted(commitTimes: Int) {
         argumentCaptor<List<Event>>().apply {
-            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
             val shapeBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().shouldHaveSingleItem()
             lastValue.shouldHaveSingleItem()
 
@@ -95,8 +120,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             shapeBpmn.bpmnObject.element.shouldBeInstanceOf(BpmnServiceTask::class)
             shapeBpmn.shape.id.shouldNotBe(serviceTaskStartDiagramId)
             shapeBpmn.shape.bpmnElement.shouldBeEqualTo(shapeBpmn.bpmnObject.id)
-            shapeBpmn.shape.rectBounds().x.shouldBeEqualTo(0.0f)
-            shapeBpmn.shape.rectBounds().y.shouldBeEqualTo(0.0f)
+            shapeBpmn.shape.rectBounds().x.shouldBeEqualTo(pasteStart.x)
+            shapeBpmn.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y)
             shapeBpmn.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
             shapeBpmn.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
         }

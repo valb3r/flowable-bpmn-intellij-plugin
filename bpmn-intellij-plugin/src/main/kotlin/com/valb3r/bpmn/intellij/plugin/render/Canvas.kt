@@ -36,6 +36,11 @@ fun currentCanvas(): Canvas {
     }
 }
 
+@VisibleForTesting
+internal fun setCanvas(canvas: Canvas): Canvas {
+    currentCanvas.set(canvas)
+    return canvas
+}
 
 class Canvas(private val settings: CanvasConstants) : JPanel() {
     private val stateProvider = currentStateProvider()
