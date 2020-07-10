@@ -37,7 +37,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
-        lastRenderedState()!!.elementsById.shouldBeEmpty()
+        lastRenderedState()!!.elementsById.keys.shouldContainSame(arrayOf(parentProcessBpmnId, serviceTaskEndBpmnId))
         verifyPlainServiceTaskWasCut()
 
         updateEventsRegistry().reset("")
@@ -87,7 +87,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
         // cascaded-cut:
-        lastRenderedState()!!.elementsById.shouldBeEmpty()
+        lastRenderedState()!!.elementsById.keys.shouldContainSame(arrayOf(parentProcessBpmnId))
         verifyServiceTaskWithBoundaryEventWereCut()
 
         updateEventsRegistry().reset("")
