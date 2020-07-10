@@ -416,7 +416,7 @@ internal abstract class BaseUiTest {
         val boundaryEventOnServiceTaskShape = ShapeElement(
                 optionalBoundaryErrorEventDiagramId,
                 optionalBoundaryErrorEventBpmnId,
-                BoundsElement(startElemX + serviceTaskSize / 2.0f, startElemX + serviceTaskSize / 2.0f, boundaryEventSize, boundaryEventSize)
+                BoundsElement(startElemX + serviceTaskSize / 5.0f, startElemX + serviceTaskSize / 5.0f, boundaryEventSize, boundaryEventSize)
         )
 
         val process = basicProcess.copy(
@@ -440,7 +440,7 @@ internal abstract class BaseUiTest {
         val boundaryEventOnServiceTaskShape = ShapeElement(
                 optionalBoundaryErrorEventDiagramId,
                 optionalBoundaryErrorEventBpmnId,
-                BoundsElement(startElemX + serviceTaskSize / 2.0f, startElemX + serviceTaskSize / 2.0f, boundaryEventSize, boundaryEventSize)
+                BoundsElement(startElemX + serviceTaskSize / 5.0f, startElemX + serviceTaskSize / 5.0f, boundaryEventSize, boundaryEventSize)
         )
 
         val process = basicProcess.copy(

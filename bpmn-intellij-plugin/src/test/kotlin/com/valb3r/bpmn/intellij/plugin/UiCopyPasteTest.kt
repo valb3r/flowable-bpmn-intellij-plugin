@@ -37,11 +37,12 @@ internal class UiCopyPasteTest: BaseUiTest() {
         CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
-        verifyServiceTaskWasCut()
+        lastRenderedState()!!.elementsById.shouldBeEmpty()
+        verifyPlainServiceTaskWasCut()
 
         updateEventsRegistry().reset("")
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
-        verifyServiceTaskWasPasted(2)
+        verifyPlainServiceTaskWasPasted(2)
     }
 
     @Test
@@ -53,7 +54,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
         canvas.paintComponent(graphics)
-        verifyServiceTaskWasPasted(1)
+        verifyPlainServiceTaskWasPasted(1)
     }
 
     @Test
@@ -79,6 +80,19 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
     @Test
     fun `Service task with attached boundary event can be cut and pasted`() {
+        prepareServiceTaskWithAttachedBoundaryEventView()
+        clickOnId(serviceTaskStartDiagramId)
+
+        CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
+        canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
+        // cascaded-cut:
+        lastRenderedState()!!.elementsById.shouldBeEmpty()
+        verifyServiceTaskWithBoundaryEventWereCut()
+
+        updateEventsRegistry().reset("")
+        CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        verifyServiceTaskWithBoundaryEventTaskWerePasted(2)
     }
 
     @Test
@@ -109,7 +123,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     fun `Subprocess with children can be copied and pasted and translated to new location after paste`() {
     }
 
-    private fun verifyServiceTaskWasPasted(commitTimes: Int) {
+    private fun verifyPlainServiceTaskWasPasted(commitTimes: Int) {
         argumentCaptor<List<Event>>().apply {
             verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
             val shapeBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().shouldHaveSingleItem()
@@ -127,13 +141,41 @@ internal class UiCopyPasteTest: BaseUiTest() {
         }
     }
 
-    private fun verifyServiceTaskWasCut() {
+    private fun verifyPlainServiceTaskWasCut() {
         argumentCaptor<List<Event>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(serviceTaskStartDiagramId),
                     BpmnElementRemovedEvent(serviceTaskStartBpmnId))
             )
+        }
+    }
+
+    private fun verifyServiceTaskWithBoundaryEventTaskWerePasted(commitTimes: Int) {
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
+            val shapeBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().shouldHaveSingleItem()
+            lastValue.shouldHaveSingleItem()
+
+            shapeBpmn.bpmnObject.parent.shouldBe(parentProcessBpmnId)
+            shapeBpmn.bpmnObject.id.shouldNotBe(serviceTaskStartBpmnId)
+            shapeBpmn.bpmnObject.element.shouldBeInstanceOf(BpmnServiceTask::class)
+            shapeBpmn.shape.id.shouldNotBe(serviceTaskStartDiagramId)
+            shapeBpmn.shape.bpmnElement.shouldBeEqualTo(shapeBpmn.bpmnObject.id)
+            shapeBpmn.shape.rectBounds().x.shouldBeEqualTo(pasteStart.x)
+            shapeBpmn.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y)
+            shapeBpmn.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
+            shapeBpmn.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
+        }
+    }
+
+    private fun verifyServiceTaskWithBoundaryEventWereCut() {
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            firstValue.shouldContainSame(listOf(
+                    DiagramElementRemovedEvent(serviceTaskStartDiagramId),
+                    BpmnElementRemovedEvent(serviceTaskStartBpmnId)
+            ))
         }
     }
 }
