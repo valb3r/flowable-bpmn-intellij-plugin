@@ -20,10 +20,9 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.PhysicalWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.edges.BaseEdgeRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.shapes.ShapeRenderElement
 import java.awt.Toolkit
-import java.awt.datatransfer.Clipboard
-import java.awt.datatransfer.DataFlavor
-import java.awt.datatransfer.StringSelection
+import java.awt.datatransfer.*
 import java.awt.geom.Point2D
+import java.io.IOException
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.min
@@ -44,7 +43,7 @@ fun copyPasteActionHandler(clipboard: Clipboard): CopyPasteActionHandler {
     }
 }
 
-internal val DATA_FLAVOR = DataFlavor(String::class.java, "Flowable BPMN IntelliJ editor plugin clipboard data")
+internal val DATA_FLAVOR = DataFlavor("text/flowable-bpmn-plugin-intellij", "Flowable BPMN IntelliJ editor plugin clipboard data")
 
 data class ClipboardAddEvents(val shapes: MutableList<BpmnShapeObjectAddedEvent>, val edges: MutableList<BpmnEdgeObjectAddedEvent>)
 
@@ -260,10 +259,21 @@ class CopyPasteActionHandler(private val clipboard: Clipboard) {
         return builtMapper
     }
 
-    private class FlowableClipboardFlavor(data: String): StringSelection(data) {
+    private class FlowableClipboardFlavor(private val data: String): Transferable, ClipboardOwner {
 
-        override fun isDataFlavorSupported(flavor: DataFlavor?): Boolean {
+        override fun getTransferDataFlavors(): Array<DataFlavor>? {
+            return arrayOf(DATA_FLAVOR)
+        }
+
+        override fun isDataFlavorSupported(flavor: DataFlavor): Boolean {
             return DATA_FLAVOR.equals(flavor)
         }
+
+        @Throws(UnsupportedFlavorException::class, IOException::class)
+        override fun getTransferData(flavor: DataFlavor): Any? {
+            return data
+        }
+
+        override fun lostOwnership(clipboard: Clipboard?, contents: Transferable?) {}
     }
 }
