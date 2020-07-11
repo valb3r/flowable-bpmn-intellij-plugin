@@ -207,6 +207,19 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
     @Test
     fun `Subprocess with children can be cut and pasted`() {
+        prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView()
+        clickOnId(subprocessDiagramId)
+
+        CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
+        canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
+        // cascaded-cut:
+        lastRenderedState()!!.elementsById.keys.shouldContainSame(arrayOf(parentProcessBpmnId))
+        verifySubprocessWithServiceTaskAndBoundaryEventOnItWasCut()
+
+        updateEventsRegistry().reset("")
+        CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        verifySubprocessWithServiceTaskAndBoundaryEventOnItWasPasted()
     }
 
     @Test
@@ -376,6 +389,29 @@ internal class UiCopyPasteTest: BaseUiTest() {
                             BpmnElementRemovedEvent(bpmnElement),
                             BpmnElementRemovedEvent(serviceTaskStartBpmnId),
                             BpmnElementRemovedEvent(serviceTaskEndBpmnId)
+                    )
+            )
+        }
+    }
+
+    private fun verifySubprocessWithServiceTaskAndBoundaryEventOnItWasPasted(commitTimes: Int = 2) {
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
+        }
+    }
+
+    private fun verifySubprocessWithServiceTaskAndBoundaryEventOnItWasCut() {
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            // TODO: These all are nested in subprocess, so probably simply removing subprocess would be enough
+            lastValue.shouldContainSame(
+                    listOf(
+                            DiagramElementRemovedEvent(subprocessDiagramId),
+                            DiagramElementRemovedEvent(serviceTaskStartDiagramId),
+                            DiagramElementRemovedEvent(optionalBoundaryErrorEventDiagramId),
+                            BpmnElementRemovedEvent(subprocessBpmnId),
+                            BpmnElementRemovedEvent(serviceTaskStartBpmnId),
+                            BpmnElementRemovedEvent(optionalBoundaryErrorEventBpmnId)
                     )
             )
         }
