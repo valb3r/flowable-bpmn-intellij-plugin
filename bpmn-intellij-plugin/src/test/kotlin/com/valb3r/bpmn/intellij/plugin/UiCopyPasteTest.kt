@@ -174,7 +174,24 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
     @Test
     fun `Service tasks with linking edge can be copied and pasted`() {
+        prepareTwoServiceTaskView()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne()
+        val begin = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
+        canvas.click(begin)
+        canvas.startSelectionOrDrag(begin)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize, endElemX + serviceTaskSize))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
 
+        CanvasPopupMenuProvider.ClipboardCopier().actionPerformed(null)
+        canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldHaveSize(6)
+
+        updateEventsRegistry().reset("")
+        CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        verifyEdgeWithServiceTasksWerePasted(addedEdge.bpmnObject.id, addedEdge.edge.id, 2)
     }
 
     @Test
