@@ -1,9 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin
 
+import com.nhaarman.mockitokotlin2.*
 import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
-import com.nhaarman.mockitokotlin2.times
-import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.mock
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryErrorEvent
@@ -11,6 +10,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceT
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.copypaste.CopyPasteActionHandler
+import com.valb3r.bpmn.intellij.plugin.copypaste.DATA_FLAVOR
+import com.valb3r.bpmn.intellij.plugin.copypaste.SystemClipboard
 import com.valb3r.bpmn.intellij.plugin.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.render.lastRenderedState
@@ -18,19 +20,28 @@ import com.valb3r.bpmn.intellij.plugin.ui.components.popupmenu.CanvasPopupMenuPr
 import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.awt.datatransfer.Clipboard
 import java.awt.geom.Point2D
+import java.util.concurrent.atomic.AtomicReference
 
 internal class UiCopyPasteTest: BaseUiTest() {
 
-    private val clipboard = Clipboard("1234")
     private val delta = Point2D.Float(10.0f, 10.0f)
     private val pasteStart = Point2D.Float(-1000.0f, -1000.0f)
     private val pastedElemCenter = Point2D.Float(pasteStart.x + serviceTaskSize / 2.0f, pasteStart.y + serviceTaskSize / 2.0f)
     private val end = Point2D.Float(pasteStart.x + delta.x, pasteStart.y + delta.y)
 
+    private val buffer: AtomicReference<String> = AtomicReference()
+
     @BeforeEach
     fun init() {
+        val clipboard = mock<SystemClipboard>()
+        doAnswer { buffer.get() }.whenever(clipboard).getData(any())
+        doAnswer { true }.whenever(clipboard).isDataFlavorAvailable(any())
+        doAnswer {
+            buffer.set(
+                    it.getArgument(0, CopyPasteActionHandler.FlowableClipboardFlavor::class.java).getTransferData(DATA_FLAVOR) as String)
+        }.whenever(clipboard).setContents(any(), anyOrNull())
+
         copyPasteActionHandler(clipboard)
     }
 

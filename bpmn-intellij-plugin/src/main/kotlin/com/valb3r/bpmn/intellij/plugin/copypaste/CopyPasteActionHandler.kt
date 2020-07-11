@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.copypaste
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.google.common.annotations.VisibleForTesting
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -30,10 +31,10 @@ import kotlin.math.min
 private val copyPasteActionHandler = AtomicReference<CopyPasteActionHandler>()
 
 fun copyPasteActionHandler(): CopyPasteActionHandler {
-    return copyPasteActionHandler(Toolkit.getDefaultToolkit().systemClipboard)
+    return copyPasteActionHandler(DefaultSystemClipboard(Toolkit.getDefaultToolkit().systemClipboard))
 }
 
-fun copyPasteActionHandler(clipboard: Clipboard): CopyPasteActionHandler {
+fun copyPasteActionHandler(clipboard: SystemClipboard): CopyPasteActionHandler {
     return copyPasteActionHandler.updateAndGet {
         if (null == it) {
             return@updateAndGet CopyPasteActionHandler(clipboard)
@@ -47,7 +48,29 @@ internal val DATA_FLAVOR = DataFlavor("text/flowable-bpmn-plugin-intellij", "Flo
 
 data class ClipboardAddEvents(val shapes: MutableList<BpmnShapeObjectAddedEvent>, val edges: MutableList<BpmnEdgeObjectAddedEvent>)
 
-class CopyPasteActionHandler(private val clipboard: Clipboard) {
+interface SystemClipboard {
+
+    fun setContents(contents: Transferable, owner: ClipboardOwner?)
+    fun isDataFlavorAvailable(flavor: DataFlavor?): Boolean
+    fun getData(flavor: DataFlavor): Any
+}
+
+class DefaultSystemClipboard(private val clipboard: Clipboard): SystemClipboard {
+
+    override fun setContents(contents: Transferable, owner: ClipboardOwner?) {
+        clipboard.setContents(contents, owner)
+    }
+
+    override fun isDataFlavorAvailable(flavor: DataFlavor?): Boolean {
+        return clipboard.isDataFlavorAvailable(flavor)
+    }
+
+    override fun getData(flavor: DataFlavor): Any {
+        return clipboard.getData(flavor)
+    }
+}
+
+class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
 
     private val ROOT_NAME = "__:-:-:ROOT"
 
@@ -268,7 +291,8 @@ class CopyPasteActionHandler(private val clipboard: Clipboard) {
         return builtMapper
     }
 
-    private class FlowableClipboardFlavor(private val data: String): Transferable, ClipboardOwner {
+    @VisibleForTesting
+    internal class FlowableClipboardFlavor(private val data: String): Transferable, ClipboardOwner {
 
         override fun getTransferDataFlavors(): Array<DataFlavor>? {
             return arrayOf(DATA_FLAVOR)
