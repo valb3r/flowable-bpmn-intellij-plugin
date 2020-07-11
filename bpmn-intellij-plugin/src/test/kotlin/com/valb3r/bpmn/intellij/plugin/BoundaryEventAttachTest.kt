@@ -84,8 +84,8 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
 
     @Test
     fun `Boundary event detaches from service task (plain) to subprocess`() {
-        prepareServiceTaskInSubprocesskWithBoundaryEventOnRootView()
-        val target = clickOnId(serviceTaskStartDiagramId)
+        prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView()
+        val target = clickOnId(subprocessDiagramId)
 
         val start = clickOnId(optionalBoundaryErrorEventDiagramId)
         canvas.paintComponent(graphics)
