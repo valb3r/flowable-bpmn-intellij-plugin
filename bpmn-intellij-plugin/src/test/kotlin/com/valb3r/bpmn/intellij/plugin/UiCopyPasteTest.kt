@@ -13,7 +13,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.copypaste.CopyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.copypaste.DATA_FLAVOR
 import com.valb3r.bpmn.intellij.plugin.copypaste.SystemClipboard
-import com.valb3r.bpmn.intellij.plugin.copypaste.copyPasteActionHandler
+import com.valb3r.bpmn.intellij.plugin.copypaste.setCopyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.ui.components.popupmenu.CanvasPopupMenuProvider
@@ -42,7 +42,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
                     it.getArgument(0, CopyPasteActionHandler.FlowableClipboardFlavor::class.java).getTransferData(DATA_FLAVOR) as String)
         }.whenever(clipboard).setContents(any(), anyOrNull())
 
-        copyPasteActionHandler(clipboard)
+        setCopyPasteActionHandler(CopyPasteActionHandler(clipboard))
     }
 
     @Test

@@ -31,17 +31,18 @@ import kotlin.math.min
 private val copyPasteActionHandler = AtomicReference<CopyPasteActionHandler>()
 
 fun copyPasteActionHandler(): CopyPasteActionHandler {
-    return copyPasteActionHandler(DefaultSystemClipboard(Toolkit.getDefaultToolkit().systemClipboard))
-}
-
-fun copyPasteActionHandler(clipboard: SystemClipboard): CopyPasteActionHandler {
     return copyPasteActionHandler.updateAndGet {
         if (null == it) {
-            return@updateAndGet CopyPasteActionHandler(clipboard)
+            return@updateAndGet CopyPasteActionHandler(DefaultSystemClipboard(Toolkit.getDefaultToolkit().systemClipboard))
         }
 
         return@updateAndGet it
     }
+}
+
+@VisibleForTesting
+internal fun setCopyPasteActionHandler(handler: CopyPasteActionHandler) {
+    copyPasteActionHandler.set(handler)
 }
 
 internal val DATA_FLAVOR = DataFlavor("text/flowable-bpmn-plugin-intellij", "Flowable BPMN IntelliJ editor plugin clipboard data")
