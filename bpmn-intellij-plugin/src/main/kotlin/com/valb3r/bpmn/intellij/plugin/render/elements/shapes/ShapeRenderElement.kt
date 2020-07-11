@@ -42,6 +42,9 @@ abstract class ShapeRenderElement(
 
     override val children: MutableList<BaseDiagramRenderElement> = mutableListOf(edgeExtractionAnchor)
 
+    val shapeElem: ShapeElement
+        get() = shape
+
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val elem = state.currentState.elementByDiagramId[shape.id]
         val props = state.currentState.elemPropertiesByStaticElementId[elem]

@@ -109,6 +109,10 @@ abstract class BaseDiagramRenderElement(
         return listOf()
     }
 
+    open fun zIndex(): Int {
+        return if (isActiveOrDragged()) ANCHOR_Z_INDEX else (parents.firstOrNull()?.zIndex() ?: -1) + 1
+    }
+
     protected fun actionsRect(shapeRect: Rectangle2D.Float): Rectangle2D.Float {
         return Rectangle2D.Float(shapeRect.x - actionsMargin, shapeRect.y - actionsMargin, shapeRect.width + 2.0f * actionsMargin, shapeRect.height + 2.0f * actionsMargin)
     }
@@ -218,9 +222,5 @@ abstract class BaseDiagramRenderElement(
 
     protected open fun acceptsInternalEvents(): Boolean {
         return true
-    }
-
-    protected open fun zIndex(): Int {
-        return if (isActiveOrDragged()) ANCHOR_Z_INDEX else (parents.firstOrNull()?.zIndex() ?: -1) + 1
     }
 }

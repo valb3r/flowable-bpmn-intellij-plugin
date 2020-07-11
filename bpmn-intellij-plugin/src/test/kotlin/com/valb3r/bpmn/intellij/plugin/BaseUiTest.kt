@@ -89,6 +89,7 @@ internal abstract class BaseUiTest {
     protected val diagramMainElementId = DiagramElementId("diagramMainElement")
     protected val diagramMainPlaneElementId = DiagramElementId("diagramMainPlaneElement")
 
+    protected val parentProcessBpmnId = BpmnElementId("processElem")
     protected val optionalBoundaryErrorEventBpmnId = BpmnElementId("boundaryErrorEvent")
     protected val subprocessBpmnId = BpmnElementId("subProcess")
     protected val subprocessInSubProcessBpmnId = BpmnElementId("nestedSubProcess")
@@ -117,12 +118,12 @@ internal abstract class BaseUiTest {
     protected val icons = mock<IconProvider>()
     protected val renderer = spy(DefaultBpmnProcessRenderer(icons))
     protected val canvasBuilder = CanvasBuilder(renderer)
-    protected val canvas = Canvas(DefaultCanvasConstants().copy(baseCursorSize = 3.0f)) // Using small cursor size for clarity
+    protected val canvas = setCanvas(Canvas(DefaultCanvasConstants().copy(baseCursorSize = 3.0f))) // Using small cursor size for clarity
     protected var renderResult: Map<DiagramElementId, AreaWithZindex>? = null
 
     protected val basicProcess = BpmnProcessObject(
             BpmnProcess(
-                    BpmnElementId("processElem"),
+                    parentProcessBpmnId,
                     "mainProcess",
                     null,
                     null,
@@ -415,7 +416,7 @@ internal abstract class BaseUiTest {
         val boundaryEventOnServiceTaskShape = ShapeElement(
                 optionalBoundaryErrorEventDiagramId,
                 optionalBoundaryErrorEventBpmnId,
-                BoundsElement(startElemX + serviceTaskSize / 2.0f, startElemX + serviceTaskSize / 2.0f, boundaryEventSize, boundaryEventSize)
+                BoundsElement(startElemX + serviceTaskSize / 5.0f, startElemX + serviceTaskSize / 5.0f, boundaryEventSize, boundaryEventSize)
         )
 
         val process = basicProcess.copy(
@@ -439,7 +440,7 @@ internal abstract class BaseUiTest {
         val boundaryEventOnServiceTaskShape = ShapeElement(
                 optionalBoundaryErrorEventDiagramId,
                 optionalBoundaryErrorEventBpmnId,
-                BoundsElement(startElemX + serviceTaskSize / 2.0f, startElemX + serviceTaskSize / 2.0f, boundaryEventSize, boundaryEventSize)
+                BoundsElement(startElemX + serviceTaskSize / 5.0f, startElemX + serviceTaskSize / 5.0f, boundaryEventSize, boundaryEventSize)
         )
 
         val process = basicProcess.copy(

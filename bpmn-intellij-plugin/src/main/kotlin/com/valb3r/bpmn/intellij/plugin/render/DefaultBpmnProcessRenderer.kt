@@ -39,9 +39,18 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.shapes.*
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
+import java.util.concurrent.atomic.AtomicReference
+import javax.swing.Icon
 
 interface BpmnProcessRenderer {
     fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
+}
+
+private val lastState = AtomicReference<RenderedState>()
+data class RenderedState(val state: RenderState, val elementsById: Map<BpmnElementId, BaseDiagramRenderElement>)
+
+fun lastRenderedState(): RenderedState? {
+    return lastState.get()
 }
 
 class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer {
@@ -85,6 +94,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         drawSelectionRect(ctx)
         drawMultiremovalRect(state, rendered)
 
+        lastState.set(RenderedState(state, elementsById))
         return rendered
     }
 
@@ -227,28 +237,38 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         }
     }
 
-    private fun drawUndoRedo(state: RenderState, renderedArea: MutableMap<DiagramElementId, AreaWithZindex>) {
-        val start = Point2D.Float(undoRedoStartMargin, undoRedoStartMargin)
-        var locationX = start.x
-        val locationY = start.y
+    private fun drawUndoRedo(
+            state: RenderState,
+            renderedArea: MutableMap<DiagramElementId, AreaWithZindex>
+    ) {
+        var locationX = undoRedoStartMargin
+        val locationY = undoRedoStartMargin
 
         if (state.currentState.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.UNDO)) {
-            val color = if (isActive(undoId, state)) Colors.SELECTED_COLOR else null
-            val areaUndo = color?.let { state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo, it.color) }
-                    ?: state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.undo)
-            renderedArea[undoId] = AreaWithZindex(areaUndo, AreaType.SHAPE, index = ICON_Z_INDEX)
-            locationX += icons.undo.iconWidth + undoRedoStartMargin
-            state.ctx.interactionContext.clickCallbacks[undoId] = { dest -> dest.undo() }
+            locationX += drawIconWithAction(state, undoId, locationX, locationY, renderedArea, { dest -> dest.undo() }, icons.undo)
         }
 
         if (state.currentState.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.REDO)) {
-            val color = if (isActive(redoId, state)) Colors.SELECTED_COLOR else null
-            val areaRedo = color?.let { state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo, it.color) }
-                    ?: state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icons.redo)
-            renderedArea[redoId] = AreaWithZindex(areaRedo, AreaType.SHAPE, index = ICON_Z_INDEX)
-            locationX += icons.redo.iconWidth + undoRedoStartMargin
-            state.ctx.interactionContext.clickCallbacks[redoId] = { dest -> dest.redo() }
+            locationX += drawIconWithAction(state, redoId, locationX, locationY, renderedArea, { dest -> dest.redo() }, icons.redo)
         }
+    }
+
+    private fun drawIconWithAction(
+            state: RenderState,
+            actionElementId: DiagramElementId,
+            locationX: Float,
+            locationY: Float,
+            renderedArea:
+            MutableMap<DiagramElementId, AreaWithZindex>,
+            onClick: (ProcessModelUpdateEvents) -> Unit,
+            icon: Icon
+    ): Float {
+        val color = if (isActive(actionElementId, state)) Colors.SELECTED_COLOR else null
+        val areaRedo = color?.let { state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icon, it.color) }
+                ?: state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icon)
+        renderedArea[actionElementId] = AreaWithZindex(areaRedo, AreaType.SHAPE, index = ICON_Z_INDEX)
+        state.ctx.interactionContext.clickCallbacks[actionElementId] = onClick
+        return icon.iconWidth + undoRedoStartMargin
     }
 
     private fun drawAnchorsHit(canvas: CanvasPainter, anchors: AnchorHit) {

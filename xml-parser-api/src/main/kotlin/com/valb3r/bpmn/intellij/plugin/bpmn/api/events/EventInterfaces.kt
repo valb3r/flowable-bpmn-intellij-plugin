@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.events
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -79,6 +80,11 @@ interface PropertyUpdateWithId: Event {
     val newIdValue: BpmnElementId?
 }
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.MINIMAL_CLASS,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "@class"
+)
 interface IdentifiableWaypoint: Translatable<IdentifiableWaypoint>, WithDiagramId {
     val x: Float
     val y: Float
@@ -93,6 +99,11 @@ interface IdentifiableWaypoint: Translatable<IdentifiableWaypoint>, WithDiagramI
     fun asWaypointElement(): WaypointElement
 }
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.MINIMAL_CLASS,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "@class"
+)
 interface EdgeWithIdentifiableWaypoints: WithDiagramId {
     val bpmnElement: BpmnElementId?
     val waypoint: MutableList<IdentifiableWaypoint>
