@@ -25,8 +25,8 @@ class AnyShapeNestableIconShape(
     override fun handlePossibleNestingTo(allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>, cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {
         val allDroppedOn = linkedMapOf<AreaType, BpmnElementId>()
         allDroppedOnAreas.forEach { if (!allDroppedOn.containsKey(it.value.areaType)) allDroppedOn[it.value.areaType] = it.key}
-        val nests = setOf(allDroppedOn[AreaType.SHAPE_THAT_NESTS], allDroppedOn[AreaType.SHAPE])
-        val parentProcess = allDroppedOn[AreaType.PARENT_PROCESS_SHAPE]
+        val nests = listOfNotNull(allDroppedOn[AreaType.SHAPE_THAT_NESTS], allDroppedOn[AreaType.SHAPE], allDroppedOn[AreaType.PARENT_PROCESS_SHAPE])
+        val xmlNest = allDroppedOn[AreaType.SHAPE_THAT_NESTS] ?: allDroppedOn[AreaType.PARENT_PROCESS_SHAPE]!!
         val currentParent = parents.firstOrNull()
         val newEvents = mutableListOf<Event>()
 
@@ -34,16 +34,15 @@ class AnyShapeNestableIconShape(
             return newEvents
         }
 
-        nests.filterNotNull().forEach { nestTo ->
-            if (nestTo != currentParent?.bpmnElementId) {
-                newEvents += BpmnParentChangedEvent(shape.bpmnElement, nestTo, false)
-                newEvents += StringValueUpdatedEvent(shape.bpmnElement, PropertyType.ATTACHED_TO_REF, nestTo.id)
+        for (nestTo in nests) {
+            if (nestTo == currentParent?.bpmnElementId) {
+                continue
             }
-        }
 
-        if (nests.isEmpty() && null != parentProcess && parentProcess != parents.firstOrNull()?.bpmnElementId) {
-            newEvents += BpmnParentChangedEvent(shape.bpmnElement, parentProcess, false)
-            newEvents += StringValueUpdatedEvent(shape.bpmnElement, PropertyType.ATTACHED_TO_REF, parentProcess.id)
+            newEvents += BpmnParentChangedEvent(shape.bpmnElement, nestTo, false)
+            newEvents += BpmnParentChangedEvent(shape.bpmnElement, xmlNest, true)
+            newEvents += StringValueUpdatedEvent(shape.bpmnElement, PropertyType.ATTACHED_TO_REF, nestTo.id)
+            break
         }
 
         return newEvents
