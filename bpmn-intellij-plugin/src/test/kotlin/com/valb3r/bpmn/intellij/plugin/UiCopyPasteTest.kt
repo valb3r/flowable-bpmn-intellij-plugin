@@ -149,7 +149,27 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
     @Test
     fun `Service tasks with linking edge can be cut and pasted`() {
+        prepareTwoServiceTaskView()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne()
+        val begin = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
+        canvas.click(begin)
+        canvas.startSelectionOrDrag(begin)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize, endElemX + serviceTaskSize))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
 
+        CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
+        canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
+        // cascaded-cut:
+        lastRenderedState()!!.elementsById.keys.shouldContainSame(arrayOf(parentProcessBpmnId))
+        verifyEdgeWithServiceTasksWereCut(addedEdge.bpmnObject.id, addedEdge.edge.id)
+
+        updateEventsRegistry().reset("")
+        CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        verifyEdgeWithServiceTasksWerePasted(addedEdge.bpmnObject.id, addedEdge.edge.id)
     }
 
     @Test
@@ -270,6 +290,64 @@ internal class UiCopyPasteTest: BaseUiTest() {
                     listOf(
                             DiagramElementRemovedEvent(diagramElement),
                             BpmnElementRemovedEvent(bpmnElement)
+                    )
+            )
+        }
+    }
+
+    private fun verifyEdgeWithServiceTasksWerePasted(sourceBpmnElement: BpmnElementId, sourceDiagramElement: DiagramElementId, commitTimes: Int = 3) {
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
+            val edge = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val startTask = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>()
+                    .filter { it.shape.rectBounds().x == pasteStart.x && it.shape.rectBounds().y == pasteStart.y }
+                    .shouldHaveSingleItem()
+            val endTask = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().filter { it.bpmnObject.id != startTask.bpmnObject.id }.shouldHaveSingleItem()
+            lastValue.shouldContainSame(arrayOf(edge, startTask, endTask))
+
+            startTask.bpmnObject.parent.shouldBe(parentProcessBpmnId)
+            startTask.bpmnObject.parentIdForXml.shouldBe(parentProcessBpmnId)
+            startTask.bpmnObject.id.shouldNotBe(serviceTaskStartBpmnId)
+            startTask.shape.id.shouldNotBe(serviceTaskStartDiagramId)
+            startTask.shape.bpmnElement.shouldBeEqualTo(startTask.bpmnObject.id)
+            startTask.shape.rectBounds().x.shouldBeEqualTo(pasteStart.x)
+            startTask.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y)
+            startTask.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
+            startTask.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
+
+            endTask.bpmnObject.parent.shouldBe(parentProcessBpmnId)
+            endTask.bpmnObject.parentIdForXml.shouldBe(parentProcessBpmnId)
+            endTask.bpmnObject.id.shouldNotBe(serviceTaskStartBpmnId)
+            endTask.shape.id.shouldNotBe(serviceTaskStartDiagramId)
+            endTask.shape.bpmnElement.shouldBeEqualTo(endTask.bpmnObject.id)
+            endTask.shape.rectBounds().x.shouldBeEqualTo(pasteStart.x + endElemX)
+            endTask.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y + endElemY)
+            endTask.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
+            endTask.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
+
+            edge.bpmnObject.parent.shouldBe(parentProcessBpmnId)
+            edge.bpmnObject.parentIdForXml.shouldBe(parentProcessBpmnId)
+            edge.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edge.bpmnObject.id.shouldNotBe(sourceBpmnElement)
+            edge.edge.id.shouldNotBe(sourceDiagramElement)
+            edge.edge.waypoint.shouldHaveSize(3)
+            edge.edge.waypoint.filter { it.physical }.shouldHaveSize(2)
+            edge.props[PropertyType.SOURCE_REF]!!.value.shouldBeEqualTo(startTask.bpmnObject.id.id)
+            edge.props[PropertyType.TARGET_REF]!!.value.shouldBeEqualTo(endTask.bpmnObject.id.id)
+        }
+    }
+
+    private fun verifyEdgeWithServiceTasksWereCut(bpmnElement: BpmnElementId, diagramElement: DiagramElementId) {
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.subList(1, lastValue.size).shouldContainSame(
+                    listOf(
+                            DiagramElementRemovedEvent(diagramElement),
+                            DiagramElementRemovedEvent(serviceTaskStartDiagramId),
+                            DiagramElementRemovedEvent(serviceTaskEndDiagramId),
+                            BpmnElementRemovedEvent(bpmnElement),
+                            BpmnElementRemovedEvent(serviceTaskStartBpmnId),
+                            BpmnElementRemovedEvent(serviceTaskEndBpmnId)
                     )
             )
         }

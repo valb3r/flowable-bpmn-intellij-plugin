@@ -60,7 +60,12 @@ class CopyPasteActionHandler(private val clipboard: Clipboard) {
 
     fun cut(ctx: RenderState, updateEvents: ProcessModelUpdateEvents, elementsById: Map<BpmnElementId, BaseDiagramRenderElement>) {
         val toCopy = extractDataToCopy(ctx, elementsById)
-        val elemsToDelete = elementIdsToCopyOrCut(ctx).mapNotNull { ctx.currentState.elementByDiagramId[it] }.mapNotNull { elementsById[it] }
+
+        val alreadyRemovedBpmn = mutableSetOf<BpmnElementId>()
+        val elemsToDelete = elementIdsToCopyOrCut(ctx)
+                .mapNotNull { ctx.currentState.elementByDiagramId[it] }
+                .filter { if (alreadyRemovedBpmn.contains(it)) false else {alreadyRemovedBpmn += it; true } }
+                .mapNotNull { elementsById[it] }
 
         val bpmnToRemove = mutableListOf<BpmnElementRemovedEvent>()
         val diagramToRemove = mutableListOf<DiagramElementRemovedEvent>()
