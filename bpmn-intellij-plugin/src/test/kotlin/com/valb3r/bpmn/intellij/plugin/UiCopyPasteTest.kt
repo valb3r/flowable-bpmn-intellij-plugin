@@ -4,8 +4,13 @@ import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryErrorEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.render.lastRenderedState
@@ -92,23 +97,64 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
         updateEventsRegistry().reset("")
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
-        verifyServiceTaskWithBoundaryEventTaskWerePasted(2)
+        verifyServiceTaskWithBoundaryEventTaskWerePasted()
     }
 
     @Test
     fun `Service task with attached boundary event can be copied and pasted`() {
-    }
+        prepareServiceTaskWithAttachedBoundaryEventView()
+        clickOnId(serviceTaskStartDiagramId)
 
-    @Test
-    fun `Service task with attached boundary event can be copied and pasted and translated to new location after paste`() {
+        CanvasPopupMenuProvider.ClipboardCopier().actionPerformed(null)
+        canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldHaveSize(1)
+
+        updateEventsRegistry().reset("")
+        CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        verifyServiceTaskWithBoundaryEventTaskWerePasted(1)
     }
 
     @Test
     fun `Edge can be cut and pasted`() {
+        prepareTwoServiceTaskView()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne()
+        clickOnId(addedEdge.edge.id)
+
+        CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
+        canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
+        // cascaded-cut:
+        lastRenderedState()!!.elementsById.keys.shouldContainSame(arrayOf(parentProcessBpmnId, serviceTaskStartBpmnId, serviceTaskEndBpmnId))
+        verifyEdgeWasCut(addedEdge.bpmnObject.id, addedEdge.edge.id)
+
+        updateEventsRegistry().reset("")
+        CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        verifyEdgeWasPasted(addedEdge.bpmnObject.id, addedEdge.edge.id)
     }
 
     @Test
     fun `Edge can be copied and pasted`() {
+        prepareTwoServiceTaskView()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne()
+        clickOnId(addedEdge.edge.id)
+
+        CanvasPopupMenuProvider.ClipboardCopier().actionPerformed(null)
+        canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldHaveSize(1)
+
+        updateEventsRegistry().reset("")
+        CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        verifyEdgeWasPasted(addedEdge.bpmnObject.id, addedEdge.edge.id, 2)
+    }
+
+    @Test
+    fun `Service tasks with linking edge can be cut and pasted`() {
+
+    }
+
+    @Test
+    fun `Service tasks with linking edge can be copied and pasted`() {
+
     }
 
     @Test
@@ -120,7 +166,11 @@ internal class UiCopyPasteTest: BaseUiTest() {
     }
 
     @Test
-    fun `Subprocess with children can be copied and pasted and translated to new location after paste`() {
+    fun `Service task out of subprocess can be cut and pasted`() {
+    }
+
+    @Test
+    fun `Service task out of subprocess can be copied and pasted`() {
     }
 
     private fun verifyPlainServiceTaskWasPasted(commitTimes: Int) {
@@ -130,6 +180,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
             lastValue.shouldHaveSingleItem()
 
             shapeBpmn.bpmnObject.parent.shouldBe(parentProcessBpmnId)
+            shapeBpmn.bpmnObject.parentIdForXml.shouldBe(parentProcessBpmnId)
             shapeBpmn.bpmnObject.id.shouldNotBe(serviceTaskStartBpmnId)
             shapeBpmn.bpmnObject.element.shouldBeInstanceOf(BpmnServiceTask::class)
             shapeBpmn.shape.id.shouldNotBe(serviceTaskStartDiagramId)
@@ -151,21 +202,34 @@ internal class UiCopyPasteTest: BaseUiTest() {
         }
     }
 
-    private fun verifyServiceTaskWithBoundaryEventTaskWerePasted(commitTimes: Int) {
+    private fun verifyServiceTaskWithBoundaryEventTaskWerePasted(commitTimes: Int = 2) {
         argumentCaptor<List<Event>>().apply {
             verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
-            val shapeBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().shouldHaveSingleItem()
-            lastValue.shouldHaveSingleItem()
+            val serviceTaskBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().filter { it.bpmnObject.element is BpmnServiceTask}.shouldHaveSingleItem()
+            val boundaryEventBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().filter { it.bpmnObject.element is BpmnBoundaryErrorEvent }.shouldHaveSingleItem()
+            lastValue.shouldHaveSize(2)
 
-            shapeBpmn.bpmnObject.parent.shouldBe(parentProcessBpmnId)
-            shapeBpmn.bpmnObject.id.shouldNotBe(serviceTaskStartBpmnId)
-            shapeBpmn.bpmnObject.element.shouldBeInstanceOf(BpmnServiceTask::class)
-            shapeBpmn.shape.id.shouldNotBe(serviceTaskStartDiagramId)
-            shapeBpmn.shape.bpmnElement.shouldBeEqualTo(shapeBpmn.bpmnObject.id)
-            shapeBpmn.shape.rectBounds().x.shouldBeEqualTo(pasteStart.x)
-            shapeBpmn.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y)
-            shapeBpmn.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
-            shapeBpmn.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
+            serviceTaskBpmn.bpmnObject.parent.shouldBe(parentProcessBpmnId)
+            serviceTaskBpmn.bpmnObject.parentIdForXml.shouldBe(parentProcessBpmnId)
+            serviceTaskBpmn.bpmnObject.id.shouldNotBe(serviceTaskStartBpmnId)
+            serviceTaskBpmn.shape.id.shouldNotBe(serviceTaskStartDiagramId)
+            serviceTaskBpmn.shape.bpmnElement.shouldBeEqualTo(serviceTaskBpmn.bpmnObject.id)
+            serviceTaskBpmn.shape.rectBounds().x.shouldBeEqualTo(pasteStart.x)
+            serviceTaskBpmn.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y)
+            serviceTaskBpmn.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
+            serviceTaskBpmn.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
+
+            boundaryEventBpmn.bpmnObject.parent.shouldBe(serviceTaskBpmn.bpmnObject.id)
+            boundaryEventBpmn.bpmnObject.parentIdForXml.shouldBe(parentProcessBpmnId)
+            boundaryEventBpmn.bpmnObject.id.shouldNotBe(optionalBoundaryErrorEventBpmnId)
+            boundaryEventBpmn.shape.id.shouldNotBe(optionalBoundaryErrorEventDiagramId)
+            boundaryEventBpmn.shape.bpmnElement.shouldBeEqualTo(boundaryEventBpmn.bpmnObject.id)
+            boundaryEventBpmn.shape.rectBounds().x.shouldBeGreaterThan(pasteStart.x)
+            boundaryEventBpmn.shape.rectBounds().y.shouldBeGreaterThan(pasteStart.y)
+            boundaryEventBpmn.shape.rectBounds().x.shouldBeLessThan(pasteStart.x + serviceTaskSize)
+            boundaryEventBpmn.shape.rectBounds().y.shouldBeLessThan(pasteStart.y + serviceTaskSize)
+            boundaryEventBpmn.shape.rectBounds().width.shouldBeEqualTo(boundaryEventSize)
+            boundaryEventBpmn.shape.rectBounds().height.shouldBeEqualTo(boundaryEventSize)
         }
     }
 
@@ -173,9 +237,41 @@ internal class UiCopyPasteTest: BaseUiTest() {
         argumentCaptor<List<Event>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
             firstValue.shouldContainSame(listOf(
+                    DiagramElementRemovedEvent(optionalBoundaryErrorEventDiagramId),
                     DiagramElementRemovedEvent(serviceTaskStartDiagramId),
+                    BpmnElementRemovedEvent(optionalBoundaryErrorEventBpmnId),
                     BpmnElementRemovedEvent(serviceTaskStartBpmnId)
             ))
+        }
+    }
+
+    private fun verifyEdgeWasPasted(sourceBpmnElement: BpmnElementId, sourceDiagramElement: DiagramElementId, commitTimes: Int = 3) {
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
+            val edge = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            lastValue.shouldHaveSize(1)
+
+            edge.bpmnObject.parent.shouldBe(parentProcessBpmnId)
+            edge.bpmnObject.parentIdForXml.shouldBe(parentProcessBpmnId)
+            edge.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edge.bpmnObject.id.shouldNotBe(sourceBpmnElement)
+            edge.edge.id.shouldNotBe(sourceDiagramElement)
+            edge.edge.waypoint.shouldHaveSize(3)
+            edge.edge.waypoint.filter { it.physical }.shouldHaveSize(2)
+            edge.props[PropertyType.TARGET_REF]!!.value.shouldBeEqualTo("")
+            edge.props[PropertyType.SOURCE_REF]!!.value.shouldBeEqualTo("")
+        }
+    }
+
+    private fun verifyEdgeWasCut(bpmnElement: BpmnElementId, diagramElement: DiagramElementId) {
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.subList(1, lastValue.size).shouldContainSame(
+                    listOf(
+                            DiagramElementRemovedEvent(diagramElement),
+                            BpmnElementRemovedEvent(bpmnElement)
+                    )
+            )
         }
     }
 }

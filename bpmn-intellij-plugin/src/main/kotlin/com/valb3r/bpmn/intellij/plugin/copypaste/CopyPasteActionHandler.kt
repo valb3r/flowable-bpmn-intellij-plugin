@@ -106,6 +106,10 @@ class CopyPasteActionHandler(private val clipboard: Clipboard) {
         return toCopy
     }
 
+    private fun copiedExistsOrEmpty(objId: BpmnElementId, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): String {
+        return updatedIds.get(objId)?.id ?: ""
+    }
+
     private fun copied(objId: BpmnElementId, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): BpmnElementId {
         return updatedIds.computeIfAbsent(objId) {BpmnElementId("sid-" + UUID.randomUUID().toString())}
     }
@@ -143,7 +147,7 @@ class CopyPasteActionHandler(private val clipboard: Clipboard) {
             when {
                 it.value.value == null -> result[it.key] = it.value
                 PropertyType.ID == it.key -> result[it.key] = Property(copied(BpmnElementId(it.value.value as String), updatedIds).id)
-                PropertyType.ID == it.key.updatedBy -> result[it.key] = Property(copied(BpmnElementId(it.value.value as String), updatedIds).id)
+                PropertyType.ID == it.key.updatedBy -> result[it.key] = Property(copiedExistsOrEmpty(BpmnElementId(it.value.value as String), updatedIds))
                 else -> result[it.key] = it.value
             }
         }
