@@ -1,4 +1,5 @@
 [![codecov](https://codecov.io/gh/valb3r/flowable-bpmn-intellij-plugin/branch/master/graph/badge.svg)](https://codecov.io/gh/valb3r/flowable-bpmn-intellij-plugin)
+[![Gitter](https://badges.gitter.im/flowable-bpmn-intellij-plugin/community.svg)](https://gitter.im/flowable-bpmn-intellij-plugin/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 
 # What is this
@@ -7,6 +8,13 @@ This project provides plugin for [Flowable BPMN engine](https://github.com/flowa
 aiming for code navigation support between BPMN diagram and your classes including Spring beans.
 
 **Currently, it is work-in-progress.**
+
+
+# Questions and propositions
+
+Don't hesitate - ask or tell your opinion in gitter:
+
+[![Gitter](https://badges.gitter.im/flowable-bpmn-intellij-plugin/community.svg)](https://gitter.im/flowable-bpmn-intellij-plugin/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 
 # Key features
