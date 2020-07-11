@@ -6,6 +6,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryErrorEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
@@ -224,14 +225,48 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
     @Test
     fun `Subprocess with children can be copied and pasted`() {
+        prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView()
+        clickOnId(subprocessDiagramId)
+
+        CanvasPopupMenuProvider.ClipboardCopier().actionPerformed(null)
+        canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldHaveSize(1)
+
+        updateEventsRegistry().reset("")
+        CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        verifySubprocessWithServiceTaskAndBoundaryEventOnItWasPasted(1)
+    }
+
+
+    @Test
+    fun `Boundary event can be cut out from service task in subprocess and pasted to parent`() {
+        prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView()
+        clickOnId(optionalBoundaryErrorEventDiagramId)
+
+        CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
+        canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
+        // cascaded-cut:
+        lastRenderedState()!!.elementsById.keys.shouldContainSame(arrayOf(parentProcessBpmnId, subprocessBpmnId, serviceTaskStartBpmnId))
+        verifyBoundaryEventWasCut()
+
+        updateEventsRegistry().reset("")
+        CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        verifyBoundaryEventWasPasted()
     }
 
     @Test
-    fun `Service task out of subprocess can be cut and pasted`() {
-    }
+    fun `Boundary event can be copied from service task in subprocess and pasted to parent`() {
+        prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView()
+        clickOnId(optionalBoundaryErrorEventDiagramId)
 
-    @Test
-    fun `Service task out of subprocess can be copied and pasted`() {
+        CanvasPopupMenuProvider.ClipboardCopier().actionPerformed(null)
+        canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldHaveSize(1)
+
+        updateEventsRegistry().reset("")
+        CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        verifyBoundaryEventWasPasted(1)
     }
 
     private fun verifyPlainServiceTaskWasPasted(commitTimes: Int) {
@@ -397,6 +432,38 @@ internal class UiCopyPasteTest: BaseUiTest() {
     private fun verifySubprocessWithServiceTaskAndBoundaryEventOnItWasPasted(commitTimes: Int = 2) {
         argumentCaptor<List<Event>>().apply {
             verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
+            val subprocessBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().filter { it.bpmnObject.element is BpmnSubProcess }.shouldHaveSingleItem()
+            val serviceTaskBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().filter { it.bpmnObject.element is BpmnServiceTask}.shouldHaveSingleItem()
+            val boundaryEventBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().filter { it.bpmnObject.element is BpmnBoundaryErrorEvent }.shouldHaveSingleItem()
+            lastValue.shouldHaveSize(3)
+
+            subprocessBpmn.bpmnObject.parent.shouldBe(parentProcessBpmnId)
+            subprocessBpmn.bpmnObject.parentIdForXml.shouldBe(parentProcessBpmnId)
+            subprocessBpmn.bpmnObject.id.shouldNotBe(subprocessBpmnId)
+            subprocessBpmn.shape.id.shouldNotBe(subprocessDiagramId)
+            subprocessBpmn.shape.bpmnElement.shouldBeEqualTo(subprocessBpmn.bpmnObject.id)
+
+            serviceTaskBpmn.bpmnObject.parent.shouldBe(subprocessBpmn.bpmnObject.id)
+            serviceTaskBpmn.bpmnObject.parentIdForXml.shouldBe(subprocessBpmn.bpmnObject.id)
+            serviceTaskBpmn.bpmnObject.id.shouldNotBe(serviceTaskStartBpmnId)
+            serviceTaskBpmn.shape.id.shouldNotBe(serviceTaskStartDiagramId)
+            serviceTaskBpmn.shape.bpmnElement.shouldBeEqualTo(serviceTaskBpmn.bpmnObject.id)
+            serviceTaskBpmn.shape.rectBounds().x.shouldBeEqualTo(pasteStart.x)
+            serviceTaskBpmn.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y)
+            serviceTaskBpmn.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
+            serviceTaskBpmn.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
+
+            boundaryEventBpmn.bpmnObject.parent.shouldBe(serviceTaskBpmn.bpmnObject.id)
+            boundaryEventBpmn.bpmnObject.parentIdForXml.shouldBe(subprocessBpmn.bpmnObject.id)
+            boundaryEventBpmn.bpmnObject.id.shouldNotBe(optionalBoundaryErrorEventBpmnId)
+            boundaryEventBpmn.shape.id.shouldNotBe(optionalBoundaryErrorEventDiagramId)
+            boundaryEventBpmn.shape.bpmnElement.shouldBeEqualTo(boundaryEventBpmn.bpmnObject.id)
+            boundaryEventBpmn.shape.rectBounds().x.shouldBeGreaterThan(pasteStart.x)
+            boundaryEventBpmn.shape.rectBounds().y.shouldBeGreaterThan(pasteStart.y)
+            boundaryEventBpmn.shape.rectBounds().x.shouldBeLessThan(pasteStart.x + serviceTaskSize)
+            boundaryEventBpmn.shape.rectBounds().y.shouldBeLessThan(pasteStart.y + serviceTaskSize)
+            boundaryEventBpmn.shape.rectBounds().width.shouldBeEqualTo(boundaryEventSize)
+            boundaryEventBpmn.shape.rectBounds().height.shouldBeEqualTo(boundaryEventSize)
         }
     }
 
@@ -411,6 +478,34 @@ internal class UiCopyPasteTest: BaseUiTest() {
                             DiagramElementRemovedEvent(optionalBoundaryErrorEventDiagramId),
                             BpmnElementRemovedEvent(subprocessBpmnId),
                             BpmnElementRemovedEvent(serviceTaskStartBpmnId),
+                            BpmnElementRemovedEvent(optionalBoundaryErrorEventBpmnId)
+                    )
+            )
+        }
+    }
+
+    private fun verifyBoundaryEventWasPasted(commitTimes: Int = 2) {
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
+            val boundaryEventBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().filter { it.bpmnObject.element is BpmnBoundaryErrorEvent }.shouldHaveSingleItem()
+            lastValue.shouldHaveSize(1)
+
+            boundaryEventBpmn.bpmnObject.parent.shouldBe(parentProcessBpmnId)
+            boundaryEventBpmn.bpmnObject.parentIdForXml.shouldBe(parentProcessBpmnId)
+            boundaryEventBpmn.bpmnObject.id.shouldNotBe(optionalBoundaryErrorEventBpmnId)
+            boundaryEventBpmn.shape.id.shouldNotBe(optionalBoundaryErrorEventDiagramId)
+            boundaryEventBpmn.shape.bpmnElement.shouldBeEqualTo(boundaryEventBpmn.bpmnObject.id)
+            boundaryEventBpmn.shape.rectBounds().width.shouldBeEqualTo(boundaryEventSize)
+            boundaryEventBpmn.shape.rectBounds().height.shouldBeEqualTo(boundaryEventSize)
+        }
+    }
+
+    private fun verifyBoundaryEventWasCut() {
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldContainSame(
+                    listOf(
+                            DiagramElementRemovedEvent(optionalBoundaryErrorEventDiagramId),
                             BpmnElementRemovedEvent(optionalBoundaryErrorEventBpmnId)
                     )
             )

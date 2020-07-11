@@ -435,6 +435,59 @@ internal abstract class BaseUiTest {
         initializeCanvas()
     }
 
+    protected fun prepareServiceTaskWithBoundaryEventOnRootView() {
+        val boundaryEventOnRoot = BpmnBoundaryErrorEvent(optionalBoundaryErrorEventBpmnId, null, parentProcessBpmnId, null)
+        val boundaryEventOnRootShape = ShapeElement(
+                optionalBoundaryErrorEventDiagramId,
+                optionalBoundaryErrorEventBpmnId,
+                BoundsElement(startElemX + 3.0f * serviceTaskSize, startElemX + 3.0f * serviceTaskSize, boundaryEventSize, boundaryEventSize)
+        )
+
+        val process = basicProcess.copy(
+                basicProcess.process.copy(
+                        body = BpmnProcessBodyBuilder.builder()
+                                .setServiceTask(listOf(bpmnServiceTaskStart))
+                                .setBoundaryErrorEvent(listOf(boundaryEventOnRoot))
+                                .create()
+                ),
+                listOf(DiagramElement(
+                        diagramMainElementId,
+                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, boundaryEventOnRootShape), listOf()))
+                )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
+    protected fun prepareServiceTaskInSubprocesskWithBoundaryEventOnRootView() {
+        val boundaryEventOnRoot = BpmnBoundaryErrorEvent(optionalBoundaryErrorEventBpmnId, null, parentProcessBpmnId, null)
+        val boundaryEventOnRootShape = ShapeElement(
+                optionalBoundaryErrorEventDiagramId,
+                optionalBoundaryErrorEventBpmnId,
+                BoundsElement(startElemX + 3.0f * serviceTaskSize, startElemX + 3.0f * serviceTaskSize, boundaryEventSize, boundaryEventSize)
+        )
+
+        val process = basicProcess.copy(
+                basicProcess.process.copy(
+                        body = BpmnProcessBodyBuilder.builder()
+                                .setSubProcess(listOf(bpmnSubProcess))
+                                .setBoundaryErrorEvent(listOf(boundaryEventOnRoot))
+                                .create(),
+                        children = mapOf(
+                                subprocessBpmnId to BpmnProcessBodyBuilder.builder()
+                                        .setServiceTask(listOf(bpmnServiceTaskStart))
+                                        .create()
+                        )
+                ),
+                listOf(DiagramElement(
+                        diagramMainElementId,
+                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSubProcess, diagramServiceTaskStart, boundaryEventOnRootShape), listOf()))
+                )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
     protected fun prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView() {
         val boundaryEventOnServiceTask = BpmnBoundaryErrorEvent(optionalBoundaryErrorEventBpmnId, null, serviceTaskStartBpmnId, null)
         val boundaryEventOnServiceTaskShape = ShapeElement(
