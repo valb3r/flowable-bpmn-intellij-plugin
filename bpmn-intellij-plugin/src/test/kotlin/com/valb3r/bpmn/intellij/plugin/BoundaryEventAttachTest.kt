@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.events.BpmnParentChangedEvent
 import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
 import com.valb3r.bpmn.intellij.plugin.events.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeLessThan
 import org.amshove.kluent.shouldHaveSingleItem
 import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.Test
@@ -38,6 +39,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
             val xmlParentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
             val parentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
             val attachedRef = firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            firstValue.indexOf(xmlParentChanged).shouldBeLessThan(firstValue.indexOf(parentChanged))
             firstValue.shouldHaveSize(4)
 
             draggedTo.diagramElementId.shouldBeEqualTo(optionalBoundaryErrorEventDiagramId)
@@ -70,6 +72,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
             val xmlParentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
             val parentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
             val attachedRef = firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            firstValue.indexOf(xmlParentChanged).shouldBeLessThan(firstValue.indexOf(parentChanged))
             firstValue.shouldHaveSize(4)
 
             draggedTo.diagramElementId.shouldBeEqualTo(optionalBoundaryErrorEventDiagramId)
@@ -102,6 +105,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
             val xmlParentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
             val parentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
             val attachedRef = firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            firstValue.indexOf(xmlParentChanged).shouldBeLessThan(firstValue.indexOf(parentChanged))
             firstValue.shouldHaveSize(4)
 
             draggedTo.diagramElementId.shouldBeEqualTo(optionalBoundaryErrorEventDiagramId)
@@ -133,6 +137,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
             val xmlParentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
             val parentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
             val attachedRef = firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            firstValue.indexOf(xmlParentChanged).shouldBeLessThan(firstValue.indexOf(parentChanged))
             firstValue.shouldHaveSize(4)
 
             draggedTo.diagramElementId.shouldBeEqualTo(optionalBoundaryErrorEventDiagramId)

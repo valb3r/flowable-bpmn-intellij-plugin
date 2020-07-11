@@ -39,8 +39,8 @@ class AnyShapeNestableIconShape(
                 continue
             }
 
-            newEvents += BpmnParentChangedEvent(shape.bpmnElement, nestTo, false)
             newEvents += BpmnParentChangedEvent(shape.bpmnElement, xmlNest, true)
+            newEvents += BpmnParentChangedEvent(shape.bpmnElement, nestTo, false)
             newEvents += StringValueUpdatedEvent(shape.bpmnElement, PropertyType.ATTACHED_TO_REF, nestTo.id)
             break
         }
