@@ -44,6 +44,7 @@ internal fun setCanvas(canvas: Canvas): Canvas {
 
 class Canvas(private val settings: CanvasConstants) : JPanel() {
     private val stateProvider = currentStateProvider()
+    private val closeAnchorRadius = 100.0f;
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
@@ -149,7 +150,6 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
     }
 
     fun attractToAnchors(ctx: ElementInteractionContext): ElementInteractionContext {
-        val anchors: MutableSet<AnchorDetails> = mutableSetOf()
         val cameraPoint = camera.toCameraView(ctx.dragCurrent)
         val dragged = ctx.draggedIds.minBy {
             val bounds = areaByElement?.get(it)?.area?.bounds2D ?: Rectangle2D.Float()
@@ -179,10 +179,16 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
                     }
                 }
 
+        val anchors: MutableSet<AnchorDetails> = mutableSetOf()
+        val closeAnchors: MutableSet<Point2D.Float> = mutableSetOf()
         for ((_, searchIn) in anchorsToSearchIn?.filter { it.value.index <= draggedArea.index }.orEmpty()) {
             for (draggedAnchor in draggedAnchors) {
                 val targetAnchors = if (AreaType.SHAPE == draggedType) searchIn.anchorsForShape else searchIn.anchorsForWaypoints
                 for (anchor in targetAnchors) {
+                    if (anchor.point.distance(draggedAnchor.point) < closeAnchorRadius) {
+                        closeAnchors.add(anchor.point)
+                    }
+
                     val attractsX = abs(draggedAnchor.point.x - anchor.point.x) < settings.anchorAttractionThreshold
                     val attractsY = abs(draggedAnchor.point.y - anchor.point.y) < settings.anchorAttractionThreshold
 
@@ -202,10 +208,11 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
         val anchorY = anchors.filter { it.type == AnchorType.VERTICAL }.minBy { it.anchor.distance(it.objectAnchor) }
 
         val selectedAnchors: AnchorHit = if (null == pointAnchor) applyOrthoAnchors(anchorX, anchorY, ctx) else applyPointAnchor(pointAnchor, ctx)
+        val allAnchors = selectedAnchors.copy(closeAnchors = closeAnchors.toList())
 
         return ctx.copy(
                 dragCurrent = Point2D.Float(selectedAnchors.dragged.x, selectedAnchors.dragged.y),
-                anchorsHit = selectedAnchors
+                anchorsHit = allAnchors
         )
     }
 
@@ -241,7 +248,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
             this.selectedElements.addAll(
                     elemsUnderRect(
                             interactionCtx.dragSelectionRect!!.toRect(),
-                            excludeAreas = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SHAPE_THAT_NESTS, AreaType.SHAPE_ATTACHED_TO_ELEMENT)
+                            excludeAreas = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SHAPE_THAT_NESTS, AreaType.SELECTS_DRAG_TARGET)
                     )
             )
 
@@ -319,7 +326,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
         val objectAnchorY = anchorY?.objectAnchor?.y ?: ctx.dragCurrent.y
         anchorX?.apply { selectedAnchors[AnchorType.HORIZONTAL] = this.anchor }
         anchorY?.apply { selectedAnchors[AnchorType.VERTICAL] = this.anchor }
-        return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(objectAnchorX, objectAnchorY), selectedAnchors)
+        return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(objectAnchorX, objectAnchorY), selectedAnchors, emptyList())
     }
 
     private fun applyPointAnchor(anchor: AnchorDetails, ctx: ElementInteractionContext): AnchorHit {
@@ -327,7 +334,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
         val targetX = ctx.dragCurrent.x + anchor.anchor.x - anchor.objectAnchor.x
         val targetY = ctx.dragCurrent.y + anchor.anchor.y - anchor.objectAnchor.y
         selectedAnchors[AnchorType.POINT] = anchor.anchor
-        return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(targetX, targetY), selectedAnchors)
+        return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(targetX, targetY), selectedAnchors, emptyList())
     }
 
     private fun bpmnElemsUnderDragCurrent(): Map<BpmnElementId, AreaWithZindex> {

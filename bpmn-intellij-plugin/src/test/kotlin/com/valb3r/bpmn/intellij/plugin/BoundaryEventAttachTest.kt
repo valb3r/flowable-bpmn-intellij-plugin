@@ -8,6 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.BpmnParentChangedEvent
 import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
 import com.valb3r.bpmn.intellij.plugin.events.StringValueUpdatedEvent
+import com.valb3r.bpmn.intellij.plugin.render.lastRenderedState
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeLessThan
 import org.amshove.kluent.shouldHaveSingleItem
@@ -32,6 +33,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
 
         argumentCaptor<List<Event>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
@@ -65,6 +67,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
 
         argumentCaptor<List<Event>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
@@ -98,6 +101,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
 
         argumentCaptor<List<Event>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
@@ -130,6 +134,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
+        lastRenderedState()!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
 
         argumentCaptor<List<Event>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
