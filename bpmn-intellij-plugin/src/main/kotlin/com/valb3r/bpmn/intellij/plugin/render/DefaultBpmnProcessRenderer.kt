@@ -47,7 +47,15 @@ interface BpmnProcessRenderer {
 }
 
 private val lastState = AtomicReference<RenderedState>()
-data class RenderedState(val state: RenderState, val elementsById: Map<BpmnElementId, BaseDiagramRenderElement>)
+data class RenderedState(val state: RenderState, val elementsById: Map<BpmnElementId, BaseDiagramRenderElement>) {
+
+    fun canCopyOrCut(): Boolean {
+        return state.ctx.selectedIds
+                .mapNotNull { state.currentState.elementByDiagramId[it] }
+                .mapNotNull { elementsById[it] }
+                .isNotEmpty()
+    }
+}
 
 fun lastRenderedState(): RenderedState? {
     return lastState.get()
