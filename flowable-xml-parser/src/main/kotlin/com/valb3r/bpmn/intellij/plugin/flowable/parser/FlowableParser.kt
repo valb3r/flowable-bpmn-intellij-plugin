@@ -362,17 +362,17 @@ class FlowableParser : BpmnParser {
             is BpmnShellTask -> createServiceTaskWithType(diagramParent, "shell")
 
             // Sub processes
-            is BpmnCallActivity -> diagramParent.addElement("callActivity")
-            is BpmnSubProcess -> diagramParent.addElement("subProcess")
+            is BpmnCallActivity -> diagramParent.addElement(NS.MODEL.named("callActivity"))
+            is BpmnSubProcess -> diagramParent.addElement(NS.MODEL.named("subProcess"))
             is BpmnEventSubprocess -> createEventSubprocess(diagramParent)
-            is BpmnAdHocSubProcess -> diagramParent.addElement("adHocSubProcess")
-            is BpmnTransactionalSubProcess -> diagramParent.addElement("transaction")
+            is BpmnAdHocSubProcess -> diagramParent.addElement(NS.MODEL.named("adHocSubProcess"))
+            is BpmnTransactionalSubProcess -> diagramParent.addElement(NS.MODEL.named("transaction"))
 
             // Gateways
-            is BpmnExclusiveGateway -> diagramParent.addElement("exclusiveGateway")
-            is BpmnParallelGateway -> diagramParent.addElement("parallelGateway")
-            is BpmnInclusiveGateway -> diagramParent.addElement("inclusiveGateway")
-            is BpmnEventGateway -> diagramParent.addElement("eventBasedGateway")
+            is BpmnExclusiveGateway -> diagramParent.addElement(NS.MODEL.named("exclusiveGateway"))
+            is BpmnParallelGateway -> diagramParent.addElement(NS.MODEL.named("parallelGateway"))
+            is BpmnInclusiveGateway -> diagramParent.addElement(NS.MODEL.named("inclusiveGateway"))
+            is BpmnEventGateway -> diagramParent.addElement(NS.MODEL.named("eventBasedGateway"))
 
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
@@ -400,31 +400,31 @@ class FlowableParser : BpmnParser {
     }
 
     private fun createBoundaryEventWithType(elem: Element, type: String): Element {
-        val newElem = elem.addElement("boundaryEvent")
+        val newElem = elem.addElement(NS.MODEL.named("boundaryEvent"))
         newElem.addElement(type)
         return newElem
     }
 
     private fun createStartEventWithType(elem: Element, type: String?): Element {
-        val newElem = elem.addElement("startEvent")
+        val newElem = elem.addElement(NS.MODEL.named("startEvent"))
         type?.let { newElem.addElement(it) }
         return newElem
     }
 
     private fun createEndEventWithType(elem: Element, type: String?): Element {
-        val newElem = elem.addElement("endEvent")
+        val newElem = elem.addElement(NS.MODEL.named("endEvent"))
         type?.let { newElem.addElement(it) }
         return newElem
     }
 
     private fun createIntermediateCatchEventWithType(elem: Element, type: String): Element {
-        val newElem = elem.addElement("intermediateCatchEvent")
+        val newElem = elem.addElement(NS.MODEL.named("intermediateCatchEvent"))
         newElem.addElement(type)
         return newElem
     }
 
     private fun createIntermediateThrowEventWithType(elem: Element, type: String?): Element {
-        val newElem = elem.addElement("intermediateThrowEvent")
+        val newElem = elem.addElement(NS.MODEL.named("intermediateThrowEvent"))
         type?.let { newElem.addElement(it) }
         return newElem
     }
@@ -436,7 +436,7 @@ class FlowableParser : BpmnParser {
     }
 
     private fun createEventSubprocess(elem: Element): Element {
-        val newElem = elem.addElement("subProcess")
+        val newElem = elem.addElement(NS.MODEL.named("subProcess"))
         newElem.addAttribute("triggeredByEvent", "true")
         return newElem
     }
@@ -448,7 +448,7 @@ class FlowableParser : BpmnParser {
                 )!!
 
         val newNode = when(update.bpmnObject.element) {
-            is BpmnSequenceFlow -> diagramParent.addElement("sequenceFlow")
+            is BpmnSequenceFlow -> diagramParent.addElement(NS.MODEL.named("sequenceFlow"))
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 
@@ -583,9 +583,9 @@ class FlowableParser : BpmnParser {
         }
 
         if (null == value || !value.toBoolean()) {
-            node.name = "subProcess"
+            node.qName = NS.MODEL.named("subProcess")
         } else {
-            node.name = "transaction"
+            node.qName = NS.MODEL.named("transaction")
         }
     }
 
@@ -662,7 +662,8 @@ class FlowableParser : BpmnParser {
         BPMDI("bpmdi", "http://www.omg.org/spec/BPMN/20100524/DI"),
         OMGDC("omgdc", "http://www.omg.org/spec/DD/20100524/DC"),
         FLOWABLE("flowable", "http://flowable.org/bpmn"),
-        XSI("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+        XSI("xsi", "http://www.w3.org/2001/XMLSchema-instance"),
+        MODEL("", "http://www.omg.org/spec/BPMN/20100524/MODEL");
 
         fun named(name: String): QName {
             return QName(name, Namespace(namePrefix, url))
