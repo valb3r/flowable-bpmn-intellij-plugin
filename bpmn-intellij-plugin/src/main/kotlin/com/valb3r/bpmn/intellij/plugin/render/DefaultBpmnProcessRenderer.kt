@@ -63,6 +63,7 @@ fun lastRenderedState(): RenderedState? {
 
 class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer {
     private val undoRedoStartMargin = 20.0f
+    private val closeAnchorRadius = 2f
     private val anchorRadius = 5f
     private val actionsIcoSize = 15f
 
@@ -286,6 +287,8 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
                 AnchorType.POINT -> canvas.drawCircle(it.value, anchorRadius, Colors.ANCHOR_COLOR.color)
             }
         }
+
+        anchors.closeAnchors.forEach { canvas.drawCircle(it, closeAnchorRadius, Colors.CLOSE_ANCHOR_COLOR.color) }
     }
 
     private fun isActive(elemId: DiagramElementId, state: RenderState): Boolean {
