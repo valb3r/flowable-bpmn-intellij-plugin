@@ -111,7 +111,11 @@ class CurrentStateProvider {
                             continue
                         }
 
-                        updatedElementByStaticId[key] = WithParentId(event.newParentId, value.element)
+                        if (event.propagateToXml) {
+                            updatedElementByStaticId[key] = WithParentId(event.newParentId, value.element, event.newParentId)
+                        } else {
+                            updatedElementByStaticId[key] = WithParentId(event.newParentId, value.element, updatedElementByStaticId[key]?.parentIdForXml ?: event.newParentId)
+                        }
                     }
                 }
                 else -> throw IllegalStateException("Can't handle event ${event.javaClass}")
