@@ -13,7 +13,7 @@ enum class Colors(val color: JBColor) {
     SUBPROCESS_TEXT_COLOR(JBColor(Color(0x292B2D), Color(0xBBBBBB))),
     INNER_TEXT_COLOR(JBColor(Color(0x292B2D), Color(0xBBBBBB))),
     ARROW_COLOR(JBColor(Color(0x292B2D), Color(0xBBBBBB))),
-    ANCHOR_COLOR(JBColor(Color(0xFFAA00), Color(0xFFAA00))),
+    ANCHOR_COLOR(JBColor(Color(0xFFAA00), Color(0xC09E56))),
     CLOSE_ANCHOR_COLOR(JBColor(Color(0xFFC0CB), Color(0xFFC0CB))),
     DEBUG_ELEMENT_COLOR(JBColor(Color(0xFFFF00), Color(0x535353))),
     WAYPOINT_COLOR(JBColor(Color(0xFF0000), Color(0xFF0000))),
