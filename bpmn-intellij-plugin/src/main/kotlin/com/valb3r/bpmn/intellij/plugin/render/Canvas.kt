@@ -248,7 +248,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
             this.selectedElements.addAll(
                     elemsUnderRect(
                             interactionCtx.dragSelectionRect!!.toRect(),
-                            excludeAreas = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SHAPE_THAT_NESTS, AreaType.SHAPE_ATTACHED_TO_ELEMENT)
+                            excludeAreas = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SHAPE_THAT_NESTS, AreaType.SELECTS_DRAG_TARGET)
                     )
             )
 

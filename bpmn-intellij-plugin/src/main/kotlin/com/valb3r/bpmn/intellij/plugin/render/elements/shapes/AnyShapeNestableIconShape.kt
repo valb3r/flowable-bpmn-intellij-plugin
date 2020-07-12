@@ -57,6 +57,6 @@ class AnyShapeNestableIconShape(
     }
 
     override fun areaType(): AreaType {
-        return AreaType.SHAPE_ATTACHED_TO_ELEMENT
+        return AreaType.SELECTS_DRAG_TARGET
     }
 }
