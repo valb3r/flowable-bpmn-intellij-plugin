@@ -154,7 +154,8 @@ class CanvasPopupMenuProvider {
     }
 
     private fun addCopyAndpasteIfNeeded(popup: JBPopupMenu, sceneLocation: Point2D.Float, parent: BpmnElementId) {
-        if (lastRenderedState()?.state?.ctx?.selectedIds?.isNotEmpty() == true) {
+        val renderedState = lastRenderedState()
+        if (true == renderedState?.canCopyOrCut()) {
             addItem(popup, "Copy", COPY, ClipboardCopier())
             addItem(popup, "Cut", CUT, ClipboardCutter())
         }
@@ -268,6 +269,9 @@ class CanvasPopupMenuProvider {
 
         override fun actionPerformed(e: ActionEvent?) {
             val state = lastRenderedState() ?: return
+            if (!state.canCopyOrCut()) {
+                return
+            }
             copyPasteActionHandler().copy(state.state, state.elementsById)
         }
     }
@@ -277,6 +281,9 @@ class CanvasPopupMenuProvider {
 
         override fun actionPerformed(e: ActionEvent?) {
             val state = lastRenderedState() ?: return
+            if (!state.canCopyOrCut()) {
+                return
+            }
             copyPasteActionHandler().cut(state.state, updateEventsRegistry(), state.elementsById)
             currentCanvas().clearSelection()
         }

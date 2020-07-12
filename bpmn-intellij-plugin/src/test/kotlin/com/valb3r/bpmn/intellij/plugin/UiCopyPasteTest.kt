@@ -50,6 +50,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     fun `Flat service task can be cut and pasted`() {
         prepareTwoServiceTaskView()
         clickOnId(serviceTaskStartDiagramId)
+        lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
         CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
         canvas.paintComponent(graphics)
@@ -66,6 +67,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     fun `Flat service task can be copied and pasted`() {
         prepareTwoServiceTaskView()
         clickOnId(serviceTaskStartDiagramId)
+        lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
         CanvasPopupMenuProvider.ClipboardCopier().actionPerformed(null)
 
@@ -99,6 +101,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     fun `Service task with attached boundary event can be cut and pasted`() {
         prepareServiceTaskWithAttachedBoundaryEventView()
         clickOnId(serviceTaskStartDiagramId)
+        lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
         CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
         canvas.paintComponent(graphics)
@@ -116,6 +119,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     fun `Service task with attached boundary event can be copied and pasted`() {
         prepareServiceTaskWithAttachedBoundaryEventView()
         clickOnId(serviceTaskStartDiagramId)
+        lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
         CanvasPopupMenuProvider.ClipboardCopier().actionPerformed(null)
         canvas.paintComponent(graphics)
@@ -131,6 +135,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         prepareTwoServiceTaskView()
         val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne()
         clickOnId(addedEdge.edge.id)
+        lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
         CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
         canvas.paintComponent(graphics)
@@ -149,6 +154,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         prepareTwoServiceTaskView()
         val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne()
         clickOnId(addedEdge.edge.id)
+        lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
         CanvasPopupMenuProvider.ClipboardCopier().actionPerformed(null)
         canvas.paintComponent(graphics)
@@ -171,6 +177,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
+        lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
         CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
         canvas.paintComponent(graphics)
@@ -196,6 +203,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
+        lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
         CanvasPopupMenuProvider.ClipboardCopier().actionPerformed(null)
         canvas.paintComponent(graphics)
@@ -210,6 +218,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     fun `Subprocess with children can be cut and pasted`() {
         prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView()
         clickOnId(subprocessDiagramId)
+        lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
         CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
         canvas.paintComponent(graphics)
@@ -227,6 +236,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     fun `Subprocess with children can be copied and pasted`() {
         prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView()
         clickOnId(subprocessDiagramId)
+        lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
         CanvasPopupMenuProvider.ClipboardCopier().actionPerformed(null)
         canvas.paintComponent(graphics)
@@ -242,6 +252,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     fun `Boundary event can be cut out from service task in subprocess and pasted to parent`() {
         prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView()
         clickOnId(optionalBoundaryErrorEventDiagramId)
+        lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
         CanvasPopupMenuProvider.ClipboardCutter().actionPerformed(null)
         canvas.paintComponent(graphics)
@@ -259,6 +270,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     fun `Boundary event can be copied from service task in subprocess and pasted to parent`() {
         prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView()
         clickOnId(optionalBoundaryErrorEventDiagramId)
+        lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
         CanvasPopupMenuProvider.ClipboardCopier().actionPerformed(null)
         canvas.paintComponent(graphics)
@@ -268,6 +280,18 @@ internal class UiCopyPasteTest: BaseUiTest() {
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
         verifyBoundaryEventWasPasted(1)
     }
+
+    @Test
+    fun `Non-copiable selected elements detection works`() {
+        prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView()
+        clickOnId(serviceTaskStartDiagramId)
+        val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
+        clickOnId(newLink)
+
+        lastRenderedState()!!.state.ctx.selectedIds.shouldHaveSize(1)
+        lastRenderedState()!!.canCopyOrCut().shouldBeFalse()
+    }
+
 
     private fun verifyPlainServiceTaskWasPasted(commitTimes: Int) {
         argumentCaptor<List<Event>>().apply {
