@@ -116,6 +116,10 @@ If you want just to run the plugin in the `sandbox` you can execute
 (like dragging with mouse wheel) or Shift + Left Mouse Button
 1. Zoom in/out - mouse wheel rotation
 1. To **add a new element** - click with right mouse button and popup menu with new element selection will appear 
+1. To **Copy or cut element(s)** - select elements you want to copy/paste and click with right mouse button on them to 
+see popup menu, there select cut or copy menu item
+1. To **Paste element(s)** - (copy/cut before) click with right mouse button on the desired location and 
+select 'Paste' popup menu item
 1. To select element click on it with mouse
 
 
