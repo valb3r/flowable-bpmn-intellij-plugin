@@ -55,6 +55,23 @@ data class RenderedState(val state: RenderState, val elementsById: Map<BpmnEleme
                 .mapNotNull { elementsById[it] }
                 .isNotEmpty()
     }
+
+    fun allChildrenOf(elem: Set<DiagramElementId>): Set<DiagramElementId> {
+        val result = mutableSetOf<DiagramElementId>()
+
+        result += elem.map { state.currentState.elementByDiagramId[it] }
+                .mapNotNull { elementsById[it] }
+                .flatMap { allChildrenOf(it) }
+
+        return result
+    }
+
+    private fun allChildrenOf(elem: BaseDiagramRenderElement): Set<DiagramElementId> {
+        val result = mutableSetOf<DiagramElementId>()
+        result += elem.children.map { it.elementId }
+        result += elem.children.flatMap { allChildrenOf(it) }
+        return result
+    }
 }
 
 fun lastRenderedState(): RenderedState? {
