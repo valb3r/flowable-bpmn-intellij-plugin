@@ -405,7 +405,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
                 ?.filter { !excludeAreas.contains(it.value.areaType) }
                 ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this } }
 
-        val childExclusions = intersection?.let { lastRenderedState()?.allChildrenOf(it.keys) } ?: emptySet()
+        val childExclusions = intersection?.let { lastRenderedState()?.allChildrenOf(it.filter { it.value.areaType == AreaType.SHAPE_THAT_NESTS }.keys) } ?: emptySet()
         result.removeAll(childExclusions)
 
         return result
