@@ -27,7 +27,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
     }
 
     @Test
-    fun `Multiple elements can be dragged out from subprocess`() {
+    fun `Multiple elements can be dragged out from subprocess and will get parent process as the parent`() {
         prepareOneSubProcessWithTwoLinkedServiceTasksView()
 
         val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
@@ -72,6 +72,47 @@ internal class UiMultiSelectTest: BaseUiTest() {
             parentChangeEndTask.newParentId.shouldBeEqualTo(parentProcessBpmnId)
             parentChangeEdge[0].newParentId.shouldBeEqualTo(parentProcessBpmnId)
             parentChangeEdge[1].newParentId.shouldBeEqualTo(parentProcessBpmnId)
+        }
+    }
+
+    @Test
+    fun `Multiple elements can be dragged inside subprocess and will keep subprocess as parent`() {
+        prepareOneSubProcessWithTwoLinkedServiceTasksView()
+
+        val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
+        canvas.click(selectionStart)
+        canvas.startSelectionOrDrag(selectionStart)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(endElemX + serviceTaskSize, endElemX + serviceTaskSize))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        val dragBegin = elementCenter(serviceTaskStartDiagramId)
+        val delta = 10.0f
+        canvas.startSelectionOrDrag(dragBegin)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(dragBegin, Point2D.Float(dragBegin.x + delta, dragBegin.x + delta))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            val newEdge = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val dragStartTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()
+            val dragEndTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskEndDiagramId }.shouldHaveSingleItem()
+            val dragEdgeWaypointStart = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == newEdge.edge.waypoint[0].id }.shouldHaveSingleItem()
+            val dragEdgeWaypointEnd = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == newEdge.edge.waypoint[2].id }.shouldHaveSingleItem()
+            lastValue.shouldHaveSize(5)
+
+            dragStartTask.dx.shouldBeEqualTo(delta)
+            dragStartTask.dy.shouldBeEqualTo(delta)
+            dragEndTask.dx.shouldBeEqualTo(delta)
+            dragEndTask.dy.shouldBeEqualTo(delta)
+            dragEdgeWaypointStart.dx.shouldBeEqualTo(delta)
+            dragEdgeWaypointStart.dy.shouldBeEqualTo(delta)
+            dragEdgeWaypointEnd.dx.shouldBeEqualTo(delta)
+            dragEdgeWaypointEnd.dy.shouldBeEqualTo(delta)
         }
     }
 }
