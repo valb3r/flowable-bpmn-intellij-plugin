@@ -86,6 +86,7 @@ internal abstract class BaseUiTest {
     protected val endElemMidY = serviceTaskSize / 2.0f
 
     protected val subProcessSize = endElemX + serviceTaskSize * 2
+    protected val nestedSubProcessSize = subProcessSize / 2.0f
 
     protected val diagramMainElementId = DiagramElementId("diagramMainElement")
     protected val diagramMainPlaneElementId = DiagramElementId("diagramMainPlaneElement")
@@ -113,7 +114,7 @@ internal abstract class BaseUiTest {
     protected val diagramServiceTaskStart = ShapeElement(serviceTaskStartDiagramId, bpmnServiceTaskStart.id, BoundsElement(startElemX, startElemY, serviceTaskSize, serviceTaskSize))
     protected val diagramServiceTaskEnd = ShapeElement(serviceTaskEndDiagramId, bpmnServiceTaskEnd.id, BoundsElement(endElemX, endElemY, serviceTaskSize, serviceTaskSize))
     protected val diagramSubProcess = ShapeElement(subprocessDiagramId, subprocessBpmnId, BoundsElement(subProcessElemX, subProcessElemY, subProcessSize, subProcessSize))
-    protected val diagramNestedSubProcess = ShapeElement(subprocessInSubProcessDiagramId, subprocessInSubProcessBpmnId, BoundsElement(subProcessElemX, subProcessElemY, subProcessSize / 2.0f, subProcessSize / 2.0f))
+    protected val diagramNestedSubProcess = ShapeElement(subprocessInSubProcessDiagramId, subprocessInSubProcessBpmnId, BoundsElement(subProcessElemX, subProcessElemY, nestedSubProcessSize, nestedSubProcessSize))
     protected val diagramSequenceFlow = EdgeElement(sequenceFlowDiagramId, sequenceFlowBpmnId, listOf(WaypointElement(endElemX, endElemY), WaypointElement(endElemX - 20.0f, endElemY - 20.0f), WaypointElement(endElemX - 30.0f, endElemY - 30.0f)))
 
     protected val icons = mock<IconProvider>()

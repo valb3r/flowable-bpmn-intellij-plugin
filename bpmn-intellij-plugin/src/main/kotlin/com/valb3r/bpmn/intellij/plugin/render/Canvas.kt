@@ -245,6 +245,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
                     current
             ))
 
+            this.selectedElements.clear()
             this.selectedElements.addAll(
                     elemsUnderRect(
                             interactionCtx.dragSelectionRect!!.toRect(),
@@ -401,6 +402,10 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
         intersection
                 ?.filter { !excludeAreas.contains(it.value.areaType) }
                 ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this } }
+
+        val childExclusions = intersection?.let { lastRenderedState()?.allChildrenOf(it.keys) } ?: emptySet()
+        result.removeAll(childExclusions)
+
         return result
     }
 

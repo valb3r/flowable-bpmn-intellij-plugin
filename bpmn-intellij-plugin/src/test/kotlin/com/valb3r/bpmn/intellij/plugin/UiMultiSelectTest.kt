@@ -143,12 +143,15 @@ internal class UiMultiSelectTest: BaseUiTest() {
         argumentCaptor<List<Event>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             val newEdge = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val dragSubProcess = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == subprocessDiagramId }.shouldHaveSingleItem()
             val dragStartTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()
             val dragEndTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskEndDiagramId }.shouldHaveSingleItem()
             val dragEdgeWaypointStart = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == newEdge.edge.waypoint[0].id }.shouldHaveSingleItem()
             val dragEdgeWaypointEnd = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == newEdge.edge.waypoint[2].id }.shouldHaveSingleItem()
-            lastValue.shouldHaveSize(5)
+            lastValue.shouldHaveSize(6)
 
+            dragSubProcess.dx.shouldBeEqualTo(delta)
+            dragSubProcess.dy.shouldBeEqualTo(delta)
             dragStartTask.dx.shouldBeEqualTo(delta)
             dragStartTask.dy.shouldBeEqualTo(delta)
             dragEndTask.dx.shouldBeEqualTo(delta)
@@ -157,6 +160,40 @@ internal class UiMultiSelectTest: BaseUiTest() {
             dragEdgeWaypointStart.dy.shouldBeEqualTo(delta)
             dragEdgeWaypointEnd.dx.shouldBeEqualTo(delta)
             dragEdgeWaypointEnd.dy.shouldBeEqualTo(delta)
+        }
+    }
+
+    @Test
+    fun `Subprocess within subprocess and its children can be dragged correctly when both are selected`() {
+        prepareOneSubProcessThenNestedSubProcessWithOneServiceTaskView()
+
+        val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
+        canvas.click(selectionStart)
+        canvas.startSelectionOrDrag(selectionStart)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(nestedSubProcessSize + 20.0f, nestedSubProcessSize + 20.0f))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        val dragBegin = elementCenter(subprocessInSubProcessDiagramId)
+        val delta = 10.0f
+        canvas.startSelectionOrDrag(dragBegin)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(dragBegin, Point2D.Float(dragBegin.x + delta, dragBegin.x + delta))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            val dragSubProcess = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == subprocessInSubProcessDiagramId }.shouldHaveSingleItem()
+            val dragStartTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()
+            lastValue.shouldHaveSize(2)
+
+            dragSubProcess.dx.shouldBeEqualTo(delta)
+            dragSubProcess.dy.shouldBeEqualTo(delta)
+            dragStartTask.dx.shouldBeEqualTo(delta)
+            dragStartTask.dy.shouldBeEqualTo(delta)
         }
     }
 }
