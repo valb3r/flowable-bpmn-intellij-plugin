@@ -196,4 +196,41 @@ internal class UiMultiSelectTest: BaseUiTest() {
             dragStartTask.dy.shouldBeEqualTo(delta)
         }
     }
+
+    @Test
+    fun `Root subprocess with subprocess and its children can be dragged correctly when all are selected`() {
+        prepareOneSubProcessThenNestedSubProcessWithOneServiceTaskView()
+
+        val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
+        canvas.click(selectionStart)
+        canvas.startSelectionOrDrag(selectionStart)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(subProcessSize + 100.0f, subProcessSize + 100.0f))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        val dragBegin = elementCenter(subprocessInSubProcessDiagramId)
+        val delta = 10.0f
+        canvas.startSelectionOrDrag(dragBegin)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(dragBegin, Point2D.Float(dragBegin.x + delta, dragBegin.x + delta))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            val dragRootSubProcess = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == subprocessDiagramId }.shouldHaveSingleItem()
+            val dragNestedSubProcess = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == subprocessInSubProcessDiagramId }.shouldHaveSingleItem()
+            val dragStartTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()
+            lastValue.shouldHaveSize(3)
+
+            dragRootSubProcess.dx.shouldBeEqualTo(delta)
+            dragRootSubProcess.dy.shouldBeEqualTo(delta)
+            dragNestedSubProcess.dx.shouldBeEqualTo(delta)
+            dragNestedSubProcess.dy.shouldBeEqualTo(delta)
+            dragStartTask.dx.shouldBeEqualTo(delta)
+            dragStartTask.dy.shouldBeEqualTo(delta)
+        }
+    }
 }
