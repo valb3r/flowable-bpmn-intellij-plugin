@@ -80,11 +80,12 @@ internal abstract class BaseUiTest {
     protected val boundaryEventSize = 15.0f
     protected val subProcessElemX = 0.0f
     protected val subProcessElemY = 0.0f
-    protected val subProcessSize = 200.0f
 
     protected val endElemX = 10 * serviceTaskSize
     protected val endElemY = 0.0f
     protected val endElemMidY = serviceTaskSize / 2.0f
+
+    protected val subProcessSize = endElemX + serviceTaskSize * 2
 
     protected val diagramMainElementId = DiagramElementId("diagramMainElement")
     protected val diagramMainPlaneElementId = DiagramElementId("diagramMainPlaneElement")
@@ -226,7 +227,7 @@ internal abstract class BaseUiTest {
     }
 
     protected fun addSequenceElementOnFirstTaskAndValidateCommittedExactOnce(): BpmnEdgeObjectAddedEvent {
-        addSequenceElementOnFirstTask()
+        addSequenceElementOnFirstTaskToSecondTask()
 
         argumentCaptor<List<Event>>().let {
             verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any())
@@ -251,7 +252,7 @@ internal abstract class BaseUiTest {
         }
     }
 
-    protected fun addSequenceElementOnFirstTask() {
+    protected fun addSequenceElementOnFirstTaskToSecondTask() {
         clickOnId(serviceTaskStartDiagramId)
         verifyServiceTasksAreDrawn()
         val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
@@ -330,6 +331,36 @@ internal abstract class BaseUiTest {
         )
         whenever(parser.parse("")).thenReturn(process)
         initializeCanvas()
+    }
+
+    protected fun prepareOneSubProcessWithTwoLinkedServiceTasksView() {
+        val process = basicProcess.copy(
+                basicProcess.process.copy(
+                        body = BpmnProcessBodyBuilder.builder()
+                                .setSubProcess(listOf(bpmnSubProcess))
+                                .create(),
+                        children = mapOf(
+                                subprocessBpmnId to BpmnProcessBodyBuilder.builder()
+                                        .setServiceTask(listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
+                                        .create()
+                        )
+                ),
+                listOf(
+                        DiagramElement(
+                                diagramMainElementId,
+                                PlaneElement(
+                                        diagramMainPlaneElementId,
+                                        basicProcess.process.id,
+                                        listOf(diagramSubProcess, diagramServiceTaskStart, diagramServiceTaskEnd),
+                                        listOf()
+                                )
+                        )
+                )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+
+        addSequenceElementOnFirstTaskToSecondTask()
     }
 
     protected fun prepareOneSubProcessThenNestedSubProcessWithOneServiceTaskView() {
