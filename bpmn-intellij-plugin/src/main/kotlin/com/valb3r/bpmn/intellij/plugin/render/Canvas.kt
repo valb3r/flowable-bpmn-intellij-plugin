@@ -279,13 +279,13 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
             val dx = interactionCtx.dragCurrent.x - interactionCtx.dragStart.x
             val dy = interactionCtx.dragCurrent.y - interactionCtx.dragStart.y
             updateEventsRegistry().addEvents(interactionCtx.draggedIds.flatMap {
-                val droppedOn = bpmnElemsUnderDragCurrent()
+                val droppedOn = bpmnElemsUnderCurrentCursorForDrag()
                 interactionCtx.dragEndCallbacks[it]?.invoke(
                         dx,
                         dy,
                         if (droppedOn.isEmpty()) null else droppedOn.keys.first(),
-                        droppedOn)
-                        ?: emptyList()
+                        droppedOn
+                ) ?: emptyList()
             })
         }
 
@@ -338,7 +338,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
         return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(targetX, targetY), selectedAnchors, emptyList())
     }
 
-    private fun bpmnElemsUnderDragCurrent(): Map<BpmnElementId, AreaWithZindex> {
+    private fun bpmnElemsUnderCurrentCursorForDrag(): Map<BpmnElementId, AreaWithZindex> {
         val onScreen = camera.toCameraView(interactionCtx.dragCurrent)
         val cursor = cursorRect(onScreen)
         // Correct order would require non-layered but computed z-index
@@ -348,10 +348,12 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
                 ?.sortedByDescending { it.second.index }
                 ?.filter { !interactionCtx.draggedIds.contains(it.first) && !selectedElements.contains(it.first) } ?: emptyList()
 
+        val childrenOfDragged = lastRenderedState()?.allChildrenOf(interactionCtx.draggedIds + selectedElements) ?: emptySet()
+
         val result = linkedMapOf<BpmnElementId, AreaWithZindex>()
         for (elem in elems) {
             val elemId = elem.second.bpmnElementId
-            if (null == elemId || result.containsKey(elemId)) {
+            if (null == elemId || result.containsKey(elemId) || childrenOfDragged.contains(elem.first)) {
                 continue
             }
 
@@ -369,7 +371,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
     private fun parentableElemUnderCursor(cursorPoint: Point2D.Float): BpmnElementId {
         val withinRect = cursorRect(cursorPoint)
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
-        val shapesThatCanParent = setOf(AreaType.PARENT_PROCESS_SHAPE)
+        val shapesThatCanParent = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SHAPE_THAT_NESTS)
 
         return intersection
                 ?.filter { null != it.value.bpmnElementId }
