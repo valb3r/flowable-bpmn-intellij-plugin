@@ -248,7 +248,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
             this.selectedElements.addAll(
                     elemsUnderRect(
                             interactionCtx.dragSelectionRect!!.toRect(),
-                            excludeAreas = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SHAPE_THAT_NESTS, AreaType.SELECTS_DRAG_TARGET)
+                            excludeAreas = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SELECTS_DRAG_TARGET)
                     )
             )
 
@@ -368,7 +368,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
     private fun parentableElemUnderCursor(cursorPoint: Point2D.Float): BpmnElementId {
         val withinRect = cursorRect(cursorPoint)
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
-        val shapesThatCanParent = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SHAPE_THAT_NESTS)
+        val shapesThatCanParent = setOf(AreaType.PARENT_PROCESS_SHAPE)
 
         return intersection
                 ?.filter { null != it.value.bpmnElementId }
