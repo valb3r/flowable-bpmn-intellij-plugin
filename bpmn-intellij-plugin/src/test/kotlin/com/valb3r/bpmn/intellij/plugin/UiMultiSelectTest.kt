@@ -83,7 +83,51 @@ internal class UiMultiSelectTest: BaseUiTest() {
         canvas.click(selectionStart)
         canvas.startSelectionOrDrag(selectionStart)
         canvas.paintComponent(graphics)
-        canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(endElemX + serviceTaskSize, endElemX + serviceTaskSize))
+        canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(subProcessSize * 2.0f, subProcessSize * 2.0f))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        val dragBegin = elementCenter(serviceTaskStartDiagramId)
+        val delta = 10.0f
+        canvas.startSelectionOrDrag(dragBegin)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(dragBegin, Point2D.Float(dragBegin.x + delta, dragBegin.x + delta))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            val newEdge = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val dragSubprocess = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == subprocessDiagramId }.shouldHaveSingleItem()
+            val dragStartTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()
+            val dragEndTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskEndDiagramId }.shouldHaveSingleItem()
+            val dragEdgeWaypointStart = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == newEdge.edge.waypoint[0].id }.shouldHaveSingleItem()
+            val dragEdgeWaypointEnd = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == newEdge.edge.waypoint[2].id }.shouldHaveSingleItem()
+            lastValue.shouldHaveSize(6)
+
+            dragSubprocess.dx.shouldBeEqualTo(delta)
+            dragSubprocess.dy.shouldBeEqualTo(delta)
+            dragStartTask.dx.shouldBeEqualTo(delta)
+            dragStartTask.dy.shouldBeEqualTo(delta)
+            dragEndTask.dx.shouldBeEqualTo(delta)
+            dragEndTask.dy.shouldBeEqualTo(delta)
+            dragEdgeWaypointStart.dx.shouldBeEqualTo(delta)
+            dragEdgeWaypointStart.dy.shouldBeEqualTo(delta)
+            dragEdgeWaypointEnd.dx.shouldBeEqualTo(delta)
+            dragEdgeWaypointEnd.dy.shouldBeEqualTo(delta)
+        }
+    }
+
+    @Test
+    fun `Subprocess and its children can be dragged correctly when both are selected`() {
+        prepareOneSubProcessWithTwoLinkedServiceTasksView()
+
+        val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
+        canvas.click(selectionStart)
+        canvas.startSelectionOrDrag(selectionStart)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(subProcessSize + 100.0f, subProcessSize + 100.0f))
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
