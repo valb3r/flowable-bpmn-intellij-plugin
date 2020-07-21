@@ -144,6 +144,15 @@
              - "popup" (optional) specifies how the group is presented in the menu. If a group has popup="true",
                actions in it are placed in a submenu; for popup="false", actions are displayed as a section of
                the same menu delimited by separators. -->
+
+        <!-- Allow to create new Flowable BPMN 2.0 diagram -->
+        <action
+                id="BpmnDiagram.NewFlowableBpmnAction"
+                icon="/icons/icon.png"
+                class="com.valb3r.bpmn.intellij.plugin.actions.NewFlowableBpmnAction">
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
+        </action>
+
         <group id="BpmnDiagramActionGroup"
                text="Flowable BPMN Diagram"
                description="Actions of Flowable BPMN diagram plugin"
@@ -279,15 +288,10 @@
         <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.langinjection.xml.XmlFlowableInjector"/>
     </extensions>
 
-    <!-- <extensions defaultExtensionNs="com.intellij">
-        <applicationConfigurable groupId="editor" instance="com.maddyhome.idea.vim.ui.VimEmulationConfigurable"/>
-    </extensions> -->
-
-    <!-- <extensions defaultExtensionNs="IdeaVIM">
-        <vimExtension implementation="com.maddyhome.idea.vim.extension.surround.VimSurroundExtension"/>
-        <vimExtension implementation="com.maddyhome.idea.vim.extension.multiplecursors.VimMultipleCursorsExtension"/>
-        <vimExtension implementation="com.maddyhome.idea.vim.extension.commentary.CommentaryExtension"/>
-    </extensions> -->
+    <!-- Registers bmpn20.xml Flowable template -->
+    <extensions defaultExtensionNs="com.intellij">
+        <internalFileTemplate name="Flowable BPMN 2.0 diagram"/>
+    </extensions>
 
     <!-- Extensions which the plugin adds to extension points defined by the IntelliJ Platform or by other plugins.
          The "defaultExtensionNs " attribute must be set to the ID of the plugin defining the extension point,
