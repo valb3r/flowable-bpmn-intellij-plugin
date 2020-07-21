@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.render
 
 import com.intellij.openapi.util.IconLoader
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.atomic.AtomicReference
 import javax.swing.Icon
 
 interface IconProvider {
@@ -55,6 +56,18 @@ interface IconProvider {
     val boundarySignalEvent: String
     val boundaryTimerEvent: String
     val recycleBin: String
+}
+
+private val currentIconProvider = AtomicReference<IconProvider>()
+
+fun currentIconProvider(): IconProvider {
+    return currentIconProvider.updateAndGet {
+        if (null == it) {
+            return@updateAndGet IconProviderImpl()
+        }
+
+        return@updateAndGet it
+    }
 }
 
 private fun String.asResource(): String? = DefaultBpmnProcessRenderer::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
