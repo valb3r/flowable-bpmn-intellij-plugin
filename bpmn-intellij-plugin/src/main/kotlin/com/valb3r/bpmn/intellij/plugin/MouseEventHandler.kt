@@ -33,7 +33,7 @@ class MouseEventHandler(private val canvas: Canvas): MouseListener, MouseMotionL
             return
         }
         if (SwingUtilities.isLeftMouseButton(event)) {
-            this.canvas.startSelectionOrDrag(point2D)
+            this.canvas.startSelectionOrSelectedDrag(point2D)
             return
         }
     }

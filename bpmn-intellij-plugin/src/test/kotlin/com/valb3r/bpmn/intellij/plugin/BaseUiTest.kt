@@ -221,7 +221,7 @@ internal abstract class BaseUiTest {
     }
 
     protected fun dragToButDontStop(point: Point2D.Float, target: Point2D.Float) {
-        canvas.startSelectionOrDrag(point)
+        canvas.startSelectionOrSelectedDrag(point)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(point, target)
         canvas.paintComponent(graphics)
