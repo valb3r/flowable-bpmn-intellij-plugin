@@ -1,11 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin
 
+import com.nhaarman.mockitokotlin2.*
 import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
-import com.nhaarman.mockitokotlin2.atLeastOnce
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.times
-import com.nhaarman.mockitokotlin2.verify
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
@@ -315,6 +312,38 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             newQuarterWaypoint.waypoints.map { it.x }.shouldContainSame(listOf(60.0f, 195.0f, 330.0f, 600.0f))
             newQuarterWaypoint.waypoints.map { it.y }.shouldContainSame(listOf(30.0f, 0.0f, 10.0f, 30.0f))
         }
+    }
+
+    @Test
+    fun `Dragging service task is possible if cursor is inside of it`() {
+        prepareTwoServiceTaskView()
+
+        val dragDelta = Point2D.Float(100.0f, 100.0f)
+        val point = clickOnId(serviceTaskStartDiagramId)
+        dragToButDontStop(point, Point2D.Float(point.x + dragDelta.x, point.y + dragDelta.y))
+        canvas.stopDragOrSelect()
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(1)
+            val dragTask = lastValue.filterIsInstance<DraggedToEvent>().first()
+
+            dragTask.diagramElementId.shouldBeEqualTo(serviceTaskStartDiagramId)
+            dragTask.dx.shouldBeNear(dragDelta.x, 0.1f)
+            dragTask.dy.shouldBeNear(dragDelta.y, 0.1f)
+        }
+    }
+
+    @Test
+    fun `Dragging service task is impossible if cursor is outside of it`() {
+        prepareTwoServiceTaskView()
+
+        val dragDelta = Point2D.Float(100.0f, 100.0f)
+        val point = clickOnId(serviceTaskEndDiagramId)
+        dragToButDontStop(Point2D.Float(-10000.0f, -10000.0f), Point2D.Float(point.x + dragDelta.x, point.y + dragDelta.y))
+        canvas.stopDragOrSelect()
+
+        verify(fileCommitter, never()).executeCommitAndGetHash(any(), any(), any(), any())
     }
 
     @Test
