@@ -76,7 +76,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
     }
 
     @Test
-    fun `Multiple elements can be dragged inside subprocess and will keep subprocess as parent`() {
+    fun `Multiple elements can be dragged inside subprocess with subprocess itself and will keep subprocess as parent`() {
         prepareOneSubProcessWithTwoLinkedServiceTasksView()
 
         val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
@@ -88,7 +88,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
 
-        val dragBegin = elementCenter(serviceTaskStartDiagramId)
+        val dragBegin = elementCenter(subprocessDiagramId) // child elements are also standalone click capturing players
         val delta = 10.0f
         canvas.startSelectionOrSelectedDrag(dragBegin)
         canvas.paintComponent(graphics)
@@ -132,7 +132,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
 
-        val dragBegin = elementCenter(serviceTaskStartDiagramId)
+        val dragBegin = elementCenter(subprocessDiagramId) // child elements are also standalone click capturing players
         val delta = 10.0f
         canvas.startSelectionOrSelectedDrag(dragBegin)
         canvas.paintComponent(graphics)
@@ -210,7 +210,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
 
-        val dragBegin = elementCenter(subprocessInSubProcessDiagramId)
+        val dragBegin = elementCenter(subprocessDiagramId) // child elements are also standalone click capturing players
         val delta = 10.0f
         canvas.startSelectionOrSelectedDrag(dragBegin)
         canvas.paintComponent(graphics)
