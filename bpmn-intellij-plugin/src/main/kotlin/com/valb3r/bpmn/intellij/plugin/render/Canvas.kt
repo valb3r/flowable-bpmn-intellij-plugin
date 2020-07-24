@@ -121,32 +121,20 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
         }
     }
 
-    fun startSelectionOrDrag(current: Point2D.Float) {
+    fun startSelectionOrSelectedDrag(current: Point2D.Float) {
         val point = camera.fromCameraView(current)
-        if (selectedElements.isNotEmpty()) {
-            interactionCtx = interactionCtx.copy(
-                    draggedIds = selectedElements,
-                    dragTargetedIds = emptySet(),
-                    dragStart = point,
-                    dragCurrent = point
-            )
+        val elemsUnderCursor = elemUnderCursor(current)
+        if (selectedElements.isNotEmpty() && selectedElements.intersect(elemsUnderCursor).isNotEmpty()) {
+            dragSelectedElements(point)
             return
         }
-
-        val elemsUnderCursor = elemUnderCursor(current)
 
         if (elemsUnderCursor.isEmpty()) {
             interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), SelectionRect(current, current), mutableMapOf(), null, point, point)
             return
         }
 
-        interactionCtx = interactionCtx.copy(
-                draggedIds = selectedElements,
-                dragTargetedIds = emptySet(),
-                dragStart = point,
-                dragCurrent = point,
-                dragSelectionRect = SelectionRect(current, current)
-        )
+        startRectangleSelection(point, current)
     }
 
     fun attractToAnchors(ctx: ElementInteractionContext): ElementInteractionContext {
@@ -240,20 +228,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
     fun dragOrSelectWithLeftButton(previous: Point2D.Float, current: Point2D.Float) {
         val point = camera.fromCameraView(current)
         if (null != interactionCtx.dragSelectionRect) {
-            interactionCtx = interactionCtx.copy(dragSelectionRect = SelectionRect(
-                    interactionCtx.dragSelectionRect!!.start,
-                    current
-            ))
-
-            this.selectedElements.clear()
-            this.selectedElements.addAll(
-                    elemsUnderRect(
-                            interactionCtx.dragSelectionRect!!.toRect(),
-                            excludeAreas = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SELECTS_DRAG_TARGET)
-                    )
-            )
-
-            repaint()
+            selectElementsWithRectangle(current)
             return
         }
 
@@ -443,6 +418,42 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
                 settings.baseCursorSize,
                 settings.baseCursorSize
         )
+    }
+
+    private fun startRectangleSelection(point: Point2D.Float, current: Point2D.Float) {
+        interactionCtx = interactionCtx.copy(
+                draggedIds = selectedElements,
+                dragTargetedIds = emptySet(),
+                dragStart = point,
+                dragCurrent = point,
+                dragSelectionRect = SelectionRect(current, current)
+        )
+    }
+
+    private fun dragSelectedElements(point: Point2D.Float) {
+        interactionCtx = interactionCtx.copy(
+                draggedIds = selectedElements,
+                dragTargetedIds = emptySet(),
+                dragStart = point,
+                dragCurrent = point
+        )
+    }
+
+    private fun selectElementsWithRectangle(current: Point2D.Float) {
+        interactionCtx = interactionCtx.copy(dragSelectionRect = SelectionRect(
+                interactionCtx.dragSelectionRect!!.start,
+                current
+        ))
+
+        this.selectedElements.clear()
+        this.selectedElements.addAll(
+                elemsUnderRect(
+                        interactionCtx.dragSelectionRect!!.toRect(),
+                        excludeAreas = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SELECTS_DRAG_TARGET)
+                )
+        )
+
+        repaint()
     }
 
     private data class AnchorDetails(
