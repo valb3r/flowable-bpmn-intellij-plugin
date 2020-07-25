@@ -63,11 +63,13 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
         super.paintComponent(graphics)
 
         val graphics2D = setupGraphics(graphics)
+        // TODO: make immutable and not shallow:
+        val shallowCopyOfCtx = interactionCtx.copy()
         areaByElement = renderer?.render(
                 RenderContext(
                         CanvasPainter(graphics2D, camera.copy(), cachedIcons),
                         selectedElements.toSet(),
-                        interactionCtx.copy(),
+                        shallowCopyOfCtx,
                         stateProvider
                 )
         )
@@ -244,7 +246,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
 
     fun stopDragOrSelect() {
         if (null != interactionCtx.dragSelectionRect) {
-            interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
+            interactionCtx = interactionCtx.copy(dragSelectionRect = null)
             repaint()
             return
         }

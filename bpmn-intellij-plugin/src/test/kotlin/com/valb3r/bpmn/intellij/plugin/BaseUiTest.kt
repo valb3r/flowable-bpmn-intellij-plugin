@@ -266,6 +266,9 @@ internal abstract class BaseUiTest {
 
     protected fun clickOnId(elemId: DiagramElementId): Point2D.Float {
         val point = elementCenter(elemId)
+        // imitate real event cycle
+        canvas.startSelectionOrSelectedDrag(point)
+        canvas.stopDragOrSelect()
         canvas.click(point)
         canvas.paintComponent(graphics)
         return point
