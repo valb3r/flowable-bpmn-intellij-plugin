@@ -286,6 +286,7 @@ class CanvasPopupMenuProvider {
             }
             copyPasteActionHandler().cut(state.state, updateEventsRegistry(), state.elementsById)
             currentCanvas().clearSelection()
+            currentCanvas().repaint()
         }
     }
 
@@ -296,6 +297,7 @@ class CanvasPopupMenuProvider {
             val data = copyPasteActionHandler().paste(sceneLocation, parent) ?: return
             // TODO - cursor position update
             updateEventsRegistry().addEvents( data.shapes.toMutableList() + data.edges.toMutableList())
+            currentCanvas().repaint()
         }
     }
 
