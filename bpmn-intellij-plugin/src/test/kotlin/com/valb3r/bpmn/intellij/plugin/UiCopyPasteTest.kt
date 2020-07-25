@@ -60,6 +60,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
         updateEventsRegistry().reset("")
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        canvas.paintComponent(graphics) // forcefully paint for state
         verifyPlainServiceTaskWasPasted(2)
     }
 
@@ -112,6 +113,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
         updateEventsRegistry().reset("")
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        canvas.paintComponent(graphics) // forcefully paint for state
         verifyServiceTaskWithBoundaryEventTaskWerePasted()
     }
 
@@ -127,6 +129,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
         updateEventsRegistry().reset("")
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        canvas.paintComponent(graphics) // forcefully paint for state
         verifyServiceTaskWithBoundaryEventTaskWerePasted(1)
     }
 
@@ -146,6 +149,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
         updateEventsRegistry().reset("")
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        canvas.paintComponent(graphics) // forcefully paint for state
         verifyEdgeWasPasted(addedEdge.bpmnObject.id, addedEdge.edge.id)
     }
 
@@ -162,6 +166,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
         updateEventsRegistry().reset("")
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        canvas.paintComponent(graphics) // forcefully paint for state
         verifyEdgeWasPasted(addedEdge.bpmnObject.id, addedEdge.edge.id, 2)
     }
 
@@ -188,6 +193,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
         updateEventsRegistry().reset("")
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        canvas.paintComponent(graphics) // forcefully paint for state
         verifyEdgeWithServiceTasksWerePasted(addedEdge.bpmnObject.id, addedEdge.edge.id)
     }
 
@@ -211,6 +217,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
         updateEventsRegistry().reset("")
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        canvas.paintComponent(graphics) // forcefully paint for state
         verifyEdgeWithServiceTasksWerePasted(addedEdge.bpmnObject.id, addedEdge.edge.id, 2)
     }
 
@@ -229,6 +236,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
         updateEventsRegistry().reset("")
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        canvas.paintComponent(graphics) // forcefully paint for state
         verifySubprocessWithServiceTaskAndBoundaryEventOnItWasPasted()
     }
 
@@ -244,6 +252,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
         updateEventsRegistry().reset("")
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        canvas.paintComponent(graphics) // forcefully paint for state
         verifySubprocessWithServiceTaskAndBoundaryEventOnItWasPasted(1)
     }
 
@@ -263,6 +272,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
         updateEventsRegistry().reset("")
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        canvas.paintComponent(graphics) // forcefully paint for state
         verifyBoundaryEventWasPasted()
     }
 
@@ -278,6 +288,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
         updateEventsRegistry().reset("")
         CanvasPopupMenuProvider.ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        canvas.paintComponent(graphics) // forcefully paint for state
         verifyBoundaryEventWasPasted(1)
     }
 
@@ -309,6 +320,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             shapeBpmn.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y)
             shapeBpmn.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
             shapeBpmn.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
+
+            lastRenderedState()!!.state.ctx.selectedIds.shouldContainSame(listOf(shapeBpmn.shape.id))
         }
     }
 
@@ -350,6 +363,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             boundaryEventBpmn.shape.rectBounds().y.shouldBeLessThan(pasteStart.y + serviceTaskSize)
             boundaryEventBpmn.shape.rectBounds().width.shouldBeEqualTo(boundaryEventSize)
             boundaryEventBpmn.shape.rectBounds().height.shouldBeEqualTo(boundaryEventSize)
+
+            lastRenderedState()!!.state.ctx.selectedIds.shouldContainSame(listOf(serviceTaskBpmn.shape.id))
         }
     }
 
@@ -380,6 +395,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             edge.edge.waypoint.filter { it.physical }.shouldHaveSize(2)
             edge.props[PropertyType.TARGET_REF]!!.value.shouldBeEqualTo("")
             edge.props[PropertyType.SOURCE_REF]!!.value.shouldBeEqualTo("")
+
+            lastRenderedState()!!.state.ctx.selectedIds.shouldContainSame(listOf(edge.edge.id) + edge.edge.waypoint.map { it.id })
         }
     }
 
@@ -434,6 +451,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             edge.edge.waypoint.filter { it.physical }.shouldHaveSize(2)
             edge.props[PropertyType.SOURCE_REF]!!.value.shouldBeEqualTo(startTask.bpmnObject.id.id)
             edge.props[PropertyType.TARGET_REF]!!.value.shouldBeEqualTo(endTask.bpmnObject.id.id)
+
+            lastRenderedState()!!.state.ctx.selectedIds.shouldContainSame(listOf(edge.edge.id) + edge.edge.waypoint.map { it.id } + startTask.shape.id + endTask.shape.id)
         }
     }
 
@@ -488,6 +507,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             boundaryEventBpmn.shape.rectBounds().y.shouldBeLessThan(pasteStart.y + serviceTaskSize)
             boundaryEventBpmn.shape.rectBounds().width.shouldBeEqualTo(boundaryEventSize)
             boundaryEventBpmn.shape.rectBounds().height.shouldBeEqualTo(boundaryEventSize)
+
+            lastRenderedState()!!.state.ctx.selectedIds.shouldContainSame(listOf(subprocessBpmn.shape.id))
         }
     }
 
@@ -521,6 +542,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             boundaryEventBpmn.shape.bpmnElement.shouldBeEqualTo(boundaryEventBpmn.bpmnObject.id)
             boundaryEventBpmn.shape.rectBounds().width.shouldBeEqualTo(boundaryEventSize)
             boundaryEventBpmn.shape.rectBounds().height.shouldBeEqualTo(boundaryEventSize)
+
+            lastRenderedState()!!.state.ctx.selectedIds.shouldContainSame(listOf(boundaryEventBpmn.shape.id))
         }
     }
 

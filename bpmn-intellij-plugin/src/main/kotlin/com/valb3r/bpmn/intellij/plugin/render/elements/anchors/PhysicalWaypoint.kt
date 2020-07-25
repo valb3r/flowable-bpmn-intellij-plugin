@@ -95,12 +95,16 @@ class PhysicalWaypoint(
     }
 
     override fun isRenderable(): Boolean {
-        return if (isEdgeBeginOrEnd()) {
+        return if ((isEdgeBegin() && isSourceRefAttached()) || (isEdgeEnd() && isTargetRefAttached())) {
             return !multipleElementsSelected()
         } else {
             true
         }
     }
 
+    private fun isEdgeBegin() = 0 == physicalPos
+    private fun isEdgeEnd() = edgePhysicalSize - 1 == physicalPos
+    private fun isSourceRefAttached() = null != state.currentState.elemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.SOURCE_REF)?.value
+    private fun isTargetRefAttached() = null != state.currentState.elemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.TARGET_REF)?.value
     private fun isEdgeBeginOrEnd() = edgePhysicalSize - 1 == physicalPos || 0 == physicalPos
 }
