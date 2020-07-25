@@ -299,9 +299,7 @@ class CanvasPopupMenuProvider {
             updateEventsRegistry().addEvents( data.shapes.toMutableList() + data.edges.toMutableList())
             currentCanvas().repaint()
             currentCanvas().clearSelection()
-            currentCanvas().selectElements(
-                    (data.shapes.map { it.shape.id } + data.edges.map { it.edge.id } + data.edges.flatMap { evt -> evt.edge.waypoint.map { it.id } }).toSet()
-            )
+            currentCanvas().selectElements(data.selectElements.toSet())
         }
     }
 
