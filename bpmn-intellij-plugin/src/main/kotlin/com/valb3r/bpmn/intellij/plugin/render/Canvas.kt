@@ -209,6 +209,11 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
         interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
     }
 
+    fun selectElements(elements: Set<DiagramElementId>) {
+        clearSelection()
+        this.selectedElements.addAll(elements)
+    }
+
     private fun selectDragTarget(dragged: DiagramElementId, ctx: ElementInteractionContext): ElementInteractionContext {
         val areas = areaByElement!!
         val area = areas[dragged]!!.area

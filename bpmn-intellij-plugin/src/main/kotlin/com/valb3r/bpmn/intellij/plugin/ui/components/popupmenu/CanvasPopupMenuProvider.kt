@@ -296,6 +296,10 @@ class CanvasPopupMenuProvider {
             val data = copyPasteActionHandler().paste(sceneLocation, parent) ?: return
             // TODO - cursor position update
             updateEventsRegistry().addEvents( data.shapes.toMutableList() + data.edges.toMutableList())
+            currentCanvas().clearSelection()
+            currentCanvas().selectElements(
+                    (data.shapes.map { it.shape.id } + data.edges.map { it.edge.id } + data.edges.flatMap { evt -> evt.edge.waypoint.map { it.id } }).toSet()
+            )
         }
     }
 
