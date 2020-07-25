@@ -120,14 +120,36 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
             val minY = context.shapes.map { it.shape.rectBounds().y}.min() ?: context.edges.map { min(it.edge.waypoint[0].y, it.edge.waypoint[it.edge.waypoint.size - 1].y) }.min() ?: 0.0f
             val delta = Point2D.Float(sceneLocation.x - minX, sceneLocation.y - minY)
 
-            context.copy(
-                    shapes = updateShapes(delta, context.shapes, updatedIds, updatedDiagramIds),
-                    edges = updateEdges(delta, context.edges, updatedIds, updatedDiagramIds),
-                    selectElements = context.selectElements.mapNotNull { updatedDiagramIds[it] }
-            )
+            val updatedShapes = updateShapes(delta, context.shapes, updatedIds, updatedDiagramIds)
+            val updatedEdges = updateEdges(delta, context.edges, updatedIds, updatedDiagramIds)
+            val updatedSelectedElems = computeElementsToSelect(context, updatedEdges, updatedDiagramIds)
+
+            context.copy(shapes = updatedShapes, edges = updatedEdges, selectElements = updatedSelectedElems)
         } catch (ex: Exception) {
             null
         }
+    }
+
+    private fun computeElementsToSelect(
+            context: ClipboardContext,
+            updatedEdges: MutableList<BpmnEdgeObjectAddedEvent>,
+            updatedDiagramIds: MutableMap<DiagramElementId, DiagramElementId>): List<DiagramElementId> {
+        val newEdges: Map<DiagramElementId, BpmnEdgeObjectAddedEvent> = updatedEdges.map { Pair(it.edge.id, it) }.toMap()
+        val result = mutableListOf<DiagramElementId?>()
+
+        // Select all items of edges (paste'd)
+        for (elem in context.selectElements) {
+            val edge = newEdges[updatedDiagramIds[elem]]
+            if (null == edge) {
+                result += updatedDiagramIds[elem]
+                continue
+            }
+
+            result += edge.edge.id
+            result += edge.edge.waypoint.map { it.id }
+        }
+
+        return result.filterNotNull()
     }
 
     private fun extractDataToCopy(ctx: RenderState, elementsById: Map<BpmnElementId, BaseDiagramRenderElement>): ClipboardContext {
