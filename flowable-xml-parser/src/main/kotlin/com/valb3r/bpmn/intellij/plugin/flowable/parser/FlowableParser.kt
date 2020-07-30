@@ -639,10 +639,8 @@ class FlowableParser : BpmnParser {
     private fun toProcessObject(dto: BpmnFile): BpmnProcessObject {
         // TODO - Multi process support
         val process = dto.processes[0].toElement()
-        // TODO - Multi diagram support
-        val diagram = dto.diagrams!![0].toElement()
 
-        return BpmnProcessObject(process, listOf(diagram))
+        return BpmnProcessObject(process, dto.diagrams!!.map { it.toElement() })
     }
 
     private fun mapper(): XmlMapper {
