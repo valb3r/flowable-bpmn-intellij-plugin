@@ -47,8 +47,8 @@ class CurrentStateProvider {
     fun resetStateTo(fileContent: String, processObject: BpmnProcessObjectView) {
         fileState = CurrentState(
                 processObject.processId,
-                processObject.diagram.firstOrNull()?.bpmnPlane?.bpmnShape ?: emptyList(),
-                processObject.diagram.firstOrNull()?.bpmnPlane?.bpmnEdge?.map { EdgeElementState(it) } ?: emptyList(),
+                processObject.diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() },
+                processObject.diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList() }.map { EdgeElementState(it) },
                 processObject.elementByDiagramId,
                 processObject.elementByStaticId,
                 processObject.elemPropertiesByElementId,
