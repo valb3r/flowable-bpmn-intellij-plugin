@@ -28,16 +28,12 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         process.body?.let { reassignParentsBasedOnTargetRef(process.id, it, factory, elementByStaticId, propertiesById) }
         process.children?.forEach { (id, body) -> reassignParentsBasedOnTargetRef(id, body, factory, elementByStaticId, propertiesById)}
 
-        diagram.firstOrNull()
-                ?.bpmnPlane
-                ?.bpmnEdge
-                ?.filter { null != it.bpmnElement }
-                ?.forEach { elementByDiagramId[it.id] = it.bpmnElement!! }
+        diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList()}
+                .filter { null != it.bpmnElement }
+                .forEach { elementByDiagramId[it.id] = it.bpmnElement!! }
 
-        diagram.firstOrNull()
-                ?.bpmnPlane
-                ?.bpmnShape
-                ?.forEach { elementByDiagramId[it.id] = it.bpmnElement }
+        diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() }
+                .forEach { elementByDiagramId[it.id] = it.bpmnElement }
 
         return BpmnProcessObjectView(
                 process.id,
