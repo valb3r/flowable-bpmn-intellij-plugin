@@ -10,6 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.properties.PropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.properties.propertiesVisualizer
+import com.valb3r.bpmn.intellij.plugin.render.elements.edges.BaseEdgeRenderElement
 import com.valb3r.bpmn.intellij.plugin.state.currentStateProvider
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -387,8 +388,32 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
                 ?.filter { !excludeAreas.contains(it.value.areaType) }
                 ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this } }
 
-        val childExclusions = intersection?.let { lastRenderedState()?.allChildrenOf(it.filter { it.value.areaType == AreaType.SHAPE_THAT_NESTS }.keys) } ?: emptySet()
-        result.removeAll(childExclusions)
+        fun removeSubprocessChildren() {
+            val childExclusions = intersection?.let { lastRenderedState()?.allChildrenOf(it.filter { it.value.areaType == AreaType.SHAPE_THAT_NESTS }.keys) }
+                    ?: emptySet()
+            result.removeAll(childExclusions)
+        }
+
+        removeSubprocessChildren()
+
+        // avoid the situation when one selects elements from two subprocesses or processes of different level
+        // as this causes parent ambiguity - which parent to use onDragEnd
+        fun selectMajorityOfElementsWithSameParent() {
+            val groupedByParent = result.groupBy {
+                val parent = lastRenderedState()?.state?.elemMap?.get(it)?.parents?.getOrNull(0)
+                // For anchor points return not edge, but edge parent
+                if (parent is BaseEdgeRenderElement) {
+                    return@groupBy parent.parents.get(0)
+                }
+
+                return@groupBy parent
+            }
+            val maxSize = groupedByParent.maxBy { it.value.size }
+            result.clear()
+            result.addAll(maxSize?.value ?: emptyList())
+        }
+
+        selectMajorityOfElementsWithSameParent()
 
         return result
     }
