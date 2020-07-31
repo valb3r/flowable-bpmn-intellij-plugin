@@ -245,14 +245,14 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
             return
         }
 
-        interactionCtx = interactionCtx.copy(dragCurrent = point)
+        interactionCtx = interactionCtx.copy(dragCurrent = point, dragEndCallbacks = mutableMapOf(), clickCallbacks = mutableMapOf())
         interactionCtx = attractToAnchors(interactionCtx)
         repaint()
     }
 
     fun stopDragOrSelect() {
         if (null != interactionCtx.dragSelectionRect) {
-            interactionCtx = interactionCtx.copy(dragSelectionRect = null)
+            interactionCtx = interactionCtx.copy(dragSelectionRect = null, dragEndCallbacks = mutableMapOf(), clickCallbacks = mutableMapOf())
             repaint()
             return
         }
@@ -272,7 +272,8 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
             })
         }
 
-        interactionCtx = interactionCtx.copy(draggedIds = emptySet(), dragTargetedIds = mutableSetOf(), dragCurrent = interactionCtx.dragStart, dragSelectionRect = null)
+        interactionCtx = interactionCtx.copy(draggedIds = emptySet(), dragTargetedIds = mutableSetOf(), dragCurrent = interactionCtx.dragStart, dragSelectionRect = null,
+                dragEndCallbacks = mutableMapOf())
         repaint()
     }
 
@@ -472,10 +473,11 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
     }
 
     private fun selectElementsWithRectangle(current: Point2D.Float) {
-        interactionCtx = interactionCtx.copy(dragSelectionRect = SelectionRect(
-                interactionCtx.dragSelectionRect!!.start,
-                current
-        ))
+        interactionCtx = interactionCtx.copy(
+                dragSelectionRect = SelectionRect(interactionCtx.dragSelectionRect!!.start, current),
+                dragEndCallbacks = mutableMapOf(),
+                clickCallbacks = mutableMapOf()
+        )
 
         this.selectedElements.clear()
         this.selectedElements.addAll(

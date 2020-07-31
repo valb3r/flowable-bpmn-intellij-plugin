@@ -48,6 +48,10 @@ abstract class BaseDiagramRenderElement(
         return state.ctx.selectedIds.size > 1
     }
 
+    open fun multipleElementsDragged(): Boolean {
+        return state.ctx.interactionContext.draggedIds.size > 1
+    }
+
     open fun isVisible(): Boolean {
         return true == isVisible
     }

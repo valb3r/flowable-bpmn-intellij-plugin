@@ -21,7 +21,7 @@ class VirtualWaypoint(
 ): CircleAnchorElement(elementId, location, 3.0f, Colors.MID_WAYPOINT_COLOR, state) {
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
-        if (!isActiveOrDragged()) {
+        if (!isActive() || !isDragged()) {
             return mutableListOf()
         }
 
