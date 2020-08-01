@@ -8,9 +8,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.events.BpmnEdgeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.events.BpmnParentChangedEvent
 import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldHaveSingleItem
-import org.amshove.kluent.shouldHaveSize
+import com.valb3r.bpmn.intellij.plugin.render.lastRenderedState
+import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 import java.awt.geom.Point2D
 
@@ -24,6 +23,23 @@ internal class UiMultiSelectTest: BaseUiTest() {
 
         // currently it is enough to check that canvas will provide correct parent
         canvas.parentableElementAt(subprocessCenter).shouldBeEqualTo(subprocessBpmnId)
+    }
+
+    @Test
+    fun `When selecting elements from multiple levels only elements from one level are chosen`() {
+        prepareOneSubProcessWithServiceTaskAndAttachedBoundaryEventOneNestedSubprocessAndServiceTaskWithSequence()
+
+        val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
+        canvas.startSelectionOrSelectedDrag(selectionStart)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(endElemX + serviceTaskSize + 10.0f, endElemY + serviceTaskSize + 10.0f))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        lastRenderedState()!!.state.ctx.selectedIds.shouldHaveSize(2)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldContain(serviceTaskEndDiagramId)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldNotContain(serviceTaskStartDiagramId)
     }
 
     @Test
