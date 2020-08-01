@@ -65,6 +65,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
 
         val graphics2D = setupGraphics(graphics)
         // TODO: make immutable and not shallow:
+        interactionCtx = interactionCtx.copy(dragEndCallbacks = mutableMapOf(), clickCallbacks = mutableMapOf())
         val shallowCopyOfCtx = interactionCtx.copy()
         areaByElement = renderer?.render(
                 RenderContext(
@@ -245,14 +246,14 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
             return
         }
 
-        interactionCtx = interactionCtx.copy(dragCurrent = point, dragEndCallbacks = mutableMapOf(), clickCallbacks = mutableMapOf())
+        interactionCtx = interactionCtx.copy(dragCurrent = point)
         interactionCtx = attractToAnchors(interactionCtx)
         repaint()
     }
 
     fun stopDragOrSelect() {
         if (null != interactionCtx.dragSelectionRect) {
-            interactionCtx = interactionCtx.copy(dragSelectionRect = null, dragEndCallbacks = mutableMapOf(), clickCallbacks = mutableMapOf())
+            interactionCtx = interactionCtx.copy(dragSelectionRect = null)
             repaint()
             return
         }
@@ -272,8 +273,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
             })
         }
 
-        interactionCtx = interactionCtx.copy(draggedIds = emptySet(), dragTargetedIds = mutableSetOf(), dragCurrent = interactionCtx.dragStart, dragSelectionRect = null,
-                dragEndCallbacks = mutableMapOf())
+        interactionCtx = interactionCtx.copy(draggedIds = emptySet(), dragTargetedIds = mutableSetOf(), dragCurrent = interactionCtx.dragStart, dragSelectionRect = null)
         repaint()
     }
 
@@ -474,9 +474,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
 
     private fun selectElementsWithRectangle(current: Point2D.Float) {
         interactionCtx = interactionCtx.copy(
-                dragSelectionRect = SelectionRect(interactionCtx.dragSelectionRect!!.start, current),
-                dragEndCallbacks = mutableMapOf(),
-                clickCallbacks = mutableMapOf()
+                dragSelectionRect = SelectionRect(interactionCtx.dragSelectionRect!!.start, current)
         )
 
         this.selectedElements.clear()
