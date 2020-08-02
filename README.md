@@ -85,7 +85,13 @@ If you want just to run the plugin in the `sandbox` you can execute
 
 ### Basic usage
 
+[![Work with plugin](https://img.youtube.com/vi/8-_XmOlEyXM/0.jpg)](https://youtu.be/8-_XmOlEyXM)
+
+<details><summary><b>Basic usage for older versions (< 0.4.1)</b></summary>
+
 [![Work with plugin](https://img.youtube.com/vi/pBfAGdp169s/0.jpg)](https://youtu.be/pBfAGdp169s)
+
+</details>
 
 <details><summary><b>Basic usage for older versions (< 0.3.2)</b></summary>
 
