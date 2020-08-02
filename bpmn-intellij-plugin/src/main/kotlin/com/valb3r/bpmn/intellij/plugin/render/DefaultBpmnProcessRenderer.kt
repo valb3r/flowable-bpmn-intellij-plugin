@@ -233,7 +233,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             return
         }
 
-        val areas = state.ctx.selectedIds.map { renderedArea[it] }.filterNotNull()
+        val areas = state.ctx.selectedIds.mapNotNull { renderedArea[it] }
 
         val minX = areas.map { it.area.bounds2D.minX }.min()?.toFloat()
         val minY = areas.map { it.area.bounds2D.minY }.min()?.toFloat()
@@ -247,7 +247,12 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             val delId = DiagramElementId(ownerId).elemIdToRemove()
             val deleteIconArea = state.ctx.canvas.drawIconNoCameraTransform(BoundsElement(maxX, minY, actionsIcoSize, actionsIcoSize), icons.recycleBin)
             state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
-                val targetIds = state.ctx.selectedIds.filter { renderedArea[it]?.areaType == AreaType.SHAPE || renderedArea[it]?.areaType == AreaType.EDGE }
+                val targetIds = state.ctx.selectedIds.filter {
+                    renderedArea[it]?.areaType == AreaType.SHAPE_THAT_NESTS
+                            || renderedArea[it]?.areaType == AreaType.SHAPE
+                            || renderedArea[it]?.areaType == AreaType.EDGE
+                }
+
                 dest.addElementRemovedEvent(
                         targetIds.map { DiagramElementRemovedEvent(it) },
                         targetIds.mapNotNull { state.currentState.elementByDiagramId[it] }.map { BpmnElementRemovedEvent(it) }
