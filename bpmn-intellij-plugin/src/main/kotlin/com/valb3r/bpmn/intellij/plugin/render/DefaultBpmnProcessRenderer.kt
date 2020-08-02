@@ -233,7 +233,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             return
         }
 
-        val areas = state.ctx.selectedIds.map { renderedArea[it] }.filterNotNull()
+        val areas = state.ctx.selectedIds.mapNotNull { renderedArea[it] }
 
         val minX = areas.map { it.area.bounds2D.minX }.min()?.toFloat()
         val minY = areas.map { it.area.bounds2D.minY }.min()?.toFloat()
