@@ -3,18 +3,18 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
-interface PreTransform {
+interface PreTransformable {
     fun preTransform(rect: Rectangle2D.Float): Rectangle2D.Float
     fun preTransform(point: Point2D.Float): Point2D.Float
     fun addPreTransform(viewTransform: ViewTransform)
 }
 
-interface ViewTransform: PreTransform {
+interface ViewTransform: PreTransformable {
     fun transform(rect: Rectangle2D.Float): Rectangle2D.Float
     fun transform(point: Point2D.Float): Point2D.Float
 }
 
-class PreTransformHandler(private val preTransforms: MutableList<ViewTransform> = mutableListOf()): PreTransform {
+class PreTransformHandler(private val preTransforms: MutableList<ViewTransform> = mutableListOf()): PreTransformable {
 
     override fun preTransform(rect: Rectangle2D.Float): Rectangle2D.Float {
         var curr = rect
@@ -37,7 +37,7 @@ class PreTransformHandler(private val preTransforms: MutableList<ViewTransform> 
     }
 }
 
-class NullViewTransform(private val preTransform: PreTransformHandler = PreTransformHandler()): ViewTransform, PreTransform by preTransform {
+class NullViewTransform(private val preTransform: PreTransformHandler = PreTransformHandler()): ViewTransform, PreTransformable by preTransform {
 
     override fun transform(rect: Rectangle2D.Float): Rectangle2D.Float {
         return preTransform(rect)
@@ -50,7 +50,7 @@ class NullViewTransform(private val preTransform: PreTransformHandler = PreTrans
 
 data class DragViewTransform(
         val dx: Float, val dy: Float, private val preTransform: PreTransformHandler = PreTransformHandler()
-): ViewTransform, PreTransform by preTransform {
+): ViewTransform, PreTransformable by preTransform {
 
     override fun transform(rect: Rectangle2D.Float): Rectangle2D.Float {
         val preTransformed = preTransform(rect)
@@ -65,7 +65,7 @@ data class DragViewTransform(
 
 data class ResizeViewTransform(
         val cx: Float, val cy: Float, val coefW: Float, val coefH: Float, private val preTransform: PreTransformHandler = PreTransformHandler()
-): ViewTransform, PreTransform by preTransform {
+): ViewTransform, PreTransformable by preTransform {
 
     override fun transform(rect: Rectangle2D.Float): Rectangle2D.Float {
         val preTransformed = preTransform(rect)
