@@ -3,46 +3,85 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
-interface ViewTransform {
+interface PreTransform {
+    fun preTransform(rect: Rectangle2D.Float): Rectangle2D.Float
+    fun preTransform(point: Point2D.Float): Point2D.Float
+    fun addPreTransform(viewTransform: ViewTransform)
+}
+
+interface ViewTransform: PreTransform {
     fun transform(rect: Rectangle2D.Float): Rectangle2D.Float
     fun transform(point: Point2D.Float): Point2D.Float
 }
 
+class PreTransformHandler(private val preTransforms: MutableList<ViewTransform> = mutableListOf()): PreTransform {
 
-class NullViewTransform: ViewTransform {
-
-    override fun transform(rect: Rectangle2D.Float): Rectangle2D.Float {
-        return rect
+    override fun preTransform(rect: Rectangle2D.Float): Rectangle2D.Float {
+        var curr = rect
+        for (transform in preTransforms) {
+            curr = transform.transform(rect)
+        }
+        return curr
     }
 
-    override fun transform(point: Point2D.Float): Point2D.Float {
-        return point
+    override fun preTransform(point: Point2D.Float): Point2D.Float {
+        var curr = point
+        for (transform in preTransforms) {
+            curr = transform.transform(point)
+        }
+        return curr
+    }
+
+    override fun addPreTransform(viewTransform: ViewTransform) {
+        preTransforms += viewTransform
     }
 }
 
-data class DragViewTransform(val dx: Float, val dy: Float): ViewTransform {
+class NullViewTransform(private val preTransform: PreTransformHandler = PreTransformHandler()): ViewTransform, PreTransform by preTransform {
 
     override fun transform(rect: Rectangle2D.Float): Rectangle2D.Float {
-        return Rectangle2D.Float(rect.x + dx, rect.y + dy, rect.width, rect.height)
+        return preTransform(rect)
     }
 
     override fun transform(point: Point2D.Float): Point2D.Float {
-        return Point2D.Float(point.x + dx, point.y + dy)
+        return preTransform(point)
     }
 }
 
-data class ResizeViewTransform(val cx: Float, val cy: Float, val coefW: Float, val coefH: Float): ViewTransform {
+data class DragViewTransform(
+        val dx: Float, val dy: Float, private val preTransform: PreTransformHandler = PreTransformHandler()
+): ViewTransform, PreTransform by preTransform {
 
     override fun transform(rect: Rectangle2D.Float): Rectangle2D.Float {
-        val left = Point2D.Float(rect.x, rect.y)
-        val right = Point2D.Float(rect.x + rect.width, rect.y + rect.height)
-        val newLeft = transform(left)
-        val newRight = transform(right)
+        val preTransformed = preTransform(rect)
+        return Rectangle2D.Float(preTransformed.x + dx, preTransformed.y + dy, preTransformed.width, preTransformed.height)
+    }
+
+    override fun transform(point: Point2D.Float): Point2D.Float {
+        val preTransformed = preTransform(point)
+        return Point2D.Float(preTransformed.x + dx, preTransformed.y + dy)
+    }
+}
+
+data class ResizeViewTransform(
+        val cx: Float, val cy: Float, val coefW: Float, val coefH: Float, private val preTransform: PreTransformHandler = PreTransformHandler()
+): ViewTransform, PreTransform by preTransform {
+
+    override fun transform(rect: Rectangle2D.Float): Rectangle2D.Float {
+        val preTransformed = preTransform(rect)
+        val left = Point2D.Float(preTransformed.x, preTransformed.y)
+        val right = Point2D.Float(preTransformed.x + preTransformed.width, preTransformed.y + preTransformed.height)
+        val newLeft = transformPoint(left)
+        val newRight = transformPoint(right)
 
         return Rectangle2D.Float(newLeft.x, newLeft.y, newRight.x - newLeft.x, newRight.y - newLeft.y)
     }
 
     override fun transform(point: Point2D.Float): Point2D.Float {
+        return transformPoint(preTransform(point))
+    }
+
+    private fun transformPoint(point: Point2D.Float): Point2D.Float {
         return Point2D.Float(cx + (point.x - cx) * coefW, cy + (point.y - cy) * coefH)
     }
 }
