@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
@@ -15,6 +16,7 @@ class Transaction: BpmnMappable<BpmnTransactionalSubProcess>, ProcessBody() {
     var documentation: String? = null
     @JacksonXmlProperty(isAttribute = true) var async: Boolean? = null
     @JacksonXmlProperty(isAttribute = true) var exclusive: Boolean? = null
+    @JsonIgnore var hasExternalDiagram: Boolean = false
 
     override fun toElement(): BpmnTransactionalSubProcess {
         return Mappers.getMapper(TransactionMapping::class.java).convertToDto(this)

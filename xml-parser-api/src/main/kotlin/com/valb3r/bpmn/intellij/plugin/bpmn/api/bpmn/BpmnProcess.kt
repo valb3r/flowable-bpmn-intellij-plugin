@@ -16,10 +16,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 
 @KotlinBuilder
@@ -86,6 +83,8 @@ data class BpmnProcessBody(
         val eventSubProcess: List<BpmnEventSubprocess>?,
         val transaction: List<BpmnTransactionalSubProcess>?,
         val adHocSubProcess: List<BpmnAdHocSubProcess>?,
+        val collapsedSubProcess: List<BpmnCollapsedSubprocess>?,
+        val collapsedTransaction: List<BpmnTransactionCollapsedSubprocess>?,
 
         // Gateways
         val exclusiveGateway: List<BpmnExclusiveGateway>?,

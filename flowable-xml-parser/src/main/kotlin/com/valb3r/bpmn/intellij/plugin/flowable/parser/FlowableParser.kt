@@ -36,6 +36,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnFile
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.DiagramNode
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.ProcessNode
 import org.dom4j.*
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.SAXReader
@@ -637,10 +639,28 @@ class FlowableParser : BpmnParser {
     }
 
     private fun toProcessObject(dto: BpmnFile): BpmnProcessObject {
-        // TODO - Multi process support
+        // TODO - Multi process support?
+        markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
         val process = dto.processes[0].toElement()
+        val diagrams = dto.diagrams!!.map { it.toElement() }
 
-        return BpmnProcessObject(process, dto.diagrams!!.map { it.toElement() })
+        return BpmnProcessObject(process, diagrams)
+    }
+
+    // Mark 'collapsed' subprocesses where diagram is different from 1st one
+    private fun markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(process: ProcessNode, diagrams: List<DiagramNode>) {
+        if (diagrams.size <= 1) {
+            return
+        }
+
+        val externalDiagrams = diagrams.subList(1, diagrams.size).map { it.bpmnPlane.bpmnElement }.toSet()
+
+        fun elementIsInExternalDiagram(id: String?): Boolean {
+            return externalDiagrams.contains(id)
+        }
+
+        process.subProcess?.forEach { it.hasExternalDiagram = elementIsInExternalDiagram(it.id) }
+        process.transaction?.forEach { it.hasExternalDiagram = elementIsInExternalDiagram(it.id) }
     }
 
     private fun mapper(): XmlMapper {
