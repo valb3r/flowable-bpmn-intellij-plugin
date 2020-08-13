@@ -312,6 +312,13 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         UserTask.UserTaskMapping::class
     ])
     interface BodyMapping {
+
+        @Mappings(
+                Mapping(source = "subProcess", target = "subProcess"),
+                Mapping(source = "subProcess", target = "collapsedSubProcess"), // will be post-filtered
+                Mapping(source = "transaction", target = "transaction"),
+                Mapping(source = "transaction", target = "collapsedTransaction") // will be post-filtered
+        )
         fun convertToDto(input: ProcessBody): BpmnProcessBody
     }
 

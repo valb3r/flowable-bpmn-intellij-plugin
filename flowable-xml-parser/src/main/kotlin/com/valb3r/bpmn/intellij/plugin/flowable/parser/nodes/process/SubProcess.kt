@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnCollapsedSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.ProcessBody
@@ -26,7 +27,18 @@ class SubProcess: BpmnMappable<BpmnSubProcess>, ProcessBody() {
     @Mapper(uses = [BpmnElementIdMapper::class])
     interface SubProcessMapping {
 
+        fun mapNonCollapsed(input: List<SubProcess>) : List<BpmnSubProcess> {
+            return input.filter { !it.hasExternalDiagram }.map { convertToDto(it) }
+        }
+
+        fun mapCollapsed(input: List<SubProcess>) : List<BpmnCollapsedSubprocess> {
+            return input.filter { it.hasExternalDiagram }.map { convertToCollapsedDto(it) }
+        }
+
         @Mapping(target = "transactionalSubprocess", constant = "false")
         fun convertToDto(input: SubProcess) : BpmnSubProcess
+
+        @Mapping(target = "transactionalSubprocess", constant = "false")
+        fun convertToCollapsedDto(input: SubProcess) : BpmnCollapsedSubprocess
     }
 }
