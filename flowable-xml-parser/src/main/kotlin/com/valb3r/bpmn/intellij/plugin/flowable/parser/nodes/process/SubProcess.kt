@@ -25,20 +25,20 @@ class SubProcess: BpmnMappable<BpmnSubProcess>, ProcessBody() {
     }
 
     @Mapper(uses = [BpmnElementIdMapper::class])
-    interface SubProcessMapping {
+    abstract class SubProcessMapping { // Default methods of Kotlin interfaces are not understood by MapStruct
 
-        fun mapNonCollapsed(input: List<SubProcess>) : List<BpmnSubProcess> {
-            return input.filter { !it.hasExternalDiagram }.map { convertToDto(it) }
+        fun mapNonCollapsed(input: List<SubProcess>?) : List<BpmnSubProcess>? {
+            return input?.filter { !it.hasExternalDiagram }?.map { convertToDto(it) }
         }
 
-        fun mapCollapsed(input: List<SubProcess>) : List<BpmnCollapsedSubprocess> {
-            return input.filter { it.hasExternalDiagram }.map { convertToCollapsedDto(it) }
+        fun mapCollapsed(input: List<SubProcess>?) : List<BpmnCollapsedSubprocess>? {
+            return input?.filter { it.hasExternalDiagram }?.map { convertToCollapsedDto(it) }
         }
 
         @Mapping(target = "transactionalSubprocess", constant = "false")
-        fun convertToDto(input: SubProcess) : BpmnSubProcess
+        abstract fun convertToDto(input: SubProcess) : BpmnSubProcess
 
         @Mapping(target = "transactionalSubprocess", constant = "false")
-        fun convertToCollapsedDto(input: SubProcess) : BpmnCollapsedSubprocess
+        abstract fun convertToCollapsedDto(input: SubProcess) : BpmnCollapsedSubprocess
     }
 }

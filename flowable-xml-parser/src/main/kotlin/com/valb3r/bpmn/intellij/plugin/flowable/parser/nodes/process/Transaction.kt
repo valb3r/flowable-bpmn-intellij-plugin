@@ -24,20 +24,20 @@ class Transaction: BpmnMappable<BpmnTransactionalSubProcess>, ProcessBody() {
     }
 
     @Mapper(uses = [BpmnElementIdMapper::class])
-    interface TransactionMapping {
+    abstract class TransactionMapping {  // Default methods of Kotlin interfaces are not understood by MapStruct
 
-        fun mapNonCollapsed(input: List<Transaction>) : List<BpmnTransactionalSubProcess> {
-            return input.filter { !it.hasExternalDiagram }.map { convertToDto(it) }
+        fun mapNonCollapsed(input: List<Transaction>?) : List<BpmnTransactionalSubProcess>? {
+            return input?.filter { !it.hasExternalDiagram }?.map { convertToDto(it) }
         }
 
-        fun mapCollapsed(input: List<Transaction>) : List<BpmnTransactionCollapsedSubprocess> {
-            return input.filter { it.hasExternalDiagram }.map { convertToCollapsedDto(it) }
+        fun mapCollapsed(input: List<Transaction>?) : List<BpmnTransactionCollapsedSubprocess>? {
+            return input?.filter { it.hasExternalDiagram }?.map { convertToCollapsedDto(it) }
         }
 
         @Mapping(target = "transactionalSubprocess", constant = "true")
-        fun convertToDto(input: Transaction) : BpmnTransactionalSubProcess
+        abstract fun convertToDto(input: Transaction) : BpmnTransactionalSubProcess
 
         @Mapping(target = "transactionalSubprocess", constant = "true")
-        fun convertToCollapsedDto(input: Transaction) : BpmnTransactionCollapsedSubprocess
+        abstract fun convertToCollapsedDto(input: Transaction) : BpmnTransactionCollapsedSubprocess
     }
 }

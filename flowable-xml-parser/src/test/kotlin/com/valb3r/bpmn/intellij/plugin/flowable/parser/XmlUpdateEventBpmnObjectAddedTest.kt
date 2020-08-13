@@ -39,7 +39,7 @@ import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
-internal class XmlUpdateEventBpmnObjectAdded {
+internal class XmlUpdateEventBpmnObjectAddedTest {
 
     private val processId = BpmnElementId("simple-nested")
     private val parser = FlowableParser()
