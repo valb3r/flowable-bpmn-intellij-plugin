@@ -21,6 +21,8 @@ interface IconProvider {
     val decision: Icon
     val shell: Icon
     val tilde: Icon
+    val plus: Icon
+    val minus: Icon
     val dragToResizeTop: Icon
     val dragToResizeBottom: Icon
     val sequence: Icon
@@ -91,6 +93,8 @@ data class IconProviderImpl(
         override val dragToResizeTop: Icon = IconLoader.getIcon("/icons/ui-icons/drag-to-resize-top.png"),
         override val dragToResizeBottom: Icon = IconLoader.getIcon("/icons/ui-icons/drag-to-resize-bottom.png"),
         override val sequence: Icon = IconLoader.getIcon("/icons/ui-icons/sequence.png"),
+        override val plus: Icon = IconLoader.getIcon("/icons/ui-icons/plus.png"),
+        override val minus: Icon = IconLoader.getIcon("/icons/ui-icons/minus.png"),
         override val exclusiveGateway: String = "/icons/ui-icons/svg/exclusive-gateway.svg".asResource()!!,
         override val parallelGateway: String = "/icons/ui-icons/svg/parallel-gateway.svg".asResource()!!,
         override val inclusiveGateway: String = "/icons/ui-icons/svg/inclusive-gateway.svg".asResource()!!,

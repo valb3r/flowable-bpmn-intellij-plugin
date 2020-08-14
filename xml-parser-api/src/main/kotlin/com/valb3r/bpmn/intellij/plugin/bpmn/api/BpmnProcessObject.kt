@@ -105,6 +105,8 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         body.eventSubProcess?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.transaction?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.adHocSubProcess?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.collapsedTransaction?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.collapsedSubProcess?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
 
         // Gateways
         body.exclusiveGateway?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
