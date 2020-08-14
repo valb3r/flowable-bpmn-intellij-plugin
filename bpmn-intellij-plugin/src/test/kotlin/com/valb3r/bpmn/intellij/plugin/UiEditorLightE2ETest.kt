@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin
 import com.nhaarman.mockitokotlin2.*
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
@@ -1092,5 +1093,16 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             verify(capturingGraphics, atLeastOnce()).drawGlyphVector(capture(), any(), any())
             lastValue.numGlyphs.shouldBeEqualTo(4)
         }
+    }
+
+    @Test
+    fun `Root process id changing works`() {
+        prepareTwoServiceTaskView()
+        updateEventsRegistry().addPropertyUpdateEvent(
+                StringValueUpdatedEvent(parentProcessBpmnId, PropertyType.ID, "new-root-process-id", parentProcessBpmnId.id, BpmnElementId("new-root-process-id"))
+        )
+
+        canvas.paintComponent(graphics)
+        verifyServiceTasksAreDrawn()
     }
 }
