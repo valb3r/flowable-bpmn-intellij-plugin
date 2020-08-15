@@ -88,6 +88,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
     }
 
     fun click(location: Point2D.Float) {
+        propsVisualizer?.clear()
         val clickedElements = elemUnderCursor(location)
         clickedElements.forEach { interactionCtx.clickCallbacks[it]?.invoke(updateEventsRegistry()) }
 

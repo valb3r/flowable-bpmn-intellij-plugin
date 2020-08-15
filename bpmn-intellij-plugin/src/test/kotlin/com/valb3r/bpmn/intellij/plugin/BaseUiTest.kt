@@ -48,25 +48,6 @@ import javax.swing.JTable
 import javax.swing.table.TableColumn
 import javax.swing.table.TableColumnModel
 
-
-// These are global singletons as i.e. `initializeNewElementsFactory` is
-private val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
-private val boolFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, SelectedValueAccessor> = mutableMapOf()
-private val comboboxFactory = { id: BpmnElementId, type: PropertyType, value: String, allowedValues: Set<String> -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
-    val res = mock<TextValueAccessor>()
-    whenever(res.text).thenReturn(value)
-    return@computeIfAbsent res
-} }
-private val editorFactory = { id: BpmnElementId, type: PropertyType, value: String -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
-    val res = mock<TextValueAccessor>()
-    whenever(res.text).thenReturn(value)
-    return@computeIfAbsent res
-} }
-private val checkboxFieldFactory = { id: BpmnElementId, type: PropertyType, value: Boolean -> boolFieldsConstructed.computeIfAbsent(Pair(id, type)) {
-    val res = mock<SelectedValueAccessor>()
-    whenever(res.isSelected).thenReturn(value)
-    return@computeIfAbsent res
-} }
 internal abstract class BaseUiTest {
 
     protected val newLink = "NEW-SEQUENCE"
@@ -147,6 +128,24 @@ internal abstract class BaseUiTest {
     protected val columnModel = mock<TableColumnModel>()
     protected val tableColumn = mock<TableColumn>()
     protected val propertiesTable = mock<JTable>()
+
+    protected val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
+    protected val boolFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, SelectedValueAccessor> = mutableMapOf()
+    protected val comboboxFactory = { id: BpmnElementId, type: PropertyType, value: String, allowedValues: Set<String> -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
+        val res = mock<TextValueAccessor>()
+        whenever(res.text).thenReturn(value)
+        return@computeIfAbsent res
+    } }
+    protected val editorFactory = { id: BpmnElementId, type: PropertyType, value: String -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
+        val res = mock<TextValueAccessor>()
+        whenever(res.text).thenReturn(value)
+        return@computeIfAbsent res
+    } }
+    protected val checkboxFieldFactory = { id: BpmnElementId, type: PropertyType, value: Boolean -> boolFieldsConstructed.computeIfAbsent(Pair(id, type)) {
+        val res = mock<SelectedValueAccessor>()
+        whenever(res.isSelected).thenReturn(value)
+        return@computeIfAbsent res
+    } }
 
     @BeforeEach
     fun setupMocks() {

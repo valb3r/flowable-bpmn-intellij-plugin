@@ -1098,6 +1098,32 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
     }
 
     @Test
+    fun `Changing element ID twice works`() {
+        val newServiceTaskId = "newServiceTaskId"
+        val newNewServiceTaskId = "newNewServiceTaskId"
+        prepareTwoServiceTaskView()
+
+        clickOnId(serviceTaskStartDiagramId)
+        whenever(textFieldsConstructed[Pair(serviceTaskStartBpmnId, PropertyType.ID)]!!.text).thenReturn(newServiceTaskId)
+        clickOnId(serviceTaskStartDiagramId)
+        whenever(textFieldsConstructed[Pair(BpmnElementId(newServiceTaskId), PropertyType.ID)]!!.text).thenReturn(newNewServiceTaskId)
+        clickOnId(serviceTaskStartDiagramId)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(2)
+            val firstChange = lastValue.filterIsInstance<StringValueUpdatedEvent>().filter { it.bpmnElementId == serviceTaskStartBpmnId }.shouldHaveSingleItem()
+            val secondChange = lastValue.filterIsInstance<StringValueUpdatedEvent>().filter { it.bpmnElementId.id == newServiceTaskId }.shouldHaveSingleItem()
+
+            firstChange.referencedValue.shouldBeEqualTo(serviceTaskStartBpmnId.id)
+            firstChange.newValue.shouldBeEqualTo(newServiceTaskId)
+
+            secondChange.referencedValue.shouldBeEqualTo(newServiceTaskId)
+            secondChange.newValue.shouldBeEqualTo(newNewServiceTaskId)
+        }
+    }
+
+    @Test
     fun `Root process id changing works`() {
         val newRootProcessId = "new-root-process-id"
         val onlyRootProcessPoint = Point2D.Float(-9999.0f, -9999.0f)
