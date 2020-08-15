@@ -125,7 +125,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     }
 
     private fun createRootProcessElem(state: RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>): BaseBpmnRenderElement {
-        val processElem = PlaneRenderElement(DiagramElementId(state.currentState.processId.id), state.currentState.processId, state, mutableListOf())
+        val processElem = PlaneRenderElement(state.currentState.processDiagramId(), state.currentState.processId, state, mutableListOf())
         elements += processElem
         elementsById[state.currentState.processId] = processElem
         return processElem
