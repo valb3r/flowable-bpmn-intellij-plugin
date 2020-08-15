@@ -11,6 +11,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.render.AnchorType
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.render.lastRenderedState
+import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 import java.awt.Graphics2D
@@ -1097,12 +1099,30 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
     @Test
     fun `Root process id changing works`() {
+        val newRootProcessId = "new-root-process-id"
+        val onlyRootProcessPoint = Point2D.Float(-9999.0f, -9999.0f)
+
         prepareTwoServiceTaskView()
-        updateEventsRegistry().addPropertyUpdateEvent(
-                StringValueUpdatedEvent(parentProcessBpmnId, PropertyType.ID, "new-root-process-id", parentProcessBpmnId.id, BpmnElementId("new-root-process-id"))
-        )
+        canvas.click(onlyRootProcessPoint)
+        changeSelectedIdViaPropertiesVisualizer(parentProcessBpmnId, newRootProcessId)
 
         canvas.paintComponent(graphics)
         verifyServiceTasksAreDrawn()
+        canvas.click(onlyRootProcessPoint)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
+        lastRenderedState()!!.state.ctx.stateProvider.currentState()
+                .elementByDiagramId[CurrentState.processDiagramId(BpmnElementId(newRootProcessId))].shouldNotBeNull()
+
+
+        val anotherNewRootProcessId = "another-new-root-process-id"
+        canvas.click(onlyRootProcessPoint)
+        changeSelectedIdViaPropertiesVisualizer(BpmnElementId(newRootProcessId), anotherNewRootProcessId)
+        canvas.paintComponent(graphics)
+
+        verifyServiceTasksAreDrawn()
+        canvas.click(onlyRootProcessPoint)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
+        lastRenderedState()!!.state.ctx.stateProvider.currentState()
+                .elementByDiagramId[CurrentState.processDiagramId(BpmnElementId(anotherNewRootProcessId))].shouldNotBeNull()
     }
 }

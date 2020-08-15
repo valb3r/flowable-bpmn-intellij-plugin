@@ -200,6 +200,16 @@ internal abstract class BaseUiTest {
         propertiesVisualizer().clear()
     }
 
+    protected fun changeSelectedIdViaPropertiesVisualizer(elementId: BpmnElementId, newId: String) {
+        val id = Pair(elementId, PropertyType.ID)
+        propertiesVisualizer().visualize(
+                currentStateProvider().currentState().elemPropertiesByStaticElementId,
+                elementId
+        )
+        whenever(textFieldsConstructed[id]!!.text).thenReturn(newId)
+        propertiesVisualizer().clear()
+    }
+
     protected fun newServiceTask(intermediateX: Float, intermediateY: Float): BpmnElementId {
         val task = bpmnServiceTaskStart.copy(id = BpmnElementId("sid-" + UUID.randomUUID().toString()))
         val shape = diagramServiceTaskStart.copy(
