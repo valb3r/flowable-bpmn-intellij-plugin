@@ -11,7 +11,6 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.DragViewTransform
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTransform
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ViewTransform
 import java.awt.BasicStroke
 import java.awt.Color
@@ -31,7 +30,7 @@ fun DiagramElementId.elemIdToRemove(): DiagramElementId {
 abstract class BaseDiagramRenderElement(
         open val elementId: DiagramElementId,
         protected open val state: RenderState,
-        internal open var viewTransform: ViewTransform = NullViewTransform()
+        internal open var viewTransform: ViewTransform = state.baseTransform
 ) {
 
     var isVisible: Boolean? = null
@@ -94,7 +93,7 @@ abstract class BaseDiagramRenderElement(
     open fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event>  {
         val result = doOnDragEndWithoutChildren(dx, dy, droppedOn, allDroppedOnAreas)
         children.forEach { result += it.onDragEnd(dx, dy, droppedOn, allDroppedOnAreas) }
-        viewTransform = NullViewTransform()
+        viewTransform = state.baseTransform
         return result
     }
 

@@ -23,6 +23,7 @@ abstract class CircleAnchorElement(
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         return viewTransform.transform(
+                elementId,
                 Rectangle2D.Float(
                         location.x - radius,
                         location.y - radius,

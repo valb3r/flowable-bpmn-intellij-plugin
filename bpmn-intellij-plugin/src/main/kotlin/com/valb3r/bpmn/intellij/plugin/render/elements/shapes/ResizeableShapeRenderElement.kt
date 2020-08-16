@@ -109,12 +109,12 @@ abstract class ResizeableShapeRenderElement(
     private fun handleResize(widthOrig: Float, heightOrig: Float, widthNew: Float, heightNew: Float) {
         when {
             anchors.first.location.distance(anchors.first.transformedLocation) < EPSILON -> {
-                viewTransform = ResizeViewTransform(
+                ResizeViewTransform(
                         anchors.first.location.x,
                         anchors.first.location.y,
                         widthNew / widthOrig,
                         heightNew / heightOrig
-                )
+                ).addPreTransform(viewTransform)
 
             }
             anchors.second.location.distance(anchors.second.transformedLocation) < EPSILON -> {

@@ -23,6 +23,7 @@ class ShapeResizeAnchorBottom(
         val icon = icon()
 
         return viewTransform.transform(
+                elementId,
                 Rectangle2D.Float(
                         topPoint.x,
                         topPoint.y,

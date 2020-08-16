@@ -28,6 +28,7 @@ class ShapeResizeAnchorTop(
         val height = iconRight.y - iconLeft.y
 
         return viewTransform.transform(
+                elementId,
                 Rectangle2D.Float(
                         bottomPoint.x - width,
                         bottomPoint.y - height,

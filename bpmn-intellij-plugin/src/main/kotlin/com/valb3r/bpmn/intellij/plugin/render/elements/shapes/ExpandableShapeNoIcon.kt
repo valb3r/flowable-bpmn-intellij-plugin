@@ -12,13 +12,14 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.buttons.ButtonWithAnchor
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ExpandViewTransform
 import java.awt.geom.Point2D
 import javax.swing.Icon
 
 class ExpandableShapeNoIcon(
         override val elementId: DiagramElementId,
         override val bpmnElementId: BpmnElementId,
-        private val plusIcon: Icon,
+        plusIcon: Icon,
         private val minusIcon: Icon,
         shape: ShapeElement,
         state: RenderState,
@@ -28,10 +29,18 @@ class ExpandableShapeNoIcon(
         private val areaType: AreaType = AreaType.SHAPE
 ) : ResizeableShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
-    override val children: MutableList<BaseDiagramRenderElement> = mutableListOf(
-            ButtonWithAnchor(DiagramElementId("EXPAND:" + shape.id.id), Point2D.Float((shape.bounds().first.x + shape.bounds().second.x) / 2.0f, shape.bounds().second.y), plusIcon, { mutableListOf() }, state),
-            edgeExtractionAnchor
-    )
+    private val collapsed = false
+
+    override val children: MutableList<BaseDiagramRenderElement> = (
+            super.children +
+            ButtonWithAnchor(
+                    DiagramElementId("EXPAND:" + shape.id.id),
+                    Point2D.Float((shape.bounds().first.x + shape.bounds().second.x) / 2.0f, shape.bounds().second.y),
+                    plusIcon,
+                    { mutableListOf() },
+                    state
+            )
+    ).toMutableList()
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 
@@ -59,5 +68,20 @@ class ExpandableShapeNoIcon(
                 Anchor(Point2D.Float(cx, cy - halfHeight)),
                 Anchor(Point2D.Float(cx, cy + halfHeight))
         )
+    }
+
+    override fun propagateStateChangesApplied() {
+        super.propagateStateChangesApplied()
+        if (collapsed) {
+            return
+        }
+
+        state.baseTransform.addPreTransform(ExpandViewTransform(
+                shape.rectBounds().centerX.toFloat(),
+                shape.rectBounds().centerY.toFloat(),
+                100.0f,
+                100.0f,
+                children.map { it.elementId }.toSet()
+        ))
     }
 }

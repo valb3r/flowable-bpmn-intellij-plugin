@@ -96,7 +96,7 @@ abstract class ShapeRenderElement(
             }
         }
 
-        viewTransform = NullViewTransform()
+        viewTransform = state.baseTransform
         return result
     }
 
@@ -167,7 +167,7 @@ abstract class ShapeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        return viewTransform.transform(shape.rectBounds())
+        return viewTransform.transform(elementId, shape.rectBounds())
     }
 
     protected open fun handlePossibleNestingTo(allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>, cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {
@@ -222,7 +222,7 @@ abstract class ShapeRenderElement(
     }
 
     private fun detectAndRenderNewSequenceAnchorMove() {
-        val expected = viewTransform.transform(edgeExtractionAnchor.location)
+        val expected = viewTransform.transform(elementId, edgeExtractionAnchor.location)
         if (expected.distance(edgeExtractionAnchor.transformedLocation) > EPSILON && edgeExtractionAnchor.isActiveOrDragged()) {
             renderNewSequenceAnchorMove()
         }
