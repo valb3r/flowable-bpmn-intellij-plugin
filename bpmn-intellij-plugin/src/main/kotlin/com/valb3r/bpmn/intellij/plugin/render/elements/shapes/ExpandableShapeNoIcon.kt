@@ -81,7 +81,7 @@ class ExpandableShapeNoIcon(
                 shape.rectBounds().centerY.toFloat(),
                 100.0f,
                 100.0f,
-                children.map { it.elementId }.toSet()
+                enumerateChildrenRecursively().map { it.elementId }.toSet()
         ))
     }
 }

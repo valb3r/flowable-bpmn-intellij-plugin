@@ -113,6 +113,19 @@ abstract class BaseDiagramRenderElement(
         return if (isActiveOrDragged()) ANCHOR_Z_INDEX else (parents.firstOrNull()?.zIndex() ?: -1) + 1
     }
 
+    open fun enumerateChildrenRecursively() : List<BaseDiagramRenderElement> {
+        val result = mutableListOf<BaseDiagramRenderElement>()
+        result += children.flatMap { rootAndEnumerateChildrenRecursively(it) }
+        return result
+    }
+
+    protected open fun rootAndEnumerateChildrenRecursively(root: BaseDiagramRenderElement) : List<BaseDiagramRenderElement> {
+        val result = mutableListOf<BaseDiagramRenderElement>()
+        result += root
+        result += root.children.flatMap { rootAndEnumerateChildrenRecursively(it) }
+        return result
+    }
+
     protected fun actionsRect(shapeRect: Rectangle2D.Float): Rectangle2D.Float {
         return Rectangle2D.Float(shapeRect.x - actionsMargin, shapeRect.y - actionsMargin, shapeRect.width + 2.0f * actionsMargin, shapeRect.height + 2.0f * actionsMargin)
     }
