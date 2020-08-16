@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.DragViewTransform
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.PreTransformHandler
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ViewTransform
 import java.awt.BasicStroke
 import java.awt.Color
@@ -136,7 +137,7 @@ abstract class BaseDiagramRenderElement(
     }
 
     protected open fun dragTo(dx: Float, dy: Float) {
-        viewTransform = DragViewTransform(dx, dy)
+        viewTransform = DragViewTransform(dx, dy, PreTransformHandler(mutableListOf(viewTransform)))
         doDragToWithoutChildren(dx, dy)
         children.forEach { it.dragTo(dx, dy) }
     }
