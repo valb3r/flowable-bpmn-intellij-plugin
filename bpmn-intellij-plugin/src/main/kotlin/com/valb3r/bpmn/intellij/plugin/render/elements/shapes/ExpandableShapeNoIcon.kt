@@ -9,7 +9,9 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
+import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.buttons.ButtonWithAnchor
 import java.awt.geom.Point2D
 import javax.swing.Icon
 
@@ -26,11 +28,15 @@ class ExpandableShapeNoIcon(
         private val areaType: AreaType = AreaType.SHAPE
 ) : ResizeableShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
+    override val children: MutableList<BaseDiagramRenderElement> = mutableListOf(
+            ButtonWithAnchor(DiagramElementId("EXPAND:" + shape.id.id), Point2D.Float((shape.bounds().first.x + shape.bounds().second.x) / 2.0f, shape.bounds().second.y), plusIcon, { mutableListOf() }, state),
+            edgeExtractionAnchor
+    )
+
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 
-        val area = ctx.canvas.drawRoundedRectWithIconAtBottom(
+        val area = ctx.canvas.drawRoundedRect(
                 shapeCtx.shape,
-                plusIcon,
                 shapeCtx.name,
                 color(backgroundColor),
                 borderColor.color,
