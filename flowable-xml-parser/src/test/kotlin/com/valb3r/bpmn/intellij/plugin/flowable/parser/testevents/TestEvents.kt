@@ -63,7 +63,7 @@ data class NewWaypointsEvent(override val edgeElementId: DiagramElementId, overr
 
 data class DiagramElementRemovedEvent(override val elementId: DiagramElementId): DiagramElementRemoved
 
-data class BpmnElementRemovedEvent(override val elementId: BpmnElementId): BpmnElementRemoved
+data class BpmnElementRemovedEvent(override val bpmnElementId: BpmnElementId): BpmnElementRemoved
 
 data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithParentId, override val shape: ShapeElement, override val props: Map<PropertyType, Property>): BpmnShapeObjectAdded
 

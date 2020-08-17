@@ -43,7 +43,7 @@ interface DiagramElementRemoved: EventPropagatableToXml {
 }
 
 interface BpmnElementRemoved: EventPropagatableToXml {
-    val elementId: BpmnElementId
+    val bpmnElementId: BpmnElementId
 }
 
 interface BpmnShapeObjectAdded: EventPropagatableToXml {

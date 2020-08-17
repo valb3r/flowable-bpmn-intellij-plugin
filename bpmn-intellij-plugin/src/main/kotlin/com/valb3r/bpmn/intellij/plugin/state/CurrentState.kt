@@ -10,9 +10,11 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.events.BooleanUiOnlyValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.events.ProcessModelUpdateEvents
 import com.valb3r.bpmn.intellij.plugin.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.mappers.MapTransactionalSubprocessToSubprocess
+import com.valb3r.bpmn.intellij.plugin.properties.uionly.UiOnlyPropertyType
 import com.valb3r.bpmn.intellij.plugin.render.EdgeElementState
 import org.mapstruct.factory.Mappers
 import java.util.concurrent.atomic.AtomicReference
@@ -36,13 +38,14 @@ data class CurrentState(
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
         val elementByBpmnId: Map<BpmnElementId, WithParentId>,
         val elemPropertiesByStaticElementId: Map<BpmnElementId, Map<PropertyType, Property>>,
+        val elemUiOnlyPropertiesByStaticElementId: Map<BpmnElementId, Map<UiOnlyPropertyType, Property>>,
         val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>
 )
 
 // Global singleton
 class CurrentStateProvider {
-    private var fileState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptySet())
-    private var currentState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptySet())
+    private var fileState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet())
+    private var currentState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet())
 
     fun resetStateTo(fileContent: String, processObject: BpmnProcessObjectView) {
         fileState = CurrentState(
@@ -52,6 +55,7 @@ class CurrentStateProvider {
                 processObject.elementByDiagramId,
                 processObject.elementByStaticId,
                 processObject.elemPropertiesByElementId,
+                emptyMap(),
                 emptySet()
         )
         currentState = fileState
@@ -68,6 +72,7 @@ class CurrentStateProvider {
         val updatedElementByDiagramId = state.elementByDiagramId.toMutableMap()
         val updatedElementByStaticId = state.elementByBpmnId.toMutableMap()
         val updatedElemPropertiesByStaticElementId = state.elemPropertiesByStaticElementId.toMutableMap()
+        val updatedElemUiOnlyPropertiesByStaticElementId = state.elemUiOnlyPropertiesByStaticElementId.toMutableMap()
 
         val undoRedoStatus = updateEventsRegistry().undoRedoStatus()
         val updates = updateEventsRegistry().getUpdateEventList()
@@ -85,7 +90,7 @@ class CurrentStateProvider {
                     updatedEdges = updatedEdges.map { edge -> if (edge.id == event.edgeElementId) updateWaypointLocation(edge, event) else edge }.toMutableList()
                 }
                 is BpmnElementRemoved -> {
-                    handleRemoved(event.elementId, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
+                    handleRemoved(event.bpmnElementId, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
                 }
                 is DiagramElementRemoved -> {
                     handleDiagramRemoved(event.elementId, updatedShapes, updatedEdges, updatedElementByDiagramId)
@@ -118,6 +123,7 @@ class CurrentStateProvider {
                         }
                     }
                 }
+                is BooleanUiOnlyValueUpdatedEvent -> updateUiProperty(event, updatedElemUiOnlyPropertiesByStaticElementId)
                 else -> throw IllegalStateException("Can't handle event ${event.javaClass}")
             }
         }
@@ -129,6 +135,7 @@ class CurrentStateProvider {
                 updatedElementByDiagramId,
                 updatedElementByStaticId,
                 updatedElemPropertiesByStaticElementId,
+                updatedElemUiOnlyPropertiesByStaticElementId,
                 undoRedoStatus
         )
     }
@@ -177,6 +184,12 @@ class CurrentStateProvider {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId]?.toMutableMap() ?: mutableMapOf()
         updated[event.property] = Property(event.newValue)
         updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
+    }
+
+    private fun updateUiProperty(event: BooleanUiOnlyValueUpdatedEvent, updatedElemUiOnlyPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<UiOnlyPropertyType, Property>>) {
+        val updated = updatedElemUiOnlyPropertiesByStaticElementId[event.bpmnElementId]?.toMutableMap() ?: mutableMapOf()
+        updated[event.property] = Property(event.newValue)
+        updatedElemUiOnlyPropertiesByStaticElementId[event.bpmnElementId] = updated
     }
 
     private fun handleDiagramRemoved(diagramId: DiagramElementId, updatedShapes: MutableList<ShapeElement>, updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>, updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>) {

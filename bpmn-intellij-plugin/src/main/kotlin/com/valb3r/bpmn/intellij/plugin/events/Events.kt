@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.properties.uionly.UiOnlyPropertyType
 import java.awt.geom.Point2D
 
 data class StringValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: String, override val referencedValue: String? = null, override val newIdValue: BpmnElementId? = null): PropertyUpdateWithId
@@ -28,11 +29,10 @@ data class NewWaypointsEvent(override val edgeElementId: DiagramElementId, overr
 
 data class DiagramElementRemovedEvent(override val elementId: DiagramElementId): DiagramElementRemoved
 
-data class BpmnElementRemovedEvent(override val elementId: BpmnElementId): BpmnElementRemoved
+data class BpmnElementRemovedEvent(override val bpmnElementId: BpmnElementId): BpmnElementRemoved
 
 data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithParentId, override val shape: ShapeElement, override val props: Map<PropertyType, Property>): BpmnShapeObjectAdded
 
 data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithParentId, override val edge: EdgeWithIdentifiableWaypoints, override val props: Map<PropertyType, Property>): BpmnEdgeObjectAdded
 
-data class ShapeExpandedEvent(val elementId: DiagramElementId): EventUiOnly
-data class ShapeCollapsedEvent(val elementId: DiagramElementId): EventUiOnly
+data class BooleanUiOnlyValueUpdatedEvent(val bpmnElementId: BpmnElementId, val property: UiOnlyPropertyType, val newValue: Boolean): EventUiOnly

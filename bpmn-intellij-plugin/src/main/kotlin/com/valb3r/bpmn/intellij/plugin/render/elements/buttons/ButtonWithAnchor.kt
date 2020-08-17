@@ -20,7 +20,7 @@ class ButtonWithAnchor(
 ) : IconAnchorElement(elementId, bottomPoint, state) {
 
     override fun render(): MutableMap<DiagramElementId, AreaWithZindex> {
-        state.ctx.interactionContext.clickCallbacks[elementId] = { onClick() }
+        state.ctx.interactionContext.clickCallbacks[elementId] = { dest -> dest.addEvents(onClick()) }
         return super.render()
     }
 

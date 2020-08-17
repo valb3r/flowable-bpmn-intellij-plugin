@@ -620,7 +620,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
-            removeEdgeBpmn.elementId.shouldBeEqualTo(addedEdge.edge.bpmnElement)
+            removeEdgeBpmn.bpmnElementId.shouldBeEqualTo(addedEdge.edge.bpmnElement)
             removeEdgeDiagram.elementId.shouldBeEqualTo(addedEdge.edge.id)
         }
     }
@@ -713,7 +713,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             diagramRemoved.map { it.elementId.id }.shouldContainSame(
                     listOf("DIAGRAM-startServiceTask", addedEdge.edge.id.id, "DIAGRAM-endServiceTask")
             )
-            bpmnRemoved.map { it.elementId.id }.shouldContainSame(
+            bpmnRemoved.map { it.bpmnElementId.id }.shouldContainSame(
                     listOf("startServiceTask", addedEdge.bpmnObject.id.id, "endServiceTask")
             )
         }
@@ -1012,7 +1012,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             val removeDiagramBpmn = lastValue.filterIsInstance<DiagramElementRemovedEvent>().shouldHaveSingleItem()
 
             edgeBpmn.bpmnObject.parent.shouldBe(subprocessBpmnId)
-            removeShapeBpmn.elementId.shouldBe(addedEdge.edge.bpmnElement)
+            removeShapeBpmn.bpmnElementId.shouldBe(addedEdge.edge.bpmnElement)
             removeDiagramBpmn.elementId.shouldBe(addedEdge.edge.id)
         }
     }

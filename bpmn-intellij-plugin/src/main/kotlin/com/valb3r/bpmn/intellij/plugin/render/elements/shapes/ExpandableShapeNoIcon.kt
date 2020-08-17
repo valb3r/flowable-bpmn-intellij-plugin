@@ -4,8 +4,8 @@ import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
-import com.valb3r.bpmn.intellij.plugin.events.ShapeCollapsedEvent
-import com.valb3r.bpmn.intellij.plugin.events.ShapeExpandedEvent
+import com.valb3r.bpmn.intellij.plugin.events.BooleanUiOnlyValueUpdatedEvent
+import com.valb3r.bpmn.intellij.plugin.properties.uionly.UiOnlyPropertyType
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
@@ -36,7 +36,7 @@ class ExpandableShapeNoIcon(
             DiagramElementId("EXPAND:" + shape.id.id),
             Point2D.Float((shape.bounds().first.x + shape.bounds().second.x) / 2.0f, shape.bounds().second.y),
             if (collapsed) plusIcon else minusIcon,
-            { mutableListOf(if (collapsed) ShapeExpandedEvent(elementId) else ShapeCollapsedEvent(elementId)) },
+            { mutableListOf(BooleanUiOnlyValueUpdatedEvent(bpmnElementId, UiOnlyPropertyType.EXPANDED, !collapsed)) },
             state
     )
 

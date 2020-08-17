@@ -117,7 +117,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
     fun commitToFile() {
         committer.executeCommitAndGetHash(
                 baseFileContent,
-                updates.filterIndexed { index, _ -> index < allBeforeThis }.filterIsInstance<Order<EventPropagatableToXml>>().map { it.event },
+                updates.filterIndexed { index, _ -> index < allBeforeThis }.map { it.event }.filterIsInstance<EventPropagatableToXml>(),
                 { hashData(it) },
                 { expectedFileHash = it}
         )
@@ -148,7 +148,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
             updates.add(toStore)
             when (event) {
                 is PropertyUpdateWithId -> propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
-                is LocationUpdateWithId, is BpmnShapeResizedAndMoved, is NewWaypoints, is BpmnParentChanged -> { /*NOP*/ }
+                is LocationUpdateWithId, is BpmnShapeResizedAndMoved, is NewWaypoints, is BpmnParentChanged, is EventUiOnly -> { /*NOP*/ }
                 is BpmnShapeObjectAddedEvent -> addObjectShapeEvent(toStore as Order<BpmnShapeObjectAddedEvent>)
                 is BpmnEdgeObjectAddedEvent -> addObjectEdgeEvent(toStore as Order<BpmnEdgeObjectAddedEvent>)
                 else -> throw IllegalArgumentException("Can't bulk add: " + event::class.qualifiedName)
@@ -174,7 +174,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
         bpmn.forEachIndexed {index, event ->
             val toStore = Order(current + index, event, EventBlock(blockSize))
             updates.add(toStore)
-            deletionsByStaticBpmnId.computeIfAbsent(event.elementId) { CopyOnWriteArrayList() } += toStore
+            deletionsByStaticBpmnId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
         }
 
         commitToFile()
