@@ -13,6 +13,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import java.awt.geom.Point2D
 
 interface Event
+interface EventPropagatableToXml: Event
+interface EventUiOnly: Event
 
 data class EventBlock(val size: Int)
 
@@ -22,7 +24,7 @@ interface EventOrder<T: Event> {
     val block: EventBlock?
 }
 
-interface LocationUpdateWithId: Event {
+interface LocationUpdateWithId: EventPropagatableToXml {
     val diagramElementId: DiagramElementId
     val dx: Float
     val dy: Float
@@ -30,27 +32,27 @@ interface LocationUpdateWithId: Event {
     val internalPos: Int?
 }
 
-interface NewWaypoints: Event {
+interface NewWaypoints: EventPropagatableToXml {
     val edgeElementId: DiagramElementId
     val waypoints: List<IdentifiableWaypoint>
     val epoch: Int
 }
 
-interface DiagramElementRemoved: Event {
+interface DiagramElementRemoved: EventPropagatableToXml {
     val elementId: DiagramElementId
 }
 
-interface BpmnElementRemoved: Event {
+interface BpmnElementRemoved: EventPropagatableToXml {
     val elementId: BpmnElementId
 }
 
-interface BpmnShapeObjectAdded: Event {
+interface BpmnShapeObjectAdded: EventPropagatableToXml {
     val bpmnObject: WithParentId
     val shape: ShapeElement
     val props: Map<PropertyType, Property>
 }
 
-interface BpmnShapeResizedAndMoved: Event {
+interface BpmnShapeResizedAndMoved: EventPropagatableToXml {
     val diagramElementId: DiagramElementId
     val cx: Float
     val cy: Float
@@ -60,19 +62,19 @@ interface BpmnShapeResizedAndMoved: Event {
     fun transform(point: Point2D.Float): Point2D.Float
 }
 
-interface BpmnEdgeObjectAdded: Event {
+interface BpmnEdgeObjectAdded: EventPropagatableToXml {
     val bpmnObject: WithParentId
     val edge: EdgeWithIdentifiableWaypoints
     val props: Map<PropertyType, Property>
 }
 
-interface BpmnParentChanged: Event {
+interface BpmnParentChanged: EventPropagatableToXml {
     val bpmnElementId: BpmnElementId
     val newParentId: BpmnElementId
     val propagateToXml: Boolean
 }
 
-interface PropertyUpdateWithId: Event {
+interface PropertyUpdateWithId: EventPropagatableToXml {
     val bpmnElementId: BpmnElementId
     val property: PropertyType
     val newValue: Any

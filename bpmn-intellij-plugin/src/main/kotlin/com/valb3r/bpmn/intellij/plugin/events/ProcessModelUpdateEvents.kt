@@ -25,12 +25,12 @@ fun updateEventsRegistry(): ProcessModelUpdateEvents {
 }
 
 interface FileCommitter {
-    fun executeCommitAndGetHash(content: String?, events: List<Event>, hasher: (String) -> String, updateHash: (String) -> Unit)
+    fun executeCommitAndGetHash(content: String?, events: List<EventPropagatableToXml>, hasher: (String) -> String, updateHash: (String) -> Unit)
 }
 
 class IntelliJFileCommitter(private val parser: BpmnParser, private val project: Project, private val file: VirtualFile): FileCommitter {
 
-    override fun executeCommitAndGetHash(content: String?, events: List<Event>, hasher: (String) -> String, updateHash: (String) -> Unit) {
+    override fun executeCommitAndGetHash(content: String?, events: List<EventPropagatableToXml>, hasher: (String) -> String, updateHash: (String) -> Unit) {
         var hash: String?
         val doc = FileDocumentManager.getInstance().getDocument(file)!!
         WriteCommandAction.runWriteCommandAction(project) {
@@ -117,7 +117,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
     fun commitToFile() {
         committer.executeCommitAndGetHash(
                 baseFileContent,
-                updates.filterIndexed { index, _ -> index < allBeforeThis }.map { it.event },
+                updates.filterIndexed { index, _ -> index < allBeforeThis }.filterIsInstance<Order<EventPropagatableToXml>>().map { it.event },
                 { hashData(it) },
                 { expectedFileHash = it}
         )
@@ -230,7 +230,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
     }
 
     data class Order<T: Event>(override val order: Int, override val event: T, override val block: EventBlock? = null): EventOrder<T>
-    data class NullEvent(val forId: String): Event
+    data class NullEvent(val forId: String): EventUiOnly
 
     enum class UndoRedo {
         UNDO,

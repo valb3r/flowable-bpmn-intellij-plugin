@@ -161,7 +161,7 @@ class FlowableParser : BpmnParser {
      * Impossible to use FasterXML - Multiple objects of same type issue:
      * https://github.com/FasterXML/jackson-dataformat-xml/issues/205
      */
-    override fun update(input: String, events: List<Event>): String {
+    override fun update(input: String, events: List<EventPropagatableToXml>): String {
         val reader = SAXReader()
         val doc = reader.read(ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8)))
 
@@ -171,7 +171,7 @@ class FlowableParser : BpmnParser {
         return os.toString()
     }
 
-    private fun parseAndWrite(doc: Document, os: OutputStream, events: List<Event>) {
+    private fun parseAndWrite(doc: Document, os: OutputStream, events: List<EventPropagatableToXml>) {
         doUpdate(doc, events)
 
         val format = OutputFormat.createPrettyPrint()
@@ -181,7 +181,7 @@ class FlowableParser : BpmnParser {
         writer.write(doc)
     }
 
-    private fun doUpdate(doc: Document, events: List<Event>) {
+    private fun doUpdate(doc: Document, events: List<EventPropagatableToXml>) {
         for (event in events) {
             when (event) {
                 is LocationUpdateWithId -> applyLocationUpdate(doc, event)

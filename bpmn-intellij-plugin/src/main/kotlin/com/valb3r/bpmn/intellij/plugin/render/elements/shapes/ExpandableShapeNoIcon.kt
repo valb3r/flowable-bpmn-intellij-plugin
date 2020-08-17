@@ -4,6 +4,8 @@ import com.valb3r.bpmn.intellij.plugin.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.events.ShapeCollapsedEvent
+import com.valb3r.bpmn.intellij.plugin.events.ShapeExpandedEvent
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
@@ -19,8 +21,9 @@ import javax.swing.Icon
 class ExpandableShapeNoIcon(
         override val elementId: DiagramElementId,
         override val bpmnElementId: BpmnElementId,
+        private val collapsed: Boolean,
         plusIcon: Icon,
-        private val minusIcon: Icon,
+        minusIcon: Icon,
         shape: ShapeElement,
         state: RenderState,
         private val backgroundColor: Colors = Colors.TRANSACTION_COLOR,
@@ -29,17 +32,17 @@ class ExpandableShapeNoIcon(
         private val areaType: AreaType = AreaType.SHAPE
 ) : ResizeableShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
-    private val collapsed = false
+    private val expandButton = ButtonWithAnchor(
+            DiagramElementId("EXPAND:" + shape.id.id),
+            Point2D.Float((shape.bounds().first.x + shape.bounds().second.x) / 2.0f, shape.bounds().second.y),
+            if (collapsed) plusIcon else minusIcon,
+            { mutableListOf(if (collapsed) ShapeExpandedEvent(elementId) else ShapeCollapsedEvent(elementId)) },
+            state
+    )
 
     override val children: MutableList<BaseDiagramRenderElement> = (
-            super.children +
-            ButtonWithAnchor(
-                    DiagramElementId("EXPAND:" + shape.id.id),
-                    Point2D.Float((shape.bounds().first.x + shape.bounds().second.x) / 2.0f, shape.bounds().second.y),
-                    plusIcon,
-                    { mutableListOf() },
-                    state
-            )
+            super.children + expandButton
+
     ).toMutableList()
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
@@ -72,7 +75,7 @@ class ExpandableShapeNoIcon(
 
     override fun propagateStateChangesApplied() {
         super.propagateStateChangesApplied()
-        if (collapsed) {
+        if (this.collapsed) {
             return
         }
 

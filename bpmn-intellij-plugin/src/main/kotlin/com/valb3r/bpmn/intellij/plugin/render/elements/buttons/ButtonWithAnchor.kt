@@ -19,6 +19,11 @@ class ButtonWithAnchor(
         state: RenderState
 ) : IconAnchorElement(elementId, bottomPoint, state) {
 
+    override fun render(): MutableMap<DiagramElementId, AreaWithZindex> {
+        state.ctx.interactionContext.clickCallbacks[elementId] = { onClick() }
+        return super.render()
+    }
+
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         val icon = icon()
         val left = camera.fromCameraView(Point2D.Float(0.0f, 0.0f))
