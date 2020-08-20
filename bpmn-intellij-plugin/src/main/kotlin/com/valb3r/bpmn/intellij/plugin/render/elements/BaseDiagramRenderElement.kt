@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.DragViewTransform
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ExpandViewTransform
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.PreTransformHandler
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ViewTransform
 import java.awt.BasicStroke
@@ -235,5 +236,19 @@ abstract class BaseDiagramRenderElement(
 
     protected open fun acceptsInternalEvents(): Boolean {
         return true
+    }
+
+    protected open fun compensateExpandViewTransformForDragDelta(elemX: Float, elemY: Float, dx: Float, dy: Float): Point2D.Float {
+        val toUndo = mutableListOf<ExpandViewTransform>()
+        val transform = viewTransform
+        if (transform is ExpandViewTransform) {
+            toUndo += transform
+        }
+
+        toUndo += viewTransform.listTransformsOfType(ExpandViewTransform::class.java)
+
+        var currentDelta = Point2D.Float(dx, dy)
+        toUndo.forEach { currentDelta = it.undoTransform(elementId, Point2D.Float(elemX + currentDelta.x, elemY + currentDelta.y))}
+        return currentDelta
     }
 }

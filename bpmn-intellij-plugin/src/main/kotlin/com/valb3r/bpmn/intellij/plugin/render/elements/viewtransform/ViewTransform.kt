@@ -10,6 +10,7 @@ interface PreTransformable {
     fun preTransform(elementId: DiagramElementId, rect: Rectangle2D.Float): Rectangle2D.Float
     fun preTransform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float
     fun addPreTransform(viewTransform: ViewTransform)
+    fun <T: ViewTransform> listTransformsOfType(type: Class<T>): List<T>
 }
 
 interface ViewTransform: PreTransformable {
@@ -37,6 +38,13 @@ class PreTransformHandler(private val preTransforms: MutableList<ViewTransform> 
 
     override fun addPreTransform(viewTransform: ViewTransform) {
         preTransforms += viewTransform
+    }
+
+    override fun <T : ViewTransform> listTransformsOfType(type: Class<T>): List<T> {
+        val result = mutableListOf<T>()
+        result += preTransforms.filterIsInstance(type)
+        result += preTransforms.flatMap { it.listTransformsOfType(type) }
+        return result
     }
 }
 
@@ -118,6 +126,15 @@ class ExpandViewTransform(
         return transformPoint(transformed)
     }
 
+    fun undoTransform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
+        val transformed = preTransform(elementId, point)
+        if (excludeIds.contains(elementId)) {
+            return transformed
+        }
+
+        return undoTransformPoint(point)
+    }
+
     private fun transformPoint(point: Point2D.Float): Point2D.Float {
         // assuming left-right, top-down coordinate system
         return when {
@@ -132,6 +149,25 @@ class ExpandViewTransform(
             point.x > cx && point.y > cy-> Point2D.Float(point.x + dx, point.y + dy)
             point.x < cx && point.y < cy-> Point2D.Float(point.x - dx, point.y - dy)
             point.x > cx && point.y < cy-> Point2D.Float(point.x + dx, point.y - dy)
+
+            else -> throw IllegalStateException("Unexpected point value: $point for $cx,$cy expand view")
+        }
+    }
+
+    private fun undoTransformPoint(point: Point2D.Float): Point2D.Float {
+        // assuming left-right, top-down coordinate system
+        return when {
+            abs(point.x - cx) < EPSILON && abs(point.y - cy) < EPSILON -> point
+
+            abs(point.x - cx) < EPSILON && point.y > cy -> Point2D.Float(point.x, point.y - dy)
+            abs(point.x - cx) < EPSILON && point.y < cy -> Point2D.Float(point.x, point.y + dy)
+            point.x < cx && abs(point.y - cy) < EPSILON -> Point2D.Float(point.x + dx, point.y)
+            point.x > cx && abs(point.y - cy) < EPSILON -> Point2D.Float(point.x - dx, point.y)
+
+            point.x < cx && point.y > cy-> Point2D.Float(point.x + dx, point.y - dy)
+            point.x > cx && point.y > cy-> Point2D.Float(point.x - dx, point.y - dy)
+            point.x < cx && point.y < cy-> Point2D.Float(point.x + dx, point.y + dy)
+            point.x > cx && point.y < cy-> Point2D.Float(point.x - dx, point.y + dy)
 
             else -> throw IllegalStateException("Unexpected point value: $point for $cx,$cy expand view")
         }

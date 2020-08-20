@@ -56,6 +56,7 @@ class PhysicalWaypoint(
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         val events = mutableListOf<Event>()
 
+        // TODO: Transform
         events += DraggedToEvent(elementId, dx, dy, parentElementId, physicalPos) as Event
 
         if (null == parentElementBpmnId) {
@@ -79,6 +80,7 @@ class PhysicalWaypoint(
             return mutableListOf()
         }
 
+        // TODO: Transform
         return mutableListOf(
                 DraggedToEvent(
                         elementId,
