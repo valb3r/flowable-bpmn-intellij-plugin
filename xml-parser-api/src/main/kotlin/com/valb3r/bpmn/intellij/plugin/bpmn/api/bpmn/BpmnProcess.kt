@@ -100,7 +100,7 @@ data class BpmnProcessBody(
 @KotlinBuilder
 data class BpmnProcess(
         override val id: BpmnElementId,
-        val name: String,
+        val name: String?,
         val documentation: String?,
         val isExecutable: Boolean?,
 
