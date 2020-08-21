@@ -4,7 +4,8 @@
 # !IMPORTANT! Locale questions
 Dear Chinese users, do anyone observe behavior like in the ticket:
 https://github.com/valb3r/flowable-bpmn-intellij-plugin/issues/180
-Short - updating i.e. ServiceTask name with Chinese symbols causes wrong encoding.
+
+In short - updating i.e. ServiceTask name with Chinese symbols causes wrong encoding.
 Please leave your comment there if you observe it or if not - it is important to understand problem depth and scope.
 
 # What is this
