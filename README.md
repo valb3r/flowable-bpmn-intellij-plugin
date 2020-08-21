@@ -1,6 +1,11 @@
 [![codecov](https://codecov.io/gh/valb3r/flowable-bpmn-intellij-plugin/branch/master/graph/badge.svg)](https://codecov.io/gh/valb3r/flowable-bpmn-intellij-plugin)
 [![Gitter](https://badges.gitter.im/flowable-bpmn-intellij-plugin/community.svg)](https://gitter.im/flowable-bpmn-intellij-plugin/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
+# !IMPORTANT! Locale questions
+Dear Chinese users, do anyone observe behavior like in the ticket:
+https://github.com/valb3r/flowable-bpmn-intellij-plugin/issues/180
+Short - updating i.e. ServiceTask name with Chinese symbols causes wrong encoding.
+Please leave your comment there if you observe it or if not - it is important to understand problem depth and scope.
 
 # What is this
 
