@@ -32,6 +32,16 @@ internal class FlowableParserDumbTest {
     }
 
     @Test
+    fun `XML process without name should be parseable without error`() {
+        val processObject: BpmnProcessObject?
+
+        processObject = FlowableParser().parse("empty-process-name.bpmn20.xml".asResource()!!)
+
+        processObject.shouldNotBeNull()
+    }
+
+
+    @Test
     fun `XML process with interlaced elements of same type should be parseable without error`() {
         val processObject: BpmnProcessObject?
 

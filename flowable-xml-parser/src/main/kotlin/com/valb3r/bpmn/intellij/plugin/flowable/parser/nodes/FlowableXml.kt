@@ -114,7 +114,7 @@ open class ProcessBody {
 class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
     @JacksonXmlProperty(isAttribute = true) var id: String? = null // it is false - it is non-null
-    @JacksonXmlProperty(isAttribute = true) var name: String? = null // it is false - it is non-null
+    @JacksonXmlProperty(isAttribute = true) var name: String? = null
     var documentation: String? = null
     @JacksonXmlProperty(isAttribute = true) var isExecutable: Boolean? = null
 
