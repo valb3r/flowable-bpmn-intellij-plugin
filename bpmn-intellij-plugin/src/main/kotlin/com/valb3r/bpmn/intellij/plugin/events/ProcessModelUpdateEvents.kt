@@ -221,7 +221,9 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
     }
 
     private fun hashData(data: String): String {
-        return Hashing.goodFastHash(32).hashString(data, StandardCharsets.UTF_8).toString()
+        // Normalize line endings for hashing
+        val normalizedData = data.replace("\r\n", "\n")
+        return Hashing.goodFastHash(32).hashString(normalizedData, StandardCharsets.UTF_8).toString()
     }
 
     private fun lastDeletion(elementId: BpmnElementId): Order<out Event> {
