@@ -166,7 +166,7 @@ class FlowableParser : BpmnParser {
         val os = ByteArrayOutputStream()
         parseAndWrite(doc, os, events)
 
-        return os.toString()
+        return os.toString(StandardCharsets.UTF_8.name())
     }
 
     private fun parseAndWrite(doc: Document, os: OutputStream, events: List<Event>) {
