@@ -247,12 +247,15 @@ abstract class BaseDiagramRenderElement(
 
         toUndo += viewTransform.listTransformsOfType(ExpandViewTransform::class.java)
 
-        var currentPosition = Point2D.Float(elemX + dx, elemY + dy)
         var startPosition = Point2D.Float(elemX, elemY)
         toUndo.forEach {
-            currentPosition = it.undoTransform(elementId, Point2D.Float(currentPosition.x, currentPosition.y))
-            startPosition = it.undoTransform(elementId, Point2D.Float(startPosition.x, startPosition.y))
+            startPosition = it.transform(elementId, Point2D.Float(startPosition.x, startPosition.y))
         }
-        return Point2D.Float(currentPosition.x - startPosition.x, currentPosition.y - startPosition.y)
+        var currentPosition = Point2D.Float(startPosition.x + dx, startPosition.y + dy)
+        toUndo.forEach {
+            currentPosition = it.undoTransform(elementId, Point2D.Float(currentPosition.x, currentPosition.y))
+        }
+
+        return Point2D.Float(currentPosition.x - elemX, currentPosition.y - elemY)
     }
 }
