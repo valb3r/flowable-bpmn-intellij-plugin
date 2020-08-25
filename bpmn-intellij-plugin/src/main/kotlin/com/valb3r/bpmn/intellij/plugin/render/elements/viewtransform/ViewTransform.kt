@@ -151,10 +151,10 @@ class ExpandViewTransform(
             point.x < cx && abs(point.y - cy) < EPSILON -> Point2D.Float(point.x - dx, point.y)
             point.x > cx && abs(point.y - cy) < EPSILON -> Point2D.Float(point.x + dx, point.y)
 
-            point.x < cx && point.y > cy-> Point2D.Float(point.x - dx, point.y + dy)
-            point.x > cx && point.y > cy-> Point2D.Float(point.x + dx, point.y + dy)
-            point.x < cx && point.y < cy-> Point2D.Float(point.x - dx, point.y - dy)
-            point.x > cx && point.y < cy-> Point2D.Float(point.x + dx, point.y - dy)
+            point.x < cx && point.y > cy -> Point2D.Float(point.x - dx, point.y + dy)
+            point.x > cx && point.y > cy -> Point2D.Float(point.x + dx, point.y + dy)
+            point.x < cx && point.y < cy -> Point2D.Float(point.x - dx, point.y - dy)
+            point.x > cx && point.y < cy -> Point2D.Float(point.x + dx, point.y - dy)
 
             else -> throw IllegalStateException("Unexpected point value: $point for $cx,$cy expand view")
         }
@@ -170,10 +170,11 @@ class ExpandViewTransform(
             point.x < cx && abs(point.y - cy) < EPSILON -> Point2D.Float(point.x + dx, point.y)
             point.x > cx && abs(point.y - cy) < EPSILON -> Point2D.Float(point.x - dx, point.y)
 
-            point.x < cx && point.y > cy-> Point2D.Float(point.x + dx, point.y - dy)
-            point.x > cx && point.y > cy-> Point2D.Float(point.x - dx, point.y - dy)
-            point.x < cx && point.y < cy-> Point2D.Float(point.x + dx, point.y + dy)
-            point.x > cx && point.y < cy-> Point2D.Float(point.x - dx, point.y + dy)
+            // deal with reversible points
+            point.x < cx && point.y > cy -> Point2D.Float(point.x + dx, point.y - dy)
+            point.x > cx && point.y > cy -> Point2D.Float(point.x - dx, point.y - dy)
+            point.x < cx && point.y < cy -> Point2D.Float(point.x + dx, point.y + dy)
+            point.x > cx && point.y < cy -> Point2D.Float(point.x - dx, point.y + dy)
 
             else -> throw IllegalStateException("Unexpected point value: $point for $cx,$cy expand view")
         }
