@@ -98,6 +98,7 @@ data class ResizeViewTransform(
 }
 
 class ExpandViewTransform(
+        private val expandedElementId: DiagramElementId,
         private val cx: Float,
         private val cy: Float,
         private val dx: Float,
@@ -113,8 +114,13 @@ class ExpandViewTransform(
         }
 
         val topLeft = transformPoint(Point2D.Float(transformed.x, transformed.y))
-        val bottomRight = transformPoint(Point2D.Float(transformed.x + transformed.width, transformed.y + transformed.height))
-        return Rectangle2D.Float(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y)
+
+        if (elementId == expandedElementId) {
+            val bottomRight = transformPoint(Point2D.Float(transformed.x + transformed.width, transformed.y + transformed.height))
+            return Rectangle2D.Float(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y)
+        }
+
+        return Rectangle2D.Float(topLeft.x, topLeft.y, rect.width, rect.height)
     }
 
     override fun transform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
