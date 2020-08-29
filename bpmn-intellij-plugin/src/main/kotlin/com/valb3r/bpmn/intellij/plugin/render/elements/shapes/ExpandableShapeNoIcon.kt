@@ -81,6 +81,7 @@ class ExpandableShapeNoIcon(
 
         state.baseTransform.addPreTransform(ExpandViewTransform(
                 elementId,
+                shape.rectBounds(),
                 shape.rectBounds().centerX.toFloat(),
                 shape.rectBounds().centerY.toFloat(),
                 100.0f,

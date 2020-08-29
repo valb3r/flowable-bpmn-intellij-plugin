@@ -99,6 +99,7 @@ data class ResizeViewTransform(
 
 class ExpandViewTransform(
         private val expandedElementId: DiagramElementId,
+        private val shape: Rectangle2D.Float,
         private val cx: Float,
         private val cy: Float,
         private val dx: Float,
@@ -113,14 +114,18 @@ class ExpandViewTransform(
              return transformed
         }
 
-        val topLeft = transformPoint(Point2D.Float(transformed.x, transformed.y))
+        val halfWidth = transformed.width / 2.0f
+        val halfHeight = transformed.height / 2.0f
+
+        val center = transformPoint(Point2D.Float(transformed.x + halfWidth, transformed.y  + halfHeight))
 
         if (elementId == expandedElementId) {
-            val bottomRight = transformPoint(Point2D.Float(transformed.x + transformed.width, transformed.y + transformed.height))
-            return Rectangle2D.Float(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y)
+            val left = transformPoint(Point2D.Float(transformed.x, transformed.y))
+            val right = transformPoint(Point2D.Float(transformed.x + rect.width, transformed.y  + rect.height))
+            return Rectangle2D.Float(left.x, left.y, right.x - left.x, right.y - left.y)
         }
 
-        return Rectangle2D.Float(topLeft.x, topLeft.y, rect.width, rect.height)
+        return Rectangle2D.Float(center.x - halfWidth, center.y - halfHeight, rect.width, rect.height)
     }
 
     override fun transform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
@@ -146,15 +151,35 @@ class ExpandViewTransform(
         return when {
             abs(point.x - cx) < EPSILON && abs(point.y - cy) < EPSILON -> point
 
-            abs(point.x - cx) < EPSILON && point.y > cy -> Point2D.Float(point.x, point.y + dy)
-            abs(point.x - cx) < EPSILON && point.y < cy -> Point2D.Float(point.x, point.y - dy)
-            point.x < cx && abs(point.y - cy) < EPSILON -> Point2D.Float(point.x - dx, point.y)
-            point.x > cx && abs(point.y - cy) < EPSILON -> Point2D.Float(point.x + dx, point.y)
+            // rectangle edges:
+            // top-left
+            abs(point.x - shape.x) < EPSILON && abs(point.y - shape.y) < EPSILON -> Point2D.Float(point.x - dx, point.y - dy)
+            // bottom-left
+            abs(point.x - shape.x) < EPSILON && abs(point.y - shape.y - shape.height) < EPSILON -> Point2D.Float(point.x - dx, point.y + dy)
+            // top-right
+            abs(point.x - shape.x - shape.width) < EPSILON && abs(point.y - shape.y) < EPSILON -> Point2D.Float(point.x + dx, point.y - dy)
+            // bottom-right
+            abs(point.x - shape.x - shape.width) < EPSILON && abs(point.y - shape.y - shape.height) < EPSILON -> Point2D.Float(point.x + dx, point.y + dy)
 
-            point.x < cx && point.y > cy -> Point2D.Float(point.x - dx, point.y + dy)
-            point.x > cx && point.y > cy -> Point2D.Float(point.x + dx, point.y + dy)
+            // rectangle forming lines cases:
+            // top-line
+            point.y <= shape.y && shape.x <= point.x && shape.x + shape.width >= point.x -> Point2D.Float(point.x, point.y - dy)
+            // bottom-line
+            point.y >= shape.y + shape.height && shape.x <= point.x && shape.x + shape.width >= point.x -> Point2D.Float(point.x, point.y + dy)
+            // left-line
+            point.x <= shape.x && shape.y <= point.y && shape.y + shape.width >= point.y -> Point2D.Float(point.x - dx, point.y)
+            // right-line
+            point.x >= shape.x + shape.width && shape.y <= point.y && shape.y + shape.width >= point.y -> Point2D.Float(point.x + dx, point.y)
+
+            // quarters, if can be simplified as edge cases are already handled
+            // top-left
             point.x < cx && point.y < cy -> Point2D.Float(point.x - dx, point.y - dy)
+            // top-right
             point.x > cx && point.y < cy -> Point2D.Float(point.x + dx, point.y - dy)
+            // bottom-left
+            point.x < cx && point.y > cy -> Point2D.Float(point.x - dx, point.y + dy)
+            // bottom-right
+            point.x > cx && point.y > cy -> Point2D.Float(point.x + dx, point.y + dy)
 
             else -> throw IllegalStateException("Unexpected point value: $point for $cx,$cy expand view")
         }
@@ -165,16 +190,35 @@ class ExpandViewTransform(
         return when {
             abs(point.x - cx) < EPSILON && abs(point.y - cy) < EPSILON -> point
 
-            abs(point.x - cx) < EPSILON && point.y > cy -> Point2D.Float(point.x, point.y - dy)
-            abs(point.x - cx) < EPSILON && point.y < cy -> Point2D.Float(point.x, point.y + dy)
-            point.x < cx && abs(point.y - cy) < EPSILON -> Point2D.Float(point.x + dx, point.y)
-            point.x > cx && abs(point.y - cy) < EPSILON -> Point2D.Float(point.x - dx, point.y)
+            // rectangle edges:
+            // top-left
+            abs(point.x - shape.x) < EPSILON && abs(point.y - shape.y) < EPSILON -> Point2D.Float(point.x + dx, point.y + dy)
+            // bottom-left
+            abs(point.x - shape.x) < EPSILON && abs(point.y - shape.y - shape.height) < EPSILON -> Point2D.Float(point.x + dx, point.y - dy)
+            // top-right
+            abs(point.x - shape.x - shape.width) < EPSILON && abs(point.y - shape.y) < EPSILON -> Point2D.Float(point.x - dx, point.y + dy)
+            // bottom-right
+            abs(point.x - shape.x - shape.width) < EPSILON && abs(point.y - shape.y - shape.height) < EPSILON -> Point2D.Float(point.x - dx, point.y - dy)
 
-            // deal with reversible points
-            point.x < cx && point.y > cy -> Point2D.Float(point.x + dx, point.y - dy)
-            point.x > cx && point.y > cy -> Point2D.Float(point.x - dx, point.y - dy)
+            // rectangle forming lines cases:
+            // top-line
+            point.y <= shape.y && shape.x <= point.x && shape.x + shape.width >= point.x -> Point2D.Float(point.x, point.y + dy)
+            // bottom-line
+            point.y >= shape.y + shape.height && shape.x <= point.x && shape.x + shape.width >= point.x -> Point2D.Float(point.x, point.y - dy)
+            // left-line
+            point.x <= shape.x && shape.y <= point.y && shape.y + shape.width >= point.y -> Point2D.Float(point.x + dx, point.y)
+            // right-line
+            point.x >= shape.x + shape.width && shape.y <= point.y && shape.y + shape.width >= point.y -> Point2D.Float(point.x - dx, point.y)
+
+            // quarters, if can be simplified as edge cases are already handled
+            // top-left
             point.x < cx && point.y < cy -> Point2D.Float(point.x + dx, point.y + dy)
+            // top-right
             point.x > cx && point.y < cy -> Point2D.Float(point.x - dx, point.y + dy)
+            // bottom-left
+            point.x < cx && point.y > cy -> Point2D.Float(point.x + dx, point.y - dy)
+            // bottom-right
+            point.x > cx && point.y > cy -> Point2D.Float(point.x - dx, point.y - dy)
 
             else -> throw IllegalStateException("Unexpected point value: $point for $cx,$cy expand view")
         }
