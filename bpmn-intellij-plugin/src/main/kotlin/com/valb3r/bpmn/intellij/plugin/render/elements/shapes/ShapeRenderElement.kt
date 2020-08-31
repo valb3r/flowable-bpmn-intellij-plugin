@@ -102,7 +102,7 @@ abstract class ShapeRenderElement(
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         val events = mutableListOf<Event>()
-        val compensatedDelta = compensateExpandViewTransformForDragDelta(shape.rectBounds().x, shape.rectBounds().y, dx, dy)
+        val compensatedDelta = compensateExpandViewTransformForDragDelta(shape.rectBounds(), dx, dy)
         events += DraggedToEvent(elementId, compensatedDelta.x, compensatedDelta.y, null, null)
         val cascadeTargets = cascadeTo.filter { target -> target.cascadeSource == shape.bpmnElement } // TODO check if this comparison is still needed
         events += cascadeTargets

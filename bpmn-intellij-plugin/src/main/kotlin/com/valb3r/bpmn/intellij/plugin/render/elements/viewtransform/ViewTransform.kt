@@ -137,6 +137,19 @@ class ExpandViewTransform(
         return transformPoint(transformed)
     }
 
+    fun undoTransform(elementId: DiagramElementId, rect: Rectangle2D.Float): Rectangle2D.Float {
+        val transformed = preTransform(elementId, rect)
+        if (excludeIds.contains(elementId)) {
+            return transformed
+        }
+
+        val halfWidth = transformed.width / 2.0f
+        val halfHeight = transformed.height / 2.0f
+
+        val center = undoTransform(elementId, Point2D.Float(transformed.x + halfWidth, transformed.y  + halfHeight))
+        return Rectangle2D.Float(center.x - halfWidth, center.y - halfHeight, rect.width, rect.height)
+    }
+
     fun undoTransform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
         val transformed = preTransform(elementId, point)
         if (excludeIds.contains(elementId)) {
@@ -173,13 +186,13 @@ class ExpandViewTransform(
 
             // quarters, if can be simplified as edge cases are already handled
             // top-left
-            point.x < cx && point.y < cy -> Point2D.Float(point.x - dx, point.y - dy)
+            point.x <= cx && point.y <= cy -> Point2D.Float(point.x - dx, point.y - dy)
             // top-right
-            point.x > cx && point.y < cy -> Point2D.Float(point.x + dx, point.y - dy)
+            point.x >= cx && point.y <= cy -> Point2D.Float(point.x + dx, point.y - dy)
             // bottom-left
-            point.x < cx && point.y > cy -> Point2D.Float(point.x - dx, point.y + dy)
+            point.x <= cx && point.y >= cy -> Point2D.Float(point.x - dx, point.y + dy)
             // bottom-right
-            point.x > cx && point.y > cy -> Point2D.Float(point.x + dx, point.y + dy)
+            point.x >= cx && point.y >= cy -> Point2D.Float(point.x + dx, point.y + dy)
 
             else -> throw IllegalStateException("Unexpected point value: $point for $cx,$cy expand view")
         }
@@ -212,13 +225,13 @@ class ExpandViewTransform(
 
             // quarters, if can be simplified as edge cases are already handled
             // top-left
-            point.x < cx && point.y < cy -> Point2D.Float(point.x + dx, point.y + dy)
+            point.x <= cx && point.y <= cy -> Point2D.Float(point.x + dx, point.y + dy)
             // top-right
-            point.x > cx && point.y < cy -> Point2D.Float(point.x - dx, point.y + dy)
+            point.x >= cx && point.y <= cy -> Point2D.Float(point.x - dx, point.y + dy)
             // bottom-left
-            point.x < cx && point.y > cy -> Point2D.Float(point.x + dx, point.y - dy)
+            point.x <= cx && point.y >= cy -> Point2D.Float(point.x + dx, point.y - dy)
             // bottom-right
-            point.x > cx && point.y > cy -> Point2D.Float(point.x - dx, point.y - dy)
+            point.x >= cx && point.y >= cy -> Point2D.Float(point.x - dx, point.y - dy)
 
             else -> throw IllegalStateException("Unexpected point value: $point for $cx,$cy expand view")
         }

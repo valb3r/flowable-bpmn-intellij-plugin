@@ -258,4 +258,25 @@ abstract class BaseDiagramRenderElement(
 
         return Point2D.Float(currentPosition.x - elemX, currentPosition.y - elemY)
     }
+
+    protected open fun compensateExpandViewTransformForDragDelta(shape: Rectangle2D.Float, dx: Float, dy: Float): Point2D.Float {
+        val toUndo = mutableListOf<ExpandViewTransform>()
+        val transform = viewTransform
+        if (transform is ExpandViewTransform) {
+            toUndo += transform
+        }
+
+        toUndo += viewTransform.listTransformsOfType(ExpandViewTransform::class.java)
+
+        var startShape = shape
+        toUndo.forEach {
+            startShape = it.transform(elementId, shape)
+        }
+        var currentShape = Rectangle2D.Float(startShape.x + dx, startShape.y + dy, startShape.width, startShape.height)
+        toUndo.forEach {
+            currentShape = it.undoTransform(elementId, currentShape)
+        }
+
+        return Point2D.Float(currentShape.x - shape.x, currentShape.y - shape.y)
+    }
 }
