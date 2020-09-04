@@ -223,7 +223,7 @@ class ExpandViewTransform(
         val centroid = Line2D.Float(shapeCenter, point)
 
 
-        val intersectionsOnInnerLineByTandUbest = mutableListOf<RectanglesIntersection>()
+        val intersectionsOnInnerLineByTandUbest = mutableListOf<CentroidWithRectanglesIntersection>()
         fun tCloseness(t: Float): Float {
             if (t < 0.0f) {
                 return abs(t - 10.0f)
@@ -241,7 +241,7 @@ class ExpandViewTransform(
             val tValue = computeIntersections(line, centroid)
             val uValue = computeIntersections(centroid, line)
             // using uValue as the metric, because it has better bounds - never can be 0.0 and almost never 1.0
-            intersectionsOnInnerLineByTandUbest += RectanglesIntersection(expandedLine, line, tValue, max(tCloseness(tValue), tCloseness(uValue)))
+            intersectionsOnInnerLineByTandUbest += CentroidWithRectanglesIntersection(expandedLine, line, tValue, max(tCloseness(tValue), tCloseness(uValue)))
         }
 
         val bestIntersection = intersectionsOnInnerLineByTandUbest.minBy { it.metric }!!
@@ -266,5 +266,5 @@ class ExpandViewTransform(
         return ((lineOne.x1 - lineTwo.x1) * dLineTwoY - (lineOne.y1 - lineTwo.y1) * dLineTwoX) / ((lineOne.x1 - lineOne.x2) * dLineTwoY - (lineOne.y1 - lineOne.y2) * dLineTwoX)
     }
 
-    private data class RectanglesIntersection(val expandedLine: Line2D.Float, val originalLine: Line2D.Float, val tValueOnOriginal: Float, val metric: Float)
+    private data class CentroidWithRectanglesIntersection(val expandedLine: Line2D.Float, val originalLine: Line2D.Float, val tValueOnOriginal: Float, val metric: Float)
 }
