@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.render.elements.EPSILON
 import java.awt.geom.Line2D
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -130,19 +131,6 @@ class ExpandViewTransform(
         return transformPoint(transformed)
     }
 
-    fun undoTransform(elementId: DiagramElementId, rect: Rectangle2D.Float): Rectangle2D.Float {
-        val transformed = preTransform(elementId, rect)
-        if (excludeIds.contains(elementId)) {
-            return rect
-        }
-
-        val halfWidth = transformed.width / 2.0f
-        val halfHeight = transformed.height / 2.0f
-
-        val center = undoTransform(elementId, Point2D.Float(transformed.x + halfWidth, transformed.y  + halfHeight))
-        return Rectangle2D.Float(center.x - halfWidth, transformed.y - halfHeight, transformed.width, rect.height)
-    }
-
     fun undoTransform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
         if (excludeIds.contains(elementId)) {
             return point
@@ -153,54 +141,45 @@ class ExpandViewTransform(
 
     private fun transformPoint(point: Point2D.Float): Point2D.Float {
         // assuming left-right, top-down coordinate system
-        val displacement = computeDisplacementVector(point)
-        return Point2D.Float(
-                point.x + displacement.x,
-                point.y + displacement.y
-        )
+        return when {
+            abs(point.x - cx) < EPSILON && abs(point.y - cy) < EPSILON -> point
+
+            // rectangle edges:
+            // top-left
+            abs(point.x - shape.x) < EPSILON && abs(point.y - shape.y) < EPSILON -> Point2D.Float(point.x - dx, point.y - dy)
+            // bottom-left
+            abs(point.x - shape.x) < EPSILON && abs(point.y - shape.y - shape.height) < EPSILON -> Point2D.Float(point.x - dx, point.y + dy)
+            // top-right
+            abs(point.x - shape.x - shape.width) < EPSILON && abs(point.y - shape.y) < EPSILON -> Point2D.Float(point.x + dx, point.y - dy)
+            // bottom-right
+            abs(point.x - shape.x - shape.width) < EPSILON && abs(point.y - shape.y - shape.height) < EPSILON -> Point2D.Float(point.x + dx, point.y + dy)
+
+            // rectangle forming lines cases:
+            // top-line
+            point.y <= shape.y && shape.x <= point.x && shape.x + shape.width >= point.x -> Point2D.Float(point.x, point.y - dy)
+            // bottom-line
+            point.y >= shape.y + shape.height && shape.x <= point.x && shape.x + shape.width >= point.x -> Point2D.Float(point.x, point.y + dy)
+            // left-line
+            point.x <= shape.x && shape.y <= point.y && shape.y + shape.width >= point.y -> Point2D.Float(point.x - dx, point.y)
+            // right-line
+            point.x >= shape.x + shape.width && shape.y <= point.y && shape.y + shape.width >= point.y -> Point2D.Float(point.x + dx, point.y)
+
+            // quarters, if can be simplified as edge cases are already handled
+            // top-left
+            point.x <= cx && point.y <= cy -> Point2D.Float(point.x - dx, point.y - dy)
+            // top-right
+            point.x >= cx && point.y <= cy -> Point2D.Float(point.x + dx, point.y - dy)
+            // bottom-left
+            point.x <= cx && point.y >= cy -> Point2D.Float(point.x - dx, point.y + dy)
+            // bottom-right
+            point.x >= cx && point.y >= cy -> Point2D.Float(point.x + dx, point.y + dy)
+
+            else -> throw IllegalStateException("Unexpected point value: $point for $cx,$cy expand view")
+        }
     }
 
     private fun undoTransformPoint(point: Point2D.Float): Point2D.Float {
-        // assuming left-right, top-down coordinate system
-        val displacement = computeInvertedDisplacementVector(point)
-        return Point2D.Float(
-                point.x + displacement.x,
-                point.y + displacement.y
-        )
-    }
-
-    private fun computeDisplacementVector(point: Point2D.Float): Point2D.Float {
-        val shapePoints = shapePoints()
-        val expandedShapePoints = expandedShapePoints()
-
-        return computeDisplacementVector(point, shapePoints, expandedShapePoints)
-    }
-
-    private fun computeInvertedDisplacementVector(point: Point2D.Float): Point2D.Float {
-        val shapePoints = shapePoints()
-        val expandedShapePoints = expandedShapePoints()
-
-        val invertedDisplacement = computeDisplacementVector(point, expandedShapePoints, shapePoints)
-        return Point2D.Float(invertedDisplacement.x, invertedDisplacement.y)
-    }
-
-    private fun expandedShapePoints(): List<Point2D.Float> {
-        return listOf(
-                Point2D.Float(shape.x - dx, shape.y - dy),
-                Point2D.Float(shape.x + shape.width + dx, shape.y - dy),
-                Point2D.Float(shape.x + shape.width + dx, shape.y + shape.height + dy),
-                Point2D.Float(shape.x - dx, shape.y + shape.height + dy)
-        )
-    }
-
-    private fun shapePoints(): List<Point2D.Float> {
-        val shapePoints = listOf(
-                Point2D.Float(shape.x, shape.y),
-                Point2D.Float(shape.x + shape.width, shape.y),
-                Point2D.Float(shape.x + shape.width, shape.y + shape.height),
-                Point2D.Float(shape.x, shape.y + shape.height)
-        )
-        return shapePoints
+        return Point2D.Float()
     }
 
     /**
