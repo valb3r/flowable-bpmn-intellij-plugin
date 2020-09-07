@@ -22,27 +22,11 @@ interface ViewTransform: PreTransformable {
 class PreTransformHandler(private val preTransforms: MutableList<ViewTransform> = mutableListOf()): PreTransformable {
 
     override fun preTransform(elementId: DiagramElementId, rect: Rectangle2D.Float): Rectangle2D.Float {
-        val delta = Point2D.Float()
-        val deltaSize = Point2D.Float()
-        for (transform in preTransforms) {
-            val transformed = transform.transform(elementId, rect)
-            delta.x += transformed.x - rect.x
-            delta.y += transformed.y - rect.y
-            deltaSize.x += transformed.width - rect.width
-            deltaSize.y += transformed.height - rect.height
-        }
-
-        return Rectangle2D.Float(rect.x + delta.x, rect.y + delta.y, rect.width + deltaSize.x, rect.height +  deltaSize.y)
+        return ViewTransformBatch(preTransforms).transform(elementId, rect)
     }
 
     override fun preTransform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
-        val delta = Point2D.Float()
-        for (transform in preTransforms) {
-            val transformed = transform.transform(elementId, point)
-            delta.x += transformed.x - point.x
-            delta.y += transformed.y - point.y
-        }
-        return Point2D.Float(point.x + delta.x, point.y + delta.y)
+        return ViewTransformBatch(preTransforms).transform(elementId, point)
     }
 
     override fun addPreTransform(viewTransform: ViewTransform) {
@@ -273,4 +257,84 @@ class ExpandViewTransform(
     }
 
     private data class CentroidWithRectanglesIntersection(val expandedLine: Line2D.Float, val originalLine: Line2D.Float, val tValueOnOriginal: Float, val metric: Float)
+}
+class ViewTransformBatch(private val transforms: List<ViewTransform>) {
+
+    fun transform(elementId: DiagramElementId, rect: Rectangle2D.Float): Rectangle2D.Float {
+        val delta = Point2D.Float()
+        val deltaSize = Point2D.Float()
+        for (transform in transforms) {
+            val transformed = transform.transform(elementId, rect)
+            delta.x += transformed.x - rect.x
+            delta.y += transformed.y - rect.y
+            deltaSize.x += transformed.width - rect.width
+            deltaSize.y += transformed.height - rect.height
+        }
+
+        return Rectangle2D.Float(rect.x + delta.x, rect.y + delta.y, rect.width + deltaSize.x, rect.height +  deltaSize.y)
+    }
+
+    fun transform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
+        val delta = Point2D.Float()
+        for (transform in transforms) {
+            val transformed = transform.transform(elementId, point)
+            delta.x += transformed.x - point.x
+            delta.y += transformed.y - point.y
+        }
+        return Point2D.Float(point.x + delta.x, point.y + delta.y)
+    }
+}
+
+class ViewTransformInverter {
+    private val initialStepSize = 1.0f
+    private val successMultiplier = 2.0f
+    private val failMultiplier = 10.0f
+    private val diffStep = 1.0f
+    private val epsilon = 1.0f
+    private val maxIter = 10
+
+    /**
+     * Minimizes (rect.x - transform(return.x)) ^ 2 + (rect.y - transform(return.y)) ^ 2 metric
+     * shape changes are ignored so far
+     */
+    fun invert(elementId: DiagramElementId, rect: Rectangle2D.Float, batch: ViewTransformBatch): Rectangle2D.Float {
+        return minimizeGradientDescent(elementId, rect, batch)
+    }
+
+    private fun minimizeGradientDescent(elementId: DiagramElementId, target: Rectangle2D.Float, batch: ViewTransformBatch): Rectangle2D.Float {
+        var currentX = target.x
+        var currentY = target.y
+
+        var stepSize = initialStepSize
+        var residual = metric(elementId, target, batch, currentX, currentY)
+        for (i in 0..maxIter) {
+            if (residual < epsilon) {
+                break
+            }
+
+            val dx = (metric(elementId, target, batch, currentX + diffStep, currentY) - residual) / diffStep
+            val dy = (metric(elementId, target, batch, currentX, currentY + diffStep) - residual) / diffStep
+
+            val newX = currentX - dx * stepSize
+            val newY = currentY - dy * stepSize
+            val newResidual = metric(elementId, target, batch, newX, newY)
+            if (newResidual < residual) {
+                currentX = newX
+                currentY = newY
+                stepSize *= successMultiplier
+                residual = newResidual
+            } else {
+                stepSize /= failMultiplier
+            }
+        }
+
+        return Rectangle2D.Float(currentX, currentY, target.width, target.height)
+    }
+
+    private fun metric(elementId: DiagramElementId, target: Rectangle2D.Float, batch: ViewTransformBatch, currentX: Float, currentY: Float): Float {
+        val transformed = batch.transform(elementId, Rectangle2D.Float(currentX, currentY, target.width, target.height))
+        val dx = (target.x - transformed.x)
+        val dy = (target.y - transformed.y)
+        return dx * dx + dy * dy
+    }
 }

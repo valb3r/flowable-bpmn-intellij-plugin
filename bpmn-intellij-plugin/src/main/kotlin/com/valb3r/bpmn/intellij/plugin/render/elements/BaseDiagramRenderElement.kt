@@ -10,10 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.render.ANCHOR_Z_INDEX
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.DragViewTransform
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ExpandViewTransform
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.PreTransformHandler
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ViewTransform
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.*
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.geom.Point2D
@@ -268,8 +265,8 @@ abstract class BaseDiagramRenderElement(
 
         toUndo += viewTransform.listTransformsOfType(ExpandViewTransform::class.java)
 
-        var positionDelta = Point2D.Float()
-        var sizeDelta = Point2D.Float()
+        val positionDelta = Point2D.Float()
+        val sizeDelta = Point2D.Float()
         toUndo.forEach {
             val transformed = it.transform(elementId, shape)
             positionDelta.x = transformed.x - shape.x
@@ -279,15 +276,8 @@ abstract class BaseDiagramRenderElement(
         }
 
         val currentShape = Rectangle2D.Float(shape.x + positionDelta.x + dx, shape.y + positionDelta.y + dy, shape.width + sizeDelta.x, shape.height + sizeDelta.y)
+        val inverted = ViewTransformInverter().invert(elementId, currentShape, ViewTransformBatch(toUndo))
 
-        positionDelta = Point2D.Float()
-        sizeDelta = Point2D.Float()
-        toUndo.forEach {
-            val transformed = it.undoTransform(elementId, currentShape)
-            positionDelta.x = transformed.x - currentShape.x
-            positionDelta.y = transformed.y - currentShape.y
-        }
-
-        return Point2D.Float(currentShape.x + positionDelta.x - shape.x, currentShape.y + positionDelta.y - shape.y)
+        return Point2D.Float(inverted.x - shape.x, inverted.y - shape.y)
     }
 }
