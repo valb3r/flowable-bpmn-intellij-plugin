@@ -20,7 +20,7 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import kotlin.math.abs
 
-val EPSILON = 0.1f
+const val EPSILON = 0.1f
 private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
 const val ACTIONS_ICO_SIZE = 15f
 private const val actionsMargin = 5f

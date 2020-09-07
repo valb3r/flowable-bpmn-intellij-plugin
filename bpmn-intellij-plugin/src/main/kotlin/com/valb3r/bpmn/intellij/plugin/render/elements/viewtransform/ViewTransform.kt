@@ -22,19 +22,27 @@ interface ViewTransform: PreTransformable {
 class PreTransformHandler(private val preTransforms: MutableList<ViewTransform> = mutableListOf()): PreTransformable {
 
     override fun preTransform(elementId: DiagramElementId, rect: Rectangle2D.Float): Rectangle2D.Float {
-        var curr = rect
+        val delta = Point2D.Float()
+        val deltaSize = Point2D.Float()
         for (transform in preTransforms) {
-            curr = transform.transform(elementId, curr)
+            val transformed = transform.transform(elementId, rect)
+            delta.x += transformed.x - rect.x
+            delta.y += transformed.y - rect.y
+            deltaSize.x += transformed.width - rect.width
+            deltaSize.y += transformed.height - rect.height
         }
-        return curr
+
+        return Rectangle2D.Float(rect.x + delta.x, rect.y + delta.y, rect.width + deltaSize.x, rect.height +  deltaSize.y)
     }
 
     override fun preTransform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
-        var curr = point
+        val delta = Point2D.Float()
         for (transform in preTransforms) {
-            curr = transform.transform(elementId, curr)
+            val transformed = transform.transform(elementId, point)
+            delta.x += transformed.x - point.x
+            delta.y += transformed.y - point.y
         }
-        return curr
+        return Point2D.Float(point.x + delta.x, point.y + delta.y)
     }
 
     override fun addPreTransform(viewTransform: ViewTransform) {
@@ -192,13 +200,12 @@ class ExpandViewTransform(
     }
 
     private fun expandedShapePoints(): List<Point2D.Float> {
-        val expandedShapePoints = listOf(
+        return listOf(
                 Point2D.Float(shape.x - dx, shape.y - dy),
                 Point2D.Float(shape.x + shape.width + dx, shape.y - dy),
                 Point2D.Float(shape.x + shape.width + dx, shape.y + shape.height + dy),
                 Point2D.Float(shape.x - dx, shape.y + shape.height + dy)
         )
-        return expandedShapePoints
     }
 
     private fun shapePoints(): List<Point2D.Float> {
@@ -258,8 +265,8 @@ class ExpandViewTransform(
 
     // t-parameter value of the intersection on lineOne
     private fun computeIntersections(lineOne: Line2D.Float, lineTwo: Line2D.Float): Float {
-        val dLineTwoY = lineTwo.y1 - lineTwo.y2;
-        val dLineTwoX = lineTwo.x1 - lineTwo.x2;
+        val dLineTwoY = lineTwo.y1 - lineTwo.y2
+        val dLineTwoX = lineTwo.x1 - lineTwo.x2
 
         return ((lineOne.x1 - lineTwo.x1) * dLineTwoY - (lineOne.y1 - lineTwo.y1) * dLineTwoX) / ((lineOne.x1 - lineOne.x2) * dLineTwoY - (lineOne.y1 - lineOne.y2) * dLineTwoX)
     }
