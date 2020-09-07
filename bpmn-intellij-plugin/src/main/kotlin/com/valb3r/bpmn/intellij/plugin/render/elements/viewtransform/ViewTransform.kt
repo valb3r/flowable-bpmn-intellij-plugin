@@ -24,7 +24,7 @@ class PreTransformHandler(private val preTransforms: MutableList<ViewTransform> 
     override fun preTransform(elementId: DiagramElementId, rect: Rectangle2D.Float): Rectangle2D.Float {
         var curr = rect
         for (transform in preTransforms) {
-            curr = transform.transform(elementId, rect)
+            curr = transform.transform(elementId, curr)
         }
         return curr
     }
@@ -32,7 +32,7 @@ class PreTransformHandler(private val preTransforms: MutableList<ViewTransform> 
     override fun preTransform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
         var curr = point
         for (transform in preTransforms) {
-            curr = transform.transform(elementId, point)
+            curr = transform.transform(elementId, curr)
         }
         return curr
     }
