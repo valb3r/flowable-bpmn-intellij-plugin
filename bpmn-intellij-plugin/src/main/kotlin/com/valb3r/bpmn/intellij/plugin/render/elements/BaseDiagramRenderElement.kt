@@ -268,15 +268,26 @@ abstract class BaseDiagramRenderElement(
 
         toUndo += viewTransform.listTransformsOfType(ExpandViewTransform::class.java)
 
-        var startShape = shape
+        var positionDelta = Point2D.Float()
+        var sizeDelta = Point2D.Float()
         toUndo.forEach {
-            startShape = it.transform(elementId, shape)
-        }
-        var currentShape = Rectangle2D.Float(startShape.x + dx, startShape.y + dy, startShape.width, startShape.height)
-        toUndo.forEach {
-            currentShape = it.undoTransform(elementId, currentShape)
+            val transformed = it.transform(elementId, shape)
+            positionDelta.x = transformed.x - shape.x
+            positionDelta.y = transformed.y - shape.y
+            sizeDelta.x = shape.width - transformed.width
+            sizeDelta.y = shape.height - transformed.height
         }
 
-        return Point2D.Float(currentShape.x - shape.x, currentShape.y - shape.y)
+        val currentShape = Rectangle2D.Float(shape.x + positionDelta.x + dx, shape.y + positionDelta.y + dy, shape.width + sizeDelta.x, shape.height + sizeDelta.y)
+
+        positionDelta = Point2D.Float()
+        sizeDelta = Point2D.Float()
+        toUndo.forEach {
+            val transformed = it.undoTransform(elementId, currentShape)
+            positionDelta.x = transformed.x - currentShape.x
+            positionDelta.y = transformed.y - currentShape.y
+        }
+
+        return Point2D.Float(currentShape.x + positionDelta.x - shape.x, currentShape.y + positionDelta.y - shape.y)
     }
 }

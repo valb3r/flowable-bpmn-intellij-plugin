@@ -138,29 +138,30 @@ class ExpandViewTransform(
     }
 
     override fun transform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
+        val transformed = preTransform(elementId, point)
         if (excludeIds.contains(elementId)) {
-            return point
+            return transformed
         }
 
-        return transformPoint(point)
+        return transformPoint(transformed)
     }
 
     fun undoTransform(elementId: DiagramElementId, rect: Rectangle2D.Float): Rectangle2D.Float {
+        val transformed = preTransform(elementId, rect)
         if (excludeIds.contains(elementId)) {
             return rect
         }
 
-        val halfWidth = rect.width / 2.0f
-        val halfHeight = rect.height / 2.0f
+        val halfWidth = transformed.width / 2.0f
+        val halfHeight = transformed.height / 2.0f
 
-        val center = undoTransform(elementId, Point2D.Float(rect.x + halfWidth, rect.y  + halfHeight))
-        return Rectangle2D.Float(center.x - halfWidth, center.y - halfHeight, rect.width, rect.height)
+        val center = undoTransform(elementId, Point2D.Float(transformed.x + halfWidth, transformed.y  + halfHeight))
+        return Rectangle2D.Float(center.x - halfWidth, transformed.y - halfHeight, transformed.width, rect.height)
     }
 
     fun undoTransform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
-        val transformed = preTransform(elementId, point)
         if (excludeIds.contains(elementId)) {
-            return transformed
+            return point
         }
 
         return undoTransformPoint(point)
