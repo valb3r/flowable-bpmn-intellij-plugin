@@ -233,13 +233,13 @@ class ViewTransformInverter {
      * Minimizes (rect.x - transform(return.x)) ^ 2 + (rect.y - transform(return.y)) ^ 2 metric
      * shape changes are ignored so far
      */
-    fun invert(elementId: DiagramElementId, target: Point2D.Float, batch: ViewTransformBatch): Point2D.Float {
-        return minimizeGradientDescent(elementId, target, batch)
+    fun invert(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch): Point2D.Float {
+        return minimizeGradientDescent(elementId, target, initialGuess, batch)
     }
 
-    private fun minimizeGradientDescent(elementId: DiagramElementId, target: Point2D.Float, batch: ViewTransformBatch): Point2D.Float {
-        var currentX = target.x
-        var currentY = target.y
+    private fun minimizeGradientDescent(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch): Point2D.Float {
+        var currentX = initialGuess.x
+        var currentY = initialGuess.y
 
         var stepSize = initialStepSize
         var residual = metric(elementId, target, batch, currentX, currentY)
@@ -248,11 +248,11 @@ class ViewTransformInverter {
                 break
             }
 
-            val dx = (metric(elementId, target, batch, currentX + diffStep, currentY) - residual) / diffStep
-            val dy = (metric(elementId, target, batch, currentX, currentY + diffStep) - residual) / diffStep
+            val dMetricDx = (metric(elementId, target, batch, currentX + diffStep, currentY) - residual) / diffStep
+            val dMetricDy = (metric(elementId, target, batch, currentX, currentY + diffStep) - residual) / diffStep
 
-            val newX = currentX - dx * stepSize
-            val newY = currentY - dy * stepSize
+            val newX = currentX - dMetricDx * stepSize
+            val newY = currentY - dMetricDy * stepSize
             val newResidual = metric(elementId, target, batch, newX, newY)
             if (newResidual < residual) {
                 currentX = newX
