@@ -104,6 +104,10 @@ abstract class BaseEdgeRenderElement(
         )
     }
 
+    override fun currentRect(): Rectangle2D.Float {
+        return Rectangle2D.Float(edge.waypoint[0].x, edge.waypoint[0].y, 0.0f, 0.0f)
+    }
+
     private fun drawNameIfAvailable(waypoints: List<Point2D.Float>, color: Color) {
         val name = state.currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.NAME)?.value as String? ?: return
         val longestSegment = waypoints

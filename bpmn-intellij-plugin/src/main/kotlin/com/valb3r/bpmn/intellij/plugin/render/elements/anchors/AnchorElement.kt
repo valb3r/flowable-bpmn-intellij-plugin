@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
 
 abstract class AnchorElement(
         override val elementId: DiagramElementId,
@@ -40,6 +41,10 @@ abstract class AnchorElement(
 
     override fun doResizeWithoutChildren(dw: Float, dh: Float) {
         // NOP
+    }
+
+    override fun currentRect(): Rectangle2D.Float {
+        return Rectangle2D.Float(location.x, location.y, 0.0f, 0.0f)
     }
 
     override fun doResizeEndWithoutChildren(dw: Float, dh: Float): MutableList<Event> {

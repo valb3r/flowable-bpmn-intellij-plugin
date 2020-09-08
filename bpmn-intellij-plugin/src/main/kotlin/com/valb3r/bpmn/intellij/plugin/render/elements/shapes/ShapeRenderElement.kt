@@ -86,12 +86,13 @@ abstract class ShapeRenderElement(
     }
 
     override fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
+        val compensated = compensateDrag(dx, dy)
         // Avoid double dragging by cascade and then by children
         val emptySortedMap = linkedMapOf<BpmnElementId, AreaWithZindex>() // Quirk to create sorted map without comparable key
-        val result = doOnDragEndWithoutChildren(dx, dy, null, allDroppedOnAreas)
+        val result = doOnDragEndWithoutChildren(compensated.x, compensated.y, null, allDroppedOnAreas)
         val alreadyDraggedLocations = result.filterIsInstance<LocationUpdateWithId>().map { it.diagramElementId }.toMutableSet()
         children.forEach {
-            for (event in it.onDragEnd(dx, dy, null, emptySortedMap)) { // Children do not change parent - sortedMapOf()
+            for (event in it.onDragEnd(compensated.x, compensated.y, null, emptySortedMap)) { // Children do not change parent - sortedMapOf()
                 handleChildDrag(event, alreadyDraggedLocations, result)
             }
         }
@@ -102,11 +103,10 @@ abstract class ShapeRenderElement(
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         val events = mutableListOf<Event>()
-        val compensatedDelta = compensateExpandViewTransformForDragDelta(shape.rectBounds(), dx, dy)
-        events += DraggedToEvent(elementId, compensatedDelta.x, compensatedDelta.y, null, null)
+        events += DraggedToEvent(elementId, dx, dy, null, null)
         val cascadeTargets = cascadeTo.filter { target -> target.cascadeSource == shape.bpmnElement } // TODO check if this comparison is still needed
         events += cascadeTargets
-                .map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, compensatedDelta.x, compensatedDelta.y, cascadeTo.parentEdgeId, cascadeTo.internalId) }
+                .map { cascadeTo -> DraggedToEvent(cascadeTo.waypointId, dx, dy, cascadeTo.parentEdgeId, cascadeTo.internalId) }
 
         if (allDroppedOnAreas.isEmpty()) {
             return events
@@ -169,6 +169,10 @@ abstract class ShapeRenderElement(
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         return viewTransform.transform(elementId, shape.rectBounds())
+    }
+
+    override fun currentRect(): Rectangle2D.Float {
+        return shape.rectBounds()
     }
 
     protected open fun handlePossibleNestingTo(allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>, cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {

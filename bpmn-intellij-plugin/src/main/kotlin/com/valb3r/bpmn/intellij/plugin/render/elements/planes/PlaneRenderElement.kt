@@ -47,6 +47,10 @@ class PlaneRenderElement(
         return Rectangle2D.Float()
     }
 
+    override fun currentRect(): Rectangle2D.Float {
+        return Rectangle2D.Float()
+    }
+
     override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
         return mutableSetOf()
     }

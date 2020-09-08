@@ -90,8 +90,9 @@ abstract class BaseDiagramRenderElement(
     }
 
     open fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event>  {
-        val result = doOnDragEndWithoutChildren(dx, dy, droppedOn, allDroppedOnAreas)
-        children.forEach { result += it.onDragEnd(dx, dy, droppedOn, allDroppedOnAreas) }
+        val compensated = compensateDrag(dx, dy)
+        val result = doOnDragEndWithoutChildren(compensated.x, compensated.y, droppedOn, allDroppedOnAreas)
+        children.forEach { result += it.onDragEnd(compensated.x, compensated.y, droppedOn, allDroppedOnAreas) }
         viewTransform = state.baseTransform
         return result
     }
@@ -214,6 +215,7 @@ abstract class BaseDiagramRenderElement(
     abstract fun doResizeWithoutChildren(dw: Float, dh: Float)
     abstract fun doResizeEndWithoutChildren(dw: Float, dh: Float): MutableList<Event>
 
+    protected abstract fun currentRect(): Rectangle2D.Float
     protected abstract fun currentOnScreenRect(camera: Camera): Rectangle2D.Float
 
     protected abstract fun waypointAnchors(camera: Camera): MutableSet<Anchor>
@@ -235,28 +237,8 @@ abstract class BaseDiagramRenderElement(
         return true
     }
 
-    protected open fun compensateExpandViewTransformForDragDelta(elemX: Float, elemY: Float, dx: Float, dy: Float): Point2D.Float {
-        val toUndo = mutableListOf<ExpandViewTransform>()
-        val transform = viewTransform
-        if (transform is ExpandViewTransform) {
-            toUndo += transform
-        }
-
-        toUndo += viewTransform.listTransformsOfType(ExpandViewTransform::class.java)
-
-        var startPosition = Point2D.Float(elemX, elemY)
-        toUndo.forEach {
-            startPosition = it.transform(elementId, Point2D.Float(startPosition.x, startPosition.y))
-        }
-        var currentPosition = Point2D.Float(startPosition.x + dx, startPosition.y + dy)
-        toUndo.forEach {
-            currentPosition = it.undoTransform(elementId, Point2D.Float(currentPosition.x, currentPosition.y))
-        }
-
-        return Point2D.Float(currentPosition.x - elemX, currentPosition.y - elemY)
-    }
-
-    protected open fun compensateExpandViewTransformForDragDelta(shape: Rectangle2D.Float, dx: Float, dy: Float): Point2D.Float {
+    protected fun compensateDrag(dx: Float, dy: Float): Point2D.Float {
+        val rect = currentRect()
         val toUndo = mutableListOf<ExpandViewTransform>()
         val transform = viewTransform
         if (transform is ExpandViewTransform) {
@@ -266,10 +248,11 @@ abstract class BaseDiagramRenderElement(
         toUndo += viewTransform.listTransformsOfType(ExpandViewTransform::class.java)
         val batch = ViewTransformBatch(toUndo)
 
-        val viewTransformedShape = batch.transform(elementId, shape)
-        val currentShape = Rectangle2D.Float(viewTransformedShape.x + dx, viewTransformedShape.y + dy, viewTransformedShape.width, viewTransformedShape.height)
-        val inverted = ViewTransformInverter().invert(elementId, currentShape, batch)
+        val trackingPoint = Point2D.Float(rect.x, rect.y)
+        val viewTransformedPoint = batch.transform(elementId, trackingPoint)
+        val currentPoint = Point2D.Float(viewTransformedPoint.x + dx, viewTransformedPoint.y + dy)
+        val inverted = ViewTransformInverter().invert(elementId, currentPoint, batch)
 
-        return Point2D.Float(inverted.x - shape.x, inverted.y - shape.y)
+        return Point2D.Float(inverted.x - rect.x, inverted.y - rect.y)
     }
 }
