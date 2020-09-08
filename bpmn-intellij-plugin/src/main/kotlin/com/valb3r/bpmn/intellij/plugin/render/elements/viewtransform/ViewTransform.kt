@@ -2,11 +2,9 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.render.elements.EPSILON
-import java.awt.geom.Line2D
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import kotlin.math.abs
-import kotlin.math.max
 
 interface PreTransformable {
     fun preTransform(elementId: DiagramElementId, rect: Rectangle2D.Float): Rectangle2D.Float
@@ -132,14 +130,6 @@ class ExpandViewTransform(
         return transformPoint(transformed)
     }
 
-    fun undoTransform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
-        if (excludeIds.contains(elementId)) {
-            return point
-        }
-
-        return undoTransformPoint(point)
-    }
-
     private fun transformPoint(point: Point2D.Float): Point2D.Float {
         // assuming left-right, top-down coordinate system
         return when {
@@ -178,65 +168,6 @@ class ExpandViewTransform(
             else -> throw IllegalStateException("Unexpected point value: $point for $cx,$cy expand view")
         }
     }
-
-    private fun undoTransformPoint(point: Point2D.Float): Point2D.Float {
-        return Point2D.Float()
-    }
-
-    /**
-     * Computed displacement by interpolating original point position against original shape
-     * (intersection between shape rectangle and point-shape center line) - original, applying
-     * expansion view transform to that point (expanded) and using original-expanded as displacement vector
-     */
-    private fun computeDisplacementVector(point: Point2D.Float, shapePoints: List<Point2D.Float>, expandedShapePoints: List<Point2D.Float>): Point2D.Float {
-        val shapeCenter = Point2D.Float(shape.x + shape.width / 2.0f, shape.y + shape.height / 2.0f)
-        val centroid = Line2D.Float(shapeCenter, point)
-
-
-        val intersectionsOnInnerLineByTandUbest = mutableListOf<CentroidWithRectanglesIntersection>()
-        fun tCloseness(t: Float): Float {
-            if (t < 0.0f) {
-                return abs(t - 10.0f)
-            }
-            if (t > 1.0f) {
-                return abs(t + 10.0f)
-            }
-
-            return abs(t)
-        }
-        shapePoints.forEachIndexed { index, startPoint ->
-            val endIndex = if (index == shapePoints.size - 1) -1 else index
-            val line = Line2D.Float(startPoint, shapePoints[endIndex + 1])
-            val expandedLine = Line2D.Float(expandedShapePoints[index], expandedShapePoints[endIndex + 1])
-            val tValue = computeIntersections(line, centroid)
-            val uValue = computeIntersections(centroid, line)
-            // using uValue as the metric, because it has better bounds - never can be 0.0 and almost never 1.0
-            intersectionsOnInnerLineByTandUbest += CentroidWithRectanglesIntersection(expandedLine, line, tValue, max(tCloseness(tValue), tCloseness(uValue)))
-        }
-
-        val bestIntersection = intersectionsOnInnerLineByTandUbest.minBy { it.metric }!!
-        val expandedPointOnOuterRect = pointFromTvalue(bestIntersection.expandedLine, bestIntersection.tValueOnOriginal)
-        val intersectionPointOnInnerRect = pointFromTvalue(bestIntersection.originalLine, bestIntersection.tValueOnOriginal)
-
-        return Point2D.Float(expandedPointOnOuterRect.x - intersectionPointOnInnerRect.x, expandedPointOnOuterRect.y - intersectionPointOnInnerRect.y)
-    }
-
-    private fun pointFromTvalue(line: Line2D.Float, tValue: Float): Point2D.Float {
-        return Point2D.Float(
-                line.x1 + (line.x2 - line.x1) * tValue,
-                line.y1 + (line.y2 - line.y1) * tValue
-        )
-    }
-
-    // t-parameter value of the intersection on lineOne
-    private fun computeIntersections(lineOne: Line2D.Float, lineTwo: Line2D.Float): Float {
-        val dLineTwoY = lineTwo.y1 - lineTwo.y2
-        val dLineTwoX = lineTwo.x1 - lineTwo.x2
-
-        return ((lineOne.x1 - lineTwo.x1) * dLineTwoY - (lineOne.y1 - lineTwo.y1) * dLineTwoX) / ((lineOne.x1 - lineOne.x2) * dLineTwoY - (lineOne.y1 - lineOne.y2) * dLineTwoX)
-    }
-
-    private data class CentroidWithRectanglesIntersection(val expandedLine: Line2D.Float, val originalLine: Line2D.Float, val tValueOnOriginal: Float, val metric: Float)
 }
 
 class ViewTransformBatch(private val transforms: List<ViewTransform>) {
