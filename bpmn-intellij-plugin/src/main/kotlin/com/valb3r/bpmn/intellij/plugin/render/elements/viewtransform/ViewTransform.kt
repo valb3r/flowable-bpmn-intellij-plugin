@@ -227,7 +227,7 @@ class ViewTransformInverter {
     private val failMultiplier = 10.0f
     private val diffStep = 1.0f
     private val epsilon = 1.0f
-    private val maxIter = 10
+    private val maxIter = 20
 
     /**
      * Minimizes (rect.x - transform(return.x)) ^ 2 + (rect.y - transform(return.y)) ^ 2 metric
@@ -238,8 +238,8 @@ class ViewTransformInverter {
     }
 
     private fun minimizeGradientDescent(elementId: DiagramElementId, target: Point2D.Float, batch: ViewTransformBatch): Point2D.Float {
-        var currentX = target.x
-        var currentY = target.y
+        var currentX = target.x - 20.0f
+        var currentY = target.y - 30.0f
 
         var stepSize = initialStepSize
         var residual = metric(elementId, target, batch, currentX, currentY)

@@ -280,8 +280,9 @@ abstract class ShapeRenderElement(
 
         val newSequenceBpmn = newElementsFactory().newOutgoingSequence(elem.element)
         val anchors = findSequenceAnchors(targetArea) ?: return mutableListOf()
-        val firstAnchorCompensated = compensateExpansionViewOnLocation(anchors.first.x, anchors.first.y)
-        val secondAnchorCompensated = compensateExpansionViewOnLocation(anchors.second.x, anchors.second.y)
+        val notYetExistingDiagramId = DiagramElementId("");
+        val firstAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.first.x, anchors.first.y)
+        val secondAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.second.x, anchors.second.y)
         val newSequenceDiagram = newElementsFactory().newDiagramObject(EdgeElement::class, newSequenceBpmn)
                 .copy(waypoint = listOf(
                         WaypointElement(firstAnchorCompensated.x, firstAnchorCompensated.y),
