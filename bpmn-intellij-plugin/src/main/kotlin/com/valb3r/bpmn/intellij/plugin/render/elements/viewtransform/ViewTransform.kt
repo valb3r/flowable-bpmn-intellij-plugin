@@ -238,8 +238,8 @@ class ViewTransformInverter {
     }
 
     private fun minimizeGradientDescent(elementId: DiagramElementId, target: Point2D.Float, batch: ViewTransformBatch): Point2D.Float {
-        var currentX = target.x - 20.0f
-        var currentY = target.y - 30.0f
+        var currentX = target.x
+        var currentY = target.y
 
         var stepSize = initialStepSize
         var residual = metric(elementId, target, batch, currentX, currentY)
