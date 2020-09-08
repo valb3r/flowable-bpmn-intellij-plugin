@@ -21,7 +21,7 @@ interface ViewTransform: PreTransformable {
 class PreTransformHandler(private val preTransforms: MutableList<ViewTransform> = mutableListOf()): PreTransformable {
 
     override fun preTransform(elementId: DiagramElementId, rect: Rectangle2D.Float): Rectangle2D.Float {
-        val transformed = ViewTransformBatch(preTransforms).transform(elementId, Point2D.Float(rect.x, rect.y))
+        val transformed = ViewTransformBatch(preTransforms).transform(elementId, rect)
         return Rectangle2D.Float(transformed.x, transformed.y, rect.width, rect.height)
     }
 
@@ -101,10 +101,14 @@ class ExpandViewTransform(
         private val preTransform: PreTransformHandler = PreTransformHandler()
 ): ViewTransform, PreTransformable by preTransform {
 
+    private val quirkEpsilon = 1.0f
+    private val quirkForRectangles = mutableMapOf<DiagramElementId, RectangleQuirk>()
+
     override fun transform(elementId: DiagramElementId, rect: Rectangle2D.Float): Rectangle2D.Float {
         val transformed = preTransform(elementId, rect)
         if (excludeIds.contains(elementId)) {
-             return transformed
+            fillRectangleQuirk(elementId, rect, Point2D.Float())
+            return transformed
         }
 
         val halfWidth = transformed.width / 2.0f
@@ -112,6 +116,7 @@ class ExpandViewTransform(
 
         val center = transformPoint(Point2D.Float(transformed.x + halfWidth, transformed.y  + halfHeight))
 
+        fillRectangleQuirk(elementId, rect, Point2D.Float(center.x - transformed.x - halfWidth, center.y - transformed.y - halfHeight))
         if (elementId == expandedElementId) {
             val left = transformPoint(Point2D.Float(transformed.x, transformed.y))
             val right = transformPoint(Point2D.Float(transformed.x + rect.width, transformed.y  + rect.height))
@@ -121,10 +126,31 @@ class ExpandViewTransform(
         return Rectangle2D.Float(center.x - halfWidth, center.y - halfHeight, rect.width, rect.height)
     }
 
+    private fun fillRectangleQuirk(elementId: DiagramElementId, rect: Rectangle2D.Float, delta: Point2D.Float) {
+        quirkForRectangles[elementId] = RectangleQuirk(
+                Rectangle2D.Float(
+                        rect.x - quirkEpsilon,
+                        rect.y - quirkEpsilon,
+                        rect.width + quirkEpsilon,
+                        rect.height + quirkEpsilon
+                ),
+                delta
+        )
+    }
+
     override fun transform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
         val transformed = preTransform(elementId, point)
         if (excludeIds.contains(elementId)) {
             return transformed
+        }
+
+        if (quirkForRectangles.containsKey(elementId)) {
+            return transformPoint(transformed)
+        }
+
+        val quirkFound = quirkForRectangles.values.firstOrNull { it.originalRectangle2D.contains(point) }
+        if (null != quirkFound) {
+            return Point2D.Float(transformed.x + quirkFound.displacement.x, transformed.y + quirkFound.displacement.y)
         }
 
         return transformPoint(transformed)
@@ -168,6 +194,8 @@ class ExpandViewTransform(
             else -> throw IllegalStateException("Unexpected point value: $point for $cx,$cy expand view")
         }
     }
+
+    private data class RectangleQuirk(val originalRectangle2D: Rectangle2D, val displacement: Point2D.Float)
 }
 
 class ViewTransformBatch(private val transforms: List<ViewTransform>) {
@@ -180,6 +208,16 @@ class ViewTransformBatch(private val transforms: List<ViewTransform>) {
             delta.y += transformed.y - point.y
         }
         return Point2D.Float(point.x + delta.x, point.y + delta.y)
+    }
+
+    fun transform(elementId: DiagramElementId, rect: Rectangle2D.Float): Rectangle2D.Float {
+        val delta = Point2D.Float()
+        for (transform in transforms) {
+            val transformed = transform.transform(elementId, rect)
+            delta.x += transformed.x - rect.x
+            delta.y += transformed.y - rect.y
+        }
+        return Rectangle2D.Float(rect.x + delta.x, rect.y + delta.y, rect.width, rect.height)
     }
 }
 

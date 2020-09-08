@@ -66,7 +66,7 @@ abstract class BaseDiagramRenderElement(
         return isActive() || isDragged()
     }
 
-    open fun applyContextChanges() {
+    open fun applyContextChangesAndPrecomputeExpandViewTransform() {
         propagateActivityStateToChildren()
 
         val dx = state.ctx.interactionContext.dragCurrent.x - state.ctx.interactionContext.dragStart.x
@@ -77,6 +77,7 @@ abstract class BaseDiagramRenderElement(
         }
 
         propagateStateChangesApplied()
+        prepareExpandViewTransform()
     }
 
     open fun render(): MutableMap<DiagramElementId, AreaWithZindex> {
@@ -267,5 +268,13 @@ abstract class BaseDiagramRenderElement(
         toUndo += viewTransform.listTransformsOfType(ExpandViewTransform::class.java)
         val batch = ViewTransformBatch(toUndo)
         return batch
+    }
+
+    /**
+     * Causes expand view transform to cache service task quirks (they do not change their size, only position)
+     */
+    private fun prepareExpandViewTransform() {
+        currentOnScreenRect(state.ctx.canvas.camera)
+        children.forEach {it.currentOnScreenRect(state.ctx.canvas.camera)}
     }
 }

@@ -109,7 +109,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         // Not all elements have BpmnElementId, but they have DiagramElementId
         linkDiagramElementId(root, elementsByDiagramId)
 
-        root.applyContextChanges()
+        root.applyContextChangesAndPrecomputeExpandViewTransform()
         val rendered = root.render()
 
         // Overlay system elements on top of rendered BPMN diagram
