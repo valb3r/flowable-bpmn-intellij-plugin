@@ -238,6 +238,7 @@ class ExpandViewTransform(
 
     private data class CentroidWithRectanglesIntersection(val expandedLine: Line2D.Float, val originalLine: Line2D.Float, val tValueOnOriginal: Float, val metric: Float)
 }
+
 class ViewTransformBatch(private val transforms: List<ViewTransform>) {
 
     fun transform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {

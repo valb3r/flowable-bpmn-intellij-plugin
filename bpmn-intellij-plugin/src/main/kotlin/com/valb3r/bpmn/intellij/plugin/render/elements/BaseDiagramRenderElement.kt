@@ -90,7 +90,7 @@ abstract class BaseDiagramRenderElement(
     }
 
     open fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event>  {
-        val compensated = compensateDrag(dx, dy)
+        val compensated = compensateExpansionViewForDrag(dx, dy)
         val result = doOnDragEndWithoutChildren(compensated.x, compensated.y, droppedOn, allDroppedOnAreas)
         children.forEach { result += it.onDragEnd(compensated.x, compensated.y, droppedOn, allDroppedOnAreas) }
         viewTransform = state.baseTransform
@@ -237,8 +237,27 @@ abstract class BaseDiagramRenderElement(
         return true
     }
 
-    protected fun compensateDrag(dx: Float, dy: Float): Point2D.Float {
+    protected fun compensateExpansionViewForDrag(dx: Float, dy: Float): Point2D.Float {
         val rect = currentRect()
+        val batch = findExpansionViewTransformationsToCompensate()
+
+        val trackingPoint = Point2D.Float(rect.x, rect.y)
+        val viewTransformedPoint = batch.transform(elementId, trackingPoint)
+        val currentPoint = Point2D.Float(viewTransformedPoint.x + dx, viewTransformedPoint.y + dy)
+        val inverted = ViewTransformInverter().invert(elementId, currentPoint, batch)
+
+        return Point2D.Float(inverted.x - rect.x, inverted.y - rect.y)
+    }
+
+    protected fun compensateExpansionViewOnLocation(x: Float, y: Float): Point2D.Float {
+        val batch = findExpansionViewTransformationsToCompensate()
+
+        val inverted = ViewTransformInverter().invert(elementId, Point2D.Float(x, y), batch)
+
+        return Point2D.Float(inverted.x, inverted.y)
+    }
+
+    private fun findExpansionViewTransformationsToCompensate(): ViewTransformBatch {
         val toUndo = mutableListOf<ExpandViewTransform>()
         val transform = viewTransform
         if (transform is ExpandViewTransform) {
@@ -247,12 +266,6 @@ abstract class BaseDiagramRenderElement(
 
         toUndo += viewTransform.listTransformsOfType(ExpandViewTransform::class.java)
         val batch = ViewTransformBatch(toUndo)
-
-        val trackingPoint = Point2D.Float(rect.x, rect.y)
-        val viewTransformedPoint = batch.transform(elementId, trackingPoint)
-        val currentPoint = Point2D.Float(viewTransformedPoint.x + dx, viewTransformedPoint.y + dy)
-        val inverted = ViewTransformInverter().invert(elementId, currentPoint, batch)
-
-        return Point2D.Float(inverted.x - rect.x, inverted.y - rect.y)
+        return batch
     }
 }

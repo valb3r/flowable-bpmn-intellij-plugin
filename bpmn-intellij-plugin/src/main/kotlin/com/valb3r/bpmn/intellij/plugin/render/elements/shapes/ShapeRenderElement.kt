@@ -86,7 +86,7 @@ abstract class ShapeRenderElement(
     }
 
     override fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
-        val compensated = compensateDrag(dx, dy)
+        val compensated = compensateExpansionViewForDrag(dx, dy)
         // Avoid double dragging by cascade and then by children
         val emptySortedMap = linkedMapOf<BpmnElementId, AreaWithZindex>() // Quirk to create sorted map without comparable key
         val result = doOnDragEndWithoutChildren(compensated.x, compensated.y, null, allDroppedOnAreas)
@@ -280,10 +280,12 @@ abstract class ShapeRenderElement(
 
         val newSequenceBpmn = newElementsFactory().newOutgoingSequence(elem.element)
         val anchors = findSequenceAnchors(targetArea) ?: return mutableListOf()
+        val firstAnchorCompensated = compensateExpansionViewOnLocation(anchors.first.x, anchors.first.y)
+        val secondAnchorCompensated = compensateExpansionViewOnLocation(anchors.second.x, anchors.second.y)
         val newSequenceDiagram = newElementsFactory().newDiagramObject(EdgeElement::class, newSequenceBpmn)
                 .copy(waypoint = listOf(
-                        WaypointElement(anchors.first.x, anchors.first.y),
-                        WaypointElement(anchors.second.x, anchors.second.y)
+                        WaypointElement(firstAnchorCompensated.x, firstAnchorCompensated.y),
+                        WaypointElement(secondAnchorCompensated.x, secondAnchorCompensated.y)
                 ))
 
         val props = newElementsFactory().propertiesOf(newSequenceBpmn).toMutableMap()
