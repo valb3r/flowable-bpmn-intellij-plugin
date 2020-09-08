@@ -3,11 +3,9 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.anchors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
-import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
-import com.valb3r.bpmn.intellij.plugin.render.Camera
-import com.valb3r.bpmn.intellij.plugin.render.ICON_Z_INDEX
-import com.valb3r.bpmn.intellij.plugin.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleWithType
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.Icon
@@ -29,11 +27,14 @@ class ShapeResizeAnchorTop(
 
         return viewTransform.transform(
                 elementId,
-                Rectangle2D.Float(
-                        bottomPoint.x - width,
-                        bottomPoint.y - height,
-                        width,
-                        height
+                RectangleWithType(
+                        Rectangle2D.Float(
+                                bottomPoint.x - width,
+                                bottomPoint.y - height,
+                                width,
+                                height
+                        ),
+                        AreaType.SHAPE
                 )
         )
     }

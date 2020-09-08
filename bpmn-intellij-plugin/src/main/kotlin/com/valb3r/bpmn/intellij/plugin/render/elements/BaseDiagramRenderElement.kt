@@ -245,7 +245,7 @@ abstract class BaseDiagramRenderElement(
         val trackingPoint = Point2D.Float(rect.x, rect.y)
         val viewTransformedPoint = batch.transform(elementId, trackingPoint)
         val currentPoint = Point2D.Float(viewTransformedPoint.x + dx, viewTransformedPoint.y + dy)
-        val inverted = ViewTransformInverter().invert(elementId, currentPoint, currentPoint, batch)
+        val inverted = ViewTransformInverter().invert(elementId, currentPoint, trackingPoint, batch)
 
         return Point2D.Float(inverted.x - rect.x, inverted.y - rect.y)
     }
@@ -266,8 +266,7 @@ abstract class BaseDiagramRenderElement(
         }
 
         toUndo += viewTransform.listTransformsOfType(ExpandViewTransform::class.java)
-        val batch = ViewTransformBatch(toUndo)
-        return batch
+        return ViewTransformBatch(toUndo)
     }
 
     /**

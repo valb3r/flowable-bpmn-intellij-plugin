@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.IconAnchorElement
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleWithType
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.Icon
@@ -33,11 +34,14 @@ class ButtonWithAnchor(
 
         return viewTransform.transform(
                 elementId,
-                Rectangle2D.Float(
-                        bottomPoint.x - imageWidth,
-                        bottomPoint.y - imageHeight,
-                        imageWidth,
-                        imageHeight
+                RectangleWithType(
+                        Rectangle2D.Float(
+                                bottomPoint.x - imageWidth,
+                                bottomPoint.y - imageHeight,
+                                imageWidth,
+                                imageHeight
+                        ),
+                        AreaType.POINT
                 )
         )
     }

@@ -8,9 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.events.BooleanUiOnlyValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.properties.uionly.UiOnlyPropertyType
 import com.valb3r.bpmn.intellij.plugin.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
-import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.buttons.ButtonWithAnchor
@@ -56,21 +54,6 @@ class ExpandableShapeNoIcon(
         )
 
         return mapOf(shapeCtx.diagramId to AreaWithZindex(area, areaType, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = bpmnElementId))
-    }
-
-    override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
-        val rect = currentOnScreenRect(camera)
-        val halfWidth = rect.width / 2.0f
-        val halfHeight = rect.height / 2.0f
-
-        val cx = rect.x + rect.width / 2.0f
-        val cy = rect.y + rect.height / 2.0f
-        return mutableSetOf(
-                Anchor(Point2D.Float(cx - halfWidth, cy)),
-                Anchor(Point2D.Float(cx + halfWidth, cy)),
-                Anchor(Point2D.Float(cx, cy - halfHeight)),
-                Anchor(Point2D.Float(cx, cy + halfHeight))
-        )
     }
 
     override fun propagateStateChangesApplied() {

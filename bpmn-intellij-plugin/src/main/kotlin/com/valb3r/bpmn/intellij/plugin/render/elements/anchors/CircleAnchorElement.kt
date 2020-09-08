@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleWithType
 import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -24,11 +25,14 @@ abstract class CircleAnchorElement(
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         return viewTransform.transform(
                 elementId,
-                Rectangle2D.Float(
-                        location.x - radius,
-                        location.y - radius,
-                        2.0f * radius,
-                        2.0f * radius
+                RectangleWithType(
+                        Rectangle2D.Float(
+                                location.x - radius,
+                                location.y - radius,
+                                2.0f * radius,
+                                2.0f * radius
+                        ),
+                        AreaType.POINT
                 )
         )
     }
