@@ -124,6 +124,13 @@ class ExpandViewTransform(
             fillRectangleQuirk(elementId, rect, Point2D.Float(center.x - transformed.x - halfWidth, center.y - transformed.y - halfHeight))
         }
 
+        if (rectWithType.type == AreaType.POINT) {
+            val quirkFound = quirkForRectangles.values.firstOrNull { it.originalRectangle2D.contains(Point2D.Float(rect.x + halfWidth, rect.y + halfHeight)) }
+            if (null != quirkFound) {
+                return Rectangle2D.Float(transformed.x + quirkFound.displacement.x, transformed.y + quirkFound.displacement.y, rect.width, rect.height)
+            }
+        }
+
         if (elementId == expandedElementId) {
             val left = transformPoint(Point2D.Float(transformed.x, transformed.y))
             val right = transformPoint(Point2D.Float(transformed.x + rect.width, transformed.y  + rect.height))
