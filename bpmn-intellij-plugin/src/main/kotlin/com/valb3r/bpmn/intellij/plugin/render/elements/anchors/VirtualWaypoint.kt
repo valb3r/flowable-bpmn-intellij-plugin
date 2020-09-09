@@ -12,13 +12,15 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Point2D
 
+private const val RADIUS = 3.0f
+
 class VirtualWaypoint(
         override val elementId: DiagramElementId,
         private val parentElementId: DiagramElementId,
         private val edge: EdgeWithIdentifiableWaypoints,
         location: Point2D.Float,
         state: RenderState
-): CircleAnchorElement(elementId, location, 3.0f, Colors.MID_WAYPOINT_COLOR, state) {
+): CircleAnchorElement(elementId, location, RADIUS, Colors.MID_WAYPOINT_COLOR, state) {
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         if (!isActiveOrDragged()) {

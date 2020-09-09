@@ -6,6 +6,7 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.EPSILON
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import kotlin.math.abs
+import kotlin.random.Random.Default.nextFloat
 
 data class RectangleWithType(val rect: Rectangle2D.Float, val type: AreaType)
 
@@ -245,17 +246,29 @@ class ViewTransformInverter {
     private val failMultiplier = 10.0f
     private val diffStep = 1.0f
     private val epsilon = 1.0f
-    private val maxIter = 20
+    private val maxIter = 10
+    private val randomInitializationGuesses = 10
+    private val randomInitializationAreaSpan = 100.0f
 
     /**
      * Minimizes (rect.x - transform(return.x)) ^ 2 + (rect.y - transform(return.y)) ^ 2 metric
      * shape changes are ignored so far
      */
     fun invert(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch): Point2D.Float {
-        return minimizeGradientDescent(elementId, target, initialGuess, batch)
+        val range = 1..randomInitializationGuesses
+        fun randomFromAreaRange(): Float {
+            return (nextFloat() * 2.0f - 1.0f) * randomInitializationAreaSpan
+        }
+
+        val result = range.map {
+            val guess = Point2D.Float(initialGuess.x - randomFromAreaRange(), initialGuess.y - randomFromAreaRange())
+            minimizeGradientDescent(elementId, target, guess, batch)
+        }
+
+        return result.minBy { it.residual }!!.point
     }
 
-    private fun minimizeGradientDescent(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch): Point2D.Float {
+    private fun minimizeGradientDescent(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch): PointWithResidual {
         var currentX = initialGuess.x
         var currentY = initialGuess.y
 
@@ -282,7 +295,7 @@ class ViewTransformInverter {
             }
         }
 
-        return Point2D.Float(currentX, currentY)
+        return PointWithResidual(Point2D.Float(currentX, currentY), residual)
     }
 
     private fun metric(elementId: DiagramElementId, target: Point2D.Float, batch: ViewTransformBatch, currentX: Float, currentY: Float): Float {
@@ -291,4 +304,6 @@ class ViewTransformInverter {
         val dy = (target.y - transformed.y)
         return dx * dx + dy * dy
     }
+
+    private data class PointWithResidual(val point: Point2D.Float, val residual: Float)
 }
