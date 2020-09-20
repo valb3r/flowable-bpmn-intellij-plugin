@@ -7,14 +7,13 @@ import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.IconAnchorElement
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleWithType
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.TransformationIntrospection
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleTransformationIntrospection
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.Icon
 
 class ButtonWithAnchor(
-        override val elementId: DiagramElementId,
+        elementId: DiagramElementId,
         private val bottomPoint: Point2D.Float,
         private val icon: Icon,
         private val onClick: (() -> MutableList<Event>),
@@ -35,7 +34,7 @@ class ButtonWithAnchor(
 
         return viewTransform.transform(
                 elementId,
-                RectangleWithType(
+                RectangleTransformationIntrospection(
                         Rectangle2D.Float(
                                 bottomPoint.x - imageWidth,
                                 bottomPoint.y - imageHeight,
@@ -43,8 +42,7 @@ class ButtonWithAnchor(
                                 imageHeight
                         ),
                         AreaType.POINT
-                ),
-                TransformationIntrospection(setOf(), setOf())
+                )
         )
     }
 

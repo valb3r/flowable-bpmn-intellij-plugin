@@ -6,14 +6,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleWithType
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.TransformationIntrospection
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleTransformationIntrospection
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.Icon
 
 class EdgeExtractionAnchor(
-        override val elementId: DiagramElementId,
+        elementId: DiagramElementId,
+        private val parent: DiagramElementId,
         private val bottomPoint: Point2D.Float,
         private val onDragEndCallback: ((droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>) -> MutableList<Event>),
         state: RenderState
@@ -28,16 +28,16 @@ class EdgeExtractionAnchor(
 
         return viewTransform.transform(
                 elementId,
-                RectangleWithType(
+                RectangleTransformationIntrospection(
                         Rectangle2D.Float(
                                 bottomPoint.x - imageWidth,
                                 bottomPoint.y - imageHeight,
                                 imageWidth,
                                 imageHeight
                         ),
-                        AreaType.POINT
-                ),
-                TransformationIntrospection(setOf(), setOf())
+                        AreaType.POINT,
+                        parent
+                )
         )
     }
 

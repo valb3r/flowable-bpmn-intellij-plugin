@@ -11,8 +11,8 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Ellipse2D
 
 class EllipticIconOnLayerShape(
-        override val elementId: DiagramElementId,
-        override val bpmnElementId: BpmnElementId,
+        elementId: DiagramElementId,
+        bpmnElementId: BpmnElementId,
         private val icon: String,
         shape: ShapeElement,
         state: RenderState,

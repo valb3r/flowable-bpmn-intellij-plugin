@@ -8,30 +8,38 @@ import java.awt.geom.Rectangle2D
 import kotlin.math.abs
 import kotlin.random.Random.Default.nextFloat
 
-data class RectangleWithType(val rect: Rectangle2D.Float, val type: AreaType)
-data class TransformationIntrospection(val onBoundaryElements: Set<DiagramElementId>, val insideElements: Set<DiagramElementId>)
+const val NONE_ID = "!!!NONE"
+
+data class RectangleTransformationIntrospection(val rect: Rectangle2D.Float, val type: AreaType, val attachedTo: DiagramElementId = DiagramElementId(NONE_ID))
+data class PointTransformationIntrospection(val attachedTo: DiagramElementId = DiagramElementId(NONE_ID))
 
 interface PreTransformable {
-    fun preTransform(elementId: DiagramElementId, rectWithType: RectangleWithType, introspection: TransformationIntrospection): Rectangle2D.Float
+    fun preTransform(elementId: DiagramElementId, rectTransformationIntrospection: RectangleTransformationIntrospection): Rectangle2D.Float
     fun preTransform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float
+    fun preTransform(elementId: DiagramElementId, point: Point2D.Float, introspection: PointTransformationIntrospection): Point2D.Float
     fun addPreTransform(viewTransform: ViewTransform)
     fun <T: ViewTransform> listTransformsOfType(type: Class<T>): List<T>
 }
 
 interface ViewTransform: PreTransformable {
-    fun transform(elementId: DiagramElementId, rectWithType: RectangleWithType, introspection: TransformationIntrospection): Rectangle2D.Float
+    fun transform(elementId: DiagramElementId, rectTransformationIntrospection: RectangleTransformationIntrospection): Rectangle2D.Float
     fun transform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float
+    fun transform(elementId: DiagramElementId, point: Point2D.Float, introspection: PointTransformationIntrospection): Point2D.Float
 }
 
 class PreTransformHandler(private val preTransforms: MutableList<ViewTransform> = mutableListOf()): PreTransformable {
 
-    override fun preTransform(elementId: DiagramElementId, rectWithType: RectangleWithType, introspection: TransformationIntrospection): Rectangle2D.Float {
-        val transformed = ViewTransformBatch(preTransforms).transform(elementId, rectWithType, introspection)
+    override fun preTransform(elementId: DiagramElementId, rectTransformationIntrospection: RectangleTransformationIntrospection): Rectangle2D.Float {
+        val transformed = ViewTransformBatch(preTransforms).transform(elementId, rectTransformationIntrospection)
         return Rectangle2D.Float(transformed.x, transformed.y, transformed.width, transformed.height)
     }
 
     override fun preTransform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
         return ViewTransformBatch(preTransforms).transform(elementId, point)
+    }
+
+    override fun preTransform(elementId: DiagramElementId, point: Point2D.Float, introspection: PointTransformationIntrospection): Point2D.Float {
+        return ViewTransformBatch(preTransforms).transform(elementId, point, introspection)
     }
 
     override fun addPreTransform(viewTransform: ViewTransform) {
@@ -48,12 +56,16 @@ class PreTransformHandler(private val preTransforms: MutableList<ViewTransform> 
 
 class NullViewTransform(private val preTransform: PreTransformHandler = PreTransformHandler()): ViewTransform, PreTransformable by preTransform {
 
-    override fun transform(elementId: DiagramElementId, rectWithType: RectangleWithType, introspection: TransformationIntrospection): Rectangle2D.Float {
-        return preTransform(elementId, rectWithType, introspection)
+    override fun transform(elementId: DiagramElementId, rectTransformationIntrospection: RectangleTransformationIntrospection): Rectangle2D.Float {
+        return preTransform(elementId, rectTransformationIntrospection)
     }
 
     override fun transform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
-        return preTransform(elementId, point)
+        return preTransform(elementId, point, PointTransformationIntrospection())
+    }
+
+    override fun transform(elementId: DiagramElementId, point: Point2D.Float, introspection: PointTransformationIntrospection): Point2D.Float {
+        return preTransform(elementId, point, introspection)
     }
 }
 
@@ -61,13 +73,17 @@ data class DragViewTransform(
         val dx: Float, val dy: Float, private val preTransform: PreTransformHandler = PreTransformHandler()
 ): ViewTransform, PreTransformable by preTransform {
 
-    override fun transform(elementId: DiagramElementId, rectWithType: RectangleWithType, introspection: TransformationIntrospection): Rectangle2D.Float {
-        val preTransformed = preTransform(elementId, rectWithType, introspection)
+    override fun transform(elementId: DiagramElementId, rectTransformationIntrospection: RectangleTransformationIntrospection): Rectangle2D.Float {
+        val preTransformed = preTransform(elementId, rectTransformationIntrospection)
         return Rectangle2D.Float(preTransformed.x + dx, preTransformed.y + dy, preTransformed.width, preTransformed.height)
     }
 
     override fun transform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
-        val preTransformed = preTransform(elementId, point)
+        return transform(elementId, point, PointTransformationIntrospection())
+    }
+
+    override fun transform(elementId: DiagramElementId, point: Point2D.Float, introspection: PointTransformationIntrospection): Point2D.Float {
+        val preTransformed = preTransform(elementId, point, introspection)
         return Point2D.Float(preTransformed.x + dx, preTransformed.y + dy)
     }
 }
@@ -76,8 +92,8 @@ data class ResizeViewTransform(
         val cx: Float, val cy: Float, val coefW: Float, val coefH: Float, private val preTransform: PreTransformHandler = PreTransformHandler()
 ): ViewTransform, PreTransformable by preTransform {
 
-    override fun transform(elementId: DiagramElementId, rectWithType: RectangleWithType, introspection: TransformationIntrospection): Rectangle2D.Float {
-        val preTransformed = preTransform(elementId, rectWithType, introspection)
+    override fun transform(elementId: DiagramElementId, rectTransformationIntrospection: RectangleTransformationIntrospection): Rectangle2D.Float {
+        val preTransformed = preTransform(elementId, rectTransformationIntrospection)
         val left = Point2D.Float(preTransformed.x, preTransformed.y)
         val right = Point2D.Float(preTransformed.x + preTransformed.width, preTransformed.y + preTransformed.height)
         val newLeft = transformPoint(left)
@@ -87,7 +103,11 @@ data class ResizeViewTransform(
     }
 
     override fun transform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
-        return transformPoint(preTransform(elementId, point))
+        return transform(elementId, point, PointTransformationIntrospection())
+    }
+
+    override fun transform(elementId: DiagramElementId, point: Point2D.Float, introspection: PointTransformationIntrospection): Point2D.Float {
+        return transformPoint(preTransform(elementId, point, introspection))
     }
 
     private fun transformPoint(point: Point2D.Float): Point2D.Float {
@@ -109,9 +129,9 @@ class ExpandViewTransform(
     private val quirkEpsilon = 1.0f
     private val quirkForRectangles = mutableMapOf<DiagramElementId, RectangleQuirk>()
 
-    override fun transform(elementId: DiagramElementId, rectWithType: RectangleWithType, introspection: TransformationIntrospection): Rectangle2D.Float {
-        val rect = rectWithType.rect
-        val transformed = preTransform(elementId, rectWithType, introspection)
+    override fun transform(elementId: DiagramElementId, rectTransformationIntrospection: RectangleTransformationIntrospection): Rectangle2D.Float {
+        val rect = rectTransformationIntrospection.rect
+        val transformed = preTransform(elementId, rectTransformationIntrospection)
         if (excludeIds.contains(elementId)) {
             fillRectangleQuirk(elementId, rect, Point2D.Float())
             return transformed
@@ -122,8 +142,8 @@ class ExpandViewTransform(
 
         val center = transformPoint(Point2D.Float(transformed.x + halfWidth, transformed.y  + halfHeight))
 
-        if (rectWithType.type == AreaType.POINT) {
-            val quirkFound = quirkForRectangles.values.firstOrNull { it.originalRectangle2D.contains(Point2D.Float(rect.x + halfWidth, rect.y + halfHeight)) }
+        if (rectTransformationIntrospection.type == AreaType.POINT) {
+            val quirkFound = quirkForRectangles[rectTransformationIntrospection.attachedTo]
             if (null != quirkFound) {
                 return Rectangle2D.Float(transformed.x + quirkFound.displacement.x, transformed.y + quirkFound.displacement.y, rect.width, rect.height)
             }
@@ -135,12 +155,12 @@ class ExpandViewTransform(
             return Rectangle2D.Float(left.x, left.y, right.x - left.x, right.y - left.y)
         }
 
-        fillRectangleQuirkIfNeeded(rectWithType, elementId, rect, center, transformed, halfWidth, halfHeight)
+        fillRectangleQuirkIfNeeded(rectTransformationIntrospection, elementId, rect, center, transformed, halfWidth, halfHeight)
         return Rectangle2D.Float(center.x - halfWidth, center.y - halfHeight, rect.width, rect.height)
     }
 
-    private fun fillRectangleQuirkIfNeeded(rectWithType: RectangleWithType, elementId: DiagramElementId, rect: Rectangle2D.Float, center: Point2D.Float, transformed: Rectangle2D.Float, halfWidth: Float, halfHeight: Float) {
-        if (rectWithType.type.nests || rectWithType.type == AreaType.SHAPE) {
+    private fun fillRectangleQuirkIfNeeded(rectTransformationIntrospection: RectangleTransformationIntrospection, elementId: DiagramElementId, rect: Rectangle2D.Float, center: Point2D.Float, transformed: Rectangle2D.Float, halfWidth: Float, halfHeight: Float) {
+        if (rectTransformationIntrospection.type.nests || rectTransformationIntrospection.type == AreaType.SHAPE) {
             fillRectangleQuirk(elementId, rect, Point2D.Float(center.x - transformed.x - halfWidth, center.y - transformed.y - halfHeight))
         }
     }
@@ -158,7 +178,11 @@ class ExpandViewTransform(
     }
 
     override fun transform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
-        val transformed = preTransform(elementId, point)
+        return transform(elementId, point, PointTransformationIntrospection())
+    }
+
+    override fun transform(elementId: DiagramElementId, point: Point2D.Float, introspection: PointTransformationIntrospection): Point2D.Float {
+        val transformed = preTransform(elementId, point, introspection)
         if (excludeIds.contains(elementId)) {
             return transformed
         }
@@ -167,7 +191,7 @@ class ExpandViewTransform(
             return transformPoint(transformed)
         }
 
-        val quirkFound = quirkForRectangles.values.firstOrNull { it.originalRectangle2D.contains(point) }
+        val quirkFound = quirkForRectangles[introspection.attachedTo]
         if (null != quirkFound) {
             return Point2D.Float(transformed.x + quirkFound.displacement.x, transformed.y + quirkFound.displacement.y)
         }
@@ -220,21 +244,25 @@ class ExpandViewTransform(
 class ViewTransformBatch(private val transforms: List<ViewTransform>) {
 
     fun transform(elementId: DiagramElementId, point: Point2D.Float): Point2D.Float {
+        return transform(elementId, point, PointTransformationIntrospection())
+    }
+
+    fun transform(elementId: DiagramElementId, point: Point2D.Float, introspection: PointTransformationIntrospection): Point2D.Float {
         val delta = Point2D.Float()
         for (transform in transforms) {
-            val transformed = transform.transform(elementId, point)
+            val transformed = transform.transform(elementId, point, introspection)
             delta.x += transformed.x - point.x
             delta.y += transformed.y - point.y
         }
         return Point2D.Float(point.x + delta.x, point.y + delta.y)
     }
 
-    fun transform(elementId: DiagramElementId, rectWithType: RectangleWithType, introspection: TransformationIntrospection): Rectangle2D.Float {
-        val rect = rectWithType.rect
+    fun transform(elementId: DiagramElementId, rectTransformationIntrospection: RectangleTransformationIntrospection): Rectangle2D.Float {
+        val rect = rectTransformationIntrospection.rect
         val delta = Point2D.Float()
         val sizeDelta = Point2D.Float()
         for (transform in transforms) {
-            val transformed = transform.transform(elementId, rectWithType, introspection)
+            val transformed = transform.transform(elementId, rectTransformationIntrospection)
             delta.x += transformed.x - rect.x
             delta.y += transformed.y - rect.y
             sizeDelta.x += transformed.width - rect.width
@@ -259,6 +287,14 @@ class ViewTransformInverter {
      * shape changes are ignored so far
      */
     fun invert(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch): Point2D.Float {
+        return invert(elementId, target, initialGuess, batch, PointTransformationIntrospection())
+    }
+
+    /**
+     * Minimizes (rect.x - transform(return.x)) ^ 2 + (rect.y - transform(return.y)) ^ 2 metric
+     * shape changes are ignored so far
+     */
+    fun invert(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch, introspection: PointTransformationIntrospection): Point2D.Float {
         val range = 1..randomInitializationGuesses
         fun randomFromAreaRange(): Float {
             return (nextFloat() * 2.0f - 1.0f) * randomInitializationAreaSpan
@@ -266,29 +302,29 @@ class ViewTransformInverter {
 
         val result = range.map {
             val guess = Point2D.Float(initialGuess.x - randomFromAreaRange(), initialGuess.y - randomFromAreaRange())
-            minimizeGradientDescent(elementId, target, guess, batch)
+            minimizeGradientDescent(elementId, target, guess, batch, introspection)
         }
 
         return result.minBy { it.residual }!!.point
     }
 
-    private fun minimizeGradientDescent(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch): PointWithResidual {
+    private fun minimizeGradientDescent(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch, introspection: PointTransformationIntrospection): PointWithResidual {
         var currentX = initialGuess.x
         var currentY = initialGuess.y
 
         var stepSize = initialStepSize
-        var residual = metric(elementId, target, batch, currentX, currentY)
+        var residual = metric(elementId, target, batch, currentX, currentY, introspection)
         for (i in 0..maxIter) {
             if (residual < epsilon) {
                 break
             }
 
-            val dMetricDx = (metric(elementId, target, batch, currentX + diffStep, currentY) - residual) / diffStep
-            val dMetricDy = (metric(elementId, target, batch, currentX, currentY + diffStep) - residual) / diffStep
+            val dMetricDx = (metric(elementId, target, batch, currentX + diffStep, currentY, introspection) - residual) / diffStep
+            val dMetricDy = (metric(elementId, target, batch, currentX, currentY + diffStep, introspection) - residual) / diffStep
 
             val newX = currentX - dMetricDx * stepSize
             val newY = currentY - dMetricDy * stepSize
-            val newResidual = metric(elementId, target, batch, newX, newY)
+            val newResidual = metric(elementId, target, batch, newX, newY, introspection)
             if (newResidual < residual) {
                 currentX = newX
                 currentY = newY
@@ -302,8 +338,8 @@ class ViewTransformInverter {
         return PointWithResidual(Point2D.Float(currentX, currentY), residual)
     }
 
-    private fun metric(elementId: DiagramElementId, target: Point2D.Float, batch: ViewTransformBatch, currentX: Float, currentY: Float): Float {
-        val transformed = batch.transform(elementId, Point2D.Float(currentX, currentY))
+    private fun metric(elementId: DiagramElementId, target: Point2D.Float, batch: ViewTransformBatch, currentX: Float, currentY: Float, introspection: PointTransformationIntrospection): Float {
+        val transformed = batch.transform(elementId, Point2D.Float(currentX, currentY), introspection)
         val dx = (target.x - transformed.x)
         val dy = (target.y - transformed.y)
         return dx * dx + dy * dy

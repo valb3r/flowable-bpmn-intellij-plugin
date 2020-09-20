@@ -5,7 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
 
 abstract class BaseBpmnRenderElement(
-        override val elementId: DiagramElementId,
+        elementId: DiagramElementId,
         open val bpmnElementId: BpmnElementId,
         override val state: RenderState
 ): BaseDiagramRenderElement(elementId, state) {

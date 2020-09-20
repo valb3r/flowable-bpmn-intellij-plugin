@@ -22,8 +22,7 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.EdgeExtractionAnchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationOrChangesToWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTransform
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleWithType
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.TransformationIntrospection
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleTransformationIntrospection
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.geom.Line2D
 import java.awt.geom.Point2D
@@ -32,15 +31,19 @@ import java.awt.geom.Rectangle2D
 const val WAYPOINT_OCCUPY_EPSILON = 1.0f
 
 abstract class ShapeRenderElement(
-        override val elementId: DiagramElementId,
-        override val bpmnElementId: BpmnElementId,
+        elementId: DiagramElementId,
+        bpmnElementId: BpmnElementId,
         protected val shape: ShapeElement,
         state: RenderState
 ) : BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 
-    protected open val cascadeTo = computeCascadables()
+    protected val cascadeTo: Set<CascadeTranslationOrChangesToWaypoint>
+    protected val edgeExtractionAnchor: EdgeExtractionAnchor
 
-    protected val edgeExtractionAnchor = computeAnchorLocation(state)
+    init {
+        edgeExtractionAnchor = computeAnchorLocation(elementId, state)
+        cascadeTo = computeCascadables()
+    }
 
     override val children: MutableList<BaseDiagramRenderElement> = mutableListOf(edgeExtractionAnchor)
 
@@ -170,7 +173,7 @@ abstract class ShapeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        return viewTransform.transform(elementId, RectangleWithType(shape.rectBounds(), AreaType.SHAPE), TransformationIntrospection(setOf(), setOf()))
+        return viewTransform.transform(elementId, RectangleTransformationIntrospection(shape.rectBounds(), AreaType.SHAPE))
     }
 
     override fun currentRect(): Rectangle2D.Float {
@@ -258,9 +261,10 @@ abstract class ShapeRenderElement(
         result += event
     }
 
-    private fun computeAnchorLocation(state: RenderState): EdgeExtractionAnchor {
+    private fun computeAnchorLocation(currentElementId: DiagramElementId, state: RenderState): EdgeExtractionAnchor {
         return EdgeExtractionAnchor(
                 DiagramElementId("NEW-SEQUENCE:" + shape.id.id),
+                currentElementId,
                 actionsAnchorTopEnd(Rectangle2D.Float(
                         shape.bounds().first.x,
                         shape.bounds().first.y,

@@ -11,7 +11,7 @@ import java.awt.geom.Point2D
 import javax.swing.Icon
 
 abstract class IconAnchorElement(
-        override val elementId: DiagramElementId,
+        elementId: DiagramElementId,
         currentLocation: Point2D.Float,
         state: RenderState
 ): AnchorElement(elementId, currentLocation, state) {

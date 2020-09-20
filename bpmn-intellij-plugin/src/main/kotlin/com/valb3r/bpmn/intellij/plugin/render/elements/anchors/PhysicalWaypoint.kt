@@ -20,7 +20,7 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ResizeViewT
 import java.awt.geom.Point2D
 
 class PhysicalWaypoint(
-        override val elementId: DiagramElementId,
+        elementId: DiagramElementId,
         private val parentElementId: DiagramElementId,
         private val parentElementBpmnId: BpmnElementId?,
         private val edge: EdgeWithIdentifiableWaypoints,

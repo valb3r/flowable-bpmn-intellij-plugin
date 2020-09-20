@@ -20,15 +20,15 @@ import java.awt.geom.Point2D
 import kotlin.math.abs
 
 abstract class ResizeableShapeRenderElement(
-        override val elementId: DiagramElementId,
-        override val bpmnElementId: BpmnElementId,
+        elementId: DiagramElementId,
+        bpmnElementId: BpmnElementId,
         shape: ShapeElement,
         state: RenderState
 ) : ShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
     private val anchors = Pair(
-            ShapeResizeAnchorTop(DiagramElementId("TOP:" + shape.id.id), Point2D.Float(shape.bounds().first.x, shape.bounds().first.y), { doComputeLocationChangesBasedOnTransformationWithCascade() } , state),
-            ShapeResizeAnchorBottom(DiagramElementId("BOTTOM:" + shape.id.id), Point2D.Float(shape.bounds().second.x, shape.bounds().second.y), { doComputeLocationChangesBasedOnTransformationWithCascade() }, state)
+            ShapeResizeAnchorTop(DiagramElementId("TOP:" + shape.id.id), elementId, Point2D.Float(shape.bounds().first.x, shape.bounds().first.y), { doComputeLocationChangesBasedOnTransformationWithCascade() } , state),
+            ShapeResizeAnchorBottom(DiagramElementId("BOTTOM:" + shape.id.id), elementId, Point2D.Float(shape.bounds().second.x, shape.bounds().second.y), { doComputeLocationChangesBasedOnTransformationWithCascade() }, state)
     )
 
     override val children: MutableList<BaseDiagramRenderElement> = mutableListOf(

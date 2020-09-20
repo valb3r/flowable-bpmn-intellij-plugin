@@ -17,8 +17,8 @@ import java.awt.geom.Point2D
 import javax.swing.Icon
 
 class ExpandableShapeNoIcon(
-        override val elementId: DiagramElementId,
-        override val bpmnElementId: BpmnElementId,
+        elementId: DiagramElementId,
+        bpmnElementId: BpmnElementId,
         private val collapsed: Boolean,
         plusIcon: Icon,
         minusIcon: Icon,

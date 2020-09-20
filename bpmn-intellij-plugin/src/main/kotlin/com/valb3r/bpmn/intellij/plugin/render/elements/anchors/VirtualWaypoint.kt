@@ -15,7 +15,7 @@ import java.awt.geom.Point2D
 private const val RADIUS = 3.0f
 
 class VirtualWaypoint(
-        override val elementId: DiagramElementId,
+        elementId: DiagramElementId,
         private val parentElementId: DiagramElementId,
         private val edge: EdgeWithIdentifiableWaypoints,
         location: Point2D.Float,

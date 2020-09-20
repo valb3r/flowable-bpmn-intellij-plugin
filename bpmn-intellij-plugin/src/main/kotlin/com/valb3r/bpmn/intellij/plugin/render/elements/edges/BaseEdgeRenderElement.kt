@@ -23,8 +23,8 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
 abstract class BaseEdgeRenderElement(
-        override val elementId: DiagramElementId,
-        override val bpmnElementId: BpmnElementId,
+        elementId: DiagramElementId,
+        bpmnElementId: BpmnElementId,
         protected val edge: EdgeWithIdentifiableWaypoints,
         private val edgeColor: Colors,
         state: RenderState

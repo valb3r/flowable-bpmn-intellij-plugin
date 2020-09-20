@@ -9,14 +9,13 @@ import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleWithType
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.TransformationIntrospection
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleTransformationIntrospection
 import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
 abstract class CircleAnchorElement(
-        override val elementId: DiagramElementId,
+        elementId: DiagramElementId,
         currentLocation: Point2D.Float,
         private val radius: Float,
         private val bodyColor: Colors,
@@ -26,7 +25,7 @@ abstract class CircleAnchorElement(
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         return viewTransform.transform(
                 elementId,
-                RectangleWithType(
+                RectangleTransformationIntrospection(
                         Rectangle2D.Float(
                                 location.x - radius,
                                 location.y - radius,
@@ -34,8 +33,7 @@ abstract class CircleAnchorElement(
                                 2.0f * radius
                         ),
                         AreaType.POINT
-                ),
-                TransformationIntrospection(setOf(), setOf())
+                )
         )
     }
 

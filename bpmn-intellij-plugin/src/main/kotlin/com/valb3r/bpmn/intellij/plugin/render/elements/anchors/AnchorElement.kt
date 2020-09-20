@@ -14,7 +14,7 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
 abstract class AnchorElement(
-        override val elementId: DiagramElementId,
+        elementId: DiagramElementId,
         protected val currentLocation: Point2D.Float,
         state: RenderState
 ): BaseDiagramRenderElement(elementId, state) {
