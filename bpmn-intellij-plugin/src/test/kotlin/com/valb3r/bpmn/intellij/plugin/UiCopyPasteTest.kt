@@ -10,6 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSub
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.copypaste.CopyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.copypaste.DATA_FLAVOR
@@ -88,7 +89,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
 
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             val shapeBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().shouldHaveSingleItem()
             val translateBpmn = lastValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
@@ -305,7 +306,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
 
     private fun verifyPlainServiceTaskWasPasted(commitTimes: Int) {
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
             val shapeBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().shouldHaveSingleItem()
             lastValue.shouldHaveSingleItem()
@@ -326,7 +327,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     }
 
     private fun verifyPlainServiceTaskWasCut() {
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(serviceTaskStartDiagramId),
@@ -336,7 +337,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     }
 
     private fun verifyServiceTaskWithBoundaryEventTaskWerePasted(commitTimes: Int = 2) {
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
             val serviceTaskBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().filter { it.bpmnObject.element is BpmnServiceTask}.shouldHaveSingleItem()
             val boundaryEventBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().filter { it.bpmnObject.element is BpmnBoundaryErrorEvent }.shouldHaveSingleItem()
@@ -369,7 +370,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     }
 
     private fun verifyServiceTaskWithBoundaryEventWereCut() {
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(optionalBoundaryErrorEventDiagramId),
@@ -381,7 +382,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     }
 
     private fun verifyEdgeWasPasted(sourceBpmnElement: BpmnElementId, sourceDiagramElement: DiagramElementId, commitTimes: Int = 3) {
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
             val edge = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             lastValue.shouldHaveSize(1)
@@ -401,7 +402,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     }
 
     private fun verifyEdgeWasCut(bpmnElement: BpmnElementId, diagramElement: DiagramElementId) {
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.subList(1, lastValue.size).shouldContainSame(
                     listOf(
@@ -413,7 +414,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     }
 
     private fun verifyEdgeWithServiceTasksWerePasted(sourceBpmnElement: BpmnElementId, sourceDiagramElement: DiagramElementId, commitTimes: Int = 3) {
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
             val edge = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val startTask = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>()
@@ -457,7 +458,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     }
 
     private fun verifyEdgeWithServiceTasksWereCut(bpmnElement: BpmnElementId, diagramElement: DiagramElementId) {
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.subList(1, lastValue.size).shouldContainSame(
                     listOf(
@@ -473,7 +474,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     }
 
     private fun verifySubprocessWithServiceTaskAndBoundaryEventOnItWasPasted(commitTimes: Int = 2) {
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
             val subprocessBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().filter { it.bpmnObject.element is BpmnSubProcess }.shouldHaveSingleItem()
             val serviceTaskBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().filter { it.bpmnObject.element is BpmnServiceTask}.shouldHaveSingleItem()
@@ -513,7 +514,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     }
 
     private fun verifySubprocessWithServiceTaskAndBoundaryEventOnItWasCut() {
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
             // TODO: These all are nested in subprocess, so probably simply removing subprocess would be enough
             lastValue.shouldContainSame(
@@ -530,7 +531,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     }
 
     private fun verifyBoundaryEventWasPasted(commitTimes: Int = 2) {
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(commitTimes)).executeCommitAndGetHash(any(), capture(), any(), any())
             val boundaryEventBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().filter { it.bpmnObject.element is BpmnBoundaryErrorEvent }.shouldHaveSingleItem()
             lastValue.shouldHaveSize(1)
@@ -548,7 +549,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
     }
 
     private fun verifyBoundaryEventWasCut() {
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldContainSame(
                     listOf(

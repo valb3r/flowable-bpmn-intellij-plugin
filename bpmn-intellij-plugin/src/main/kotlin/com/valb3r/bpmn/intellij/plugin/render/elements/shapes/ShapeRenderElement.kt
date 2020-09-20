@@ -23,6 +23,7 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.EdgeExtractionAnc
 import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationOrChangesToWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTransform
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleWithType
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.TransformationIntrospection
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.geom.Line2D
 import java.awt.geom.Point2D
@@ -169,7 +170,7 @@ abstract class ShapeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        return viewTransform.transform(elementId, RectangleWithType(shape.rectBounds(), AreaType.SHAPE))
+        return viewTransform.transform(elementId, RectangleWithType(shape.rectBounds(), AreaType.SHAPE), TransformationIntrospection(setOf(), setOf()))
     }
 
     override fun currentRect(): Rectangle2D.Float {

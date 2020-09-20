@@ -3,7 +3,7 @@ package com.valb3r.bpmn.intellij.plugin
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.verify
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
 import org.amshove.kluent.shouldContainSame
@@ -23,7 +23,7 @@ internal class ElementRemovalTest: BaseUiTest() {
         val boundaryEventRemove = findExactlyOneDeleteElem()
         clickOnId(boundaryEventRemove!!)
 
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(optionalBoundaryErrorEventDiagramId),
@@ -38,7 +38,7 @@ internal class ElementRemovalTest: BaseUiTest() {
         val serviceTaskRemove = findExactlyOneDeleteElem()
         clickOnId(serviceTaskRemove!!)
 
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(optionalBoundaryErrorEventDiagramId),
@@ -55,7 +55,7 @@ internal class ElementRemovalTest: BaseUiTest() {
         val sequenceRemove = findExactlyOneDeleteElem()
         clickOnId(sequenceRemove!!)
 
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(sequenceFlowDiagramId),
@@ -70,7 +70,7 @@ internal class ElementRemovalTest: BaseUiTest() {
         val nestedSubprocessRemove = findExactlyOneDeleteElem()
         clickOnId(nestedSubprocessRemove!!)
 
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(sequenceFlowDiagramId),
@@ -89,7 +89,7 @@ internal class ElementRemovalTest: BaseUiTest() {
         val subprocessRemove = findExactlyOneDeleteElem()
         clickOnId(subprocessRemove!!)
 
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(sequenceFlowDiagramId),

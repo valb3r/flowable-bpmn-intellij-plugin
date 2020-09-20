@@ -27,7 +27,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BpmnShapeObjectAddedEvent
@@ -370,7 +370,7 @@ internal class XmlUpdateEventBpmnObjectAddedTest {
         updatedProcess.process.body!!.eventBasedGateway!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
-    private fun <T: WithBpmnId> generateUpdateEvent(clazz: KClass<T>): Event {
+    private fun <T: WithBpmnId> generateUpdateEvent(clazz: KClass<T>): EventPropagatableToXml {
         return BpmnShapeObjectAddedEvent(
                 WithParentId(processId, createClass(clazz)),
                 ShapeElement(diagramId, id, BoundsElement(0.0f, 0.0f, 10.0f, 10.0f)),
@@ -393,7 +393,7 @@ internal class XmlUpdateEventBpmnObjectAddedTest {
         return ctor.call(*args.toTypedArray())
     }
 
-    private fun readAndUpdateProcess(event: Event): BpmnProcessObject {
+    private fun readAndUpdateProcess(event: EventPropagatableToXml): BpmnProcessObject {
         val updated = parser.update(
                 "simple-nested.bmpn20.xml".asResource()!!,
                 listOf(event)

@@ -21,6 +21,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.BpmnEdgeObjectAddedEvent
@@ -230,7 +231,7 @@ internal abstract class BaseUiTest {
     protected fun addSequenceElementOnFirstTaskAndValidateCommittedExactOnce(): BpmnEdgeObjectAddedEvent {
         addSequenceElementOnFirstTaskToSecondTask()
 
-        argumentCaptor<List<Event>>().let {
+        argumentCaptor<List<EventPropagatableToXml>>().let {
             verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any())
             it.firstValue.shouldHaveSize(1)
             return it.firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
@@ -247,7 +248,7 @@ internal abstract class BaseUiTest {
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
 
-        argumentCaptor<List<Event>>().let {
+        argumentCaptor<List<EventPropagatableToXml>>().let {
             verify(fileCommitter, atLeastOnce()).executeCommitAndGetHash(any(), it.capture(), any(), any())
             return it.lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().last().shouldNotBeNull()
         }

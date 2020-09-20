@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleWithType
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.TransformationIntrospection
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.Icon
@@ -35,7 +36,8 @@ class EdgeExtractionAnchor(
                                 imageHeight
                         ),
                         AreaType.POINT
-                )
+                ),
+                TransformationIntrospection(setOf(), setOf())
         )
     }
 
