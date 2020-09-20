@@ -39,7 +39,8 @@ data class CurrentState(
         val elementByBpmnId: Map<BpmnElementId, WithParentId>,
         val elemPropertiesByStaticElementId: Map<BpmnElementId, Map<PropertyType, Property>>,
         val elemUiOnlyPropertiesByStaticElementId: Map<BpmnElementId, Map<UiOnlyPropertyType, Property>>,
-        val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>
+        val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>,
+        val diagramByElementId: Map<BpmnElementId, DiagramElementId> = elementByDiagramId.map { Pair(it.value, it.key) }.toMap()
 )
 
 // Global singleton

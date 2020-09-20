@@ -18,7 +18,7 @@ class ButtonWithAnchor(
         private val icon: Icon,
         private val onClick: (() -> MutableList<Event>),
         state: RenderState
-) : IconAnchorElement(elementId, bottomPoint, state) {
+) : IconAnchorElement(elementId, null, bottomPoint, state) {
 
     override fun render(): MutableMap<DiagramElementId, AreaWithZindex> {
         state.ctx.interactionContext.clickCallbacks[elementId] = { dest -> dest.addEvents(onClick()) }

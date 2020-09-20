@@ -152,10 +152,24 @@ abstract class BaseEdgeRenderElement(
         return edge.waypoint.map {
             if (it.physical) {
                 physicalPos++
-                PhysicalWaypoint(it.id, edge.id, edge.bpmnElement, edge, physicalPos, numPhysicals, Point2D.Float(it.x, it.y), state).let { it.parents.add(this); it }
+                PhysicalWaypoint(it.id, findAttachedToElement(physicalPos, numPhysicals), edge.id, edge.bpmnElement, edge, physicalPos, numPhysicals, Point2D.Float(it.x, it.y), state).let { it.parents.add(this); it }
             } else {
                 VirtualWaypoint(it.id, edge.id, edge, Point2D.Float(it.x, it.y), state).let { it.parents.add(this); it }
             }
+        }
+    }
+
+    private fun findAttachedToElement(physicalPos: Int, numPhysicals: Int): DiagramElementId? {
+        return when (physicalPos) {
+            0 -> {
+                val bpmnElemId = state.currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.SOURCE_REF)?.value as String?
+                bpmnElemId?.let {state.currentState.diagramByElementId[BpmnElementId(it)] }
+            }
+            numPhysicals - 1 -> {
+                val bpmnElemId = state.currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.TARGET_REF)?.value as String?
+                bpmnElemId?.let {state.currentState.diagramByElementId[BpmnElementId(it)] }
+            }
+            else -> null
         }
     }
 }

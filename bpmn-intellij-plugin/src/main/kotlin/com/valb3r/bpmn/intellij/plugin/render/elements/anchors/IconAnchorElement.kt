@@ -12,9 +12,10 @@ import javax.swing.Icon
 
 abstract class IconAnchorElement(
         elementId: DiagramElementId,
+        attachedTo: DiagramElementId?,
         currentLocation: Point2D.Float,
         state: RenderState
-): AnchorElement(elementId, currentLocation, state) {
+): AnchorElement(elementId, attachedTo, currentLocation, state) {
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val icon = icon()

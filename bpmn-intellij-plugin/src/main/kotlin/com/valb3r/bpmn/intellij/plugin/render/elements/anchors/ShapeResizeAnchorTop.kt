@@ -17,7 +17,7 @@ class ShapeResizeAnchorTop(
         private val bottomPoint: Point2D.Float,
         private val onDragEndCallback: (() -> MutableList<Event>),
         state: RenderState
-) : IconAnchorElement(elementId, bottomPoint, state) {
+) : IconAnchorElement(elementId, parent, bottomPoint, state) {
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         val icon = icon()

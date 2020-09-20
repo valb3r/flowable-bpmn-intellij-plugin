@@ -16,11 +16,12 @@ import java.awt.geom.Rectangle2D
 
 abstract class CircleAnchorElement(
         elementId: DiagramElementId,
+        attachedTo: DiagramElementId?,
         currentLocation: Point2D.Float,
         private val radius: Float,
         private val bodyColor: Colors,
         state: RenderState
-) : AnchorElement(elementId, currentLocation, state) {
+) : AnchorElement(elementId, attachedTo, currentLocation, state) {
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         return viewTransform.transform(

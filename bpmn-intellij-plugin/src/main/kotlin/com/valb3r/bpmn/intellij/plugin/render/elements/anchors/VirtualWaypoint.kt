@@ -20,7 +20,7 @@ class VirtualWaypoint(
         private val edge: EdgeWithIdentifiableWaypoints,
         location: Point2D.Float,
         state: RenderState
-): CircleAnchorElement(elementId, location, RADIUS, Colors.MID_WAYPOINT_COLOR, state) {
+): CircleAnchorElement(elementId, null, location, RADIUS, Colors.MID_WAYPOINT_COLOR, state) {
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         if (!isActiveOrDragged()) {

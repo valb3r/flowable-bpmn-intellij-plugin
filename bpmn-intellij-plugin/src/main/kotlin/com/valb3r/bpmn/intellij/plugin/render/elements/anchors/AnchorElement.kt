@@ -10,11 +10,13 @@ import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.PointTransformationIntrospection
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
 abstract class AnchorElement(
         elementId: DiagramElementId,
+        private val attachedTo: DiagramElementId?,
         protected val currentLocation: Point2D.Float,
         state: RenderState
 ): BaseDiagramRenderElement(elementId, state) {
@@ -23,7 +25,7 @@ abstract class AnchorElement(
         get() = currentLocation
 
     val transformedLocation: Point2D.Float
-        get() = viewTransform.transform(elementId, currentLocation)
+        get() = viewTransform.transform(elementId, currentLocation, PointTransformationIntrospection(attachedTo))
 
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         // NOP

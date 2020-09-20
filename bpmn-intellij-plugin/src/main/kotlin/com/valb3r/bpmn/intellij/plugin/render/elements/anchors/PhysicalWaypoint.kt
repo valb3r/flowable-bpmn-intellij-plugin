@@ -21,6 +21,7 @@ import java.awt.geom.Point2D
 
 class PhysicalWaypoint(
         elementId: DiagramElementId,
+        attachedTo: DiagramElementId?,
         private val parentElementId: DiagramElementId,
         private val parentElementBpmnId: BpmnElementId?,
         private val edge: EdgeWithIdentifiableWaypoints,
@@ -28,7 +29,7 @@ class PhysicalWaypoint(
         private val edgePhysicalSize: Int,
         location: Point2D.Float,
         state: RenderState
-): CircleAnchorElement(elementId, location, 3.0f, Colors.WAYPOINT_COLOR, state) {
+): CircleAnchorElement(elementId, attachedTo, location, 3.0f, Colors.WAYPOINT_COLOR, state) {
 
     val owningEdgeId: DiagramElementId
         get() = parentElementId

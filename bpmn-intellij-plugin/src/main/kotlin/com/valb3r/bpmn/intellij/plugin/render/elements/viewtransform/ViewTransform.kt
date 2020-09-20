@@ -8,10 +8,8 @@ import java.awt.geom.Rectangle2D
 import kotlin.math.abs
 import kotlin.random.Random.Default.nextFloat
 
-const val NONE_ID = "!!!NONE"
-
-data class RectangleTransformationIntrospection(val rect: Rectangle2D.Float, val type: AreaType, val attachedTo: DiagramElementId = DiagramElementId(NONE_ID))
-data class PointTransformationIntrospection(val attachedTo: DiagramElementId = DiagramElementId(NONE_ID))
+data class RectangleTransformationIntrospection(val rect: Rectangle2D.Float, val type: AreaType, val attachedTo: DiagramElementId? = null)
+data class PointTransformationIntrospection(val attachedTo: DiagramElementId? = null)
 
 interface PreTransformable {
     fun preTransform(elementId: DiagramElementId, rectTransformationIntrospection: RectangleTransformationIntrospection): Rectangle2D.Float
