@@ -121,10 +121,6 @@ class ExpandViewTransform(
 
         val center = transformPoint(Point2D.Float(transformed.x + halfWidth, transformed.y  + halfHeight))
 
-        if (rectWithType.type.nests || rectWithType.type == AreaType.SHAPE) {
-            fillRectangleQuirk(elementId, rect, Point2D.Float(center.x - transformed.x - halfWidth, center.y - transformed.y - halfHeight))
-        }
-
         if (rectWithType.type == AreaType.POINT) {
             val quirkFound = quirkForRectangles.values.firstOrNull { it.originalRectangle2D.contains(Point2D.Float(rect.x + halfWidth, rect.y + halfHeight)) }
             if (null != quirkFound) {
@@ -138,7 +134,14 @@ class ExpandViewTransform(
             return Rectangle2D.Float(left.x, left.y, right.x - left.x, right.y - left.y)
         }
 
+        fillRectangleQuirkIfNeeded(rectWithType, elementId, rect, center, transformed, halfWidth, halfHeight)
         return Rectangle2D.Float(center.x - halfWidth, center.y - halfHeight, rect.width, rect.height)
+    }
+
+    private fun fillRectangleQuirkIfNeeded(rectWithType: RectangleWithType, elementId: DiagramElementId, rect: Rectangle2D.Float, center: Point2D.Float, transformed: Rectangle2D.Float, halfWidth: Float, halfHeight: Float) {
+        if (rectWithType.type.nests || rectWithType.type == AreaType.SHAPE) {
+            fillRectangleQuirk(elementId, rect, Point2D.Float(center.x - transformed.x - halfWidth, center.y - transformed.y - halfHeight))
+        }
     }
 
     private fun fillRectangleQuirk(elementId: DiagramElementId, rect: Rectangle2D.Float, delta: Point2D.Float) {
