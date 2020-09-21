@@ -268,6 +268,10 @@ class ViewTransformBatch(private val transforms: List<ViewTransform>) {
         }
         return Rectangle2D.Float(rect.x + delta.x, rect.y + delta.y, rect.width + sizeDelta.x, rect.height + sizeDelta.y)
     }
+
+    fun isEmpty(): Boolean {
+        return transforms.isEmpty()
+    }
 }
 
 class ViewTransformInverter {
@@ -285,6 +289,10 @@ class ViewTransformInverter {
      * shape changes are ignored so far
      */
     fun invert(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch): Point2D.Float {
+        if (batch.isEmpty()) {
+            return target
+        }
+
         return invert(elementId, target, initialGuess, batch, PointTransformationIntrospection())
     }
 
@@ -292,7 +300,7 @@ class ViewTransformInverter {
      * Minimizes (rect.x - transform(return.x)) ^ 2 + (rect.y - transform(return.y)) ^ 2 metric
      * shape changes are ignored so far
      */
-    fun invert(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch, introspection: PointTransformationIntrospection): Point2D.Float {
+    private fun invert(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch, introspection: PointTransformationIntrospection): Point2D.Float {
         val range = 1..randomInitializationGuesses
         fun randomFromAreaRange(): Float {
             return (nextFloat() * 2.0f - 1.0f) * randomInitializationAreaSpan
