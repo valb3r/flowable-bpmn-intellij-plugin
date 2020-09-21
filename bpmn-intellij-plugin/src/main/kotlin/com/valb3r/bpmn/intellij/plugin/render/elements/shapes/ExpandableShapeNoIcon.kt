@@ -56,8 +56,7 @@ class ExpandableShapeNoIcon(
         return mapOf(shapeCtx.diagramId to AreaWithZindex(area, areaType, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = bpmnElementId))
     }
 
-    override fun propagateStateChangesApplied() {
-        super.propagateStateChangesApplied()
+    override fun createIfNeededExpandViewTransform() {
         if (this.collapsed) {
             return
         }
@@ -71,5 +70,6 @@ class ExpandableShapeNoIcon(
                 100.0f,
                 enumerateChildrenRecursively().map { it.elementId }.toSet()
         ))
+        super.createIfNeededExpandViewTransform()
     }
 }

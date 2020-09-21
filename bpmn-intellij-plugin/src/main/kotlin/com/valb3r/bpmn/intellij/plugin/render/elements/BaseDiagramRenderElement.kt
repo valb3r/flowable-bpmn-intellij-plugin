@@ -77,6 +77,7 @@ abstract class BaseDiagramRenderElement(
         }
 
         propagateStateChangesApplied()
+        createIfNeededExpandViewTransform()
         prepareExpandViewTransform()
     }
 
@@ -256,6 +257,10 @@ abstract class BaseDiagramRenderElement(
         val inverted = ViewTransformInverter().invert(targetElement, location, initialGuess, batch)
 
         return Point2D.Float(inverted.x, inverted.y)
+    }
+
+    protected open fun createIfNeededExpandViewTransform() {
+        children.forEach {it.createIfNeededExpandViewTransform()}
     }
 
     private fun findExpansionViewTransformationsToCompensate(): ViewTransformBatch {
