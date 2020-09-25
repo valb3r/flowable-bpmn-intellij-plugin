@@ -41,7 +41,17 @@ data class CurrentState(
         val elemUiOnlyPropertiesByStaticElementId: Map<BpmnElementId, Map<UiOnlyPropertyType, Property>>,
         val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>,
         val diagramByElementId: Map<BpmnElementId, DiagramElementId> = elementByDiagramId.map { Pair(it.value, it.key) }.toMap()
-)
+) {
+    fun processDiagramId(): DiagramElementId {
+        return processDiagramId(processId)
+    }
+
+    companion object {
+        fun processDiagramId(processId: BpmnElementId): DiagramElementId {
+            return DiagramElementId(processId.id)
+        }
+    }
+}
 
 // Global singleton
 class CurrentStateProvider {
@@ -74,6 +84,7 @@ class CurrentStateProvider {
         val updatedElementByStaticId = state.elementByBpmnId.toMutableMap()
         val updatedElemPropertiesByStaticElementId = state.elemPropertiesByStaticElementId.toMutableMap()
         val updatedElemUiOnlyPropertiesByStaticElementId = state.elemUiOnlyPropertiesByStaticElementId.toMutableMap()
+        var updatedProcessId = state.processId
 
         val undoRedoStatus = updateEventsRegistry().undoRedoStatus()
         val updates = updateEventsRegistry().getUpdateEventList()
@@ -109,7 +120,7 @@ class CurrentStateProvider {
                     updatedElemPropertiesByStaticElementId[event.bpmnObject.id] = event.props
                 }
                 is PropertyUpdateWithId -> {
-                    applyPropertyUpdate(event, updatedElemPropertiesByStaticElementId, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId)
+                    updatedProcessId = applyPropertyUpdate(updatedProcessId, event, updatedElemPropertiesByStaticElementId, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId)
                 }
                 is BpmnParentChanged -> {
                     for ((key, value) in updatedElementByStaticId) {
@@ -130,7 +141,7 @@ class CurrentStateProvider {
         }
 
         return CurrentState(
-                state.processId,
+                updatedProcessId,
                 updatedShapes,
                 updatedEdges,
                 updatedElementByDiagramId,
@@ -142,23 +153,25 @@ class CurrentStateProvider {
     }
 
     private fun applyPropertyUpdate(
+            processId: BpmnElementId,
             event: PropertyUpdateWithId,
             updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>>,
             updatedShapes: MutableList<ShapeElement>,
             updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>,
             updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>,
             updatedElementByStaticId: MutableMap<BpmnElementId, WithParentId>
-    ) {
+    ) : BpmnElementId {
         if (event.property.elementUpdateChangesClass) {
             updateElementType(event, updatedElementByStaticId)
-            return
+            return processId
         }
 
-        if (null == event.newIdValue) {
-            updateProperty(event, updatedElemPropertiesByStaticElementId)
-        } else {
-            updateId(event.bpmnElementId, event.newIdValue!!, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
+        if (null != event.newIdValue) {
+            return updateId(processId, event.bpmnElementId, event.newIdValue!!, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
         }
+
+        updateProperty(event, updatedElemPropertiesByStaticElementId)
+        return processId
     }
 
     private fun updateElementType(event: PropertyUpdateWithId, updatedElementByStaticId: MutableMap<BpmnElementId, WithParentId>) {
@@ -218,6 +231,7 @@ class CurrentStateProvider {
     }
 
     private fun updateId(
+            processId: BpmnElementId,
             elementId: BpmnElementId,
             newElementId: BpmnElementId,
             updatedShapes: MutableList<ShapeElement>,
@@ -225,7 +239,7 @@ class CurrentStateProvider {
             updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>,
             updatedElementByStaticId: MutableMap<BpmnElementId, WithParentId>,
             updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>>
-    ) {
+    ): BpmnElementId {
         val shape = updatedShapes.find { it.bpmnElement == elementId }
         val edge = updatedEdges.find { it.bpmnElement == elementId }
         shape?.let {
@@ -242,7 +256,7 @@ class CurrentStateProvider {
         elemByBpmnIdUpdated?.let { updatedElementByStaticId[newElementId] = WithParentId(it.parent, it.updateBpmnElemId(newElementId)) }
 
         // Cascade ID update to children:
-        updatedElementByStaticId.forEach {elemId, elem ->
+        updatedElementByStaticId.forEach { (elemId, elem) ->
             if (elem.parent == elementId) {
                 updatedElementByStaticId[elemId] = WithParentId(newElementId, elem.element)
             }
@@ -250,6 +264,13 @@ class CurrentStateProvider {
         val elemPropUpdated = updatedElemPropertiesByStaticElementId.remove(elementId)?.toMutableMap() ?: mutableMapOf()
         elemPropUpdated[PropertyType.ID] = Property(newElementId.id)
         updatedElemPropertiesByStaticElementId[newElementId] = elemPropUpdated
+
+        if (elementId == processId) {
+            updatedElementByDiagramId[CurrentState.processDiagramId(newElementId)] = newElementId
+            return newElementId
+        }
+
+        return processId
     }
 
     private fun updateShapeLocationAndSize(elem: ShapeElement, update: BpmnShapeResizedAndMoved): ShapeElement {

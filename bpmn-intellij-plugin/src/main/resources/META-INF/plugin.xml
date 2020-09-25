@@ -4,7 +4,7 @@
     <name>Flowable BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.4.0</version>
+    <version>0.4.2</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -29,53 +29,41 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
-     <p>0.4.0:</p>
+     <p>0.4.2:</p>
       <ul>
         <li>
-          Copy-cut-paste support
+          Fixed: Fix for broken non-ASCII symbols when locale is not UTF-8 (Windows + non-ASCII/UTF-8 locale)
         </li>
         <li>
-          Highlight close anchors when dragging element
+          Fixed: Process name should be optional
         </li>
         <li>
-          Fixed: Empty xmlns namespaces generated
+          Fixed: Exception when changing element ID and clicking on it
         </li>
         <li>
-          Fixed: Wrong xml parent for boundary events
+          Fixed: Changing process ID causes diagram to disappear
         </li>
       </ul>
-    <p>0.3.3:</p>
+    <p>0.4.1:</p>
       <ul>
         <li>
-          Now names on sequence flow elements are shown
+          Plugin can now create <b>'new'</b> BPMN process
         </li>
         <li>
-          Better start and end point selection for sequence flow element
+          Improved multiselection functionality - it can select elements in subprocess, remove subprocesses
         </li>
         <li>
-          Bugfix: When subprocess its child diagram elements might stay
+          Fixed: Element could be dragged if mouse cursor was not on it
         </li>
         <li>
-          Bugfix: Unable to remove 'expression' value completely
-        </li>
-        <li>
-          Bugfix: Process audit now works properly with subprocesses
-        </li>
-        <li>
-          Bugfix: Dragged subprocess might get overlaid until drag ended
-        </li>
-        <li>
-          Bugfix: Removed middle points of sequence elements from anchors
-        </li>
-        <li>
-          Bugfix: Certain fields that already do have default values could appear in XML
+          Fixed: Paste'd elements were not selected by default
         </li>
       </ul>
     ]]></change-notes>
 
     <!-- The vendor of the plugin. The optional "url" attribute specifies the URL of the vendor homepage.
          The optional "email" attribute specifies the e-mail address of the vendor.-->
-    <vendor url="https://github.com/valb3r/flowable-bpmn-intellij-plugin" email="vbe@adorsys.com">Valentyn Berezin</vendor>
+    <vendor url="https://github.com/valb3r/flowable-bpmn-intellij-plugin" email="vbe@golden-dimension.com">Valentyn Berezin</vendor>
 
     <!-- The unique identifiers of the plugins on which this plugin depends. -->
     <depends>com.intellij.modules.lang</depends>

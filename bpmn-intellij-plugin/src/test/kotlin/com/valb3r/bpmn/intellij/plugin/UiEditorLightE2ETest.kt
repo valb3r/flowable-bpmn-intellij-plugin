@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin
 import com.nhaarman.mockitokotlin2.*
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
@@ -10,6 +11,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.events.*
 import com.valb3r.bpmn.intellij.plugin.render.AnchorType
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.render.lastRenderedState
+import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 import java.awt.Graphics2D
@@ -1092,5 +1095,60 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             verify(capturingGraphics, atLeastOnce()).drawGlyphVector(capture(), any(), any())
             lastValue.numGlyphs.shouldBeEqualTo(4)
         }
+    }
+
+    @Test
+    fun `Changing element ID twice works`() {
+        val newServiceTaskId = "newServiceTaskId"
+        val newNewServiceTaskId = "newNewServiceTaskId"
+        prepareTwoServiceTaskView()
+
+        clickOnId(serviceTaskStartDiagramId)
+        whenever(textFieldsConstructed[Pair(serviceTaskStartBpmnId, PropertyType.ID)]!!.text).thenReturn(newServiceTaskId)
+        clickOnId(serviceTaskStartDiagramId)
+        whenever(textFieldsConstructed[Pair(BpmnElementId(newServiceTaskId), PropertyType.ID)]!!.text).thenReturn(newNewServiceTaskId)
+        clickOnId(serviceTaskStartDiagramId)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(2)
+            val firstChange = lastValue.filterIsInstance<StringValueUpdatedEvent>().filter { it.bpmnElementId == serviceTaskStartBpmnId }.shouldHaveSingleItem()
+            val secondChange = lastValue.filterIsInstance<StringValueUpdatedEvent>().filter { it.bpmnElementId.id == newServiceTaskId }.shouldHaveSingleItem()
+
+            firstChange.referencedValue.shouldBeEqualTo(serviceTaskStartBpmnId.id)
+            firstChange.newValue.shouldBeEqualTo(newServiceTaskId)
+
+            secondChange.referencedValue.shouldBeEqualTo(newServiceTaskId)
+            secondChange.newValue.shouldBeEqualTo(newNewServiceTaskId)
+        }
+    }
+
+    @Test
+    fun `Root process id changing works`() {
+        val newRootProcessId = "new-root-process-id"
+        val onlyRootProcessPoint = Point2D.Float(-9999.0f, -9999.0f)
+
+        prepareTwoServiceTaskView()
+        canvas.click(onlyRootProcessPoint)
+        changeSelectedIdViaPropertiesVisualizer(parentProcessBpmnId, newRootProcessId)
+
+        canvas.paintComponent(graphics)
+        verifyServiceTasksAreDrawn()
+        canvas.click(onlyRootProcessPoint)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
+        lastRenderedState()!!.state.ctx.stateProvider.currentState()
+                .elementByDiagramId[CurrentState.processDiagramId(BpmnElementId(newRootProcessId))].shouldNotBeNull()
+
+
+        val anotherNewRootProcessId = "another-new-root-process-id"
+        canvas.click(onlyRootProcessPoint)
+        changeSelectedIdViaPropertiesVisualizer(BpmnElementId(newRootProcessId), anotherNewRootProcessId)
+        canvas.paintComponent(graphics)
+
+        verifyServiceTasksAreDrawn()
+        canvas.click(onlyRootProcessPoint)
+        lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
+        lastRenderedState()!!.state.ctx.stateProvider.currentState()
+                .elementByDiagramId[CurrentState.processDiagramId(BpmnElementId(anotherNewRootProcessId))].shouldNotBeNull()
     }
 }

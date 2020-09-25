@@ -1,7 +1,6 @@
 [![codecov](https://codecov.io/gh/valb3r/flowable-bpmn-intellij-plugin/branch/master/graph/badge.svg)](https://codecov.io/gh/valb3r/flowable-bpmn-intellij-plugin)
 [![Gitter](https://badges.gitter.im/flowable-bpmn-intellij-plugin/community.svg)](https://gitter.im/flowable-bpmn-intellij-plugin/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-
 # What is this
 
 This project provides plugin for [Flowable BPMN engine](https://github.com/flowable/flowable-engine) process editor integration into IntelliJ,
@@ -85,7 +84,13 @@ If you want just to run the plugin in the `sandbox` you can execute
 
 ### Basic usage
 
+[![Work with plugin](https://img.youtube.com/vi/8-_XmOlEyXM/0.jpg)](https://youtu.be/8-_XmOlEyXM)
+
+<details><summary><b>Basic usage for older versions (< 0.4.1)</b></summary>
+
 [![Work with plugin](https://img.youtube.com/vi/pBfAGdp169s/0.jpg)](https://youtu.be/pBfAGdp169s)
+
+</details>
 
 <details><summary><b>Basic usage for older versions (< 0.3.2)</b></summary>
 

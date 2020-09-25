@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.events.DiagramElementRemovedEvent
 import org.amshove.kluent.shouldContainSame
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.awt.geom.Point2D
 
 internal class ElementRemovalTest: BaseUiTest() {
 
@@ -104,6 +105,31 @@ internal class ElementRemovalTest: BaseUiTest() {
                     BpmnElementRemovedEvent(serviceTaskStartBpmnId),
                     DiagramElementRemovedEvent(subprocessDiagramId),
                     BpmnElementRemovedEvent(subprocessBpmnId)
+            ))
+        }
+    }
+
+    @Test
+    fun `Multiselect rectangle can remove subprocess and other elements`() {
+        val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
+        canvas.click(selectionStart)
+        canvas.startSelectionOrSelectedDrag(selectionStart)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(nestedSubProcessSize + 20.0f, nestedSubProcessSize + 20.0f))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        val multipleElemsRemove = findExactlyOneDeleteElem()
+        clickOnId(multipleElemsRemove!!)
+
+        argumentCaptor<List<Event>>().apply {
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            firstValue.shouldContainSame(listOf(
+                    DiagramElementRemovedEvent(subprocessInSubProcessDiagramId),
+                    DiagramElementRemovedEvent(serviceTaskStartDiagramId),
+                    BpmnElementRemovedEvent(subprocessInSubProcessBpmnId),
+                    BpmnElementRemovedEvent(serviceTaskStartBpmnId)
             ))
         }
     }
