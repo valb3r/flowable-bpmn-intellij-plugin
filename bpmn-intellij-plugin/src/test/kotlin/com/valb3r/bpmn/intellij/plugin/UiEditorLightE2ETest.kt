@@ -1109,7 +1109,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         whenever(textFieldsConstructed[Pair(BpmnElementId(newServiceTaskId), PropertyType.ID)]!!.text).thenReturn(newNewServiceTaskId)
         clickOnId(serviceTaskStartDiagramId)
 
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(2)
             val firstChange = lastValue.filterIsInstance<StringValueUpdatedEvent>().filter { it.bpmnElementId == serviceTaskStartBpmnId }.shouldHaveSingleItem()

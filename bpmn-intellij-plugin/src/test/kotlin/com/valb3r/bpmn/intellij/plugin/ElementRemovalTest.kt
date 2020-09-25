@@ -123,7 +123,7 @@ internal class ElementRemovalTest: BaseUiTest() {
         val multipleElemsRemove = findExactlyOneDeleteElem()
         clickOnId(multipleElemsRemove!!)
 
-        argumentCaptor<List<Event>>().apply {
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(subprocessInSubProcessDiagramId),
