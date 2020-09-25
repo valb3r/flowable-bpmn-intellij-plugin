@@ -9,25 +9,31 @@ import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleTransformationIntrospection
 import java.awt.geom.Area
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
 abstract class CircleAnchorElement(
-        override val elementId: DiagramElementId,
+        elementId: DiagramElementId,
+        attachedTo: DiagramElementId?,
         currentLocation: Point2D.Float,
         private val radius: Float,
         private val bodyColor: Colors,
         state: RenderState
-) : AnchorElement(elementId, currentLocation, state) {
+) : AnchorElement(elementId, attachedTo, currentLocation, state) {
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         return viewTransform.transform(
-                Rectangle2D.Float(
-                        location.x - radius,
-                        location.y - radius,
-                        2.0f * radius,
-                        2.0f * radius
+                elementId,
+                RectangleTransformationIntrospection(
+                        Rectangle2D.Float(
+                                location.x - radius,
+                                location.y - radius,
+                                2.0f * radius,
+                                2.0f * radius
+                        ),
+                        AreaType.POINT
                 )
         )
     }

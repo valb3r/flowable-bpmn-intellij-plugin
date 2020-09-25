@@ -11,8 +11,8 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.Stroke
 
 class NoIconShape(
-        override val elementId: DiagramElementId,
-        override val bpmnElementId: BpmnElementId,
+        elementId: DiagramElementId,
+        bpmnElementId: BpmnElementId,
         shape: ShapeElement,
         state: RenderState,
         private val backgroundColor: Colors = Colors.CALL_ACTIVITY_COLOR,

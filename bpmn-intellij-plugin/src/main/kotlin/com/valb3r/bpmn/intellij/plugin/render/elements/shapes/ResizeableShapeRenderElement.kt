@@ -13,21 +13,22 @@ import com.valb3r.bpmn.intellij.plugin.render.ICON_Z_INDEX
 import com.valb3r.bpmn.intellij.plugin.render.elements.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorBottom
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.ShapeResizeAnchorTop
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.PreTransformHandler
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ResizeViewTransform
 import com.valb3r.bpmn.intellij.plugin.xmlnav.xmlNavigator
 import java.awt.geom.Point2D
 import kotlin.math.abs
 
 abstract class ResizeableShapeRenderElement(
-        override val elementId: DiagramElementId,
-        override val bpmnElementId: BpmnElementId,
+        elementId: DiagramElementId,
+        bpmnElementId: BpmnElementId,
         shape: ShapeElement,
         state: RenderState
 ) : ShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
     private val anchors = Pair(
-            ShapeResizeAnchorTop(DiagramElementId("TOP:" + shape.id.id), Point2D.Float(shape.bounds().first.x, shape.bounds().first.y), { doComputeLocationChangesBasedOnTransformationWithCascade() } , state),
-            ShapeResizeAnchorBottom(DiagramElementId("BOTTOM:" + shape.id.id), Point2D.Float(shape.bounds().second.x, shape.bounds().second.y), { doComputeLocationChangesBasedOnTransformationWithCascade() }, state)
+            ShapeResizeAnchorTop(DiagramElementId("TOP:" + shape.id.id), elementId, Point2D.Float(shape.bounds().first.x, shape.bounds().first.y), { doComputeLocationChangesBasedOnTransformationWithCascade() } , state),
+            ShapeResizeAnchorBottom(DiagramElementId("BOTTOM:" + shape.id.id), elementId, Point2D.Float(shape.bounds().second.x, shape.bounds().second.y), { doComputeLocationChangesBasedOnTransformationWithCascade() }, state)
     )
 
     override val children: MutableList<BaseDiagramRenderElement> = mutableListOf(
@@ -113,21 +114,20 @@ abstract class ResizeableShapeRenderElement(
                         anchors.first.location.x,
                         anchors.first.location.y,
                         widthNew / widthOrig,
-                        heightNew / heightOrig
+                        heightNew / heightOrig,
+                        PreTransformHandler(mutableListOf(viewTransform))
                 )
-
             }
+
             anchors.second.location.distance(anchors.second.transformedLocation) < EPSILON -> {
                 viewTransform = ResizeViewTransform(
                         anchors.second.location.x,
                         anchors.second.location.y,
                         widthNew / widthOrig,
-                        heightNew / heightOrig
+                        heightNew / heightOrig,
+                        PreTransformHandler(mutableListOf(viewTransform))
                 )
 
-            }
-            else -> {
-                throw IllegalStateException("Both anchors moved")
             }
         }
     }

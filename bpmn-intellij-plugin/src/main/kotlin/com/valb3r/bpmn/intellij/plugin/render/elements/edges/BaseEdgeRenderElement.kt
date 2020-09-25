@@ -23,8 +23,8 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
 abstract class BaseEdgeRenderElement(
-        override val elementId: DiagramElementId,
-        override val bpmnElementId: BpmnElementId,
+        elementId: DiagramElementId,
+        bpmnElementId: BpmnElementId,
         protected val edge: EdgeWithIdentifiableWaypoints,
         private val edgeColor: Colors,
         state: RenderState
@@ -104,6 +104,10 @@ abstract class BaseEdgeRenderElement(
         )
     }
 
+    override fun currentRect(): Rectangle2D.Float {
+        return Rectangle2D.Float(edge.waypoint[0].x, edge.waypoint[0].y, 0.0f, 0.0f)
+    }
+
     private fun drawNameIfAvailable(waypoints: List<Point2D.Float>, color: Color) {
         val name = state.currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.NAME)?.value as String? ?: return
         val longestSegment = waypoints
@@ -148,10 +152,24 @@ abstract class BaseEdgeRenderElement(
         return edge.waypoint.map {
             if (it.physical) {
                 physicalPos++
-                PhysicalWaypoint(it.id, edge.id, edge.bpmnElement, edge, physicalPos, numPhysicals, Point2D.Float(it.x, it.y), state).let { it.parents.add(this); it }
+                PhysicalWaypoint(it.id, findAttachedToElement(physicalPos, numPhysicals), edge.id, edge.bpmnElement, edge, physicalPos, numPhysicals, Point2D.Float(it.x, it.y), state).let { it.parents.add(this); it }
             } else {
                 VirtualWaypoint(it.id, edge.id, edge, Point2D.Float(it.x, it.y), state).let { it.parents.add(this); it }
             }
+        }
+    }
+
+    private fun findAttachedToElement(physicalPos: Int, numPhysicals: Int): DiagramElementId? {
+        return when (physicalPos) {
+            0 -> {
+                val bpmnElemId = state.currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.SOURCE_REF)?.value as String?
+                bpmnElemId?.let {state.currentState.diagramByElementId[BpmnElementId(it)] }
+            }
+            numPhysicals - 1 -> {
+                val bpmnElemId = state.currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.TARGET_REF)?.value as String?
+                bpmnElemId?.let {state.currentState.diagramByElementId[BpmnElementId(it)] }
+            }
+            else -> null
         }
     }
 }

@@ -11,8 +11,8 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import java.awt.geom.Rectangle2D
 
 class NoIconDoubleBorderShape(
-        override val elementId: DiagramElementId,
-        override val bpmnElementId: BpmnElementId,
+        elementId: DiagramElementId,
+        bpmnElementId: BpmnElementId,
         shape: ShapeElement,
         state: RenderState,
         private val backgroundColor: Colors = Colors.PROCESS_COLOR,

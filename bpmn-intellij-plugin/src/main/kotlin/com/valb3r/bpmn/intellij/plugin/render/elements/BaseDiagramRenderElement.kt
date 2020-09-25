@@ -10,16 +10,14 @@ import com.valb3r.bpmn.intellij.plugin.render.ANCHOR_Z_INDEX
 import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.render.Camera
 import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.DragViewTransform
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTransform
-import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ViewTransform
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.*
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import kotlin.math.abs
 
-val EPSILON = 0.1f
+const val EPSILON = 0.1f
 private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
 const val ACTIONS_ICO_SIZE = 15f
 private const val actionsMargin = 5f
@@ -31,7 +29,7 @@ fun DiagramElementId.elemIdToRemove(): DiagramElementId {
 abstract class BaseDiagramRenderElement(
         open val elementId: DiagramElementId,
         protected open val state: RenderState,
-        internal open var viewTransform: ViewTransform = NullViewTransform()
+        internal open var viewTransform: ViewTransform = state.baseTransform
 ) {
 
     var isVisible: Boolean? = null
@@ -72,7 +70,7 @@ abstract class BaseDiagramRenderElement(
         return isActive() || isDragged()
     }
 
-    open fun applyContextChanges() {
+    open fun applyContextChangesAndPrecomputeExpandViewTransform() {
         propagateActivityStateToChildren()
 
         val dx = state.ctx.interactionContext.dragCurrent.x - state.ctx.interactionContext.dragStart.x
@@ -83,6 +81,8 @@ abstract class BaseDiagramRenderElement(
         }
 
         propagateStateChangesApplied()
+        createIfNeededExpandViewTransform()
+        prepareExpandViewTransform()
     }
 
     open fun render(): MutableMap<DiagramElementId, AreaWithZindex> {
@@ -96,9 +96,10 @@ abstract class BaseDiagramRenderElement(
     }
 
     open fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event>  {
-        val result = doOnDragEndWithoutChildren(dx, dy, droppedOn, allDroppedOnAreas)
-        children.forEach { result += it.onDragEnd(dx, dy, droppedOn, allDroppedOnAreas) }
-        viewTransform = NullViewTransform()
+        val compensated = compensateExpansionViewForDrag(dx, dy)
+        val result = doOnDragEndWithoutChildren(compensated.x, compensated.y, droppedOn, allDroppedOnAreas)
+        children.forEach { result += it.onDragEnd(compensated.x, compensated.y, droppedOn, allDroppedOnAreas) }
+        viewTransform = state.baseTransform
         return result
     }
 
@@ -115,6 +116,19 @@ abstract class BaseDiagramRenderElement(
 
     open fun zIndex(): Int {
         return if (isActiveOrDragged()) ANCHOR_Z_INDEX else (parents.firstOrNull()?.zIndex() ?: -1) + 1
+    }
+
+    open fun enumerateChildrenRecursively() : List<BaseDiagramRenderElement> {
+        val result = mutableListOf<BaseDiagramRenderElement>()
+        result += children.flatMap { rootAndEnumerateChildrenRecursively(it) }
+        return result
+    }
+
+    protected open fun rootAndEnumerateChildrenRecursively(root: BaseDiagramRenderElement) : List<BaseDiagramRenderElement> {
+        val result = mutableListOf<BaseDiagramRenderElement>()
+        result += root
+        result += root.children.flatMap { rootAndEnumerateChildrenRecursively(it) }
+        return result
     }
 
     protected fun actionsRect(shapeRect: Rectangle2D.Float): Rectangle2D.Float {
@@ -141,7 +155,7 @@ abstract class BaseDiagramRenderElement(
     }
 
     protected open fun dragTo(dx: Float, dy: Float) {
-        viewTransform = DragViewTransform(dx, dy)
+        viewTransform = DragViewTransform(dx, dy, PreTransformHandler(mutableListOf(viewTransform)))
         doDragToWithoutChildren(dx, dy)
         children.forEach { it.dragTo(dx, dy) }
     }
@@ -207,6 +221,7 @@ abstract class BaseDiagramRenderElement(
     abstract fun doResizeWithoutChildren(dw: Float, dh: Float)
     abstract fun doResizeEndWithoutChildren(dw: Float, dh: Float): MutableList<Event>
 
+    protected abstract fun currentRect(): Rectangle2D.Float
     protected abstract fun currentOnScreenRect(camera: Camera): Rectangle2D.Float
 
     protected abstract fun waypointAnchors(camera: Camera): MutableSet<Anchor>
@@ -226,5 +241,48 @@ abstract class BaseDiagramRenderElement(
 
     protected open fun acceptsInternalEvents(): Boolean {
         return true
+    }
+
+    protected fun compensateExpansionViewForDrag(dx: Float, dy: Float): Point2D.Float {
+        val rect = currentRect()
+        val batch = findExpansionViewTransformationsToCompensate()
+
+        val trackingPoint = Point2D.Float(rect.x, rect.y)
+        val viewTransformedPoint = batch.transform(elementId, trackingPoint)
+        val currentPoint = Point2D.Float(viewTransformedPoint.x + dx, viewTransformedPoint.y + dy)
+        val inverted = ViewTransformInverter().invert(elementId, currentPoint, trackingPoint, batch)
+
+        return Point2D.Float(inverted.x - rect.x, inverted.y - rect.y)
+    }
+
+    protected fun compensateExpansionViewOnLocation(targetElement: DiagramElementId, location: Point2D.Float, initialGuess: Point2D.Float): Point2D.Float {
+        val batch = findExpansionViewTransformationsToCompensate()
+
+        val inverted = ViewTransformInverter().invert(targetElement, location, initialGuess, batch)
+
+        return Point2D.Float(inverted.x, inverted.y)
+    }
+
+    protected open fun createIfNeededExpandViewTransform() {
+        children.forEach {it.createIfNeededExpandViewTransform()}
+    }
+
+    private fun findExpansionViewTransformationsToCompensate(): ViewTransformBatch {
+        val toUndo = mutableListOf<ExpandViewTransform>()
+        val transform = viewTransform
+        if (transform is ExpandViewTransform) {
+            toUndo += transform
+        }
+
+        toUndo += viewTransform.listTransformsOfType(ExpandViewTransform::class.java)
+        return ViewTransformBatch(toUndo)
+    }
+
+    /**
+     * Causes expand view transform to cache service task quirks (they do not change their size, only position)
+     */
+    private fun prepareExpandViewTransform() {
+        currentOnScreenRect(state.ctx.canvas.camera)
+        children.forEach {it.currentOnScreenRect(state.ctx.canvas.camera)}
     }
 }

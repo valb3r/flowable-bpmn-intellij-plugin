@@ -28,16 +28,12 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         process.body?.let { reassignParentsBasedOnTargetRef(process.id, it, factory, elementByStaticId, propertiesById) }
         process.children?.forEach { (id, body) -> reassignParentsBasedOnTargetRef(id, body, factory, elementByStaticId, propertiesById)}
 
-        diagram.firstOrNull()
-                ?.bpmnPlane
-                ?.bpmnEdge
-                ?.filter { null != it.bpmnElement }
-                ?.forEach { elementByDiagramId[it.id] = it.bpmnElement!! }
+        diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList()}
+                .filter { null != it.bpmnElement }
+                .forEach { elementByDiagramId[it.id] = it.bpmnElement!! }
 
-        diagram.firstOrNull()
-                ?.bpmnPlane
-                ?.bpmnShape
-                ?.forEach { elementByDiagramId[it.id] = it.bpmnElement }
+        diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() }
+                .forEach { elementByDiagramId[it.id] = it.bpmnElement }
 
         return BpmnProcessObjectView(
                 process.id,
@@ -109,6 +105,8 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         body.eventSubProcess?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.transaction?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.adHocSubProcess?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.collapsedTransaction?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.collapsedSubProcess?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
 
         // Gateways
         body.exclusiveGateway?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }

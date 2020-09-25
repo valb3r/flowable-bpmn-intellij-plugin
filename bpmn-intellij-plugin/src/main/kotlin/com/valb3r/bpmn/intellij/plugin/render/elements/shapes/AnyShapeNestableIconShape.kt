@@ -15,8 +15,8 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationOrChangesToWaypoint
 
 class AnyShapeNestableIconShape(
-        override val elementId: DiagramElementId,
-        override val bpmnElementId: BpmnElementId,
+        elementId: DiagramElementId,
+        bpmnElementId: BpmnElementId,
         val icon: String,
         shape: ShapeElement,
         state: RenderState

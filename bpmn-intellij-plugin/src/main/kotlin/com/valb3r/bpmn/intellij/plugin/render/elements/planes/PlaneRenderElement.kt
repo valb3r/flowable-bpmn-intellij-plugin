@@ -17,8 +17,8 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
 class PlaneRenderElement(
-        override val elementId: DiagramElementId,
-        override val bpmnElementId: BpmnElementId,
+        elementId: DiagramElementId,
+        bpmnElementId: BpmnElementId,
         state: RenderState,
         override val children: MutableList<BaseDiagramRenderElement> = mutableListOf()
 ): BaseBpmnRenderElement(elementId, bpmnElementId, state) {
@@ -44,6 +44,10 @@ class PlaneRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
+        return Rectangle2D.Float()
+    }
+
+    override fun currentRect(): Rectangle2D.Float {
         return Rectangle2D.Float()
     }
 

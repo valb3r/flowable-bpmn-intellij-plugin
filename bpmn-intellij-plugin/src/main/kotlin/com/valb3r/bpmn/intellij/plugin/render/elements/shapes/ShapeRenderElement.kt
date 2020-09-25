@@ -22,6 +22,7 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.EdgeExtractionAnchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.internal.CascadeTranslationOrChangesToWaypoint
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.NullViewTransform
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleTransformationIntrospection
 import com.valb3r.bpmn.intellij.plugin.state.CurrentState
 import java.awt.geom.Line2D
 import java.awt.geom.Point2D
@@ -30,15 +31,19 @@ import java.awt.geom.Rectangle2D
 const val WAYPOINT_OCCUPY_EPSILON = 1.0f
 
 abstract class ShapeRenderElement(
-        override val elementId: DiagramElementId,
-        override val bpmnElementId: BpmnElementId,
+        elementId: DiagramElementId,
+        bpmnElementId: BpmnElementId,
         protected val shape: ShapeElement,
         state: RenderState
 ) : BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 
-    protected open val cascadeTo = computeCascadables()
+    protected val cascadeTo: Set<CascadeTranslationOrChangesToWaypoint>
+    protected val edgeExtractionAnchor: EdgeExtractionAnchor
 
-    protected val edgeExtractionAnchor = computeAnchorLocation(state)
+    init {
+        edgeExtractionAnchor = computeAnchorLocation(elementId, state)
+        cascadeTo = computeCascadables()
+    }
 
     override val children: MutableList<BaseDiagramRenderElement> = mutableListOf(edgeExtractionAnchor)
 
@@ -86,17 +91,18 @@ abstract class ShapeRenderElement(
     }
 
     override fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
+        val compensated = compensateExpansionViewForDrag(dx, dy)
         // Avoid double dragging by cascade and then by children
         val emptySortedMap = linkedMapOf<BpmnElementId, AreaWithZindex>() // Quirk to create sorted map without comparable key
-        val result = doOnDragEndWithoutChildren(dx, dy, null, allDroppedOnAreas)
+        val result = doOnDragEndWithoutChildren(compensated.x, compensated.y, null, allDroppedOnAreas)
         val alreadyDraggedLocations = result.filterIsInstance<LocationUpdateWithId>().map { it.diagramElementId }.toMutableSet()
         children.forEach {
-            for (event in it.onDragEnd(dx, dy, null, emptySortedMap)) { // Children do not change parent - sortedMapOf()
+            for (event in it.onDragEnd(compensated.x, compensated.y, null, emptySortedMap)) { // Children do not change parent - sortedMapOf()
                 handleChildDrag(event, alreadyDraggedLocations, result)
             }
         }
 
-        viewTransform = NullViewTransform()
+        viewTransform = state.baseTransform
         return result
     }
 
@@ -167,7 +173,11 @@ abstract class ShapeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        return viewTransform.transform(shape.rectBounds())
+        return viewTransform.transform(elementId, RectangleTransformationIntrospection(shape.rectBounds(), AreaType.SHAPE))
+    }
+
+    override fun currentRect(): Rectangle2D.Float {
+        return shape.rectBounds()
     }
 
     protected open fun handlePossibleNestingTo(allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>, cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {
@@ -222,7 +232,7 @@ abstract class ShapeRenderElement(
     }
 
     private fun detectAndRenderNewSequenceAnchorMove() {
-        val expected = viewTransform.transform(edgeExtractionAnchor.location)
+        val expected = viewTransform.transform(elementId, edgeExtractionAnchor.location)
         if (expected.distance(edgeExtractionAnchor.transformedLocation) > EPSILON && edgeExtractionAnchor.isActiveOrDragged()) {
             renderNewSequenceAnchorMove()
         }
@@ -251,9 +261,10 @@ abstract class ShapeRenderElement(
         result += event
     }
 
-    private fun computeAnchorLocation(state: RenderState): EdgeExtractionAnchor {
+    private fun computeAnchorLocation(currentElementId: DiagramElementId, state: RenderState): EdgeExtractionAnchor {
         return EdgeExtractionAnchor(
                 DiagramElementId("NEW-SEQUENCE:" + shape.id.id),
+                currentElementId,
                 actionsAnchorTopEnd(Rectangle2D.Float(
                         shape.bounds().first.x,
                         shape.bounds().first.y,
@@ -275,10 +286,14 @@ abstract class ShapeRenderElement(
 
         val newSequenceBpmn = newElementsFactory().newOutgoingSequence(elem.element)
         val anchors = findSequenceAnchors(targetArea) ?: return mutableListOf()
+        val notYetExistingDiagramId = DiagramElementId("")
+        val sourceBounds = shape.rectBounds()
+        val firstAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.first, Point2D.Float(sourceBounds.centerX.toFloat(), sourceBounds.centerY.toFloat()))
+        val secondAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.second, anchors.second)
         val newSequenceDiagram = newElementsFactory().newDiagramObject(EdgeElement::class, newSequenceBpmn)
                 .copy(waypoint = listOf(
-                        WaypointElement(anchors.first.x, anchors.first.y),
-                        WaypointElement(anchors.second.x, anchors.second.y)
+                        WaypointElement(firstAnchorCompensated.x, firstAnchorCompensated.y),
+                        WaypointElement(secondAnchorCompensated.x, secondAnchorCompensated.y)
                 ))
 
         val props = newElementsFactory().propertiesOf(newSequenceBpmn).toMutableMap()

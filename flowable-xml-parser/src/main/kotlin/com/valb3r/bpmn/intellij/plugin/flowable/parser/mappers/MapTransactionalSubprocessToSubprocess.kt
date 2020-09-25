@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTra
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 
+// TODO: Move this to some shared module or even API
 @Mapper
 interface MapTransactionalSubprocessToSubprocess {
 

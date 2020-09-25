@@ -20,7 +20,8 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.ResizeViewT
 import java.awt.geom.Point2D
 
 class PhysicalWaypoint(
-        override val elementId: DiagramElementId,
+        elementId: DiagramElementId,
+        attachedTo: DiagramElementId?,
         private val parentElementId: DiagramElementId,
         private val parentElementBpmnId: BpmnElementId?,
         private val edge: EdgeWithIdentifiableWaypoints,
@@ -28,7 +29,7 @@ class PhysicalWaypoint(
         private val edgePhysicalSize: Int,
         location: Point2D.Float,
         state: RenderState
-): CircleAnchorElement(elementId, location, 3.0f, Colors.WAYPOINT_COLOR, state) {
+): CircleAnchorElement(elementId, attachedTo, location, 3.0f, Colors.WAYPOINT_COLOR, state) {
 
     val owningEdgeId: DiagramElementId
         get() = parentElementId
@@ -56,6 +57,7 @@ class PhysicalWaypoint(
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         val events = mutableListOf<Event>()
 
+        // TODO: Transform
         events += DraggedToEvent(elementId, dx, dy, parentElementId, physicalPos) as Event
 
         if (null == parentElementBpmnId) {
@@ -79,6 +81,7 @@ class PhysicalWaypoint(
             return mutableListOf()
         }
 
+        // TODO: Transform
         return mutableListOf(
                 DraggedToEvent(
                         elementId,

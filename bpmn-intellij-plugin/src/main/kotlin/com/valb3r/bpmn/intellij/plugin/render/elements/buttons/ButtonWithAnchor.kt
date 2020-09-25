@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin.render.elements.anchors
+package com.valb3r.bpmn.intellij.plugin.render.elements.buttons
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -6,18 +6,24 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.anchors.IconAnchorElement
 import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleTransformationIntrospection
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.Icon
 
-class EdgeExtractionAnchor(
+class ButtonWithAnchor(
         elementId: DiagramElementId,
-        private val parent: DiagramElementId,
         private val bottomPoint: Point2D.Float,
-        private val onDragEndCallback: ((droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>) -> MutableList<Event>),
+        private val icon: Icon,
+        private val onClick: (() -> MutableList<Event>),
         state: RenderState
-) : IconAnchorElement(elementId, parent, bottomPoint, state) {
+) : IconAnchorElement(elementId, null, bottomPoint, state) {
+
+    override fun render(): MutableMap<DiagramElementId, AreaWithZindex> {
+        state.ctx.interactionContext.clickCallbacks[elementId] = { dest -> dest.addEvents(onClick()) }
+        return super.render()
+    }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         val icon = icon()
@@ -35,33 +41,25 @@ class EdgeExtractionAnchor(
                                 imageWidth,
                                 imageHeight
                         ),
-                        AreaType.POINT,
-                        parent
+                        AreaType.POINT
                 )
         )
     }
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
-        val events = mutableListOf<Event>()
-        events += super.doOnDragEndWithoutChildren(dx, dy, droppedOn, allDroppedOnAreas)
-        events += onDragEndCallback(droppedOn, allDroppedOnAreas)
-        return events
+        return mutableListOf()
     }
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
-        if (!isVisible() || multipleElementsSelected()) {
-            return mutableMapOf()
-        }
-
         val result = super.doRenderWithoutChildren(ctx).toMutableMap()
         result[elementId]?.let {
-            result[elementId] = it.copy(areaType = AreaType.SELECTS_DRAG_TARGET, anchorsForWaypoints = waypointAnchors(ctx.canvas.camera))
+            result[elementId] = it.copy(areaType = AreaType.POINT, anchorsForWaypoints = waypointAnchors(ctx.canvas.camera))
         }
         return result
     }
 
     override fun icon(): Icon {
-        return state.icons.sequence
+        return icon
     }
 
     override fun acceptsInternalEvents(): Boolean {

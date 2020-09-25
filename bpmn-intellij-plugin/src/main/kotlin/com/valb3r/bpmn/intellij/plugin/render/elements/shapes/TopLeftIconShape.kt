@@ -11,8 +11,8 @@ import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
 import javax.swing.Icon
 
 class TopLeftIconShape(
-        override val elementId: DiagramElementId,
-        override val bpmnElementId: BpmnElementId,
+        elementId: DiagramElementId,
+        bpmnElementId: BpmnElementId,
         private val icon: Icon,
         shape: ShapeElement,
         state: RenderState,

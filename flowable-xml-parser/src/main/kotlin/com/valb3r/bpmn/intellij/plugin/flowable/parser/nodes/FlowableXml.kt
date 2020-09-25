@@ -164,7 +164,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return applyBoundaryEventCustomizationByType(body)
     }
 
-    private fun applySubprocessCustomizationByEventTrigger(process: BpmnProcessBody): BpmnProcessBody {
+    private fun applyServiceTaskCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
         result = extractTasksBasedOnType(result, "camel",  Mappers.getMapper(CamelMapper::class.java)) { updates, target -> target.copy(camelTask = updates) }
         result = extractTasksBasedOnType(result, "http",  Mappers.getMapper(HttpMapper::class.java)) { updates, target -> target.copy(httpTask = updates) }
@@ -175,7 +175,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return result
     }
 
-    private fun applyServiceTaskCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
+    private fun applySubprocessCustomizationByEventTrigger(process: BpmnProcessBody): BpmnProcessBody {
         val mapper = Mappers.getMapper(EventSubProcessMapper::class.java)
         process.subProcess?.apply {
             val byTypeGroup = this.groupBy { it.triggeredByEvent == true }
@@ -312,6 +312,13 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         UserTask.UserTaskMapping::class
     ])
     interface BodyMapping {
+
+        @Mappings(
+                Mapping(source = "subProcess", target = "subProcess"),
+                Mapping(source = "subProcess", target = "collapsedSubProcess"), // will be post-filtered
+                Mapping(source = "transaction", target = "transaction"),
+                Mapping(source = "transaction", target = "collapsedTransaction") // will be post-filtered
+        )
         fun convertToDto(input: ProcessBody): BpmnProcessBody
     }
 

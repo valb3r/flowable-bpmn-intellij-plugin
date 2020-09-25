@@ -36,6 +36,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnFile
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.DiagramNode
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.ProcessNode
 import org.dom4j.*
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.SAXReader
@@ -159,7 +161,7 @@ class FlowableParser : BpmnParser {
      * Impossible to use FasterXML - Multiple objects of same type issue:
      * https://github.com/FasterXML/jackson-dataformat-xml/issues/205
      */
-    override fun update(input: String, events: List<Event>): String {
+    override fun update(input: String, events: List<EventPropagatableToXml>): String {
         val reader = SAXReader()
         val doc = reader.read(ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8)))
 
@@ -169,7 +171,7 @@ class FlowableParser : BpmnParser {
         return os.toString(StandardCharsets.UTF_8.name())
     }
 
-    private fun parseAndWrite(doc: Document, os: OutputStream, events: List<Event>) {
+    private fun parseAndWrite(doc: Document, os: OutputStream, events: List<EventPropagatableToXml>) {
         doUpdate(doc, events)
 
         val format = OutputFormat.createPrettyPrint()
@@ -179,7 +181,7 @@ class FlowableParser : BpmnParser {
         writer.write(doc)
     }
 
-    private fun doUpdate(doc: Document, events: List<Event>) {
+    private fun doUpdate(doc: Document, events: List<EventPropagatableToXml>) {
         for (event in events) {
             when (event) {
                 is LocationUpdateWithId -> applyLocationUpdate(doc, event)
@@ -296,7 +298,7 @@ class FlowableParser : BpmnParser {
 
     private fun applyBpmnElementRemoved(doc: Document, update: BpmnElementRemoved) {
         val node = doc.selectSingleNode(
-                "//*[local-name()='process']//*[@id='${update.elementId.id}'][1]"
+                "//*[local-name()='process']//*[@id='${update.bpmnElementId.id}'][1]"
         ) as Node
 
         val parent = node.parent
@@ -637,12 +639,28 @@ class FlowableParser : BpmnParser {
     }
 
     private fun toProcessObject(dto: BpmnFile): BpmnProcessObject {
-        // TODO - Multi process support
+        // TODO - Multi process support?
+        markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
         val process = dto.processes[0].toElement()
-        // TODO - Multi diagram support
-        val diagram = dto.diagrams!![0].toElement()
+        val diagrams = dto.diagrams!!.map { it.toElement() }
 
-        return BpmnProcessObject(process, listOf(diagram))
+        return BpmnProcessObject(process, diagrams)
+    }
+
+    // Mark 'collapsed' subprocesses where diagram is different from 1st one
+    private fun markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(process: ProcessNode, diagrams: List<DiagramNode>) {
+        if (diagrams.size <= 1) {
+            return
+        }
+
+        val externalDiagrams = diagrams.subList(1, diagrams.size).map { it.bpmnPlane.bpmnElement }.toSet()
+
+        fun elementIsInExternalDiagram(id: String?): Boolean {
+            return externalDiagrams.contains(id)
+        }
+
+        process.subProcess?.forEach { it.hasExternalDiagram = elementIsInExternalDiagram(it.id) }
+        process.transaction?.forEach { it.hasExternalDiagram = elementIsInExternalDiagram(it.id) }
     }
 
     private fun mapper(): XmlMapper {

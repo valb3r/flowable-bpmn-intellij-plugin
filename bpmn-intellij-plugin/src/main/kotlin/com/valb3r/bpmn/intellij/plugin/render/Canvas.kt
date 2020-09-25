@@ -45,7 +45,7 @@ internal fun setCanvas(canvas: Canvas): Canvas {
 
 class Canvas(private val settings: CanvasConstants) : JPanel() {
     private val stateProvider = currentStateProvider()
-    private val closeAnchorRadius = 100.0f;
+    private val closeAnchorRadius = 100.0f
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))

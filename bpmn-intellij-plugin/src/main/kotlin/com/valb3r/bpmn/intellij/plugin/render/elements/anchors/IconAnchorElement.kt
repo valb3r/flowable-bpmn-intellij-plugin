@@ -11,10 +11,11 @@ import java.awt.geom.Point2D
 import javax.swing.Icon
 
 abstract class IconAnchorElement(
-        override val elementId: DiagramElementId,
+        elementId: DiagramElementId,
+        attachedTo: DiagramElementId?,
         currentLocation: Point2D.Float,
         state: RenderState
-): AnchorElement(elementId, currentLocation, state) {
+): AnchorElement(elementId, attachedTo, currentLocation, state) {
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val icon = icon()

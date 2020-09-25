@@ -3,22 +3,21 @@ package com.valb3r.bpmn.intellij.plugin.render.elements.anchors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
-import com.valb3r.bpmn.intellij.plugin.render.AreaWithZindex
-import com.valb3r.bpmn.intellij.plugin.render.Camera
-import com.valb3r.bpmn.intellij.plugin.render.ICON_Z_INDEX
-import com.valb3r.bpmn.intellij.plugin.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.render.*
 import com.valb3r.bpmn.intellij.plugin.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.render.elements.viewtransform.RectangleTransformationIntrospection
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.Icon
 
 // TODO code duplication with ShapeResizeAnchorBottom
 class ShapeResizeAnchorTop(
-        override val elementId: DiagramElementId,
+        elementId: DiagramElementId,
+        private val parent: DiagramElementId,
         private val bottomPoint: Point2D.Float,
         private val onDragEndCallback: (() -> MutableList<Event>),
         state: RenderState
-) : IconAnchorElement(elementId, bottomPoint, state) {
+) : IconAnchorElement(elementId, parent, bottomPoint, state) {
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         val icon = icon()
@@ -28,11 +27,16 @@ class ShapeResizeAnchorTop(
         val height = iconRight.y - iconLeft.y
 
         return viewTransform.transform(
-                Rectangle2D.Float(
-                        bottomPoint.x - width,
-                        bottomPoint.y - height,
-                        width,
-                        height
+                elementId,
+                RectangleTransformationIntrospection(
+                        Rectangle2D.Float(
+                                bottomPoint.x - width,
+                                bottomPoint.y - height,
+                                width,
+                                height
+                        ),
+                        AreaType.SHAPE,
+                        parent
                 )
         )
     }

@@ -25,12 +25,12 @@ fun updateEventsRegistry(): ProcessModelUpdateEvents {
 }
 
 interface FileCommitter {
-    fun executeCommitAndGetHash(content: String?, events: List<Event>, hasher: (String) -> String, updateHash: (String) -> Unit)
+    fun executeCommitAndGetHash(content: String?, events: List<EventPropagatableToXml>, hasher: (String) -> String, updateHash: (String) -> Unit)
 }
 
 class IntelliJFileCommitter(private val parser: BpmnParser, private val project: Project, private val file: VirtualFile): FileCommitter {
 
-    override fun executeCommitAndGetHash(content: String?, events: List<Event>, hasher: (String) -> String, updateHash: (String) -> Unit) {
+    override fun executeCommitAndGetHash(content: String?, events: List<EventPropagatableToXml>, hasher: (String) -> String, updateHash: (String) -> Unit) {
         var hash: String?
         val doc = FileDocumentManager.getInstance().getDocument(file)!!
         WriteCommandAction.runWriteCommandAction(project) {
@@ -117,7 +117,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
     fun commitToFile() {
         committer.executeCommitAndGetHash(
                 baseFileContent,
-                updates.filterIndexed { index, _ -> index < allBeforeThis }.map { it.event },
+                updates.filterIndexed { index, _ -> index < allBeforeThis }.map { it.event }.filterIsInstance<EventPropagatableToXml>(),
                 { hashData(it) },
                 { expectedFileHash = it}
         )
@@ -148,7 +148,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
             updates.add(toStore)
             when (event) {
                 is PropertyUpdateWithId -> propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
-                is LocationUpdateWithId, is BpmnShapeResizedAndMoved, is NewWaypoints, is BpmnParentChanged -> { /*NOP*/ }
+                is LocationUpdateWithId, is BpmnShapeResizedAndMoved, is NewWaypoints, is BpmnParentChanged, is EventUiOnly -> { /*NOP*/ }
                 is BpmnShapeObjectAddedEvent -> addObjectShapeEvent(toStore as Order<BpmnShapeObjectAddedEvent>)
                 is BpmnEdgeObjectAddedEvent -> addObjectEdgeEvent(toStore as Order<BpmnEdgeObjectAddedEvent>)
                 else -> throw IllegalArgumentException("Can't bulk add: " + event::class.qualifiedName)
@@ -174,7 +174,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
         bpmn.forEachIndexed {index, event ->
             val toStore = Order(current + index, event, EventBlock(blockSize))
             updates.add(toStore)
-            deletionsByStaticBpmnId.computeIfAbsent(event.elementId) { CopyOnWriteArrayList() } += toStore
+            deletionsByStaticBpmnId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
         }
 
         commitToFile()
@@ -232,7 +232,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
     }
 
     data class Order<T: Event>(override val order: Int, override val event: T, override val block: EventBlock? = null): EventOrder<T>
-    data class NullEvent(val forId: String): Event
+    data class NullEvent(val forId: String): EventUiOnly
 
     enum class UndoRedo {
         UNDO,

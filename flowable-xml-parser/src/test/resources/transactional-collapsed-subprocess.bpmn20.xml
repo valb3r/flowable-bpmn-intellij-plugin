@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.flowable.org/processdef">
+    <process id="transactional-collapsed-subprocess" name="transactional-collapsed-subprocess" isExecutable="true">
+        <startEvent id="startEvent" flowable:formFieldValidation="true"></startEvent>
+        <endEvent id="sid-D1AA9503-1CA6-4F7C-BE57-C3FB55F87443" name="endEvent"></endEvent>
+        <transaction id="transactionalCollapsedSubprocess" name="subProcess"></transaction>
+        <transaction id="transactionalSubprocess" name="subProcess"></transaction>
+        <sequenceFlow id="sid-ACFA6668-EA33-4776-8C6B-A719753B834C" sourceRef="startEvent" targetRef="transactionalSubprocess"></sequenceFlow>
+        <sequenceFlow id="sid-2849104E-212F-4940-924A-B0C866942BBB" sourceRef="transactionalSubprocess" targetRef="transactionalCollapsedSubprocess"></sequenceFlow>
+        <sequenceFlow id="sid-4EBE8673-726D-47D8-B02A-6A63AEA86DD2" sourceRef="transactionalCollapsedSubprocess" targetRef="sid-D1AA9503-1CA6-4F7C-BE57-C3FB55F87443"></sequenceFlow>
+    </process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_transactional-collapsed-subprocess">
+        <bpmndi:BPMNPlane bpmnElement="transactional-collapsed-subprocess" id="BPMNPlane_transactional-collapsed-subprocess">
+            <bpmndi:BPMNShape bpmnElement="startEvent" id="BPMNShape_startEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="100.0" y="163.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-D1AA9503-1CA6-4F7C-BE57-C3FB55F87443" id="BPMNShape_sid-D1AA9503-1CA6-4F7C-BE57-C3FB55F87443">
+                <omgdc:Bounds height="28.0" width="28.0" x="765.0" y="162.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="transactionalCollapsedSubprocess" id="BPMNShape_transactionalCollapsedSubprocess" isExpanded="false">
+                <omgdc:Bounds height="80.0" width="100.0" x="525.0" y="136.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="transactionalSubprocess" id="BPMNShape_transactionalSubprocess">
+                <omgdc:Bounds height="160.0" width="200.0" x="195.0" y="98.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNEdge bpmnElement="sid-ACFA6668-EA33-4776-8C6B-A719753B834C" id="BPMNEdge_sid-ACFA6668-EA33-4776-8C6B-A719753B834C">
+                <omgdi:waypoint x="129.94999943586103" y="178.0"></omgdi:waypoint>
+                <omgdi:waypoint x="194.9999999999357" y="178.0"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-4EBE8673-726D-47D8-B02A-6A63AEA86DD2" id="BPMNEdge_sid-4EBE8673-726D-47D8-B02A-6A63AEA86DD2">
+                <omgdi:waypoint x="624.9499999999294" y="176.0"></omgdi:waypoint>
+                <omgdi:waypoint x="765.0" y="176.0"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-2849104E-212F-4940-924A-B0C866942BBB" id="BPMNEdge_sid-2849104E-212F-4940-924A-B0C866942BBB">
+                <omgdi:waypoint x="394.9499999999995" y="177.28571428571428"></omgdi:waypoint>
+                <omgdi:waypoint x="524.9999999999985" y="176.35678571428573"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_transactionalCollapsedSubprocess">
+        <bpmndi:BPMNPlane bpmnElement="transactionalCollapsedSubprocess" id="BPMNPlane_transactionalCollapsedSubprocess"></bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</definitions>
