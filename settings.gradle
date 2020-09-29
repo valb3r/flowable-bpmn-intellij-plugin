@@ -2,9 +2,11 @@ rootProject.name = 'flowable-bpmn-plugin'
 
 include 'xml-parser-api'
 include 'flowable-xml-parser'
+include 'activity-xml-parser'
 include 'bpmn-intellij-plugin'
 
 project(":xml-parser-api").projectDir = file("xml-parser-api")
 project(":flowable-xml-parser").projectDir = file("flowable-xml-parser")
+project(":activity-xml-parser").projectDir = file("activity-xml-parser")
 project(":bpmn-intellij-plugin").projectDir = file("bpmn-intellij-plugin")
 
