@@ -109,7 +109,6 @@ enum class PropertyTypeDetails(
     RESULT_VARIABLE_PREFIX(PropertyType.RESULT_VARIABLE_PREFIX, "extensionElements.activiti:field?name=resultVariablePrefix.activiti:string.text", XmlType.CDATA),
     SAVE_RESPONSE_PARAMETERS_TRANSIENT(PropertyType.SAVE_RESPONSE_PARAMETERS_TRANSIENT, "extensionElements.activiti:field?name=saveResponseParametersTransient.activiti:string.text", XmlType.CDATA),
     SAVE_RESPONSE_VARIABLE_AS_JSON(PropertyType.SAVE_RESPONSE_VARIABLE_AS_JSON, "extensionElements.activiti:field?name=saveResponseVariableAsJson.activiti:string.text", XmlType.CDATA),
-    HEADERS(PropertyType.HEADERS, "extensionElements.activiti:field?name=headers.activiti:string.text", XmlType.CDATA),
     TO(PropertyType.TO, "extensionElements.activiti:field?name=to.activiti:string.text", XmlType.CDATA),
     FROM(PropertyType.FROM, "extensionElements.activiti:field?name=from.activiti:string.text", XmlType.CDATA),
     SUBJECT(PropertyType.SUBJECT, "extensionElements.activiti:field?name=subject.activiti:string.text", XmlType.CDATA),

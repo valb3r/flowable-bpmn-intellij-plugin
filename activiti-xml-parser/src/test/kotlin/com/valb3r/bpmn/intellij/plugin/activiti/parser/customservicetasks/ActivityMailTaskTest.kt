@@ -1,20 +1,18 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnMailTask
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivityObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivityObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNullOrEmpty
-import org.amshove.kluent.shouldBeTrue
-import org.amshove.kluent.shouldHaveSingleItem
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnMailTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 private const val FILE = "custom-service-tasks/mail-task.bpmn20.xml"
 
@@ -34,7 +32,7 @@ internal class ActivityMailTaskTest {
         task.async!!.shouldBeTrue()
         // TODO 'exclusive' ?
         task.isForCompensation!!.shouldBeTrue()
-        task.headers.shouldBeEqualTo("Header1,Header2")
+        task.headers.shouldBeNull() // Activity does not support headers
         task.to.shouldBeEqualTo("bar@example.com")
         task.from.shouldBeEqualTo("foo@example.com")
         task.subject.shouldBeEqualTo("Got to be drunk")
@@ -68,7 +66,7 @@ internal class ActivityMailTaskTest {
         {value: String -> readAndUpdate(PropertyType.DOCUMENTATION, value).documentation.shouldBeEqualTo(value)} ("new docs");
         {value: Boolean -> readAndUpdate(PropertyType.ASYNC, value).async.shouldBeEqualTo(value)} (false);
         {value: Boolean -> readAndUpdate(PropertyType.IS_FOR_COMPENSATION, value).isForCompensation.shouldBeEqualTo(value)} (false);
-        {value: String -> readAndUpdate(PropertyType.HEADERS, value).headers.shouldBeEqualTo(value)} ("Header111");
+        {value: String -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.HEADERS, value).headers.shouldBeEqualTo(value)}} ("Header111");
         {value: String -> readAndUpdate(PropertyType.TO, value).to.shouldBeEqualTo(value)} ("to@bar.example.com");
         {value: String -> readAndUpdate(PropertyType.FROM, value).from.shouldBeEqualTo(value)} ("from@bar.example.com");
         {value: String -> readAndUpdate(PropertyType.SUBJECT, value).subject.shouldBeEqualTo(value)} ("Some subject to discuss?");
@@ -83,7 +81,7 @@ internal class ActivityMailTaskTest {
     fun `Mail task fields are emptyable`() {
         readAndSetNullString(PropertyType.NAME).name.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
-        readAndSetNullString(PropertyType.HEADERS).headers.shouldBeNullOrEmpty()
+        assertThrows<IllegalStateException> {readAndSetNullString(PropertyType.HEADERS)}
         readAndSetNullString(PropertyType.TO).to.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.FROM).from.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.SUBJECT).subject.shouldBeNullOrEmpty()

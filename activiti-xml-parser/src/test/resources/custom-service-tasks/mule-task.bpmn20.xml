@@ -3,7 +3,7 @@
     <process id="custom-service-task" name="custom-service-task" isExecutable="true">
         <documentation>Docs for camel task</documentation>
         <startEvent id="startEvent1"></startEvent>
-        <serviceTask id="muleTaskId" name="Mule task name" activiti:async="true" activiti:type="mule">
+        <serviceTask id="muleTaskId" name="Mule task name" activiti:async="true" activiti:type="mule" isForCompensation="true">
             <documentation>Docs for mule task</documentation>
             <extensionElements>
                 <activiti:field name="endpointUrl">
