@@ -3,7 +3,7 @@
     <process id="custom-service-task" name="custom-service-task" isExecutable="true">
         <documentation>Docs for camel task</documentation>
         <startEvent id="startEvent1"></startEvent>
-        <businessRuleTask id="businessRuleTask" name="Business rule task" activiti:async="true" activiti:ruleVariablesInput="INPUT_VAR" activiti:rules="Rule1,Rule2" activiti:resultVariable="RESULT_VAR">
+        <businessRuleTask id="businessRuleTask" name="Business rule task" activiti:exclude="true" activiti:async="true" activiti:ruleVariablesInput="INPUT_VAR" activiti:rules="Rule1,Rule2" activiti:resultVariable="RESULT_VAR" isForCompensation="true">
             <documentation>Docs for business rule task</documentation>
         </businessRuleTask>
     </process>

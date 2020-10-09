@@ -3,7 +3,7 @@
     <process id="custom-service-task" name="custom-service-task" isExecutable="true">
         <documentation>Docs for camel task</documentation>
         <startEvent id="startEvent1"></startEvent>
-        <serviceTask id="serviceTaskId" name="Service task name" activiti:async="true" activiti:class="com.foo.bar" activiti:resultVariableName="RESULT_VAR">
+        <serviceTask id="serviceTaskId" name="Service task name" activiti:async="true" activiti:delegateExpression="${do.delegateTo()}" activiti:expression="#{some.expr()}" activiti:class="com.foo.bar" activiti:resultVariableName="RESULT_VAR" isForCompensation="true">
             <documentation>Docs for service task</documentation>
         </serviceTask>
     </process>

@@ -1,15 +1,15 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnScriptTask
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivityObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivityObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnScriptTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeNullOrEmpty
 import org.amshove.kluent.shouldBeTrue
@@ -35,7 +35,7 @@ internal class ActivityScriptTaskTest {
         // TODO 'exclusive' ?
         task.isForCompensation!!.shouldBeTrue()
         task.scriptFormat.shouldBeEqualTo("bash")
-        task.autoStoreVariables.shouldBeEqualTo(true)
+        task.autoStoreVariables.shouldBeEqualTo(false)
         task.scriptBody.shouldBeEqualTo("echo \"Foo Bar!\" > /tmp/foo.txt")
 
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivityObjectFactory()).elemPropertiesByElementId[task.id]!!

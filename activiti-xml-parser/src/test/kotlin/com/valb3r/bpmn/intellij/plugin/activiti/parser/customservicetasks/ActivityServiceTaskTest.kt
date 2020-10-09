@@ -1,20 +1,18 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivityObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivityObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNullOrEmpty
-import org.amshove.kluent.shouldBeTrue
-import org.amshove.kluent.shouldHaveSingleItem
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 private const val FILE = "custom-service-tasks/service-task.bpmn20.xml"
 
@@ -38,9 +36,9 @@ internal class ActivityServiceTaskTest {
         task.clazz.shouldBeEqualTo("com.foo.bar")
         task.expression.shouldBeEqualTo("#{some.expr()}")
         task.resultVariableName.shouldBeEqualTo("RESULT_VAR")
-        task.skipExpression.shouldBeEqualTo("\${do.skip}")
-        task.triggerable!!.shouldBeTrue()
-        task.useLocalScopeForResultVariable!!.shouldBeTrue()
+        task.skipExpression.shouldBeNull()
+        task.triggerable.shouldBeNull()
+        task.useLocalScopeForResultVariable.shouldBeNull()
         // TODO handle deep extension elements - field
 
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivityObjectFactory()).elemPropertiesByElementId[task.id]!!
@@ -69,9 +67,9 @@ internal class ActivityServiceTaskTest {
         {value: String -> readAndUpdate(PropertyType.CLASS, value).clazz.shouldBeEqualTo(value)} ("com.foo.bar.another.class");
         {value: String -> readAndUpdate(PropertyType.EXPRESSION, value).expression.shouldBeEqualTo(value)} ("#{some.expr()}");
         {value: String -> readAndUpdate(PropertyType.RESULT_VARIABLE_NAME, value).resultVariableName.shouldBeEqualTo(value)} ("NEW_RESULT_TO");
-        {value: String -> readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeEqualTo(value)} ("#{skipStuff.yes()}");
-        {value: Boolean -> readAndUpdate(PropertyType.IS_TRIGGERABLE, value).triggerable.shouldBeEqualTo(value)} (false);
-        {value: Boolean -> readAndUpdate(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, value).useLocalScopeForResultVariable.shouldBeEqualTo(value)} (false)
+        {value: String -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeEqualTo(value)}} ("#{skipStuff.yes()}");
+        {value: Boolean -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.IS_TRIGGERABLE, value).triggerable.shouldBeEqualTo(value)}} (false);
+        {value: Boolean -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, value).useLocalScopeForResultVariable.shouldBeEqualTo(value)}} (false)
     }
 
     @Test
@@ -82,7 +80,7 @@ internal class ActivityServiceTaskTest {
         readAndSetNullString(PropertyType.CLASS).clazz.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.EXPRESSION).expression.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.RESULT_VARIABLE_NAME).resultVariableName.shouldBeNullOrEmpty()
-        readAndSetNullString(PropertyType.SKIP_EXPRESSION).skipExpression.shouldBeNullOrEmpty()
+        assertThrows<IllegalStateException> {readAndSetNullString(PropertyType.SKIP_EXPRESSION)}
     }
 
     private fun readAndSetNullString(property: PropertyType): BpmnServiceTask {
