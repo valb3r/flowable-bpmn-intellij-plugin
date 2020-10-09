@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
+    <process id="simple-nested" name="simple-nested" isExecutable="true">
+        <documentation>Simple nested process</documentation>
+        <startEvent id="startEvent"></startEvent>
+        <subProcess id="subProcess" name="subProcess">
+            <serviceTask id="nestedServiceTaskFirst"></serviceTask>
+            <serviceTask id="nestedServiceTaskSecond"></serviceTask>
+            <sequenceFlow id="nestedLink" sourceRef="nestedServiceTaskFirst" targetRef="nestedServiceTaskSecond"></sequenceFlow>
+        </subProcess>
+        <serviceTask id="serviceTask"></serviceTask>
+        <sequenceFlow id="linkToServiceTask" sourceRef="subProcess" targetRef="serviceTask"></sequenceFlow>
+        <sequenceFlow id="linkToSubprocess" sourceRef="startEvent" targetRef="subProcess"></sequenceFlow>
+    </process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_simple-nested">
+        <bpmndi:BPMNPlane bpmnElement="simple-nested" id="BPMNPlane_simple-nested">
+            <bpmndi:BPMNShape bpmnElement="startEvent" id="BPMNShape_startEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="100.0" y="363.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="subProcess" id="BPMNShape_subProcess">
+                <omgdc:Bounds height="398.0" width="167.0" x="225.0" y="179.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="nestedServiceTaskFirst" id="BPMNShape_nestedServiceTaskFirst">
+                <omgdc:Bounds height="80.0" width="100.0" x="258.5" y="225.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="nestedServiceTaskSecond" id="BPMNShape_nestedServiceTaskSecond">
+                <omgdc:Bounds height="80.0" width="100.0" x="258.5" y="450.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="serviceTask" id="BPMNShape_serviceTask">
+                <omgdc:Bounds height="80.0" width="100.0" x="504.70001220703125" y="338.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNEdge bpmnElement="linkToServiceTask" id="BPMNEdge_linkToServiceTask">
+                <omgdi:waypoint x="392.0" y="378.0"></omgdi:waypoint>
+                <omgdi:waypoint x="504.70001220703125" y="378.0"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="nestedLink" id="BPMNEdge_nestedLink">
+                <omgdi:waypoint x="308.5" y="305.0"></omgdi:waypoint>
+                <omgdi:waypoint x="308.5" y="450.0"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="linkToSubprocess" id="BPMNEdge_linkToSubprocess">
+                <omgdi:waypoint x="130.0" y="378.0"></omgdi:waypoint>
+                <omgdi:waypoint x="225.0" y="378.0"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</definitions>

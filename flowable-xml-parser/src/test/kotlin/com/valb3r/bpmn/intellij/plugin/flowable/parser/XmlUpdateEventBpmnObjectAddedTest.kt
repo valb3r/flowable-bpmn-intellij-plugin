@@ -395,7 +395,7 @@ internal class XmlUpdateEventBpmnObjectAddedTest {
 
     private fun readAndUpdateProcess(event: EventPropagatableToXml): BpmnProcessObject {
         val updated = parser.update(
-                "simple-nested.bmpn20.xml".asResource()!!,
+                "simple-nested.bpmn20.xml".asResource()!!,
                 listOf(event)
         )
 
