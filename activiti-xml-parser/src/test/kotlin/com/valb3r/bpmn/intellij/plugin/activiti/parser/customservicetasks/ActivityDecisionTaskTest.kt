@@ -1,20 +1,18 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnDecisionTask
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivityObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivityObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNullOrEmpty
-import org.amshove.kluent.shouldBeTrue
-import org.amshove.kluent.shouldHaveSingleItem
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnDecisionTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 private const val FILE = "custom-service-tasks/decision-task.bpmn20.xml"
 
@@ -35,8 +33,8 @@ internal class ActivityDecisionTaskTest {
         // TODO 'exclusive' ?
         task.isForCompensation!!.shouldBeTrue()
         task.decisionTableReferenceKey.shouldBeEqualTo("Tablekey")
-        task.decisionTaskThrowErrorOnNoHits.shouldBeEqualTo(true)
-        task.fallbackToDefaultTenantCdata.shouldBeEqualTo(true)
+        task.decisionTaskThrowErrorOnNoHits.shouldBeNull() // Not supported by activity
+        task.fallbackToDefaultTenantCdata.shouldBeNull() // Not supported by activity
 
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivityObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
@@ -57,8 +55,8 @@ internal class ActivityDecisionTaskTest {
         {value: Boolean -> readAndUpdate(PropertyType.ASYNC, value).async.shouldBeEqualTo(value)} (false);
         {value: Boolean -> readAndUpdate(PropertyType.IS_FOR_COMPENSATION, value).isForCompensation.shouldBeEqualTo(value)} (false);
         {value: String -> readAndUpdate(PropertyType.DECISION_TABLE_REFERENCE_KEY, value).decisionTableReferenceKey.shouldBeEqualTo(value)} ("My table");
-        {value: Boolean -> readAndUpdate(PropertyType.DECISION_TASK_THROW_ERROR_ON_NO_HITS, value).decisionTaskThrowErrorOnNoHits.shouldBeEqualTo(value)} (false);
-        {value: Boolean -> readAndUpdate(PropertyType.FALLBACK_TO_DEF_TENANT_CDATA, value).fallbackToDefaultTenantCdata.shouldBeEqualTo(value)} (false)
+        {value: Boolean -> assertThrows<IllegalStateException> { readAndUpdate(PropertyType.DECISION_TASK_THROW_ERROR_ON_NO_HITS, value) }} (false);
+        {value: Boolean -> assertThrows<IllegalStateException> { readAndUpdate(PropertyType.FALLBACK_TO_DEF_TENANT_CDATA, value) }} (false);
     }
 
     @Test

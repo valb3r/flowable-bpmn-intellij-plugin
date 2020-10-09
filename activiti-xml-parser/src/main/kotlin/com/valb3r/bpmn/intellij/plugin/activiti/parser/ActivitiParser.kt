@@ -96,8 +96,6 @@ enum class PropertyTypeDetails(
     IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, "activiti:useLocalScopeForResultVariable", XmlType.ATTRIBUTE),
     CAMEL_CONTEXT(PropertyType.CAMEL_CONTEXT, "extensionElements.activiti:field?name=camelContext.activiti:string.text", XmlType.CDATA),
     DECISION_TABLE_REFERENCE_KEY(PropertyType.DECISION_TABLE_REFERENCE_KEY, "extensionElements.activiti:field?name=decisionTableReferenceKey.activiti:string.text", XmlType.CDATA),
-    DECISION_TASK_THROW_ERROR_ON_NO_HITS(PropertyType.DECISION_TASK_THROW_ERROR_ON_NO_HITS, "extensionElements.activiti:field?name=decisionTaskThrowErrorOnNoHits.activiti:string.text", XmlType.CDATA),
-    FALLBACK_TO_DEF_TENANT_CDATA(PropertyType.FALLBACK_TO_DEF_TENANT_CDATA, "extensionElements.activiti:field?name=fallbackToDefaultTenant.activiti:string.text", XmlType.CDATA),
     REQUEST_METHOD(PropertyType.REQUEST_METHOD, "extensionElements.activiti:field?name=requestMethod.activiti:string.text", XmlType.CDATA),
     REQUEST_URL(PropertyType.REQUEST_URL, "extensionElements.activiti:field?name=requestUrl.activiti:string.text", XmlType.CDATA),
     REQUEST_HEADERS(PropertyType.REQUEST_HEADERS, "extensionElements.activiti:field?name=requestHeaders.activiti:string.text", XmlType.CDATA),
@@ -503,7 +501,8 @@ class ActivitiParser : BpmnParser {
 
 
     private fun setToNode(node: Element, type: PropertyType, value: Any?) {
-        val details = PropertyTypeDetails.values().firstOrNull { it.propertyType == type }!!
+        val details = PropertyTypeDetails.values().firstOrNull { it.propertyType == type }
+                ?: throw IllegalStateException("Wrong (or unsupported) property type details $type")
         when {
             details.xmlPath.contains(".") -> setNestedToNode(node, type, details, value)
             else -> setAttributeOrValueOrCdataOrRemoveIfNull(node, details.xmlPath, details, asString(type.valueType, value))
