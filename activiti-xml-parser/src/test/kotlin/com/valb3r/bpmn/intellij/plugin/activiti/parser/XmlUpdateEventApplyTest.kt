@@ -1,12 +1,12 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser
 
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.*
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -111,8 +111,8 @@ internal class XmlUpdateEventApplyTest {
         val draggedElem = updatedProcess.diagram.filter { it.id == parentDiagramElementId }.shouldHaveSingleItem()
                 .bpmnPlane.bpmnShape!!.filter {it.id == flatServiceTaskDiagramId}.shouldHaveSingleItem()
 
-        draggedElem.rectBounds().x.shouldBeNear(595.0f, EPSILON)
-        draggedElem.rectBounds().y.shouldBeNear(204.5f, EPSILON)
+        draggedElem.rectBounds().x.shouldBeNear(514.7f, EPSILON)
+        draggedElem.rectBounds().y.shouldBeNear(348.0f, EPSILON)
         draggedElem.rectBounds().width.shouldBeNear(100.0f, EPSILON)
         draggedElem.rectBounds().height.shouldBeNear(80.0f, EPSILON)
     }
@@ -132,8 +132,8 @@ internal class XmlUpdateEventApplyTest {
         val draggedElem = updatedProcess.diagram.filter { it.id == parentDiagramElementId }.shouldHaveSingleItem()
                 .bpmnPlane.bpmnEdge!!.filter { it.id == flatEdgeDiagramId }.shouldHaveSingleItem()
 
-        draggedElem.waypoint!![0].x.shouldBeNear(114.95f, EPSILON)
-        draggedElem.waypoint!![0].y.shouldBeNear(244.5f, EPSILON)
+        draggedElem.waypoint!![0].x.shouldBeNear(140.0f, EPSILON)
+        draggedElem.waypoint!![0].y.shouldBeNear(388.0f, EPSILON)
     }
 
     // Nesting does not apply to diagram
@@ -245,8 +245,8 @@ internal class XmlUpdateEventApplyTest {
         val draggedElem = updatedProcess.diagram.filter { it.id == parentDiagramElementId }.shouldHaveSingleItem()
                 .bpmnPlane.bpmnShape!!.filter {it.id == flatServiceTaskDiagramId}.shouldHaveSingleItem()
 
-        draggedElem.rectBounds().x.shouldBeNear(1170.0f, EPSILON)
-        draggedElem.rectBounds().y.shouldBeNear(389.0f, EPSILON)
+        draggedElem.rectBounds().x.shouldBeNear(1009.4f, EPSILON)
+        draggedElem.rectBounds().y.shouldBeNear(676.0f, EPSILON)
         draggedElem.rectBounds().width.shouldBeNear(200.0f, EPSILON)
         draggedElem.rectBounds().height.shouldBeNear(160.0f, EPSILON)
     }

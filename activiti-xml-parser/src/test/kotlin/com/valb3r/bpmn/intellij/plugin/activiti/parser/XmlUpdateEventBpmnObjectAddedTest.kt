@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser
 
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BpmnShapeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
@@ -30,7 +31,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BpmnShapeObjectAddedEvent
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldHaveSingleItem
 import org.amshove.kluent.shouldNotBeNull
@@ -395,7 +395,7 @@ internal class XmlUpdateEventBpmnObjectAddedTest {
 
     private fun readAndUpdateProcess(event: EventPropagatableToXml): BpmnProcessObject {
         val updated = parser.update(
-                "simple-nested.bmpn20.xml".asResource()!!,
+                "simple-nested.bpmn20.xml".asResource()!!,
                 listOf(event)
         )
 
