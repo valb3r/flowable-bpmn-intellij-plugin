@@ -1,20 +1,18 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivityObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivityObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNullOrEmpty
-import org.amshove.kluent.shouldBeTrue
-import org.amshove.kluent.shouldHaveSingleItem
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 private const val FILE = "custom-service-tasks/user-task.bpmn20.xml"
 
@@ -36,11 +34,11 @@ internal class ActivityUserTaskTest {
         task.isForCompensation!!.shouldBeTrue()
         task.assignee.shouldBeEqualTo("\$INITIATOR")
         task.dueDate.shouldBeEqualTo("2020-01-01")
-        task.category.shouldBeEqualTo("SOME_CATEGORY")
+        task.category.shouldBeNull() // Unsupported by Activity
         task.formKey.shouldBeEqualTo("FORM_KEY")
-        task.formFieldValidation.shouldBeEqualTo(true)
+        task.formFieldValidation.shouldBeNull() // Unsupported by Activity
         task.priority.shouldBeEqualTo("1")
-        task.skipExpression.shouldBeEqualTo("#{do.skip}")
+        task.skipExpression.shouldBeNull() // Unsupported by Activity
 
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivityObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
@@ -66,11 +64,11 @@ internal class ActivityUserTaskTest {
         {value: Boolean -> readAndUpdate(PropertyType.IS_FOR_COMPENSATION, value).isForCompensation.shouldBeEqualTo(value)} (false);
         {value: String -> readAndUpdate(PropertyType.ASSIGNEE, value).assignee.shouldBeEqualTo(value)} ("Assigned to");
         {value: String -> readAndUpdate(PropertyType.DUE_DATE, value).dueDate.shouldBeEqualTo(value)} ("2000-01-01");
-        {value: String -> readAndUpdate(PropertyType.CATEGORY, value).category.shouldBeEqualTo(value)} ("SOME_CAT123");
+        {value: String -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.CATEGORY, value).category.shouldBeEqualTo(value)}} ("SOME_CAT123");
         {value: String -> readAndUpdate(PropertyType.FORM_KEY, value).formKey.shouldBeEqualTo(value)} ("KEY_90");
-        {value: Boolean -> readAndUpdate(PropertyType.FORM_FIELD_VALIDATION, value).formFieldValidation.shouldBeEqualTo(value)} (false);
+        {value: Boolean -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.FORM_FIELD_VALIDATION, value).formFieldValidation.shouldBeEqualTo(value)}} (false);
         {value: String -> readAndUpdate(PropertyType.PRIORITY, value).priority.shouldBeEqualTo(value)} ("22");
-        {value: String -> readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeEqualTo(value)} ("#{something.wrong()}")
+        {value: String -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeEqualTo(value)}} ("#{something.wrong()}")
     }
 
     @Test
@@ -79,10 +77,10 @@ internal class ActivityUserTaskTest {
         readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.ASSIGNEE).assignee.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.DUE_DATE).dueDate.shouldBeNullOrEmpty()
-        readAndSetNullString(PropertyType.CATEGORY).category.shouldBeNullOrEmpty()
+        assertThrows<IllegalStateException> {readAndSetNullString(PropertyType.CATEGORY)}
         readAndSetNullString(PropertyType.FORM_KEY).formKey.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.PRIORITY).priority.shouldBeNullOrEmpty()
-        readAndSetNullString(PropertyType.SKIP_EXPRESSION).skipExpression.shouldBeNullOrEmpty()
+        assertThrows<IllegalStateException> {readAndSetNullString(PropertyType.SKIP_EXPRESSION)}
     }
 
     private fun readAndSetNullString(property: PropertyType): BpmnUserTask {
