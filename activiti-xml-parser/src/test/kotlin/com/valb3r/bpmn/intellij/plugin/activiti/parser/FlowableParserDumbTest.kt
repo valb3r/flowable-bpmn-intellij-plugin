@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser
 
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
@@ -10,7 +11,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.*
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -67,20 +67,20 @@ internal class ActivityParserDumbTest {
 
         processObject.shouldNotBeNull()
         processObject.process.body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
-        processObject.process.children!![BpmnElementId("sid-775FFB07-8CFB-4F82-A6EA-AB0E9BBB79A6")]!!.serviceTask!!.shouldHaveSize(2)
-        processObject.process.children!![BpmnElementId("sid-775FFB07-8CFB-4F82-A6EA-AB0E9BBB79A6")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlaced")
+        processObject.process.children!![BpmnElementId("sid-9E62AF47-D4DF-4492-BA2F-E531CEB29A03")]!!.serviceTask!!.shouldHaveSize(2)
+        processObject.process.children!![BpmnElementId("sid-9E62AF47-D4DF-4492-BA2F-E531CEB29A03")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlaced")
     }
 
     @Test
-    fun `XML process with nested adhoc subprocess elements that have interlaced subelems of same type should be parseable without error`() {
+    fun `XML process with nested other subprocess elements that have interlaced subelems of same type should be parseable without error`() {
         val processObject: BpmnProcessObject?
 
         processObject = ActivitiParser().parse("nested-interlaced.bpmn20.xml".asResource()!!)
 
         processObject.shouldNotBeNull()
         processObject.process.body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
-        processObject.process.children!![BpmnElementId("sid-5EEB495F-ACAC-4C04-99E1-691D906B3A30")]!!.serviceTask!!.shouldHaveSize(2)
-        processObject.process.children!![BpmnElementId("sid-5EEB495F-ACAC-4C04-99E1-691D906B3A30")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlacedOther")
+        processObject.process.children!![BpmnElementId("sid-0B5D0923-5542-44DA-B86D-C3E4B2883DC2")]!!.serviceTask!!.shouldHaveSize(2)
+        processObject.process.children!![BpmnElementId("sid-0B5D0923-5542-44DA-B86D-C3E4B2883DC2")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlacedOther")
     }
 
     @Test
@@ -91,15 +91,15 @@ internal class ActivityParserDumbTest {
 
         processObject.shouldNotBeNull()
         processObject.process.body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
-        processObject.process.children!![BpmnElementId("sid-1BB4FA80-C87F-4A05-95DF-753D06EE7424")]!!.serviceTask!!.shouldHaveSize(2)
-        processObject.process.children!![BpmnElementId("sid-1BB4FA80-C87F-4A05-95DF-753D06EE7424")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlacedYetOther")
+        processObject.process.children!![BpmnElementId("sid-77F95F37-ADC3-4EBB-8F21-AEF1C015D5EB")]!!.serviceTask!!.shouldHaveSize(2)
+        processObject.process.children!![BpmnElementId("sid-77F95F37-ADC3-4EBB-8F21-AEF1C015D5EB")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlacedYetOther")
     }
 
     @Test
     fun `XML process with interlaced elements of same type should be updatable with location without error`() {
         val updated = ActivitiParser().update(
                 "duplicates.bpmn20.xml".asResource()!!, listOf(
-                DraggedToEvent(DiagramElementId("None"), 10.0f, -10.0f, DiagramElementId("BPMNEdge_sid-F270B5BF-127E-422B-BF8D-6A6B7E411D31"), 0)
+                DraggedToEvent(DiagramElementId("None"), 10.0f, -10.0f, DiagramElementId("BPMNEdge_sid-133977D1-12A2-4FB0-A0C5-2FEB46A73650"), 0)
         ))
 
         updated.shouldNotBeNull()
@@ -110,7 +110,7 @@ internal class ActivityParserDumbTest {
         val updated = ActivitiParser().update(
                 "duplicates.bpmn20.xml".asResource()!!, listOf(
                 NewWaypointsEvent(
-                        DiagramElementId("BPMNEdge_sid-C3BC8962-12B0-482B-B9B5-DCB6551306BD"),
+                        DiagramElementId("BPMNEdge_sid-03CC5170-53C5-49F5-84F4-F93E4AEE7FAC"),
                         listOf(
                                 WaypointElementState(diagramElementId, 10.0f, 20.0f, 0.0f, 0.0f, true, 1),
                                 WaypointElementState(diagramElementId, 30.0f, 40.0f, 0.0f, 0.0f, true, 0)
@@ -126,7 +126,7 @@ internal class ActivityParserDumbTest {
     fun `XML process with interlaced elements of same type should be updatable with diagram element removal without error`() {
         val updated = ActivitiParser().update(
                 "duplicates.bpmn20.xml".asResource()!!,
-                listOf(DiagramElementRemovedEvent(DiagramElementId("BPMNEdge_sid-C3BC8962-12B0-482B-B9B5-DCB6551306BD")))
+                listOf(DiagramElementRemovedEvent(DiagramElementId("BPMNEdge_sid-03CC5170-53C5-49F5-84F4-F93E4AEE7FAC")))
         )
 
         updated.shouldNotBeNull()
@@ -195,7 +195,7 @@ internal class ActivityParserDumbTest {
                 listOf(
                         BpmnEdgeObjectAddedEvent(
                                 WithParentId(
-                                        BpmnElementId("sid-3AD3FAD5-389C-4066-8CB0-C4090CA91F6D"),
+                                        BpmnElementId("sid-1334170C-BA4D-4387-99BD-44229D18942C"),
                                         BpmnSequenceFlow(newId, "Exclusive gateway", null, "source", "target", null)),
                                 EdgeElementState(
                                         diagramElementId,
@@ -216,14 +216,14 @@ internal class ActivityParserDumbTest {
 
         updated.shouldNotBeNull()
         val updatedProcess = ActivitiParser().parse(updated)
-        updatedProcess.process.children!![BpmnElementId("sid-3AD3FAD5-389C-4066-8CB0-C4090CA91F6D")]!!.sequenceFlow!!.map { it.id }.shouldContain(newId)
+        updatedProcess.process.children!![BpmnElementId("sid-1334170C-BA4D-4387-99BD-44229D18942C")]!!.sequenceFlow!!.map { it.id }.shouldContain(newId)
     }
 
     @Test
     fun `XML should properly handle element resize event`() {
         val updated = ActivitiParser().update(
                 "nested.bpmn20.xml".asResource()!!,
-                listOf(BpmnShapeResizedAndMovedEvent(DiagramElementId("BPMNShape_sid-0E2068A3-FEF1-46A1-AD2B-7DCD0003AA65"), 10.0f, -10.0f, 0.5f, 0.5f))
+                listOf(BpmnShapeResizedAndMovedEvent(DiagramElementId("BPMNShape_sid-BA8B2192-D3B8-41E3-B36E-E3E3DD720F85"), 10.0f, -10.0f, 0.5f, 0.5f))
         )
 
         updated.shouldNotBeNull()
@@ -234,8 +234,8 @@ internal class ActivityParserDumbTest {
         val updated = ActivitiParser().update(
                 "nested.bpmn20.xml".asResource()!!,
                 listOf(BpmnParentChangedEvent(
-                        BpmnElementId("sid-57A163D8-81CB-4B71-B74C-DD4A152B6653"),
-                        BpmnElementId("sid-5EEB495F-ACAC-4C04-99E1-691D906B3A30")
+                        BpmnElementId("sid-C4B5DA0B-B84F-4EA1-8292-EB3C888D3453"),
+                        BpmnElementId("sid-0B5D0923-5542-44DA-B86D-C3E4B2883DC2")
                 )
                 ))
 
@@ -246,12 +246,12 @@ internal class ActivityParserDumbTest {
     fun `XML process with interlaced elements of same type should be updatable with element type change`() {
         val updated = ActivitiParser().update(
                 "nested-interlaced.bpmn20.xml".asResource()!!,
-                listOf(BooleanValueUpdatedEvent(BpmnElementId("sid-C4389D7E-1083-47D2-BECC-99479E63D18B"), PropertyType.IS_TRANSACTIONAL_SUBPROCESS, true))
+                listOf(BooleanValueUpdatedEvent(BpmnElementId("sid-9DBEBCA6-7BE8-4170-ACC3-4548A2244C40"), PropertyType.IS_TRANSACTIONAL_SUBPROCESS, true))
         )
 
         updated.shouldNotBeNull()
         val processObject = ActivitiParser().parse(updated)
-        processObject.process.body!!.transaction!!.map { it.id.id }.shouldContain("sid-C4389D7E-1083-47D2-BECC-99479E63D18B")
+        processObject.process.body!!.transaction!!.map { it.id.id }.shouldContain("sid-9DBEBCA6-7BE8-4170-ACC3-4548A2244C40")
     }
 
     @Test
