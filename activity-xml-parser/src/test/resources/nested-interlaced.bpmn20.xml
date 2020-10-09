@@ -2,7 +2,7 @@
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
     <process id="nested-test" name="nested-test" isExecutable="true">
         <documentation>Nested process test</documentation>
-        <startEvent id="startEvent1"></startEvent>
+        <startEvent id="startGlobal"></startEvent>
         <exclusiveGateway id="basicGateway"></exclusiveGateway>
         <subProcess id="sid-9DBEBCA6-7BE8-4170-ACC3-4548A2244C40" name="subProcess">
             <subProcess id="sid-9E62AF47-D4DF-4492-BA2F-E531CEB29A03" name="subProcess">
