@@ -29,33 +29,35 @@ internal class XmlWithNestedStructureParserTest {
         processObject.process.body!!.exclusiveGateway!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("basicGateway")
         processObject.process.body!!.sequenceFlow!!.map { it.id.id }.shouldContainSame(
                 listOf(
-                        "sid-E256FA9F-E663-49B5-B15A-6C1BA641C61A",
-                        "sid-4F47ED8C-967A-4774-AC42-0DD33A0F5FA7",
-                        "sid-80D672A9-3435-4FBC-9E9D-9D0399B88198",
-                        "sid-86067FAE-FBC2-4888-A540-E65D7DE8D84F",
-                        "sid-97C9B973-F379-4DFC-B70C-4C612ED35A2D",
-                        "sid-57CF2914-575D-4404-BD6E-87C35A53904A"
+                        "sid-96EFCF3C-548C-4556-B36C-2F10C675DD3E",
+                        "sid-B87070EE-2490-4FEC-AC02-099A30CFD986",
+                        "sid-2498FD34-935C-4816-AAEE-63B3338BBB44",
+                        "sid-3026ADA4-A1C3-4F68-A3D6-9BA522A6B22D",
+                        "sid-DC8402FF-1C0C-46AF-9EC3-41D78EFEE460",
+                        "sid-102BE6F5-4C32-4812-8EBF-A37911970FD9"
                 )
         )
 
-        processObject.process.body!!.subProcess!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-C4389D7E-1083-47D2-BECC-99479E63D18B")
-        processObject.process.body!!.adHocSubProcess!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-5EEB495F-ACAC-4C04-99E1-691D906B3A30")
-        processObject.process.body!!.transaction!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-1BB4FA80-C87F-4A05-95DF-753D06EE7424")
+        processObject.process.body!!.subProcess!!.map { it.id.id }.shouldContainAll(
+                listOf("sid-9DBEBCA6-7BE8-4170-ACC3-4548A2244C40", "sid-0B5D0923-5542-44DA-B86D-C3E4B2883DC2")
+        )
+        processObject.process.body!!.adHocSubProcess.shouldBeNull() // Activity does not support Ad-Hoc subprocess
+        processObject.process.body!!.transaction!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-77F95F37-ADC3-4EBB-8F21-AEF1C015D5EB")
         processObject.process.children!!.keys.map { it.id }.shouldContainSame(
                 listOf(
-                        "sid-C4389D7E-1083-47D2-BECC-99479E63D18B",
-                        "sid-5EEB495F-ACAC-4C04-99E1-691D906B3A30",
-                        "sid-1BB4FA80-C87F-4A05-95DF-753D06EE7424",
-                        "sid-3AD3FAD5-389C-4066-8CB0-C4090CA91F6D",
-                        "sid-775FFB07-8CFB-4F82-A6EA-AB0E9BBB79A6"
+                        "sid-9DBEBCA6-7BE8-4170-ACC3-4548A2244C40",
+                        "sid-9E62AF47-D4DF-4492-BA2F-E531CEB29A03",
+                        "sid-0B5D0923-5542-44DA-B86D-C3E4B2883DC2",
+                        "sid-1334170C-BA4D-4387-99BD-44229D18942C",
+                        "sid-77F95F37-ADC3-4EBB-8F21-AEF1C015D5EB"
                 )
         )
 
-        validateDirectChildSubProcess(processObject.process.children!![BpmnElementId("sid-C4389D7E-1083-47D2-BECC-99479E63D18B")]!!)
-        validateInSubProcessNestedChildSubProcess(processObject.process.children!![BpmnElementId("sid-775FFB07-8CFB-4F82-A6EA-AB0E9BBB79A6")]!!)
-        validateDirectAdhocSubProcess(processObject.process.children!![BpmnElementId("sid-5EEB495F-ACAC-4C04-99E1-691D906B3A30")]!!)
-        validateInAdHocNestedChildSubProcess(processObject.process.children!![BpmnElementId("sid-3AD3FAD5-389C-4066-8CB0-C4090CA91F6D")]!!)
-        validateDirectTransactionSubProcess(processObject.process.children!![BpmnElementId("sid-1BB4FA80-C87F-4A05-95DF-753D06EE7424")]!!)
+        validateDirectChildSubProcess(processObject.process.children!![BpmnElementId("sid-9DBEBCA6-7BE8-4170-ACC3-4548A2244C40")]!!)
+        validateInSubProcessNestedChildSubProcess(processObject.process.children!![BpmnElementId("sid-9E62AF47-D4DF-4492-BA2F-E531CEB29A03")]!!)
+        validateAnotherDirectSubProcess(processObject.process.children!![BpmnElementId("sid-0B5D0923-5542-44DA-B86D-C3E4B2883DC2")]!!)
+        validateAnotherDirectSubProcessNestedChildSubProcess(processObject.process.children!![BpmnElementId("sid-1334170C-BA4D-4387-99BD-44229D18942C")]!!)
+        validateDirectTransactionSubProcess(processObject.process.children!![BpmnElementId("sid-77F95F37-ADC3-4EBB-8F21-AEF1C015D5EB")]!!)
 
         othersAreEmpty(processObject.process.body!!)
     }
@@ -67,13 +69,13 @@ internal class XmlWithNestedStructureParserTest {
 
         subProcess.sequenceFlow!!.map { it.id.id }.shouldContainSame(
                 listOf(
-                        "sid-1FCC7913-358C-4C81-878D-40BB6E351415",
-                        "sid-C7200B1B-E3F1-483B-8640-661B1BFFA6C8",
-                        "sid-33FCDE0A-FC4A-4F9E-9AEF-CB88046B4FBE"
+                        "sid-7717FAC0-CC9B-4751-8DB8-586C58CA4D4A",
+                        "sid-51246E7C-B34C-4D26-8572-059DCBA320E6",
+                        "sid-D08DBAC7-C7F2-4D02-9059-C43F5CF80B44"
                 )
         )
 
-        subProcess.subProcess!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-775FFB07-8CFB-4F82-A6EA-AB0E9BBB79A6")
+        subProcess.subProcess!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-9E62AF47-D4DF-4492-BA2F-E531CEB29A03")
         othersAreEmpty(subProcess)
     }
 
@@ -84,48 +86,48 @@ internal class XmlWithNestedStructureParserTest {
 
         subProcess.sequenceFlow!!.map { it.id.id }.shouldContainSame(
                 listOf(
-                        "sid-603C30D3-9B86-4E04-8C86-7F20FDB69504",
-                        "sid-567BD2D6-393E-4949-8026-3EFE690F9790"
+                        "sid-E9C9051E-D3E7-4813-987C-76935BC96A3E",
+                        "sid-2CAAFFF8-A7B8-43D2-A273-893CF30F6FAD"
                 )
         )
         othersAreEmpty(subProcess)
     }
 
-    private fun validateDirectAdhocSubProcess(adHoc: BpmnProcessBody) {
-        adHoc.startEvent!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("startInAdHoc")
-        adHoc.endEvent!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("endInAdHoc")
-        adHoc.serviceTask!!.map { it.id.id }.shouldContainSame(listOf("sid-49F41812-EBEB-4084-AF8A-11184E33CBC1", "nestedServiceTaskInterlacedOther"))
-        adHoc.userTask!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-EDD2CFE3-D620-47B1-9632-9F5ABE9A68E4")
+    private fun validateAnotherDirectSubProcess(adHoc: BpmnProcessBody) {
+        adHoc.startEvent!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("startInAnotherDirect")
+        adHoc.endEvent!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("endInAnotherDirect")
+        adHoc.serviceTask!!.map { it.id.id }.shouldContainSame(listOf("sid-7C6C7BBC-9EA3-4640-A983-9654FC24790F", "nestedServiceTaskInterlacedOther"))
+        adHoc.userTask!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-290A9845-3F95-4B0D-893F-BB9E17396104")
 
         adHoc.sequenceFlow!!.map { it.id.id }.shouldContainSame(
                 listOf(
-                        "sid-0D51954C-D49F-41FD-BCDC-6F7EB4102834",
-                        "sid-907EFDBB-5066-4386-BAC6-8A9DA889FE86",
-                        "sid-E062317B-40BC-47E4-89F5-56EE4FC6F9EB"
+                        "sid-8DF33714-DB22-4C59-A4E1-1BBBA27945EC",
+                        "sid-2E7D5EF5-8CE2-4A90-B8A9-1F26139AB3BB",
+                        "sid-F6CF1E0C-F6C5-40E0-9B57-AABD1E17C74F"
                 )
         )
 
-        adHoc.subProcess!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-3AD3FAD5-389C-4066-8CB0-C4090CA91F6D")
+        adHoc.subProcess!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-1334170C-BA4D-4387-99BD-44229D18942C")
         othersAreEmpty(adHoc, true)
     }
 
-    private fun validateInAdHocNestedChildSubProcess(subprocess: BpmnProcessBody) {
-        subprocess.startEvent!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-0E2068A3-FEF1-46A1-AD2B-7DCD0003AA65")
-        subprocess.endEvent!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-64B56D4F-E27F-43F7-AF94-AC858CCFE0D5")
-        subprocess.serviceTask!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-57A163D8-81CB-4B71-B74C-DD4A152B6653")
+    private fun validateAnotherDirectSubProcessNestedChildSubProcess(subprocess: BpmnProcessBody) {
+        subprocess.startEvent!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-C4B5DA0B-B84F-4EA1-8292-EB3C888D3453")
+        subprocess.endEvent!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-11D45B2C-134A-4D23-970E-556835A13A07")
+        subprocess.serviceTask!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-CE70DFAB-0C85-4910-9E9C-197BDCE5F8C5")
 
         subprocess.sequenceFlow!!.map { it.id.id }.shouldContainSame(
                 listOf(
-                        "sid-D6B4FE9C-ECC8-4F25-810A-C74DEAA909D2",
-                        "sid-37D81430-A654-4425-9BF5-9935CB3AAD45"
+                        "sid-AE54A4F6-D7D8-4CD9-B92C-167890158CEC",
+                        "sid-1026A447-8C82-43CB-9DAD-5186126D7873"
                 )
         )
         othersAreEmpty(subprocess)
     }
 
     private fun validateDirectTransactionSubProcess(transaction: BpmnProcessBody) {
-        transaction.serviceTask!!.map { it.id.id }.shouldContainSame(listOf("sid-7ED7A92A-C30E-445C-8A50-3E5183BDF318", "nestedServiceTaskInterlacedYetOther"))
-        transaction.userTask!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-370B2F2F-D1E9-4CDE-A230-EEC9572D4244")
+        transaction.serviceTask!!.map { it.id.id }.shouldContainSame(listOf("sid-2F51F641-275F-48B5-B886-6C28E9C7C04E", "nestedServiceTaskInterlacedYetOther"))
+        transaction.userTask!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("sid-5320D81D-09E8-4BCB-842A-E3150FC08B6C")
 
         transaction.sequenceFlow.shouldBeNull()
         transaction.subProcess.shouldBeNull()

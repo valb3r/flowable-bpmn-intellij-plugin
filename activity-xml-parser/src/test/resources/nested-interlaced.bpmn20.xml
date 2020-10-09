@@ -7,32 +7,32 @@
         <subProcess id="sid-9DBEBCA6-7BE8-4170-ACC3-4548A2244C40" name="subProcess">
             <subProcess id="sid-9E62AF47-D4DF-4492-BA2F-E531CEB29A03" name="subProcess">
                 <serviceTask id="nestedNestedServiceTask"></serviceTask>
-                <startEvent id="sid-C39ACF3A-801F-4CF4-8602-D2FCEAACEE91"></startEvent>
-                <endEvent id="sid-530CB8DA-44A2-4E93-A039-0CB7BB19C584"></endEvent>
+                <startEvent id="startInNested"></startEvent>
+                <endEvent id="endInNested"></endEvent>
                 <serviceTask id="nestedServiceTaskInterlaced"></serviceTask>
-                <sequenceFlow id="sid-E9C9051E-D3E7-4813-987C-76935BC96A3E" sourceRef="sid-C39ACF3A-801F-4CF4-8602-D2FCEAACEE91" targetRef="nestedNestedServiceTask"></sequenceFlow>
-                <sequenceFlow id="sid-2CAAFFF8-A7B8-43D2-A273-893CF30F6FAD" sourceRef="nestedNestedServiceTask" targetRef="sid-530CB8DA-44A2-4E93-A039-0CB7BB19C584"></sequenceFlow>
+                <sequenceFlow id="sid-E9C9051E-D3E7-4813-987C-76935BC96A3E" sourceRef="startInNested" targetRef="nestedNestedServiceTask"></sequenceFlow>
+                <sequenceFlow id="sid-2CAAFFF8-A7B8-43D2-A273-893CF30F6FAD" sourceRef="nestedNestedServiceTask" targetRef="endInNested"></sequenceFlow>
             </subProcess>
-            <startEvent id="sid-0842C6CA-520B-464A-BCBE-7852BFE9BDFD"></startEvent>
-            <endEvent id="sid-A388A540-AE5C-4172-9DBE-9FBE0F25EDF2"></endEvent>
+            <startEvent id="startInActivity"></startEvent>
+            <endEvent id="endInActivity"></endEvent>
             <serviceTask id="nestedServiceTask"></serviceTask>
-            <sequenceFlow id="sid-7717FAC0-CC9B-4751-8DB8-586C58CA4D4A" sourceRef="sid-0842C6CA-520B-464A-BCBE-7852BFE9BDFD" targetRef="nestedServiceTask"></sequenceFlow>
+            <sequenceFlow id="sid-7717FAC0-CC9B-4751-8DB8-586C58CA4D4A" sourceRef="startInActivity" targetRef="nestedServiceTask"></sequenceFlow>
             <sequenceFlow id="sid-51246E7C-B34C-4D26-8572-059DCBA320E6" sourceRef="nestedServiceTask" targetRef="sid-9E62AF47-D4DF-4492-BA2F-E531CEB29A03"></sequenceFlow>
-            <sequenceFlow id="sid-D08DBAC7-C7F2-4D02-9059-C43F5CF80B44" sourceRef="sid-9E62AF47-D4DF-4492-BA2F-E531CEB29A03" targetRef="sid-A388A540-AE5C-4172-9DBE-9FBE0F25EDF2"></sequenceFlow>
+            <sequenceFlow id="sid-D08DBAC7-C7F2-4D02-9059-C43F5CF80B44" sourceRef="sid-9E62AF47-D4DF-4492-BA2F-E531CEB29A03" targetRef="endInActivity"></sequenceFlow>
         </subProcess>
         <transaction id="sid-77F95F37-ADC3-4EBB-8F21-AEF1C015D5EB" name="subProcess">
             <serviceTask id="sid-2F51F641-275F-48B5-B886-6C28E9C7C04E"></serviceTask>
             <userTask id="sid-5320D81D-09E8-4BCB-842A-E3150FC08B6C"></userTask>
             <serviceTask id="nestedServiceTaskInterlacedYetOther"></serviceTask>
         </transaction>
-        <endEvent id="sid-5DBED05E-D9A2-439F-BBF0-9B1C774DF4B5"></endEvent>
+        <endEvent id="endGlobal"></endEvent>
         <serviceTask id="parentInterlaceBeginServiceTask"></serviceTask>
-        <sequenceFlow id="sid-96EFCF3C-548C-4556-B36C-2F10C675DD3E" sourceRef="startEvent1" targetRef="basicGateway"></sequenceFlow>
+        <sequenceFlow id="sid-96EFCF3C-548C-4556-B36C-2F10C675DD3E" sourceRef="startGlobal" targetRef="basicGateway"></sequenceFlow>
         <sequenceFlow id="sid-B87070EE-2490-4FEC-AC02-099A30CFD986" sourceRef="basicGateway" targetRef="sid-9DBEBCA6-7BE8-4170-ACC3-4548A2244C40"></sequenceFlow>
         <sequenceFlow id="sid-2498FD34-935C-4816-AAEE-63B3338BBB44" sourceRef="basicGateway" targetRef="sid-0B5D0923-5542-44DA-B86D-C3E4B2883DC2"></sequenceFlow>
         <sequenceFlow id="sid-3026ADA4-A1C3-4F68-A3D6-9BA522A6B22D" sourceRef="sid-0B5D0923-5542-44DA-B86D-C3E4B2883DC2" targetRef="sid-77F95F37-ADC3-4EBB-8F21-AEF1C015D5EB"></sequenceFlow>
-        <sequenceFlow id="sid-DC8402FF-1C0C-46AF-9EC3-41D78EFEE460" sourceRef="sid-77F95F37-ADC3-4EBB-8F21-AEF1C015D5EB" targetRef="sid-5DBED05E-D9A2-439F-BBF0-9B1C774DF4B5"></sequenceFlow>
-        <sequenceFlow id="sid-102BE6F5-4C32-4812-8EBF-A37911970FD9" sourceRef="sid-9DBEBCA6-7BE8-4170-ACC3-4548A2244C40" targetRef="sid-5DBED05E-D9A2-439F-BBF0-9B1C774DF4B5"></sequenceFlow>
+        <sequenceFlow id="sid-DC8402FF-1C0C-46AF-9EC3-41D78EFEE460" sourceRef="sid-77F95F37-ADC3-4EBB-8F21-AEF1C015D5EB" targetRef="endGlobal"></sequenceFlow>
+        <sequenceFlow id="sid-102BE6F5-4C32-4812-8EBF-A37911970FD9" sourceRef="sid-9DBEBCA6-7BE8-4170-ACC3-4548A2244C40" targetRef="endGlobal"></sequenceFlow>
         <serviceTask id="parentInterlaceEndServiceTask"></serviceTask>
         <subProcess id="sid-0B5D0923-5542-44DA-B86D-C3E4B2883DC2" name="subProcess (flowable:ad hoc)">
             <subProcess id="sid-1334170C-BA4D-4387-99BD-44229D18942C" name="subProcess">
@@ -42,19 +42,19 @@
                 <sequenceFlow id="sid-AE54A4F6-D7D8-4CD9-B92C-167890158CEC" sourceRef="sid-C4B5DA0B-B84F-4EA1-8292-EB3C888D3453" targetRef="sid-CE70DFAB-0C85-4910-9E9C-197BDCE5F8C5"></sequenceFlow>
                 <sequenceFlow id="sid-1026A447-8C82-43CB-9DAD-5186126D7873" sourceRef="sid-CE70DFAB-0C85-4910-9E9C-197BDCE5F8C5" targetRef="sid-11D45B2C-134A-4D23-970E-556835A13A07"></sequenceFlow>
             </subProcess>
-            <startEvent id="sid-BA8B2192-D3B8-41E3-B36E-E3E3DD720F85"></startEvent>
-            <endEvent id="sid-4285D138-C5E2-41C8-A3B7-C53FDF9707CA"></endEvent>
+            <startEvent id="startInAnotherDirect"></startEvent>
+            <endEvent id="endInAnotherDirect"></endEvent>
             <userTask id="sid-290A9845-3F95-4B0D-893F-BB9E17396104"></userTask>
             <serviceTask id="nestedServiceTaskInterlacedOther"></serviceTask>
             <serviceTask id="sid-7C6C7BBC-9EA3-4640-A983-9654FC24790F"></serviceTask>
-            <sequenceFlow id="sid-8DF33714-DB22-4C59-A4E1-1BBBA27945EC" sourceRef="sid-290A9845-3F95-4B0D-893F-BB9E17396104" targetRef="sid-4285D138-C5E2-41C8-A3B7-C53FDF9707CA"></sequenceFlow>
+            <sequenceFlow id="sid-8DF33714-DB22-4C59-A4E1-1BBBA27945EC" sourceRef="sid-290A9845-3F95-4B0D-893F-BB9E17396104" targetRef="endInAnotherDirect"></sequenceFlow>
             <sequenceFlow id="sid-2E7D5EF5-8CE2-4A90-B8A9-1F26139AB3BB" sourceRef="sid-1334170C-BA4D-4387-99BD-44229D18942C" targetRef="sid-290A9845-3F95-4B0D-893F-BB9E17396104"></sequenceFlow>
-            <sequenceFlow id="sid-F6CF1E0C-F6C5-40E0-9B57-AABD1E17C74F" sourceRef="sid-BA8B2192-D3B8-41E3-B36E-E3E3DD720F85" targetRef="sid-1334170C-BA4D-4387-99BD-44229D18942C"></sequenceFlow>
+            <sequenceFlow id="sid-F6CF1E0C-F6C5-40E0-9B57-AABD1E17C74F" sourceRef="startInAnotherDirect" targetRef="sid-1334170C-BA4D-4387-99BD-44229D18942C"></sequenceFlow>
         </subProcess>
     </process>
     <bpmndi:BPMNDiagram id="BPMNDiagram_nested-test">
         <bpmndi:BPMNPlane bpmnElement="nested-test" id="BPMNPlane_nested-test">
-            <bpmndi:BPMNShape bpmnElement="startEvent1" id="BPMNShape_startEvent1">
+            <bpmndi:BPMNShape bpmnElement="startGlobal" id="BPMNShape_startGlobal">
                 <omgdc:Bounds height="30.0" width="30.0" x="100.0" y="463.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="basicGateway" id="BPMNShape_basicGateway">
@@ -69,19 +69,19 @@
             <bpmndi:BPMNShape bpmnElement="nestedNestedServiceTask" id="BPMNShape_nestedNestedServiceTask">
                 <omgdc:Bounds height="80.0" width="100.0" x="630.0" y="82.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape bpmnElement="sid-C39ACF3A-801F-4CF4-8602-D2FCEAACEE91" id="BPMNShape_sid-C39ACF3A-801F-4CF4-8602-D2FCEAACEE91">
+            <bpmndi:BPMNShape bpmnElement="startInNested" id="BPMNShape_startInNested">
                 <omgdc:Bounds height="30.0" width="30.0" x="510.0" y="107.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape bpmnElement="sid-530CB8DA-44A2-4E93-A039-0CB7BB19C584" id="BPMNShape_sid-530CB8DA-44A2-4E93-A039-0CB7BB19C584">
+            <bpmndi:BPMNShape bpmnElement="endInNested" id="BPMNShape_endInNested">
                 <omgdc:Bounds height="28.0" width="28.0" x="679.7000122070312" y="241.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="nestedServiceTaskInterlaced" id="BPMNShape_nestedServiceTaskInterlaced">
                 <omgdc:Bounds height="80.0" width="100.0" x="533.0" y="182.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape bpmnElement="sid-0842C6CA-520B-464A-BCBE-7852BFE9BDFD" id="BPMNShape_sid-0842C6CA-520B-464A-BCBE-7852BFE9BDFD">
+            <bpmndi:BPMNShape bpmnElement="startInActivity" id="BPMNShape_startInActivity">
                 <omgdc:Bounds height="30.0" width="30.0" x="375.0" y="240.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape bpmnElement="sid-A388A540-AE5C-4172-9DBE-9FBE0F25EDF2" id="BPMNShape_sid-A388A540-AE5C-4172-9DBE-9FBE0F25EDF2">
+            <bpmndi:BPMNShape bpmnElement="endInActivity" id="BPMNShape_endInActivity">
                 <omgdc:Bounds height="28.0" width="28.0" x="723.7000122070312" y="393.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="nestedServiceTask" id="BPMNShape_nestedServiceTask">
@@ -99,7 +99,7 @@
             <bpmndi:BPMNShape bpmnElement="nestedServiceTaskInterlacedYetOther" id="BPMNShape_nestedServiceTaskInterlacedYetOther">
                 <omgdc:Bounds height="80.0" width="100.0" x="928.7000122070312" y="735.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape bpmnElement="sid-5DBED05E-D9A2-439F-BBF0-9B1C774DF4B5" id="BPMNShape_sid-5DBED05E-D9A2-439F-BBF0-9B1C774DF4B5">
+            <bpmndi:BPMNShape bpmnElement="endGlobal" id="BPMNShape_endGlobal">
                 <omgdc:Bounds height="28.0" width="28.0" x="1110.7000122070312" y="360.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="parentInterlaceBeginServiceTask" id="BPMNShape_parentInterlaceBeginServiceTask">
@@ -123,10 +123,10 @@
             <bpmndi:BPMNShape bpmnElement="sid-11D45B2C-134A-4D23-970E-556835A13A07" id="BPMNShape_sid-11D45B2C-134A-4D23-970E-556835A13A07">
                 <omgdc:Bounds height="28.0" width="28.0" x="585.0" y="705.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape bpmnElement="sid-BA8B2192-D3B8-41E3-B36E-E3E3DD720F85" id="BPMNShape_sid-BA8B2192-D3B8-41E3-B36E-E3E3DD720F85">
+            <bpmndi:BPMNShape bpmnElement="startInAnotherDirect" id="BPMNShape_startInAnotherDirect">
                 <omgdc:Bounds height="30.0" width="30.0" x="396.70001220703125" y="607.6166687011719"></omgdc:Bounds>
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape bpmnElement="sid-4285D138-C5E2-41C8-A3B7-C53FDF9707CA" id="BPMNShape_sid-4285D138-C5E2-41C8-A3B7-C53FDF9707CA">
+            <bpmndi:BPMNShape bpmnElement="endInAnotherDirect" id="BPMNShape_endInAnotherDirect">
                 <omgdc:Bounds height="28.0" width="28.0" x="750.0" y="870.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="sid-290A9845-3F95-4B0D-893F-BB9E17396104" id="BPMNShape_sid-290A9845-3F95-4B0D-893F-BB9E17396104">
