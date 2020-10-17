@@ -141,7 +141,7 @@
             <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
         </action>
 
-        <group id="BpmnDiagramActionGroup"
+        <group id="BpmnFlowableDiagramActionGroup"
                text="Flowable BPMN Diagram"
                description="Actions of Flowable BPMN diagram plugin"
                icon="/icons/icon.png"
@@ -153,7 +153,7 @@
                  - "use-shortcut-of" (optional) specifies the ID of the action whose keyboard shortcut this action uses.
                  - "description" (optional) specifies the text displayed in the status bar when the action is focused.
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
-            <action id="BpmnDiagram.ViewBpmnDiagram"
+            <action id="BpmnDiagram.ViewFlowableBpmnDiagram"
                     class="com.valb3r.bpmn.intellij.plugin.flowable.actions.ViewFlowableBpmnDiagramAction"
                     text="View BPMN Diagram"
                     description="View BPMN Diagram"
@@ -176,7 +176,7 @@
                  - "ref" (required) specifies the ID of the action to add. -->
             <!-- <reference ref="EditorCopy"/> -->
         </group>
-        <group id="BpmnAttachToDataSource"
+        <group id="BpmnFlowableAttachToDataSource"
                text="Attach To Schema"
                description="Attach to database schema to investigate process"
                icon="/icons/icon.png"
@@ -188,7 +188,7 @@
                  - "use-shortcut-of" (optional) specifies the ID of the action whose keyboard shortcut this action uses.
                  - "description" (optional) specifies the text displayed in the status bar when the action is focused.
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
-            <action id="BpmnDiagram.AttachToDataSource"
+            <action id="BpmnDiagram.AttachFlowableToDataSource"
                     class="com.valb3r.bpmn.intellij.plugin.flowable.actions.AttachFlowableBpmnDebuggerToDbAction"
                     text="Attach To Schema"
                     description="Attach to database schema for BPMN process debugging"
@@ -210,7 +210,7 @@
                  - "ref" (required) specifies the ID of the action to add. -->
             <!-- <reference ref="EditorCopy"/> -->
         </group>
-        <group id="BpmnDetachFromDataSource"
+        <group id="BpmnFlowableDetachFromDataSource"
                text="Detach Debugger"
                description="Detach BPMN debugger from DataSource"
                icon="/icons/icon.png"
@@ -222,7 +222,7 @@
                  - "use-shortcut-of" (optional) specifies the ID of the action whose keyboard shortcut this action uses.
                  - "description" (optional) specifies the text displayed in the status bar when the action is focused.
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
-            <action id="BpmnDiagram.BpmnDetachFromDataSource"
+            <action id="BpmnDiagram.BpmnDetachFlowableFromDataSource"
                     class="com.valb3r.bpmn.intellij.plugin.flowable.actions.DetachFlowableBpmnDebuggerFromDbAction"
                     text="Detach Debugger"
                     description="Detach BPMN debugger from DataSource"

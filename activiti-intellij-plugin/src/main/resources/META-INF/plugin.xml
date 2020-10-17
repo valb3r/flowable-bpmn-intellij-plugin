@@ -117,7 +117,7 @@
             <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
         </action>
 
-        <group id="BpmnDiagramActionGroup"
+        <group id="BpmnActivitiDiagramActionGroup"
                text="Activiti BPMN Diagram"
                description="Actions of Activiti BPMN diagram plugin"
                icon="/icons/icon.png"
@@ -152,7 +152,7 @@
                  - "ref" (required) specifies the ID of the action to add. -->
             <!-- <reference ref="EditorCopy"/> -->
         </group>
-        <group id="BpmnAttachToDataSource"
+        <group id="BpmnActivitiAttachToDataSource"
                text="Attach To Schema"
                description="Attach to database schema to investigate process"
                icon="/icons/icon.png"
@@ -164,7 +164,7 @@
                  - "use-shortcut-of" (optional) specifies the ID of the action whose keyboard shortcut this action uses.
                  - "description" (optional) specifies the text displayed in the status bar when the action is focused.
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
-            <action id="BpmnDiagram.AttachToDataSource"
+            <action id="BpmnDiagram.AttachActivitiToDataSource"
                     class="com.valb3r.bpmn.intellij.activiti.plugin.actions.AttachActivitiBpmnDebuggerToDbAction"
                     text="Attach To Schema (Activiti)"
                     description="Attach to database schema (Activiti) for BPMN process debugging"
@@ -186,7 +186,7 @@
                  - "ref" (required) specifies the ID of the action to add. -->
             <!-- <reference ref="EditorCopy"/> -->
         </group>
-        <group id="BpmnDetachFromDataSource"
+        <group id="BpmnActivitiDetachFromDataSource"
                text="Detach Debugger"
                description="Detach BPMN debugger from DataSource"
                icon="/icons/icon.png"
@@ -198,7 +198,7 @@
                  - "use-shortcut-of" (optional) specifies the ID of the action whose keyboard shortcut this action uses.
                  - "description" (optional) specifies the text displayed in the status bar when the action is focused.
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
-            <action id="BpmnDiagram.BpmnDetachFromDataSource"
+            <action id="BpmnDiagram.BpmnDetachActivitiFromDataSource"
                     class="com.valb3r.bpmn.intellij.activiti.plugin.actions.DetachActivitiBpmnDebuggerFromDbAction"
                     text="Detach Debugger"
                     description="Detach BPMN debugger from DataSource (Activiti)"
