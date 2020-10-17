@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin.flowable
+package com.valb3r.bpmn.intellij.plugin
 
 import com.nhaarman.mockitokotlin2.*
 import com.nhaarman.mockitokotlin2.any

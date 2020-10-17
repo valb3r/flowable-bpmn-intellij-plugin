@@ -35,6 +35,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.10.1'
 
     // Tests
+    testImplementation project(':flowable-xml-parser')
     testImplementation project(':bpmn-intellij-plugin-common-tests')
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
@@ -50,11 +51,7 @@ sourceSets {
 
 intellij {
     version 'IU-2018.3'
-    pluginName 'flowable-bpmn-plugin'
     intellij.updateSinceUntilBuild false
-    // Build target 2020+ requires this - 2018 does not have 'java' plugin:
-    //plugins = ['java', 'DatabaseTools']
-    plugins = ['DatabaseTools'] // DatabaseTools is for BPMN process 'debugging'
 }
 
 compileKotlin {
