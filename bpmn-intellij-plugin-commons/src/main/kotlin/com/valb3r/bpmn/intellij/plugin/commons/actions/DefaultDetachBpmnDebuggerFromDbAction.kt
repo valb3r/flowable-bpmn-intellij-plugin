@@ -10,7 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.core.CANVAS_PAINT_TOPIC
 import com.valb3r.bpmn.intellij.plugin.core.debugger.currentDebugger
 import com.valb3r.bpmn.intellij.plugin.core.debugger.detachDebugger
 
-open class DefaultDetachBpmnDebuggerFromDbAction : AnAction() {
+abstract class DefaultDetachBpmnDebuggerFromDbAction : AnAction() {
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         anActionEvent.project ?: return

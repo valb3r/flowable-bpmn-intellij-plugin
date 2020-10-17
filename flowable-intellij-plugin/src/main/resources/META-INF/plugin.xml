@@ -154,7 +154,7 @@
                  - "description" (optional) specifies the text displayed in the status bar when the action is focused.
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
             <action id="BpmnDiagram.ViewBpmnDiagram"
-                    class="com.valb3r.bpmn.intellij.plugin.flowable.actions.ViewBpmnDiagramAction"
+                    class="com.valb3r.bpmn.intellij.plugin.flowable.actions.ViewFlowableBpmnDiagramAction"
                     text="View BPMN Diagram"
                     description="View BPMN Diagram"
                     icon="/icons/icon.png">
@@ -189,7 +189,7 @@
                  - "description" (optional) specifies the text displayed in the status bar when the action is focused.
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
             <action id="BpmnDiagram.AttachToDataSource"
-                    class="com.valb3r.bpmn.intellij.plugin.flowable.actions.AttachBpmnDebuggerToDbAction"
+                    class="com.valb3r.bpmn.intellij.plugin.flowable.actions.AttachFlowableBpmnDebuggerToDbAction"
                     text="Attach To Schema"
                     description="Attach to database schema for BPMN process debugging"
                     icon="/icons/icon.png">
@@ -223,7 +223,7 @@
                  - "description" (optional) specifies the text displayed in the status bar when the action is focused.
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
             <action id="BpmnDiagram.BpmnDetachFromDataSource"
-                    class="com.valb3r.bpmn.intellij.plugin.flowable.actions.DetachBpmnDebuggerFromDbAction"
+                    class="com.valb3r.bpmn.intellij.plugin.flowable.actions.DetachFlowableBpmnDebuggerFromDbAction"
                     text="Detach Debugger"
                     description="Detach BPMN debugger from DataSource"
                     icon="/icons/icon.png">
@@ -273,7 +273,7 @@
     <!-- Inject SpEL for highlighting -->
     <extensions defaultExtensionNs="com.intellij">
         <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.flowable.langinjection.FlowableDelegateExpressionUiInjector"/>
-        <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.flowable.langinjection.xml.XmlFlowableInjector"/>
+        <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.flowable.langinjection.xml.FlowableXmlFlowableInjector"/>
     </extensions>
 
     <!-- Registers bmpn20.xml Flowable template -->

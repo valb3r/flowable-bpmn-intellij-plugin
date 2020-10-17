@@ -4,7 +4,7 @@ import com.intellij.database.psi.DbElement
 import com.valb3r.bpmn.intellij.plugin.commons.actions.DefaultAttachBpmnDebuggerToDbAction
 import com.valb3r.bpmn.intellij.plugin.commons.actions.IntelliJBpmnDebugger
 
-class FlowableAttachBpmnDebuggerToDbAction : DefaultAttachBpmnDebuggerToDbAction({ FlowableIntelliJBpmnDebugger(it) })
+class AttachFlowableBpmnDebuggerToDbAction : DefaultAttachBpmnDebuggerToDbAction({ FlowableIntelliJBpmnDebugger(it) })
 
 class FlowableIntelliJBpmnDebugger(schema: DbElement): IntelliJBpmnDebugger(schema) {
 

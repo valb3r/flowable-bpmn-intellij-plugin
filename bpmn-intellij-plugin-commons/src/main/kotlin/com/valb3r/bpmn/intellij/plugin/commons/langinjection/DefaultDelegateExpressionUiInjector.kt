@@ -20,7 +20,7 @@ fun getCurrentFile(): PsiFile {
     return currentFile.get()!!
 }
 
-open class DefaultDelegateExpressionUiInjector: MultiHostInjector {
+abstract class DefaultDelegateExpressionUiInjector: MultiHostInjector {
 
     override fun elementsToInjectIn(): MutableList<out Class<out PsiElement>> {
         return mutableListOf(PsiLiteralExpression::class.java)

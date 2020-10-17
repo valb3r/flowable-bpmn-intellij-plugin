@@ -11,7 +11,7 @@ import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
 import com.intellij.psi.xml.XmlText
 
-open class DefaultXmlInjector: MultiHostInjector {
+abstract class DefaultXmlInjector: MultiHostInjector {
 
     override fun elementsToInjectIn(): MutableList<out Class<out PsiElement>> {
         return mutableListOf(XmlAttributeValue::class.java, XmlText::class.java)

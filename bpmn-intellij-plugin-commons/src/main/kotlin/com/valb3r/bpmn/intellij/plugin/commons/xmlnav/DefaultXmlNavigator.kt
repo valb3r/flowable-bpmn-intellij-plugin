@@ -13,7 +13,7 @@ import com.valb3r.bpmn.intellij.plugin.commons.langinjection.getCurrentFile
 import com.valb3r.bpmn.intellij.plugin.core.xmlnav.XmlNavigator
 import java.nio.charset.StandardCharsets
 
-class DefaultXmlNavigator(private val project: Project): XmlNavigator {
+abstract class DefaultXmlNavigator(private val project: Project): XmlNavigator {
 
     override fun jumpTo(id: BpmnElementId) {
         ApplicationManager.getApplication().invokeLater {
