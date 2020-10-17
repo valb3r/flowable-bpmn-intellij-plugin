@@ -16,7 +16,7 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
 import com.valb3r.bpmn.intellij.plugin.flowable.ui.components.popupmenu.FlowableCanvasPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.flowable.xmlnav.FlowableXmlNavigator
 
-class BpmnPluginToolWindowFactory: ToolWindowFactory {
+class FlowableBpmnPluginToolWindowFactory: ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         registerPopupMenuProvider(FlowableCanvasPopupMenuProvider())

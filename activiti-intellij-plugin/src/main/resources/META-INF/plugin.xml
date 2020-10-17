@@ -1,21 +1,21 @@
 <!-- `url` specifies the URL of the plugin homepage (can be opened from "Plugins" settings dialog) -->
 <idea-plugin url="https://github.com/valb3r/flowable-bpmn-intellij-plugin">
     <!-- Plugin name -->
-    <name>Flowable BPMN visualizer</name>
+    <name>Activiti BPMN visualizer</name>
 
     <!-- Plugin version -->
     <version>0.4.2</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
-    <id>flowable-bpmn-visualizer</id>
+    <id>activiti-bpmn-visualizer</id>
 
     <!-- Description of the plugin. -->
     <description><![CDATA[
-      <p>The plugin to bring BPMN (Flowable) world closer to developer needs. It supports editing and visualizing Flowable BPMN
-      diagrams with navigation and process debugging support. Provides necessary glue to jump between code and BPMN diagram
+      <p>The plugin to bring BPMN (Activiti) world closer to developer needs. It supports editing and visualizing Activiti 6.x and older
+       BPMN diagrams with navigation and process debugging support. Provides necessary glue to jump between code and BPMN diagram
       and bridges IntelliJ refactorings (changing bean names for example) to XML diagrams.</p>
-      <p><b>Please check <a href="https://github.com/valb3r/flowable-bpmn-intellij-plugin">plugin repository</a> for how-to videos</b></p>
+      <p><b>Please check <a href="https://github.com/valb3r/flowable-bpmn-intellij-plugin">plugin repository</a> for how-to videos</b> (yes it is correct URL)</p>
       <p><strong>Key features</strong></p>
       <ul>
         <li>BPMN editing/viewing</li>
@@ -32,31 +32,7 @@
      <p>0.4.2:</p>
       <ul>
         <li>
-          Fixed: Fix for broken non-ASCII symbols when locale is not UTF-8 (Windows + non-ASCII/UTF-8 locale)
-        </li>
-        <li>
-          Fixed: Process name should be optional
-        </li>
-        <li>
-          Fixed: Exception when changing element ID and clicking on it
-        </li>
-        <li>
-          Fixed: Changing process ID causes diagram to disappear
-        </li>
-      </ul>
-    <p>0.4.1:</p>
-      <ul>
-        <li>
-          Plugin can now create <b>'new'</b> BPMN process
-        </li>
-        <li>
-          Improved multiselection functionality - it can select elements in subprocess, remove subprocesses
-        </li>
-        <li>
-          Fixed: Element could be dragged if mouse cursor was not on it
-        </li>
-        <li>
-          Fixed: Paste'd elements were not selected by default
+          Initial release based on Flowable plugin work
         </li>
       </ul>
     ]]></change-notes>
@@ -133,17 +109,17 @@
                actions in it are placed in a submenu; for popup="false", actions are displayed as a section of
                the same menu delimited by separators. -->
 
-        <!-- Allow to create new Flowable BPMN 2.0 diagram -->
+        <!-- Allow to create new Activiti BPMN 2.0 diagram -->
         <action
-                id="BpmnDiagram.NewFlowableBpmnAction"
+                id="BpmnDiagram.NewActivitiBpmnAction"
                 icon="/icons/icon.png"
-                class="com.valb3r.bpmn.intellij.plugin.flowable.actions.NewFlowableBpmnAction">
+                class="com.valb3r.bpmn.intellij.activiti.plugin.actions.NewActivitiBpmnAction">
             <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
         </action>
 
         <group id="BpmnDiagramActionGroup"
-               text="Flowable BPMN Diagram"
-               description="Actions of Flowable BPMN diagram plugin"
+               text="Activiti BPMN Diagram"
+               description="Actions of Activiti BPMN diagram plugin"
                icon="/icons/icon.png"
                popup="false">
             <!-- The <action> element defines an action to register.
@@ -153,10 +129,10 @@
                  - "use-shortcut-of" (optional) specifies the ID of the action whose keyboard shortcut this action uses.
                  - "description" (optional) specifies the text displayed in the status bar when the action is focused.
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
-            <action id="BpmnDiagram.ViewBpmnDiagram"
-                    class="com.valb3r.bpmn.intellij.plugin.flowable.actions.ViewFlowableBpmnDiagramAction"
-                    text="View BPMN Diagram"
-                    description="View BPMN Diagram"
+            <action id="BpmnDiagram.ViewActivitiBpmnDiagram"
+                    class="com.valb3r.bpmn.intellij.activiti.plugin.actions.ViewActivitiBpmnDiagramAction"
+                    text="View BPMN (Activiti) Diagram"
+                    description="View BPMN (Activiti) Diagram"
                     icon="/icons/icon.png">
             </action>
             <!-- The <add-to-group> node specifies that the action should be added to an existing group.
@@ -189,9 +165,9 @@
                  - "description" (optional) specifies the text displayed in the status bar when the action is focused.
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
             <action id="BpmnDiagram.AttachToDataSource"
-                    class="com.valb3r.bpmn.intellij.plugin.flowable.actions.AttachFlowableBpmnDebuggerToDbAction"
-                    text="Attach To Schema"
-                    description="Attach to database schema for BPMN process debugging"
+                    class="com.valb3r.bpmn.intellij.activiti.plugin.actions.AttachActivitiBpmnDebuggerToDbAction"
+                    text="Attach To Schema (Activiti)"
+                    description="Attach to database schema (Activiti) for BPMN process debugging"
                     icon="/icons/icon.png">
             </action>
             <!-- The <add-to-group> node specifies that the action should be added to an existing group.
@@ -223,9 +199,9 @@
                  - "description" (optional) specifies the text displayed in the status bar when the action is focused.
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
             <action id="BpmnDiagram.BpmnDetachFromDataSource"
-                    class="com.valb3r.bpmn.intellij.plugin.flowable.actions.DetachFlowableBpmnDebuggerFromDbAction"
+                    class="com.valb3r.bpmn.intellij.activiti.plugin.actions.DetachActivitiBpmnDebuggerFromDbAction"
                     text="Detach Debugger"
-                    description="Detach BPMN debugger from DataSource"
+                    description="Detach BPMN debugger from DataSource (Activiti)"
                     icon="/icons/icon.png">
             </action>
             <!-- The <add-to-group> node specifies that the action should be added to an existing group.
@@ -261,24 +237,24 @@
          and the "implementation" class specifies the name of the class added to the extension point. -->
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow
-                id="BPMN-Flowable-Diagram"
+                id="BPMN-Activiti-Diagram"
                 secondary="true"
                 icon="/icons/icon.png"
                 anchor="right"
-                factoryClass="com.valb3r.bpmn.intellij.plugin.flowable.FlowableBpmnPluginToolWindowFactory"/>
+                factoryClass="com.valb3r.bpmn.intellij.activiti.plugin.ActivitiBpmnPluginToolWindowFactory"/>
         <!-- Project service holds a reference to the tool window, which is accessible by an action (editor menu) -->
         <projectService serviceImplementation="com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindowProjectService"/>
     </extensions>
 
     <!-- Inject SpEL for highlighting -->
     <extensions defaultExtensionNs="com.intellij">
-        <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.flowable.langinjection.FlowableDelegateExpressionUiInjector"/>
-        <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.flowable.langinjection.xml.FlowableXmlFlowableInjector"/>
+        <multiHostInjector implementation="com.valb3r.bpmn.intellij.activiti.plugin.langinjection.ActivitiDelegateExpressionUiInjector"/>
+        <multiHostInjector implementation="com.valb3r.bpmn.intellij.activiti.plugin.langinjection.xml.ActivitiXmlInjector"/>
     </extensions>
 
-    <!-- Registers bmpn20.xml Flowable template -->
+    <!-- Registers bmpn20.xml Activiti template -->
     <extensions defaultExtensionNs="com.intellij">
-        <internalFileTemplate name="Flowable BPMN 2.0 diagram"/>
+        <internalFileTemplate name="Activiti BPMN 2.0 diagram"/>
     </extensions>
 
     <!-- Extensions which the plugin adds to extension points defined by the IntelliJ Platform or by other plugins.

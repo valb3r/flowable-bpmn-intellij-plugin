@@ -32,12 +32,14 @@ dependencies {
 
     implementation project(":xml-parser-api")
     implementation project(":activiti-xml-parser")
+    implementation project(":bpmn-intellij-plugin-core")
+    implementation project(":bpmn-intellij-plugin-commons")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.10.1'
 
     // Tests
+    testImplementation project(':bpmn-intellij-plugin-common-tests')
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
     testImplementation 'org.junit.platform:junit-platform-runner:1.6.2'

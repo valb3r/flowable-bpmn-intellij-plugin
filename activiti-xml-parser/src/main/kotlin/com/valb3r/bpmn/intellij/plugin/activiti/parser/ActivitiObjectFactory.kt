@@ -36,7 +36,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import java.util.*
 import kotlin.reflect.KClass
 
-class ActivityObjectFactory: BpmnObjectFactory {
+class ActivitiObjectFactory: BpmnObjectFactory {
 
     private val mapper = ObjectMapper()
 
