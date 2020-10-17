@@ -3,13 +3,12 @@ package com.valb3r.bpmn.intellij.plugin
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.verify
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.events.BpmnParentChangedEvent
-import com.valb3r.bpmn.intellij.plugin.events.DraggedToEvent
-import com.valb3r.bpmn.intellij.plugin.events.StringValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.render.lastRenderedState
+import com.valb3r.bpmn.intellij.plugin.core.events.BpmnParentChangedEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.DraggedToEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
+import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeLessThan
 import org.amshove.kluent.shouldHaveSingleItem

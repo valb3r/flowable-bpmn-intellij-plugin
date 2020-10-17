@@ -8,11 +8,11 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.events.*
-import com.valb3r.bpmn.intellij.plugin.render.AnchorType
-import com.valb3r.bpmn.intellij.plugin.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.render.lastRenderedState
-import com.valb3r.bpmn.intellij.plugin.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.core.events.*
+import com.valb3r.bpmn.intellij.plugin.core.render.AnchorType
+import com.valb3r.bpmn.intellij.plugin.core.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
+import com.valb3r.bpmn.intellij.plugin.core.state.CurrentState
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 import java.awt.Graphics2D

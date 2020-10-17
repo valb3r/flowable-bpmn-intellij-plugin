@@ -1,6 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.events
 
 
+import com.valb3r.bpmn.intellij.plugin.core.events.FileCommitter
+import com.valb3r.bpmn.intellij.plugin.core.events.ProcessModelUpdateEvents
 import org.amshove.kluent.shouldBeTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock

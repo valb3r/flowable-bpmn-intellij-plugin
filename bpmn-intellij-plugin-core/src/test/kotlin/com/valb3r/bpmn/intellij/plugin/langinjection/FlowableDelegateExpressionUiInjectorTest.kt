@@ -7,6 +7,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.nhaarman.mockitokotlin2.*
+import com.valb3r.bpmn.intellij.plugin.flowable.langinjection.FlowableDelegateExpressionUiInjector
+import com.valb3r.bpmn.intellij.plugin.flowable.langinjection.registerCurrentFile
 import org.amshove.kluent.any
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
