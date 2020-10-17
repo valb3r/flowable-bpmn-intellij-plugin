@@ -1,7 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiObjectFactory
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
@@ -51,9 +51,9 @@ internal class ActivityServiceTaskTest {
         props[PropertyType.CLASS]!!.value.shouldBeEqualTo(task.clazz)
         props[PropertyType.EXPRESSION]!!.value.shouldBeEqualTo(task.expression)
         props[PropertyType.RESULT_VARIABLE_NAME]!!.value.shouldBeEqualTo(task.resultVariableName)
-        props[PropertyType.SKIP_EXPRESSION]!!.value.shouldBeEqualTo(task.skipExpression)
-        props[PropertyType.IS_TRIGGERABLE]!!.value.shouldBeEqualTo(task.triggerable)
-        props[PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE]!!.value.shouldBeEqualTo(task.useLocalScopeForResultVariable)
+        props[PropertyType.SKIP_EXPRESSION].shouldBeNull()
+        props[PropertyType.IS_TRIGGERABLE].shouldBeNull()
+        props[PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE].shouldBeNull()
     }
 
     @Test

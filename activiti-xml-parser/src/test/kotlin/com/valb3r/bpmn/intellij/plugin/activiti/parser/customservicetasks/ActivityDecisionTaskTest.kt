@@ -1,7 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiObjectFactory
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
@@ -43,8 +43,8 @@ internal class ActivityDecisionTaskTest {
         props[PropertyType.ASYNC]!!.value.shouldBeEqualTo(task.async)
         props[PropertyType.IS_FOR_COMPENSATION]!!.value.shouldBeEqualTo(task.isForCompensation)
         props[PropertyType.DECISION_TABLE_REFERENCE_KEY]!!.value.shouldBeEqualTo(task.decisionTableReferenceKey)
-        props[PropertyType.DECISION_TASK_THROW_ERROR_ON_NO_HITS]!!.value.shouldBeEqualTo(task.decisionTaskThrowErrorOnNoHits)
-        props[PropertyType.FALLBACK_TO_DEF_TENANT_CDATA]!!.value.shouldBeEqualTo(task.fallbackToDefaultTenantCdata)
+        props[PropertyType.DECISION_TASK_THROW_ERROR_ON_NO_HITS].shouldBeNull()
+        props[PropertyType.FALLBACK_TO_DEF_TENANT_CDATA].shouldBeNull()
     }
 
     @Test

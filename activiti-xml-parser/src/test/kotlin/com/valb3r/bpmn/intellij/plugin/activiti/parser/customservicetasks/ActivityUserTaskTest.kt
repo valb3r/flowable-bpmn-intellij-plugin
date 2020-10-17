@@ -1,7 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiObjectFactory
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
@@ -48,11 +48,11 @@ internal class ActivityUserTaskTest {
         props[PropertyType.IS_FOR_COMPENSATION]!!.value.shouldBeEqualTo(task.isForCompensation)
         props[PropertyType.ASSIGNEE]!!.value.shouldBeEqualTo(task.assignee)
         props[PropertyType.DUE_DATE]!!.value.shouldBeEqualTo(task.dueDate)
-        props[PropertyType.CATEGORY]!!.value.shouldBeEqualTo(task.category)
+        props[PropertyType.CATEGORY].shouldBeNull()
         props[PropertyType.FORM_KEY]!!.value.shouldBeEqualTo(task.formKey)
-        props[PropertyType.FORM_FIELD_VALIDATION]!!.value.shouldBeEqualTo(task.formFieldValidation)
+        props[PropertyType.FORM_FIELD_VALIDATION].shouldBeNull()
         props[PropertyType.PRIORITY]!!.value.shouldBeEqualTo(task.priority)
-        props[PropertyType.SKIP_EXPRESSION]!!.value.shouldBeEqualTo(task.skipExpression)
+        props[PropertyType.SKIP_EXPRESSION].shouldBeNull()
     }
 
     @Test

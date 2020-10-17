@@ -1,7 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiObjectFactory
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
@@ -48,7 +48,7 @@ internal class ActivityMailTaskTest {
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
         props[PropertyType.ASYNC]!!.value.shouldBeEqualTo(task.async)
         props[PropertyType.IS_FOR_COMPENSATION]!!.value.shouldBeEqualTo(task.isForCompensation)
-        props[PropertyType.HEADERS]!!.value.shouldBeEqualTo(task.headers)
+        props[PropertyType.HEADERS].shouldBeNull()
         props[PropertyType.TO]!!.value.shouldBeEqualTo(task.to)
         props[PropertyType.FROM]!!.value.shouldBeEqualTo(task.from)
         props[PropertyType.SUBJECT]!!.value.shouldBeEqualTo(task.subject)
