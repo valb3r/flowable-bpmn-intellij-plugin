@@ -33,6 +33,7 @@ interface BpmnDebugger {
     fun executionSequence(processId: String): ExecutedElements?
 }
 
+// FIXME - Extract
 class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger {
 
     private val cacheTTL = Duration.ofSeconds(1)

@@ -8,6 +8,7 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.valb3r.bpmn.intellij.plugin.BpmnActionContext
 import com.valb3r.bpmn.intellij.plugin.BpmnPluginToolWindowProjectService
 
+// FIXME - Extract
 class ViewBpmnDiagramAction : AnAction() {
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {

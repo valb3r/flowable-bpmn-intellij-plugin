@@ -70,6 +70,7 @@ private fun <T: WithBpmnId> newShapeElement(sceneLocation: Point2D.Float, forObj
     )
 }
 
+// FIXME - Extract
 class CanvasPopupMenuProvider {
 
     // Functional

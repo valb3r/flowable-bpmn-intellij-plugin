@@ -15,6 +15,7 @@ import java.util.*
 
 private const val NEW_FILE = "New Flowable BPMN 2.0 file"
 
+// FIXME - Extract
 class NewFlowableBpmnAction:
         CreateFileFromTemplateAction(
         "Flowable BPMN 2.0 file",

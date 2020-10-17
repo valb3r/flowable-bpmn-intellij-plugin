@@ -33,7 +33,7 @@ interface PaintTopicListener: EventListener {
 
 val CANVAS_PAINT_TOPIC = Topic<PaintTopicListener>("BPMN Flowable plugin repaint topic", PaintTopicListener::class.java)
 
-class CanvasBuilder(val bpmnProcessRenderer: BpmnProcessRenderer) {
+class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer) {
 
     private var newObjectsFactory: NewElementsProvider? = null
     private var currentVfsConnection: MessageBusConnection? = null

@@ -11,6 +11,7 @@ import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
 import com.intellij.psi.xml.XmlText
 
+// FIXME - Extract
 class XmlFlowableInjector: MultiHostInjector {
 
     override fun elementsToInjectIn(): MutableList<out Class<out PsiElement>> {

@@ -45,8 +45,8 @@ class PropertiesVisualizer(
         val dropDownFactory: (id: BpmnElementId, type: PropertyType, value: String, availableValues: Set<String>) -> TextValueAccessor,
         val classEditorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         val editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
-        val textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
-        val checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor) {
+        private val textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
+        private val checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor) {
 
     // Using order as ID property change should fire last for this view, otherwise other property change values
     // will use wrong ID as an anchor
