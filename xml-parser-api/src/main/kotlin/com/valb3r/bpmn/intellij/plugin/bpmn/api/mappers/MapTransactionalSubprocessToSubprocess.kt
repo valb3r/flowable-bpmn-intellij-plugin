@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin.activiti.parser.mappers
+package com.valb3r.bpmn.intellij.plugin.bpmn.api.mappers
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess

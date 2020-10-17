@@ -7,17 +7,23 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import com.valb3r.bpmn.intellij.plugin.BpmnPluginToolWindow
 import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindowProjectService
-import com.valb3r.bpmn.intellij.plugin.core.xmlnav.DefaultXmlNavigator
-import com.valb3r.bpmn.intellij.plugin.core.xmlnav.newXmlNavigator
+import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
+import com.valb3r.bpmn.intellij.plugin.core.xmlnav.registerXmlNavigator
 import com.valb3r.bpmn.intellij.plugin.flowable.langinjection.registerCurrentFile
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
+import com.valb3r.bpmn.intellij.plugin.flowable.ui.components.popupmenu.FlowableCanvasPopupMenuProvider
+import com.valb3r.bpmn.intellij.plugin.flowable.xmlnav.DefaultXmlNavigator
 
 class BpmnPluginToolWindowFactory: ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        registerPopupMenuProvider(FlowableCanvasPopupMenuProvider())
+        registerNewElementsFactory(FlowableObjectFactory())
         val bpmnWindow = BpmnPluginToolWindow(FlowableParser()) {
             registerCurrentFile(it)
-            newXmlNavigator(DefaultXmlNavigator(project))
+            registerXmlNavigator(DefaultXmlNavigator(project))
         }
 
         // register the call graph tool window as a project service, so it can be accessed by editor menu actions.

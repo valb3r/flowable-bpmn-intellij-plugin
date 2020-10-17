@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.core.events.BpmnParentChangedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DraggedToEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
+import com.valb3r.bpmn.intellij.plugin.core.tests.BaseUiTest
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeLessThan
 import org.amshove.kluent.shouldHaveSingleItem

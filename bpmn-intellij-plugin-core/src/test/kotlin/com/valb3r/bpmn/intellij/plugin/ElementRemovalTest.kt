@@ -6,6 +6,7 @@ import com.nhaarman.mockitokotlin2.verify
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DiagramElementRemovedEvent
+import com.valb3r.bpmn.intellij.plugin.core.tests.BaseUiTest
 import org.amshove.kluent.shouldContainSame
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

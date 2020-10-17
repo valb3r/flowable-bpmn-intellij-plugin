@@ -15,13 +15,12 @@ import com.valb3r.bpmn.intellij.plugin.core.events.FileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.events.initializeUpdateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.newelements.NewElementsProvider
-import com.valb3r.bpmn.intellij.plugin.core.newelements.createNewElementsFactory
+import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.newPropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.render.BpmnProcessRenderer
 import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
 import javax.swing.JTable
@@ -30,7 +29,7 @@ interface PaintTopicListener: EventListener {
     fun repaint()
 }
 
-val CANVAS_PAINT_TOPIC = Topic<PaintTopicListener>("BPMN Flowable plugin repaint topic", PaintTopicListener::class.java)
+val CANVAS_PAINT_TOPIC = Topic<PaintTopicListener>("BPMN Flowable (plugin family) plugin repaint topic", PaintTopicListener::class.java)
 
 class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer) {
 
@@ -53,9 +52,8 @@ class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer) {
 
         val data = readFile(bpmnFile)
         val process = parser.parse(data)
-        newObjectsFactory = createNewElementsFactory(FlowableObjectFactory())
         newPropertiesVisualizer(properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
-        canvas.reset(data, process.toView(newObjectsFactory!!), bpmnProcessRenderer)
+        canvas.reset(data, process.toView(newElementsFactory()!!), bpmnProcessRenderer)
 
         currentVfsConnection?.let { it.disconnect(); it.dispose() }
         currentPaintConnection?.let { it.disconnect(); it.dispose() }

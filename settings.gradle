@@ -4,6 +4,7 @@ include 'xml-parser-api'
 include 'flowable-xml-parser'
 include 'activiti-xml-parser'
 include 'bpmn-intellij-plugin-core'
+include 'bpmn-intellij-plugin-common-tests'
 include 'flowable-intellij-plugin'
 include 'activiti-intellij-plugin'
 
@@ -11,6 +12,7 @@ project(":xml-parser-api").projectDir = file("xml-parser-api")
 project(":flowable-xml-parser").projectDir = file("flowable-xml-parser")
 project(":activiti-xml-parser").projectDir = file("activiti-xml-parser")
 project(":bpmn-intellij-plugin-core").projectDir = file("bpmn-intellij-plugin-core")
+project(":bpmn-intellij-plugin-common-tests").projectDir = file("bpmn-intellij-plugin-common-tests")
 project(":flowable-intellij-plugin").projectDir = file("flowable-intellij-plugin")
 project(":activiti-intellij-plugin").projectDir = file("activiti-intellij-plugin")
 

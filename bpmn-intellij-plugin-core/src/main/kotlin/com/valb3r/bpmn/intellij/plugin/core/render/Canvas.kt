@@ -2,11 +2,11 @@ package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.cache.CacheBuilder
-import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.properties.PropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
@@ -38,7 +38,7 @@ fun currentCanvas(): Canvas {
 }
 
 @VisibleForTesting
-internal fun setCanvas(canvas: Canvas): Canvas {
+fun setCanvas(canvas: Canvas): Canvas {
     currentCanvas.set(canvas)
     return canvas
 }

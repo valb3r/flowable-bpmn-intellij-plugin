@@ -13,6 +13,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.AnchorType
 import com.valb3r.bpmn.intellij.plugin.core.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.core.tests.BaseUiTest
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 import java.awt.Graphics2D

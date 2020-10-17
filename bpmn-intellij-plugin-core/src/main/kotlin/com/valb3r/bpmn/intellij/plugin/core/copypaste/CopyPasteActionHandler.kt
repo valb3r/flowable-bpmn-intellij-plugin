@@ -41,11 +41,11 @@ fun copyPasteActionHandler(): CopyPasteActionHandler {
 }
 
 @VisibleForTesting
-internal fun setCopyPasteActionHandler(handler: CopyPasteActionHandler) {
+fun setCopyPasteActionHandler(handler: CopyPasteActionHandler) {
     copyPasteActionHandler.set(handler)
 }
 
-internal val DATA_FLAVOR = DataFlavor("text/flowable-bpmn-plugin-intellij", "Flowable BPMN IntelliJ editor plugin clipboard data")
+val DATA_FLAVOR = DataFlavor("text/flowable-alike-bpmn-plugin-intellij", "Flowable (plugin family) BPMN IntelliJ editor plugin clipboard data")
 
 data class ClipboardContext(
         val shapes: MutableList<BpmnShapeObjectAddedEvent>,
@@ -83,7 +83,7 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
 
     fun copy(ctx: RenderState, elementsById: Map<BpmnElementId, BaseDiagramRenderElement>) {
         val toCopy = extractDataToCopy(ctx, elementsById)
-        clipboard.setContents(FlowableClipboardFlavor(mapper.writeValueAsString(toCopy)), null)
+        clipboard.setContents(ClipboardFlavor(mapper.writeValueAsString(toCopy)), null)
     }
 
     fun cut(ctx: RenderState, updateEvents: ProcessModelUpdateEvents, elementsById: Map<BpmnElementId, BaseDiagramRenderElement>) {
@@ -102,7 +102,7 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
         elemsToDelete.forEach { diagramToRemove += it.getEventsToDeleteDiagram() }
 
         updateEvents.addElementRemovedEvent(diagramToRemove, bpmnToRemove)
-        clipboard.setContents(FlowableClipboardFlavor(mapper.writeValueAsString(toCopy)), null)
+        clipboard.setContents(ClipboardFlavor(mapper.writeValueAsString(toCopy)), null)
     }
 
     fun hasDataToPaste(): Boolean {
@@ -340,7 +340,7 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
     }
 
     @VisibleForTesting
-    internal class FlowableClipboardFlavor(private val data: String): Transferable, ClipboardOwner {
+    class ClipboardFlavor(private val data: String): Transferable, ClipboardOwner {
 
         override fun getTransferDataFlavors(): Array<DataFlavor>? {
             return arrayOf(DATA_FLAVOR)

@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin.core.xmlnav
+package com.valb3r.bpmn.intellij.plugin.flowable.xmlnav
 
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.PlatformDataKeys
@@ -9,6 +9,7 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.core.xmlnav.XmlNavigator
 import com.valb3r.bpmn.intellij.plugin.flowable.langinjection.getCurrentFile
 import java.nio.charset.StandardCharsets
 

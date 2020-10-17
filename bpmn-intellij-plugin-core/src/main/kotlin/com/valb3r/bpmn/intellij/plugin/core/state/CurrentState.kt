@@ -10,10 +10,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.mappers.MapTransactionalSubprocessToSubprocess
 import com.valb3r.bpmn.intellij.plugin.core.events.BooleanUiOnlyValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.ProcessModelUpdateEvents
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.mappers.MapTransactionalSubprocessToSubprocess
 import com.valb3r.bpmn.intellij.plugin.core.properties.uionly.UiOnlyPropertyType
 import com.valb3r.bpmn.intellij.plugin.core.render.EdgeElementState
 import org.mapstruct.factory.Mappers

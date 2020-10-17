@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin
+package com.valb3r.bpmn.intellij.plugin.core.tests
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -49,7 +49,7 @@ import javax.swing.JTable
 import javax.swing.table.TableColumn
 import javax.swing.table.TableColumnModel
 
-internal abstract class BaseUiTest {
+abstract class BaseUiTest {
 
     protected val newLink = "NEW-SEQUENCE"
     protected val doDel = "DEL"
@@ -611,5 +611,5 @@ internal abstract class BaseUiTest {
     protected fun findExactlyOneNewLinkElem() = renderResult?.keys?.filter { it.id.contains(newLink) }?.shouldHaveSize(1)?.first()
     protected fun findExactlyOneDeleteElem() = renderResult?.keys?.filter { it.id.contains(doDel) }?.shouldHaveSize(1)?.first()
 
-    protected fun String.asResource(): String? = UiEditorLightE2ETest::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
+    protected fun String.asResource(): String? = BaseUiTest::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
 }

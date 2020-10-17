@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin.langinjection
+package com.valb3r.bpmn.intellij.plugin.flowable.langinjection
 
 import com.intellij.diagnostic.ImplementationConflictException
 import com.intellij.lang.Language

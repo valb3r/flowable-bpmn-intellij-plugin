@@ -10,7 +10,7 @@ interface XmlNavigator {
 
 private val xmlNavigator = AtomicReference<XmlNavigator>()
 
-fun newXmlNavigator(navigator: XmlNavigator) {
+fun registerXmlNavigator(navigator: XmlNavigator) {
     xmlNavigator.set(navigator)
 }
 

@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 private val newElements = AtomicReference<NewElementsProvider>()
 
-fun createNewElementsFactory(factory: BpmnObjectFactory): NewElementsProvider {
+fun registerNewElementsFactory(factory: BpmnObjectFactory): NewElementsProvider {
     return newElements.updateAndGet {
         return@updateAndGet NewElementsProvider(factory)
     }
