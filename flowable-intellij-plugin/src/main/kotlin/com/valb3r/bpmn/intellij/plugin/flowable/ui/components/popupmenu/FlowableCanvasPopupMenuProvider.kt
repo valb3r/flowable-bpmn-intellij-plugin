@@ -1,12 +1,13 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.ui.components.popupmenu
 
-import com.google.common.annotations.VisibleForTesting
+import ClipboardCopier
+import ClipboardCutter
+import ClipboardPaster
+import ShapeCreator
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.openapi.util.IconLoader
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
@@ -26,36 +27,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdH
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.core.copypaste.copyPasteActionHandler
-import com.valb3r.bpmn.intellij.plugin.core.events.BpmnShapeObjectAddedEvent
-import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
-import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
-import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.CanvasPopupMenuProvider
-import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.geom.Point2D
 import javax.swing.Icon
 import javax.swing.JMenu
 import javax.swing.JPopupMenu
-import kotlin.reflect.KClass
-
-private fun <T: WithBpmnId> newShapeElement(sceneLocation: Point2D.Float, forObject: T): ShapeElement {
-    val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, forObject)
-
-    val bounds = templateShape.rectBounds()
-    return templateShape.copy(
-            bounds = BoundsElement(
-                    sceneLocation.x,
-                    sceneLocation.y,
-                    bounds.width,
-                    bounds.height
-            )
-    )
-}
 
 class FlowableCanvasPopupMenuProvider : CanvasPopupMenuProvider {
 
@@ -249,56 +228,5 @@ class FlowableCanvasPopupMenuProvider : CanvasPopupMenuProvider {
         val item = JBMenuItem(text, icon)
         item.addActionListener(listener)
         menu.add(item)
-    }
-
-    @VisibleForTesting
-    internal class ClipboardCopier: ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val state = lastRenderedState() ?: return
-            if (!state.canCopyOrCut()) {
-                return
-            }
-            copyPasteActionHandler().copy(state.state, state.elementsById)
-        }
-    }
-
-    @VisibleForTesting
-    internal class ClipboardCutter: ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val state = lastRenderedState() ?: return
-            if (!state.canCopyOrCut()) {
-                return
-            }
-            copyPasteActionHandler().cut(state.state, updateEventsRegistry(), state.elementsById)
-            currentCanvas().clearSelection()
-            currentCanvas().repaint()
-        }
-    }
-
-    @VisibleForTesting
-    internal class ClipboardPaster(private val sceneLocation: Point2D.Float, private val parent: BpmnElementId): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val data = copyPasteActionHandler().paste(sceneLocation, parent) ?: return
-            // TODO - cursor position update
-            updateEventsRegistry().addEvents( data.shapes.toMutableList() + data.edges.toMutableList())
-            currentCanvas().clearSelection()
-            currentCanvas().selectElements(data.selectElements.toSet())
-            currentCanvas().repaint()
-        }
-    }
-
-    private class ShapeCreator<T : WithBpmnId> (private val clazz: KClass<T>, private val sceneLocation: Point2D.Float, private val parent: BpmnElementId): ActionListener {
-
-        override fun actionPerformed(e: ActionEvent?) {
-            val newObject = newElementsFactory().newBpmnObject(clazz)
-            val shape = newShapeElement(sceneLocation, newObject)
-
-            updateEventsRegistry().addObjectEvent(
-                    BpmnShapeObjectAddedEvent(WithParentId(parent, newObject), shape, newElementsFactory().propertiesOf(newObject))
-            )
-        }
     }
 }

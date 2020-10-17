@@ -33,6 +33,7 @@ dependencies {
     implementation project(":xml-parser-api")
     implementation project(":flowable-xml-parser")
     implementation project(":bpmn-intellij-plugin-core")
+    implementation project(":bpmn-intellij-plugin-commons")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.10.1'

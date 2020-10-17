@@ -1,0 +1,5 @@
+package com.valb3r.bpmn.intellij.plugin.flowable.actions
+
+import com.valb3r.bpmn.intellij.plugin.commons.actions.DefaultDetachBpmnDebuggerFromDbAction
+
+class DetachFlowableBpmnDebuggerFromDbAction : DefaultDetachBpmnDebuggerFromDbAction()

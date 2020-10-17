@@ -1,10 +1,10 @@
 package com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors
 
-import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.NewWaypointsEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.core.render.Camera

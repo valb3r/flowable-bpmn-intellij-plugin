@@ -1,6 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.core.render
 
-import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
@@ -23,6 +22,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.debugger.currentDebugger
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DiagramElementRemovedEvent

@@ -8,7 +8,7 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.valb3r.bpmn.intellij.plugin.core.BpmnActionContext
 import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindowProjectService
 
-class ViewBpmnDiagramAction : AnAction() {
+class ViewFlowableBpmnDiagramAction : AnAction() {
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project ?: return

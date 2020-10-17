@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin.flowable.actions
+package com.valb3r.bpmn.intellij.plugin.commons.actions
 
 import com.intellij.database.dataSource.connection.DGDepartment
 import com.intellij.database.model.DasNamespace
@@ -21,12 +21,12 @@ import java.time.Instant
 import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.atomic.AtomicReference
 
-class AttachBpmnDebuggerToDbAction : AnAction() {
+abstract class DefaultAttachBpmnDebuggerToDbAction(private val debugger: (schema: DbElement) -> BpmnDebugger) : AnAction() {
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         anActionEvent.project ?: return
         val schema = properElem(anActionEvent) ?: return
-        prepareDebugger(IntelliJBpmnDebugger(schema))
+        prepareDebugger(debugger(schema))
         ApplicationManager.getApplication().invokeLater {
             anActionEvent.project!!.messageBus.syncPublisher(CANVAS_PAINT_TOPIC).repaint()
         }
@@ -48,7 +48,7 @@ class AttachBpmnDebuggerToDbAction : AnAction() {
             anActionEvent.getData(LangDataKeys.PSI_ELEMENT_ARRAY)
 }
 
-class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger {
+abstract class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger {
 
     private val cacheTTL = Duration.ofSeconds(1)
     private val worker: ForkJoinPool = ForkJoinPool(1)
@@ -130,33 +130,6 @@ class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger {
         return generateSequence { if (result.next()) result.getString(1) else null }.toList()
     }
 
-    private fun statementForRuntimeSelection(schema: String): String {
-        return """
-                SELECT re.act_id_ FROM ${"$schema."}act_ru_actinst re JOIN ${"$schema."}act_re_procdef def ON re.proc_def_id_ = def.id_
-                WHERE re.proc_inst_id_ = (
-                    SELECT re.proc_inst_id_ FROM ${"$schema."}act_ru_actinst re JOIN ${"$schema."}act_re_procdef def ON re.proc_def_id_ = def.id_
-                    WHERE re.start_time_ =
-                          (
-                              SELECT MAX(re.start_time_) FROM ${"$schema."}act_ru_actinst re JOIN ${"$schema."}act_re_procdef def ON re.proc_def_id_ = def.id_ WHERE def.key_ = ?
-                          )
-                    LIMIT 1
-                ) ORDER BY re.start_time_, re.id_
-
-            """.trimIndent()
-    }
-
-    private fun statementForHistoricalSelection(schema: String): String {
-        return """
-                SELECT re.act_id_ FROM ${"$schema."}act_hi_actinst re JOIN ${"$schema."}act_re_procdef def ON re.proc_def_id_ = def.id_
-                WHERE re.proc_inst_id_ = (
-                    SELECT re.proc_inst_id_ FROM ${"$schema."}act_hi_actinst re JOIN ${"$schema."}act_re_procdef def ON re.proc_def_id_ = def.id_
-                    WHERE re.start_time_ =
-                          (
-                              SELECT MAX(re.start_time_) FROM ${"$schema."}act_hi_actinst re JOIN ${"$schema."}act_re_procdef def ON re.proc_def_id_ = def.id_ WHERE def.key_ = ?
-                          )
-                    LIMIT 1
-                ) ORDER BY re.start_time_, re.id_
-
-            """.trimIndent()
-    }
+    protected abstract fun statementForRuntimeSelection(schema: String): String
+    protected abstract fun statementForHistoricalSelection(schema: String): String
 }

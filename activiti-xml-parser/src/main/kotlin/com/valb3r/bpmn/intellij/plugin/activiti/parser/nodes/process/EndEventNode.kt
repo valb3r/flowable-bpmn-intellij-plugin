@@ -3,8 +3,8 @@ package com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 

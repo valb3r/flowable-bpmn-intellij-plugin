@@ -1,6 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.core.render.elements.shapes
 
-import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
@@ -13,6 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.LocationUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnEdgeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnParentChangedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DraggedToEvent

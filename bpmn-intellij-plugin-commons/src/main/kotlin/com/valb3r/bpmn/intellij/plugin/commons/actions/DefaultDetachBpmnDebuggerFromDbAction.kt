@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin.flowable.actions
+package com.valb3r.bpmn.intellij.plugin.commons.actions
 
 import com.intellij.database.model.DasNamespace
 import com.intellij.database.psi.DbElement
@@ -10,7 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.core.CANVAS_PAINT_TOPIC
 import com.valb3r.bpmn.intellij.plugin.core.debugger.currentDebugger
 import com.valb3r.bpmn.intellij.plugin.core.debugger.detachDebugger
 
-class DetachBpmnDebuggerFromDbAction : AnAction() {
+open class DefaultDetachBpmnDebuggerFromDbAction : AnAction() {
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         anActionEvent.project ?: return

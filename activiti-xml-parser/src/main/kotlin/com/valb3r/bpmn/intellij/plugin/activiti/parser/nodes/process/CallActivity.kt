@@ -2,8 +2,8 @@ package com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 

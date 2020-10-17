@@ -1,10 +1,10 @@
 package com.valb3r.bpmn.intellij.plugin.core.render.elements.edges
 
-import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
+import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DiagramElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaType

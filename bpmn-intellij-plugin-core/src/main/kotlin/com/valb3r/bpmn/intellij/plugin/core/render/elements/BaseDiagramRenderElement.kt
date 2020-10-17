@@ -1,16 +1,16 @@
 package com.valb3r.bpmn.intellij.plugin.core.render.elements
 
-import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
-import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.*
+import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DiagramElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.ANCHOR_Z_INDEX
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.core.render.Camera
 import com.valb3r.bpmn.intellij.plugin.core.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.*
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.geom.Point2D

@@ -3,8 +3,8 @@ package com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.diagram
 import com.fasterxml.jackson.annotation.JsonMerge
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.PlaneElement
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process.BpmnElementIdMapper
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.PlaneElement
 import org.mapstruct.Mapper
 
 // For mixed lists in XML we need to have JsonSetter/JsonMerge on field

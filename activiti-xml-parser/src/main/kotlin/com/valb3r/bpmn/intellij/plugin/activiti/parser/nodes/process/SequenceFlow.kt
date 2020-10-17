@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.CDATA_FIELD
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 

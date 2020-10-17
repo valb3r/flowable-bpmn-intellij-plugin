@@ -1,8 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser
 
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 import java.lang.reflect.Field
