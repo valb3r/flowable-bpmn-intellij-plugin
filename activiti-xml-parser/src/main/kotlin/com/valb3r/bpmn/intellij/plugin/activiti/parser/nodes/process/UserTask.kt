@@ -18,8 +18,7 @@ data class UserTask(
         @JacksonXmlProperty(isAttribute = true) val category: String?,
         @JacksonXmlProperty(isAttribute = true) val formKey: String?,
         @JacksonXmlProperty(isAttribute = true) val formFieldValidation: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val priority: String?,
-        @JacksonXmlProperty(isAttribute = true) val skipExpression: String?
+        @JacksonXmlProperty(isAttribute = true) val priority: String?
 ): BpmnMappable<BpmnUserTask> {
 
     override fun toElement(): BpmnUserTask {

@@ -54,7 +54,6 @@ class ActivitiCanvasPopupMenuProvider : CanvasPopupMenuProvider {
     private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png")
     private val CANCEL_END_EVENT = IconLoader.getIcon("/icons/popupmenu/cancel-end-event.png")
     private val ERROR_END_EVENT = IconLoader.getIcon("/icons/popupmenu/error-end-event.png")
-    private val ESCALATION_END_EVENT = IconLoader.getIcon("/icons/popupmenu/escalation-end-event.png")
     private val TERMINATE_END_EVENT = IconLoader.getIcon("/icons/popupmenu/terminate-end-event.png")
     // Boundary
     private val BOUNDARY_CANCEL_EVENT = IconLoader.getIcon("/icons/popupmenu/cancel-boundary-event.png")
