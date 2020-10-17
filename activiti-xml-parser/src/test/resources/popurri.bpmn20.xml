@@ -1,0 +1,822 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.flowable.org/processdef">
+    <message id="MessageId" name="Some name"></message>
+    <process id="popurri" name="popurri" isExecutable="true">
+        <documentation>all-fields-filled</documentation>
+        <extensionElements>
+            <activiti:eventListener events="ACTIVITY_COMPENSATE" entityType="Entity" class="com.foo.some.FooBar"></activiti:eventListener>
+        </extensionElements>
+        <dataObject id="DEVELOP" name="popurri" itemSubjectRef="xsd:string">
+            <extensionElements>
+                <activiti:value></activiti:value>
+            </extensionElements>
+        </dataObject>
+        <startEvent id="startEvent" name="Start event name">
+            <documentation>Start event docs</documentation>
+        </startEvent>
+        <startEvent id="startTimerEventId" name="Start timer event name" activiti:isInterrupting="false">
+            <documentation>Start timer event docs</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.class"></activiti:executionListener>
+            </extensionElements>
+            <timerEventDefinition>
+                <timeDate>2020-01-01T00:00:00</timeDate>
+            </timerEventDefinition>
+        </startEvent>
+        <startEvent id="startSignalEventId" name="Start signal event name" activiti:isInterrupting="false">
+            <documentation>Start signal event docs</documentation>
+            <signalEventDefinition></signalEventDefinition>
+        </startEvent>
+        <startEvent id="startMessageEventId" name="Start message event name" activiti:isInterrupting="false">
+            <documentation>Start message event docs</documentation>
+            <extensionElements>
+                <activiti:executionListener event="take" class="com.some.class"></activiti:executionListener>
+            </extensionElements>
+            <messageEventDefinition></messageEventDefinition>
+        </startEvent>
+        <startEvent id="startErrorEventId" name="Start error event name" activiti:isInterrupting="false">
+            <documentation>Start error event docs</documentation>
+            <extensionElements>
+                <activiti:executionListener event="end" class="com.another.Class"></activiti:executionListener>
+            </extensionElements>
+            <errorEventDefinition errorRef="SomeErrorReference"></errorEventDefinition>
+        </startEvent>
+        <startEvent id="startEscalationEventId" name="Start escalation event name">
+            <documentation>Start escalation event documentation</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.foo.bar">
+                    <activiti:field name="fieldName">
+                        <activiti:string><![CDATA[value]]></activiti:string>
+                    </activiti:field>
+                </activiti:executionListener>
+            </extensionElements>
+        </startEvent>
+        <startEvent id="startConditionalEventId" name="Start conditional event name">
+            <documentation>Start conditional event docs</documentation>
+        </startEvent>
+        <userTask id="userTaskId" name="User task name">
+            <documentation>User task documentation</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <multiInstanceLoopCharacteristics isSequential="false">
+                <loopCardinality>cardinality</loopCardinality>
+                <completionCondition>completeCondition</completionCondition>
+            </multiInstanceLoopCharacteristics>
+        </userTask>
+        <serviceTask id="serviceTaskId" name="Service task name">
+            <documentation>Service task docs</documentation>
+            <extensionElements>
+                <activiti:field name="fieldName">
+                    <activiti:string><![CDATA[STRING_VAL]]></activiti:string>
+                </activiti:field>
+                <activiti:executionListener event="start" class="com.listener.class">
+                    <activiti:field name="fieldName">
+                        <activiti:string><![CDATA[someFieldValue]]></activiti:string>
+                    </activiti:field>
+                </activiti:executionListener>
+            </extensionElements>
+            <multiInstanceLoopCharacteristics isSequential="false">
+                <loopCardinality>cardinality</loopCardinality>
+                <completionCondition>completionCondition</completionCondition>
+            </multiInstanceLoopCharacteristics>
+        </serviceTask>
+        <scriptTask id="scriptTaskId" name="Script task name" scriptFormat="scriptFormat" activiti:autoStoreVariables="false">
+            <documentation>Script task documentation</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <multiInstanceLoopCharacteristics isSequential="true">
+                <loopCardinality>123</loopCardinality>
+                <completionCondition>333</completionCondition>
+            </multiInstanceLoopCharacteristics>
+            <script><![CDATA[scriptBody]]></script>
+        </scriptTask>
+        <businessRuleTask id="businessRuleTaskId" name="Business Rule Task Name">
+            <documentation>Business rule task documentation</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.classListener"></activiti:executionListener>
+            </extensionElements>
+            <multiInstanceLoopCharacteristics isSequential="false">
+                <loopCardinality>Cardinality</loopCardinality>
+                <completionCondition>333</completionCondition>
+            </multiInstanceLoopCharacteristics>
+        </businessRuleTask>
+        <receiveTask id="receiveTaskId" name="Receive task name">
+            <documentation>Receive task documentation</documentation>
+            <extensionElements>
+                <activiti:executionListener event="take" class="com.some.class.FooBar"></activiti:executionListener>
+            </extensionElements>
+        </receiveTask>
+        <serviceTask id="camelTaskId" name="Camel task name">
+            <documentation>Camel task documentation</documentation>
+            <extensionElements>
+                <activiti:field name="camelContext">
+                    <activiti:string><![CDATA[camelContext]]></activiti:string>
+                </activiti:field>
+                <activiti:executionListener event="start" class="some.package.FooBar"></activiti:executionListener>
+            </extensionElements>
+            <multiInstanceLoopCharacteristics isSequential="false">
+                <loopCardinality>12</loopCardinality>
+                <completionCondition>completionCond</completionCondition>
+            </multiInstanceLoopCharacteristics>
+        </serviceTask>
+        <serviceTask id="httpTaskId" name="Http task name">
+            <documentation>Http task documentation</documentation>
+            <extensionElements>
+                <activiti:field name="requestMethod">
+                    <activiti:string><![CDATA[GET]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="requestUrl">
+                    <activiti:string><![CDATA[http://example.com]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="requestHeaders">
+                    <activiti:string><![CDATA[HEADERS]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="requestBodyEncoding">
+                    <activiti:string><![CDATA[text/plain]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="disallowRedirects">
+                    <activiti:string><![CDATA[true]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="handleStatusCodes">
+                    <activiti:string><![CDATA[202]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="responseVariableName">
+                    <activiti:string><![CDATA[RESPONSE_VAR]]></activiti:string>
+                </activiti:field>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <multiInstanceLoopCharacteristics isSequential="false">
+                <loopCardinality>12</loopCardinality>
+                <completionCondition>COND</completionCondition>
+            </multiInstanceLoopCharacteristics>
+        </serviceTask>
+        <serviceTask id="muleTaskId" name="Mule Task Name">
+            <documentation>Mule task docs</documentation>
+            <extensionElements>
+                <activiti:field name="endpointUrl">
+                    <activiti:string><![CDATA[http://example.com]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="language">
+                    <activiti:string><![CDATA[JAVA]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="payloadExpression">
+                    <activiti:string><![CDATA[payload.expression]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="resultVariable">
+                    <activiti:string><![CDATA[RESULT_VAR]]></activiti:string>
+                </activiti:field>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <multiInstanceLoopCharacteristics isSequential="false">
+                <loopCardinality>123</loopCardinality>
+                <completionCondition>COMPLETE</completionCondition>
+            </multiInstanceLoopCharacteristics>
+        </serviceTask>
+        <serviceTask id="decisionTaskId" name="Decision Task Name">
+            <documentation>Decision Task Docs</documentation>
+            <extensionElements>
+                <activiti:field name="decisionTaskThrowErrorOnNoHits">
+                    <activiti:string><![CDATA[true]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="fallbackToDefaultTenant">
+                    <activiti:string><![CDATA[true]]></activiti:string>
+                </activiti:field>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <multiInstanceLoopCharacteristics isSequential="false">
+                <loopCardinality>CARDINALITY</loopCardinality>
+                <completionCondition>complete.condition</completionCondition>
+            </multiInstanceLoopCharacteristics>
+        </serviceTask>
+        <serviceTask id="shellTaskId" name="Shell task name">
+            <documentation>Shell task documentation</documentation>
+            <extensionElements>
+                <activiti:field name="command">
+                    <activiti:string><![CDATA[some shell commnad]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="arg1">
+                    <activiti:string><![CDATA[arg1]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="arg2">
+                    <activiti:string><![CDATA[arg2]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="arg3">
+                    <activiti:string><![CDATA[arg3]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="arg4">
+                    <activiti:string><![CDATA[arg4]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="arg5">
+                    <activiti:string><![CDATA[arg5]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="wait">
+                    <activiti:string><![CDATA[wait]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="cleanEnv">
+                    <activiti:string><![CDATA[CLEAN_ENV]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="errorCodeVariable">
+                    <activiti:string><![CDATA[ERROR_CODE_VAR]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="outputVariable">
+                    <activiti:string><![CDATA[OUTPUT_VAR]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="directory">
+                    <activiti:string><![CDATA[/foo/bar]]></activiti:string>
+                </activiti:field>
+                <activiti:executionListener event="start" class="com.foo.Listener"></activiti:executionListener>
+            </extensionElements>
+            <multiInstanceLoopCharacteristics isSequential="false">
+                <loopCardinality>CARDINALITY</loopCardinality>
+                <completionCondition>completionCond</completionCondition>
+            </multiInstanceLoopCharacteristics>
+        </serviceTask>
+        <transaction id="transactionalSubProcessId" name="Transactional sub process name">
+            <documentation>Sub process docs</documentation>
+            <multiInstanceLoopCharacteristics isSequential="false">
+                <loopCardinality>12</loopCardinality>
+                <completionCondition>completionCondition</completionCondition>
+            </multiInstanceLoopCharacteristics>
+            <dataObject id="data_object_1" name="data object name" itemSubjectRef="xsd:string">
+                <extensionElements>
+                    <activiti:value>Foo bar</activiti:value>
+                </extensionElements>
+            </dataObject>
+        </transaction>
+        <subProcess id="collapsedSubProcess" name="Collapsed subprocess name">
+            <documentation>Collapsed sub process docs</documentation>
+            <multiInstanceLoopCharacteristics isSequential="false">
+                <loopCardinality>12</loopCardinality>
+                <completionCondition>completionCondition</completionCondition>
+            </multiInstanceLoopCharacteristics>
+        </subProcess>
+        <subProcess id="eventSubProcessId" name="Event sub process name" triggeredByEvent="true">
+            <documentation>Event sub process documentation</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.listener.Subprocess"></activiti:executionListener>
+            </extensionElements>
+        </subProcess>
+        <exclusiveGateway id="exclusiveGatewayId" name="Exclusive gateway name" default="onGatewayNokId">
+            <documentation>Exclusive gateway docs</documentation>
+        </exclusiveGateway>
+        <parallelGateway id="parallelGatewayId" name="Parallel gateway name">
+            <documentation>Parallel gateway docs</documentation>
+        </parallelGateway>
+        <inclusiveGateway id="inclusiveGatewayId" name="Inclusive gateway name">
+            <documentation>Inclusive gateway docs</documentation>
+        </inclusiveGateway>
+        <eventBasedGateway id="eventGatewayId" name="Event gateway name">
+            <documentation>Event gateway docs</documentation>
+        </eventBasedGateway>
+        <boundaryEvent id="sid-CC3FF548-8776-4217-8527-E79F387285E3" attachedToRef="userTaskId">
+            <errorEventDefinition></errorEventDefinition>
+        </boundaryEvent>
+        <boundaryEvent id="sid-141CE5F5-3107-4FED-9E80-27FE5295F2A1" attachedToRef="userTaskId" cancelActivity="true">
+            <timerEventDefinition></timerEventDefinition>
+        </boundaryEvent>
+        <boundaryEvent id="sid-058D0897-F4FD-4192-B02F-7DF51F57BDF6" attachedToRef="serviceTaskId" cancelActivity="true">
+            <signalEventDefinition></signalEventDefinition>
+        </boundaryEvent>
+        <boundaryEvent id="sid-08D95FA4-D88A-4E65-AF9D-0E764227D5CB" attachedToRef="scriptTaskId" cancelActivity="true">
+            <messageEventDefinition></messageEventDefinition>
+        </boundaryEvent>
+        <boundaryEvent id="sid-8D29D693-E969-4629-82E3-AC00C3AFE65C" attachedToRef="businessRuleTaskId" cancelActivity="false">
+            <cancelEventDefinition></cancelEventDefinition>
+        </boundaryEvent>
+        <boundaryEvent id="sid-9CFD16E7-CD3D-4510-8D8A-38EB308ED885" attachedToRef="httpTaskId" cancelActivity="false">
+            <compensateEventDefinition></compensateEventDefinition>
+        </boundaryEvent>
+        <intermediateCatchEvent id="intermediateTimerCatchingEventId" name="Intermediate timer catching name">
+            <documentation>Intermediate timer catching event docs</documentation>
+            <timerEventDefinition>
+                <timeDate>2020-01-01T00:00:00</timeDate>
+            </timerEventDefinition>
+        </intermediateCatchEvent>
+        <intermediateCatchEvent id="intermediateSignalCatchingEventId" name="Intermediate signal catching event name">
+            <documentation>Intermediate catching event docs</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <signalEventDefinition></signalEventDefinition>
+        </intermediateCatchEvent>
+        <intermediateCatchEvent id="intermediateMessageCatchingEventId" name="Intermediate message catching name">
+            <documentation>Intermediate message catching docs</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <messageEventDefinition messageRef="MessageId"></messageEventDefinition>
+        </intermediateCatchEvent>
+        <intermediateCatchEvent id="intermediateConditionalCatchingEventId" name="Intermediate conditional catching event">
+            <documentation>Intermediate conditional catching event docs</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <timerEventDefinition></timerEventDefinition>
+        </intermediateCatchEvent>
+        <intermediateThrowEvent id="intermediateNoneThrowingEventId" name="Intermediate none throwing event name">
+            <documentation>Intermediate none throwing event name</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+        </intermediateThrowEvent>
+        <intermediateThrowEvent id="intermediateSignalThrowingEventId" name="Intermediate signal throwing event name">
+            <documentation>Intermediate signal throwing event docs</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <signalEventDefinition></signalEventDefinition>
+        </intermediateThrowEvent>
+        <intermediateThrowEvent id="intermediateEscalationThrowingEventId" name="Intermediate escalation throwing event name">
+            <documentation>Intermediate escalation event docs</documentation>
+        </intermediateThrowEvent>
+        <endEvent id="endEventId" name="endEventName">
+            <documentation>End event docs</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+        </endEvent>
+        <endEvent id="endErrorEventId" name="End error event name">
+            <documentation>End error event docs</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <errorEventDefinition errorRef="ERROR_REFERENCE"></errorEventDefinition>
+        </endEvent>
+        <endEvent id="endEscalationEventId" name="End escalation event name">
+            <documentation>End escalation event docs</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+        </endEvent>
+        <endEvent id="endCancelEventId" name="End cancel event name">
+            <documentation>End cancel event docs</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <cancelEventDefinition></cancelEventDefinition>
+        </endEvent>
+        <endEvent id="endTerminateEventId" name="End terminate event name">
+            <documentation>End terminate event docs</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <terminateEventDefinition></terminateEventDefinition>
+        </endEvent>
+        <sequenceFlow id="sid-40E401C2-3979-4D9A-8629-A20709A167E4" sourceRef="startEvent" targetRef="userTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-3DC695BB-B18A-42E4-B99A-FA672962B909" sourceRef="startTimerEventId" targetRef="userTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-9CE21919-4D44-4169-BD56-47A31FCC2087" sourceRef="startSignalEventId" targetRef="userTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-E562219A-8DEF-498A-BABE-29E088597127" sourceRef="startMessageEventId" targetRef="userTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-64EF81D0-1CDB-4673-9E13-B934B4312E9D" sourceRef="startErrorEventId" targetRef="userTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-F8150B7D-955F-473D-BC34-535DAA8A2353" sourceRef="startEscalationEventId" targetRef="userTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-4569B57F-FA1E-44EE-A039-5A85FB019060" sourceRef="startConditionalEventId" targetRef="userTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-89F26497-BE15-44E2-B1F1-CC65948ABF1F" sourceRef="userTaskId" targetRef="serviceTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-9D7F68BF-5483-4EC1-BF2A-96D837533799" sourceRef="serviceTaskId" targetRef="scriptTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-240B0FE6-679D-438A-AE91-7451A8ED995B" sourceRef="scriptTaskId" targetRef="businessRuleTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-9ADFD104-3A2F-4C54-A7DA-BDC36E0E8435" sourceRef="businessRuleTaskId" targetRef="receiveTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-0B740E43-E405-4E57-9534-F53A51079333" sourceRef="receiveTaskId" targetRef="camelTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-BDF547F9-7DB5-4C2F-93CD-9C9365CC8A61" sourceRef="camelTaskId" targetRef="httpTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-39733B6E-A332-4960-9C2B-A4A514BDF3F5" sourceRef="httpTaskId" targetRef="muleTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-85C9EBBB-94E5-46C6-812E-55F9A3783BF5" sourceRef="muleTaskId" targetRef="decisionTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-10D0BCC7-4028-478F-83DE-ECCA8E6200DC" sourceRef="decisionTaskId" targetRef="shellTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-D34632D6-0992-4819-998F-A72A5A083F08" sourceRef="shellTaskId" targetRef="transactionalSubProcessId"></sequenceFlow>
+        <callActivity id="callActivityId" name="Call activity name" activiti:inheritVariables="false">
+            <documentation>Call activity documentation</documentation>
+            <extensionElements>
+                <activiti:in source="INPARAM" target="TARGETVAL"></activiti:in>
+                <activiti:out source="SOURCE_VAL" target="TARGET_VAL"></activiti:out>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <multiInstanceLoopCharacteristics isSequential="true">
+                <loopCardinality>12</loopCardinality>
+                <completionCondition>completionCond</completionCondition>
+            </multiInstanceLoopCharacteristics>
+        </callActivity>
+        <sequenceFlow id="sid-034DE6AA-24BE-42A8-86E0-2FE710C6049E" sourceRef="inclusiveGatewayId" targetRef="eventGatewayId"></sequenceFlow>
+        <sequenceFlow id="sid-31BC4B5F-0570-4D09-B92F-97F09FB8CD23" sourceRef="parallelGatewayId" targetRef="eventGatewayId"></sequenceFlow>
+        <sequenceFlow id="onGatewayOk" name="On gateway OK name" sourceRef="exclusiveGatewayId" targetRef="inclusiveGatewayId">
+            <documentation>On gateway OK docs</documentation>
+            <extensionElements>
+                <activiti:executionListener event="start" class="com.some.Listener"></activiti:executionListener>
+            </extensionElements>
+            <conditionExpression xsi:type="tFormalExpression"><![CDATA[${some.condition}]]></conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="onGatewayNokId" name="On gateway NOK id" sourceRef="exclusiveGatewayId" targetRef="parallelGatewayId">
+            <documentation>On gateway NOK docs</documentation>
+            <conditionExpression xsi:type="tFormalExpression"><![CDATA[${some.other.cond}]]></conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="sid-99F42091-CFAA-4E13-BEE7-E3847B900351" sourceRef="intermediateTimerCatchingEventId" targetRef="intermediateSignalCatchingEventId"></sequenceFlow>
+        <sequenceFlow id="sid-6981F788-C45B-4118-A683-FECC28380150" sourceRef="intermediateSignalCatchingEventId" targetRef="intermediateMessageCatchingEventId"></sequenceFlow>
+        <sequenceFlow id="sid-1C4EF521-5707-4A50-809C-0CCE5BE33DDF" sourceRef="intermediateMessageCatchingEventId" targetRef="intermediateConditionalCatchingEventId"></sequenceFlow>
+        <sequenceFlow id="sid-5E52895E-63A9-46BE-A6BA-C730FDF4987C" sourceRef="eventGatewayId" targetRef="intermediateTimerCatchingEventId"></sequenceFlow>
+        <sequenceFlow id="sid-C1284E48-5C39-486C-83C1-C3E889878BF7" sourceRef="intermediateConditionalCatchingEventId" targetRef="intermediateNoneThrowingEventId"></sequenceFlow>
+        <sequenceFlow id="sid-5C7FE462-2E8E-4561-829E-FCB40F18BD6E" sourceRef="intermediateNoneThrowingEventId" targetRef="intermediateSignalThrowingEventId"></sequenceFlow>
+        <sequenceFlow id="sid-648EB684-DEFD-425B-8943-EC6FE7E67144" sourceRef="intermediateEscalationThrowingEventId" targetRef="endEventId"></sequenceFlow>
+        <sequenceFlow id="sid-A8580544-E055-418E-B793-1BEB8A056A33" sourceRef="intermediateEscalationThrowingEventId" targetRef="endErrorEventId"></sequenceFlow>
+        <sequenceFlow id="sid-111CA5B1-4D9C-4775-8864-19938725A086" sourceRef="intermediateEscalationThrowingEventId" targetRef="endEscalationEventId"></sequenceFlow>
+        <sequenceFlow id="sid-00712082-DA0D-49ED-98A4-88547A61A50A" sourceRef="intermediateEscalationThrowingEventId" targetRef="endCancelEventId"></sequenceFlow>
+        <sequenceFlow id="sid-E1928766-22EE-47D2-9E7A-0F9E098B3AF6" sourceRef="intermediateEscalationThrowingEventId" targetRef="endTerminateEventId"></sequenceFlow>
+        <sequenceFlow id="sid-12E527C1-81A4-49D2-A304-20A4FBD84FC6" sourceRef="intermediateNoneThrowingEventId" targetRef="intermediateEscalationThrowingEventId"></sequenceFlow>
+        <serviceTask id="aDecsionTask">
+            <extensionElements>
+                <activiti:field name="decisionTaskThrowErrorOnNoHits">
+                    <activiti:string><![CDATA[false]]></activiti:string>
+                </activiti:field>
+                <activiti:field name="fallbackToDefaultTenant">
+                    <activiti:string><![CDATA[false]]></activiti:string>
+                </activiti:field>
+            </extensionElements>
+        </serviceTask>
+        <subProcess id="subProcessId" name="Sub process name">
+            <documentation>Sub process docs</documentation>
+            <multiInstanceLoopCharacteristics isSequential="false">
+                <loopCardinality>12</loopCardinality>
+                <completionCondition>completionCondition</completionCondition>
+            </multiInstanceLoopCharacteristics>
+            <dataObject id="data_object_1" name="data object name" itemSubjectRef="xsd:string">
+                <extensionElements>
+                    <activiti:value>Foo bar</activiti:value>
+                </extensionElements>
+            </dataObject>
+        </subProcess>
+        <sequenceFlow id="sid-241DD1A7-FBEB-4E8D-B58F-C57F31B79F21" sourceRef="transactionalSubProcessId" targetRef="subProcessId"></sequenceFlow>
+        <sequenceFlow id="sid-13DA8428-8777-47DF-BF37-C52106909433" sourceRef="subProcessId" targetRef="collapsedSubProcess"></sequenceFlow>
+        <transaction id="transactionalCollapsedSubprocess" name="Transaction collapsed subprocess name">
+            <documentation>Collapsed sub process docs</documentation>
+            <multiInstanceLoopCharacteristics isSequential="false">
+                <loopCardinality>12</loopCardinality>
+                <completionCondition>completionCondition</completionCondition>
+            </multiInstanceLoopCharacteristics>
+        </transaction>
+        <sequenceFlow id="sid-53ADAFBA-7E10-46B5-A4A9-14CF8EC46802" sourceRef="collapsedSubProcess" targetRef="transactionalCollapsedSubprocess"></sequenceFlow>
+        <sequenceFlow id="sid-9ADBE624-AE43-46C4-AE2D-D660A05057FD" sourceRef="transactionalCollapsedSubprocess" targetRef="callActivityId"></sequenceFlow>
+        <serviceTask id="mailTaskId" name="Mail task name">
+            <documentation>Mail task documentation</documentation>
+        </serviceTask>
+        <sequenceFlow id="sid-1799ACE3-3A56-449D-9BC5-3EA4534F9BC4" sourceRef="businessRuleTaskId" targetRef="mailTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-53CEB6CB-534E-4D77-8748-2F6A084E2DCC" sourceRef="mailTaskId" targetRef="camelTaskId"></sequenceFlow>
+        <manualTask id="manualTaskId" name="Manual Task Name">
+            <documentation>Manual task documentation</documentation>
+            <extensionElements>
+                <activiti:executionListener event="take" class="some.class.Service">
+                    <activiti:field name="fieldName">
+                        <activiti:string><![CDATA[123]]></activiti:string>
+                    </activiti:field>
+                </activiti:executionListener>
+            </extensionElements>
+        </manualTask>
+        <sequenceFlow id="sid-EBB4E814-B8FA-42F5-9CB7-43F5A490A2A5" sourceRef="camelTaskId" targetRef="manualTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-02AEFD69-C19B-40D9-85F9-F32F33A0C57A" sourceRef="manualTaskId" targetRef="muleTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-74C47ABB-2BDE-403E-AB66-588A786348F8" sourceRef="callActivityId" targetRef="exclusiveGatewayId"></sequenceFlow>
+        <textAnnotation id="globalAnnotationId">
+            <text>Global annotation text</text>
+        </textAnnotation>
+        <textAnnotation id="localAnnotationId">
+            <text>Local annotation text</text>
+        </textAnnotation>
+        <association id="sid-16CA240C-50EC-4C2D-B759-92A00E98A6B5" sourceRef="transactionalSubProcessId" targetRef="localAnnotationId" associationDirection="None"></association>
+    </process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_popurri">
+        <bpmndi:BPMNPlane bpmnElement="popurri" id="BPMNPlane_popurri">
+            <bpmndi:BPMNShape bpmnElement="startEvent" id="BPMNShape_startEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="324.7085670943809" y="114.43002894757711"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="startTimerEventId" id="BPMNShape_startTimerEventId">
+                <omgdc:Bounds height="31.0" width="31.0" x="324.20856709438095" y="190.77152103284806"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="startSignalEventId" id="BPMNShape_startSignalEventId">
+                <omgdc:Bounds height="30.0" width="30.0" x="324.708567094381" y="267.11301311811906"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="startMessageEventId" id="BPMNShape_startMessageEventId">
+                <omgdc:Bounds height="30.0" width="30.5" x="324.19411563042223" y="343.45450520339"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="startErrorEventId" id="BPMNShape_startErrorEventId">
+                <omgdc:Bounds height="30.0" width="30.0" x="324.4441156304223" y="421.05390823937137"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="startEscalationEventId" id="BPMNShape_startEscalationEventId">
+                <omgdc:Bounds height="30.0" width="30.0" x="324.70856709438107" y="496.1374893739319"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="startConditionalEventId" id="BPMNShape_startConditionalEventId">
+                <omgdc:Bounds height="30.0" width="30.0" x="324.7085670943811" y="582.6433998198615"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="userTaskId" id="BPMNShape_userTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="687.0734287674387" y="267.19522229844836"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="serviceTaskId" id="BPMNShape_serviceTaskId">
+                <omgdc:Bounds height="85.74362318324921" width="106.08384526244822" x="687.0734287674386" y="381.70746042635477"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="scriptTaskId" id="BPMNShape_scriptTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="687.0734287674387" y="509.3904445968968"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="businessRuleTaskId" id="BPMNShape_businessRuleTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="687.0734287674387" y="629.8173097034854"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="receiveTaskId" id="BPMNShape_receiveTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="690.0" y="744.3295478313918"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="camelTaskId" id="BPMNShape_camelTaskId">
+                <omgdc:Bounds height="80.0" width="100.36219728000003" x="689.9342527586628" y="858.8417859592982"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="httpTaskId" id="BPMNShape_httpTaskId">
+                <omgdc:Bounds height="80.00000000000011" width="100.0" x="687.0734287674388" y="964.456114616262"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="muleTaskId" id="BPMNShape_muleTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="687.0734287674388" y="1087.8662622151112"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="decisionTaskId" id="BPMNShape_decisionTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="690.1153513986627" y="1208.0420342203317"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="shellTaskId" id="BPMNShape_shellTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="690.1153513986629" y="1326.3713469525019"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="transactionalSubProcessId" id="BPMNShape_transactionalSubProcessId">
+                <omgdc:Bounds height="101.75984083968706" width="155.8146257208673" x="992.4393971085224" y="231.23309269827553"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="collapsedSubProcess" id="BPMNShape_collapsedSubProcess">
+                <omgdc:Bounds height="100.0" width="120.0" x="1020.3467099689562" y="508.6831649510401"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="eventSubProcessId" id="BPMNShape_eventSubProcessId">
+                <omgdc:Bounds height="100.0" width="130.37931016273478" x="1007.628537352349" y="752.4086548517428"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="exclusiveGatewayId" id="BPMNShape_exclusiveGatewayId">
+                <omgdc:Bounds height="40.0" width="40.0" x="1417.4820177249235" y="253.557009934956"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="parallelGatewayId" id="BPMNShape_parallelGatewayId">
+                <omgdc:Bounds height="40.0" width="40.0" x="1417.4820177249237" y="343.5367143837193"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="inclusiveGatewayId" id="BPMNShape_inclusiveGatewayId">
+                <omgdc:Bounds height="40.0" width="40.0" x="1412.3176035775127" y="420.7928334476726"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="eventGatewayId" id="BPMNShape_eventGatewayId">
+                <omgdc:Bounds height="40.0" width="40.0" x="1412.3176035775127" y="529.3904445968968"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-CC3FF548-8776-4217-8527-E79F387285E3" id="BPMNShape_sid-CC3FF548-8776-4217-8527-E79F387285E3">
+                <omgdc:Bounds height="30.0" width="30.0" x="772.1612711641845" y="268.54263005554054"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-141CE5F5-3107-4FED-9E80-27FE5295F2A1" id="BPMNShape_sid-141CE5F5-3107-4FED-9E80-27FE5295F2A1">
+                <omgdc:Bounds height="31.0" width="31.0" x="743.0734287674387" y="236.19522229844836"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-058D0897-F4FD-4192-B02F-7DF51F57BDF6" id="BPMNShape_sid-058D0897-F4FD-4192-B02F-7DF51F57BDF6">
+                <omgdc:Bounds height="30.0" width="30.0" x="756.0398425425511" y="453.16312517456134"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-08D95FA4-D88A-4E65-AF9D-0E764227D5CB" id="BPMNShape_sid-08D95FA4-D88A-4E65-AF9D-0E764227D5CB">
+                <omgdc:Bounds height="30.0" width="30.0" x="749.9810176525189" y="574.7014063197907"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-8D29D693-E969-4629-82E3-AC00C3AFE65C" id="BPMNShape_sid-8D29D693-E969-4629-82E3-AC00C3AFE65C">
+                <omgdc:Bounds height="30.0" width="30.0" x="772.2332095776226" y="665.963927661304"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-9CFD16E7-CD3D-4510-8D8A-38EB308ED885" id="BPMNShape_sid-9CFD16E7-CD3D-4510-8D8A-38EB308ED885">
+                <omgdc:Bounds height="30.0" width="30.0" x="758.0734287674388" y="947.456114616262"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="intermediateTimerCatchingEventId" id="BPMNShape_intermediateTimerCatchingEventId">
+                <omgdc:Bounds height="31.0" width="31.0" x="1660.4274528546432" y="258.057009934956"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="intermediateSignalCatchingEventId" id="BPMNShape_intermediateSignalCatchingEventId">
+                <omgdc:Bounds height="30.0" width="30.0" x="1660.9274528546434" y="343.5367143837193"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="intermediateMessageCatchingEventId" id="BPMNShape_intermediateMessageCatchingEventId">
+                <omgdc:Bounds height="30.0" width="30.0" x="1660.9274528546434" y="438.963579490308"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="intermediateConditionalCatchingEventId" id="BPMNShape_intermediateConditionalCatchingEventId">
+                <omgdc:Bounds height="31.0" width="31.0" x="1660.9274528546434" y="534.3904445968968"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="intermediateNoneThrowingEventId" id="BPMNShape_intermediateNoneThrowingEventId">
+                <omgdc:Bounds height="30.0" width="30.0" x="1813.110437025185" y="258.55700993495606"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="intermediateSignalThrowingEventId" id="BPMNShape_intermediateSignalThrowingEventId">
+                <omgdc:Bounds height="30.0" width="30.0" x="1813.1104370251855" y="343.53671438371936"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="intermediateEscalationThrowingEventId" id="BPMNShape_intermediateEscalationThrowingEventId">
+                <omgdc:Bounds height="30.0" width="30.0" x="1875.0" y="343.45450520339"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="endEventId" id="BPMNShape_endEventId">
+                <omgdc:Bounds height="27.99999999999997" width="28.0" x="1984.8787942170447" y="253.03456151641367"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="endErrorEventId" id="BPMNShape_endErrorEventId">
+                <omgdc:Bounds height="28.0" width="28.0" x="1984.8787942170447" y="344.53671438371936"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="endEscalationEventId" id="BPMNShape_endEscalationEventId">
+                <omgdc:Bounds height="28.0" width="28.0" x="1984.878794217045" y="418.3190428154371"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="endCancelEventId" id="BPMNShape_endCancelEventId">
+                <omgdc:Bounds height="28.0" width="28.0" x="1984.8787942170454" y="502.2196985542613"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="endTerminateEventId" id="BPMNShape_endTerminateEventId">
+                <omgdc:Bounds height="28.0" width="28.0" x="1984.8787942170454" y="611.7319366821678"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="callActivityId" id="BPMNShape_callActivityId">
+                <omgdc:Bounds height="80.0" width="100.0" x="1022.8181924337161" y="876.9208929796491"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="aDecsionTask" id="BPMNShape_aDecsionTask">
+                <omgdc:Bounds height="80.0" width="100.0" x="956.0" y="1153.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="subProcessId" id="BPMNShape_subProcessId">
+                <omgdc:Bounds height="101.75984083968706" width="155.8146257208673" x="991.8322807676154" y="373.6993515981359"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="transactionalCollapsedSubprocess" id="BPMNShape_transactionalCollapsedSubprocess">
+                <omgdc:Bounds height="100.0" width="120.0" x="1020.3467099689562" y="629.1100300576288"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="mailTaskId" id="BPMNShape_mailTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="525.0" y="744.3295478313918"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="manualTaskId" id="BPMNShape_manualTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="525.0" y="960.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="globalAnnotationId" id="BPMNShape_globalAnnotationId">
+                <omgdc:Bounds height="50.00000000000003" width="100.0" x="845.7919668201883" y="157.35664498980245"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="localAnnotationId" id="BPMNShape_localAnnotationId">
+                <omgdc:Bounds height="50.00000000000003" width="100.0" x="1121.1660955523428" y="157.35664498980248"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-16CA240C-50EC-4C2D-B759-92A00E98A6B5" id="BPMNShape_sid-16CA240C-50EC-4C2D-B759-92A00E98A6B5">
+                <omgdc:Bounds height="48.20779831596326" width="24.558739824947907" x="1096.6073557273949" y="182.35664498980248"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNEdge bpmnElement="sid-99F42091-CFAA-4E13-BEE7-E3847B900351" id="BPMNEdge_sid-99F42091-CFAA-4E13-BEE7-E3847B900351">
+                <omgdi:waypoint x="1675.9274528546432" y="289.057009934956"></omgdi:waypoint>
+                <omgdi:waypoint x="1675.9274528546434" y="343.5367143837193"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-9D7F68BF-5483-4EC1-BF2A-96D837533799" id="BPMNEdge_sid-9D7F68BF-5483-4EC1-BF2A-96D837533799">
+                <omgdi:waypoint x="739.070471110885" y="467.451083609604"></omgdi:waypoint>
+                <omgdi:waypoint x="738.0483166940146" y="509.3904445968968"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-F8150B7D-955F-473D-BC34-535DAA8A2353" id="BPMNEdge_sid-F8150B7D-955F-473D-BC34-535DAA8A2353">
+                <omgdi:waypoint x="353.05357266419" y="504.2883415187774"></omgdi:waypoint>
+                <omgdi:waypoint x="687.0734287674387" y="332.8570619257381"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-5C7FE462-2E8E-4561-829E-FCB40F18BD6E" id="BPMNEdge_sid-5C7FE462-2E8E-4561-829E-FCB40F18BD6E">
+                <omgdi:waypoint x="1828.110437025185" y="288.55700993495606"></omgdi:waypoint>
+                <omgdi:waypoint x="1828.1104370251855" y="343.53671438371936"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-9ADBE624-AE43-46C4-AE2D-D660A05057FD" id="BPMNEdge_sid-9ADBE624-AE43-46C4-AE2D-D660A05057FD">
+                <omgdi:waypoint x="1020.3467099689562" y="674.0273444635683"></omgdi:waypoint>
+                <omgdi:waypoint x="961.0" y="669.0"></omgdi:waypoint>
+                <omgdi:waypoint x="961.0" y="916.0"></omgdi:waypoint>
+                <omgdi:waypoint x="1022.8181924337161" y="916.5091116050776"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="onGatewayOk" id="BPMNEdge_onGatewayOk">
+                <omgdi:waypoint x="1457.3739199187614" y="273.6651077411181"></omgdi:waypoint>
+                <omgdi:waypoint x="1519.0" y="274.0"></omgdi:waypoint>
+                <omgdi:waypoint x="1519.0" y="440.0"></omgdi:waypoint>
+                <omgdi:waypoint x="1452.1363331884324" y="440.6115630585923"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-53ADAFBA-7E10-46B5-A4A9-14CF8EC46802" id="BPMNEdge_sid-53ADAFBA-7E10-46B5-A4A9-14CF8EC46802">
+                <omgdi:waypoint x="1080.3467099689562" y="608.6831649510401"></omgdi:waypoint>
+                <omgdi:waypoint x="1080.3467099689562" y="629.1100300576288"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-648EB684-DEFD-425B-8943-EC6FE7E67144" id="BPMNEdge_sid-648EB684-DEFD-425B-8943-EC6FE7E67144">
+                <omgdi:waypoint x="1901.4875599379627" y="348.8089898375988"></omgdi:waypoint>
+                <omgdi:waypoint x="1988.1570716082795" y="276.0370425244854"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-9CE21919-4D44-4169-BD56-47A31FCC2087" id="BPMNEdge_sid-9CE21919-4D44-4169-BD56-47A31FCC2087">
+                <omgdi:waypoint x="354.678773801516" y="283.0579528758022"></omgdi:waypoint>
+                <omgdi:waypoint x="687.0734287674387" y="304.0391544626156"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-10D0BCC7-4028-478F-83DE-ECCA8E6200DC" id="BPMNEdge_sid-10D0BCC7-4028-478F-83DE-ECCA8E6200DC">
+                <omgdi:waypoint x="740.1153513986628" y="1288.0420342203317"></omgdi:waypoint>
+                <omgdi:waypoint x="740.1153513986628" y="1326.3713469525019"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-BDF547F9-7DB5-4C2F-93CD-9C9365CC8A61" id="BPMNEdge_sid-BDF547F9-7DB5-4C2F-93CD-9C9365CC8A61">
+                <omgdi:waypoint x="738.963264302184" y="938.8417859592982"></omgdi:waypoint>
+                <omgdi:waypoint x="738.2255158639176" y="964.456114616262"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-C1284E48-5C39-486C-83C1-C3E889878BF7" id="BPMNEdge_sid-C1284E48-5C39-486C-83C1-C3E889878BF7">
+                <omgdi:waypoint x="1683.8858502225537" y="536.3028653900495"></omgdi:waypoint>
+                <omgdi:waypoint x="1820.8926331207558" y="286.7062801351309"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-3DC695BB-B18A-42E4-B99A-FA672962B909" id="BPMNEdge_sid-3DC695BB-B18A-42E4-B99A-FA672962B909">
+                <omgdi:waypoint x="354.73159313343297" y="210.0871059984812"></omgdi:waypoint>
+                <omgdi:waypoint x="687.0734287674387" y="294.496099779075"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-A8580544-E055-418E-B793-1BEB8A056A33" id="BPMNEdge_sid-A8580544-E055-418E-B793-1BEB8A056A33">
+                <omgdi:waypoint x="1904.9999957242223" y="358.4658309841566"></omgdi:waypoint>
+                <omgdi:waypoint x="1984.8787982077706" y="358.52614365500386"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-85C9EBBB-94E5-46C6-812E-55F9A3783BF5" id="BPMNEdge_sid-85C9EBBB-94E5-46C6-812E-55F9A3783BF5">
+                <omgdi:waypoint x="738.0859199145202" y="1167.8662622151112"></omgdi:waypoint>
+                <omgdi:waypoint x="739.1028602515813" y="1208.0420342203317"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-111CA5B1-4D9C-4775-8864-19938725A086" id="BPMNEdge_sid-111CA5B1-4D9C-4775-8864-19938725A086">
+                <omgdi:waypoint x="1902.4130636109549" y="366.8756602186113"></omgdi:waypoint>
+                <omgdi:waypoint x="1987.2932681801537" y="424.45929813456394"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-E562219A-8DEF-498A-BABE-29E088597127" id="BPMNEdge_sid-E562219A-8DEF-498A-BABE-29E088597127">
+                <omgdi:waypoint x="354.56895839397544" y="356.50472793975405"></omgdi:waypoint>
+                <omgdi:waypoint x="687.0734287674387" y="313.64083397890295"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-9ADFD104-3A2F-4C54-A7DA-BDC36E0E8435" id="BPMNEdge_sid-9ADFD104-3A2F-4C54-A7DA-BDC36E0E8435">
+                <omgdi:waypoint x="738.0957024668812" y="709.8173097034854"></omgdi:waypoint>
+                <omgdi:waypoint x="738.9777263005575" y="744.3295478313918"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-034DE6AA-24BE-42A8-86E0-2FE710C6049E" id="BPMNEdge_sid-034DE6AA-24BE-42A8-86E0-2FE710C6049E">
+                <omgdi:waypoint x="1432.3176035775127" y="460.7928334476726"></omgdi:waypoint>
+                <omgdi:waypoint x="1432.3176035775127" y="529.3904445968968"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-13DA8428-8777-47DF-BF37-C52106909433" id="BPMNEdge_sid-13DA8428-8777-47DF-BF37-C52106909433">
+                <omgdi:waypoint x="1073.7640050265964" y="475.45919243782294"></omgdi:waypoint>
+                <omgdi:waypoint x="1076.3918969844435" y="508.6831649510401"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-4569B57F-FA1E-44EE-A039-5A85FB019060" id="BPMNEdge_sid-4569B57F-FA1E-44EE-A039-5A85FB019060">
+                <omgdi:waypoint x="351.81847331536704" y="588.7918366065683"></omgdi:waypoint>
+                <omgdi:waypoint x="687.0734287674387" y="343.7420090850952"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-0B740E43-E405-4E57-9534-F53A51079333" id="BPMNEdge_sid-0B740E43-E405-4E57-9534-F53A51079333">
+                <omgdi:waypoint x="740.0402931251886" y="824.3295478313918"></omgdi:waypoint>
+                <omgdi:waypoint x="740.0750582734743" y="858.8417859592982"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-39733B6E-A332-4960-9C2B-A4A514BDF3F5" id="BPMNEdge_sid-39733B6E-A332-4960-9C2B-A4A514BDF3F5">
+                <omgdi:waypoint x="737.0734287674388" y="1044.456114616262"></omgdi:waypoint>
+                <omgdi:waypoint x="737.0734287674388" y="1087.8662622151112"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-16CA240C-50EC-4C2D-B759-92A00E98A6B5" id="BPMNEdge_sid-16CA240C-50EC-4C2D-B759-92A00E98A6B5">
+                <omgdi:waypoint x="1096.266722322875" y="231.23309269827553"></omgdi:waypoint>
+                <omgdi:waypoint x="1121.1660955523428" y="182.35664498980248"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-E1928766-22EE-47D2-9E7A-0F9E098B3AF6" id="BPMNEdge_sid-E1928766-22EE-47D2-9E7A-0F9E098B3AF6">
+                <omgdi:waypoint x="1895.6589178971985" y="372.34610871892295"></omgdi:waypoint>
+                <omgdi:waypoint x="1993.5971375129934" y="612.7664400676704"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-D34632D6-0992-4819-998F-A72A5A083F08" id="BPMNEdge_sid-D34632D6-0992-4819-998F-A72A5A083F08">
+                <omgdi:waypoint x="790.1153513986629" y="1366.2214708553847"></omgdi:waypoint>
+                <omgdi:waypoint x="864.0" y="1366.0"></omgdi:waypoint>
+                <omgdi:waypoint x="864.0" y="282.0"></omgdi:waypoint>
+                <omgdi:waypoint x="992.4393971085224" y="282.0703444060666"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-02AEFD69-C19B-40D9-85F9-F32F33A0C57A" id="BPMNEdge_sid-02AEFD69-C19B-40D9-85F9-F32F33A0C57A">
+                <omgdi:waypoint x="625.0" y="1039.4470158333565"></omgdi:waypoint>
+                <omgdi:waypoint x="687.0734287674388" y="1088.4192463817546"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="onGatewayNokId" id="BPMNEdge_onGatewayNokId">
+                <omgdi:waypoint x="1437.4820177249235" y="293.55700993495594"></omgdi:waypoint>
+                <omgdi:waypoint x="1437.4820177249237" y="343.53671438371936"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-240B0FE6-679D-438A-AE91-7451A8ED995B" id="BPMNEdge_sid-240B0FE6-679D-438A-AE91-7451A8ED995B">
+                <omgdi:waypoint x="737.0734287674387" y="589.3904445968968"></omgdi:waypoint>
+                <omgdi:waypoint x="737.0734287674387" y="629.8173097034854"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-EBB4E814-B8FA-42F5-9CB7-43F5A490A2A5" id="BPMNEdge_sid-EBB4E814-B8FA-42F5-9CB7-43F5A490A2A5">
+                <omgdi:waypoint x="689.9342527586628" y="929.5853253941409"></omgdi:waypoint>
+                <omgdi:waypoint x="625.0" y="969.3674109694197"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-89F26497-BE15-44E2-B1F1-CC65948ABF1F" id="BPMNEdge_sid-89F26497-BE15-44E2-B1F1-CC65948ABF1F">
+                <omgdi:waypoint x="738.109999796805" y="347.19522229844836"></omgdi:waypoint>
+                <omgdi:waypoint x="739.0043594518545" y="381.70746042635477"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-241DD1A7-FBEB-4E8D-B58F-C57F31B79F21" id="BPMNEdge_sid-241DD1A7-FBEB-4E8D-B58F-C57F31B79F21">
+                <omgdi:waypoint x="1070.1298864814196" y="332.9929335379626"></omgdi:waypoint>
+                <omgdi:waypoint x="1069.9564171155855" y="373.6993515981359"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-64EF81D0-1CDB-4673-9E13-B934B4312E9D" id="BPMNEdge_sid-64EF81D0-1CDB-4673-9E13-B934B4312E9D">
+                <omgdi:waypoint x="353.7135335119039" y="431.4296555079938"></omgdi:waypoint>
+                <omgdi:waypoint x="687.0734287674387" y="323.39859082330867"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-1C4EF521-5707-4A50-809C-0CCE5BE33DDF" id="BPMNEdge_sid-1C4EF521-5707-4A50-809C-0CCE5BE33DDF">
+                <omgdi:waypoint x="1676.0056363553063" y="468.96337573359824"></omgdi:waypoint>
+                <omgdi:waypoint x="1676.3466632372918" y="534.3906551454969"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-53CEB6CB-534E-4D77-8748-2F6A084E2DCC" id="BPMNEdge_sid-53CEB6CB-534E-4D77-8748-2F6A084E2DCC">
+                <omgdi:waypoint x="625.0" y="819.005983776897"></omgdi:waypoint>
+                <omgdi:waypoint x="689.9342527586628" y="864.0397529059974"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-74C47ABB-2BDE-403E-AB66-588A786348F8" id="BPMNEdge_sid-74C47ABB-2BDE-403E-AB66-588A786348F8">
+                <omgdi:waypoint x="1122.8181924337161" y="916.9208929796491"></omgdi:waypoint>
+                <omgdi:waypoint x="1200.5199816024833" y="916.9208929796491"></omgdi:waypoint>
+                <omgdi:waypoint x="1200.5199816024833" y="273.557009934956"></omgdi:waypoint>
+                <omgdi:waypoint x="1417.4820177249235" y="273.557009934956"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-31BC4B5F-0570-4D09-B92F-97F09FB8CD23" id="BPMNEdge_sid-31BC4B5F-0570-4D09-B92F-97F09FB8CD23">
+                <omgdi:waypoint x="1417.5937264287606" y="363.6484230875563"></omgdi:waypoint>
+                <omgdi:waypoint x="1355.0" y="364.0"></omgdi:waypoint>
+                <omgdi:waypoint x="1355.0" y="549.0"></omgdi:waypoint>
+                <omgdi:waypoint x="1412.418093708476" y="549.2899544659336"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-1799ACE3-3A56-449D-9BC5-3EA4534F9BC4" id="BPMNEdge_sid-1799ACE3-3A56-449D-9BC5-3EA4534F9BC4">
+                <omgdi:waypoint x="687.0734287674387" y="705.1445804963498"></omgdi:waypoint>
+                <omgdi:waypoint x="625.0" y="749.0022770385274"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-00712082-DA0D-49ED-98A4-88547A61A50A" id="BPMNEdge_sid-00712082-DA0D-49ED-98A4-88547A61A50A">
+                <omgdi:waypoint x="1898.5199823982343" y="370.7999456545759"></omgdi:waypoint>
+                <omgdi:waypoint x="1990.92681064536" y="504.6972874664878"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-12E527C1-81A4-49D2-A304-20A4FBD84FC6" id="BPMNEdge_sid-12E527C1-81A4-49D2-A304-20A4FBD84FC6">
+                <omgdi:waypoint x="1843.1098295536515" y="273.4220144647172"></omgdi:waypoint>
+                <omgdi:waypoint x="1890.0" y="273.0"></omgdi:waypoint>
+                <omgdi:waypoint x="1890.0" y="343.45450520339"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-5E52895E-63A9-46BE-A6BA-C730FDF4987C" id="BPMNEdge_sid-5E52895E-63A9-46BE-A6BA-C730FDF4987C">
+                <omgdi:waypoint x="1452.2561514853483" y="549.3289925047322"></omgdi:waypoint>
+                <omgdi:waypoint x="1559.0" y="549.0"></omgdi:waypoint>
+                <omgdi:waypoint x="1559.0" y="273.0"></omgdi:waypoint>
+                <omgdi:waypoint x="1660.4276287228015" y="273.4831730744008"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-40E401C2-3979-4D9A-8629-A20709A167E4" id="BPMNEdge_sid-40E401C2-3979-4D9A-8629-A20709A167E4">
+                <omgdi:waypoint x="353.4008832263114" y="135.5554251750285"></omgdi:waypoint>
+                <omgdi:waypoint x="687.0734287674387" y="284.8272161538673"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-6981F788-C45B-4118-A683-FECC28380150" id="BPMNEdge_sid-6981F788-C45B-4118-A683-FECC28380150">
+                <omgdi:waypoint x="1675.9274528546434" y="373.5367143837193"></omgdi:waypoint>
+                <omgdi:waypoint x="1675.9274528546434" y="438.963579490308"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</definitions>

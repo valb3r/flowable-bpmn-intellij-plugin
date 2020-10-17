@@ -1,0 +1,5 @@
+package com.valb3r.bpmn.intellij.activiti.plugin.langinjection
+
+import com.valb3r.bpmn.intellij.plugin.commons.langinjection.DefaultDelegateExpressionUiInjector
+
+class ActivitiDelegateExpressionUiInjector: DefaultDelegateExpressionUiInjector()

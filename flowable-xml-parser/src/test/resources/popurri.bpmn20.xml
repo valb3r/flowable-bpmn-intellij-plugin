@@ -471,6 +471,18 @@
         </serviceTask>
         <sequenceFlow id="sid-1799ACE3-3A56-449D-9BC5-3EA4534F9BC4" sourceRef="businessRuleTaskId" targetRef="mailTaskId"></sequenceFlow>
         <sequenceFlow id="sid-53CEB6CB-534E-4D77-8748-2F6A084E2DCC" sourceRef="mailTaskId" targetRef="camelTaskId"></sequenceFlow>
+        <manualTask id="manualTaskId" name="Manual Task Name" flowable:async="true">
+            <documentation>Manual task documentation</documentation>
+            <extensionElements>
+                <flowable:executionListener event="take" class="some.class.Service">
+                    <flowable:field name="fieldName">
+                        <flowable:string><![CDATA[123]]></flowable:string>
+                    </flowable:field>
+                </flowable:executionListener>
+            </extensionElements>
+        </manualTask>
+        <sequenceFlow id="sid-EBB4E814-B8FA-42F5-9CB7-43F5A490A2A5" sourceRef="camelTaskId" targetRef="manualTaskId"></sequenceFlow>
+        <sequenceFlow id="sid-02AEFD69-C19B-40D9-85F9-F32F33A0C57A" sourceRef="manualTaskId" targetRef="muleTaskId"></sequenceFlow>
         <textAnnotation id="globalAnnotationId">
             <text>Global annotation text</text>
         </textAnnotation>
@@ -622,6 +634,9 @@
             <bpmndi:BPMNShape bpmnElement="transactionalCollapsedSubprocess" id="BPMNShape_transactionalCollapsedSubprocess" isExpanded="false">
                 <omgdc:Bounds height="81.41455929171332" width="98.78576731818566" x="1020.3467099689562" y="629.1100300576288"></omgdc:Bounds>
             </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="mailTaskId" id="BPMNShape_mailTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="525.0" y="744.3295478313918"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="globalAnnotationId" id="BPMNShape_globalAnnotationId">
                 <omgdc:Bounds height="50.00000000000003" width="100.0" x="845.7919668201883" y="157.35664498980245"></omgdc:Bounds>
             </bpmndi:BPMNShape>
@@ -631,8 +646,8 @@
             <bpmndi:BPMNShape bpmnElement="sid-16CA240C-50EC-4C2D-B759-92A00E98A6B5" id="BPMNShape_sid-16CA240C-50EC-4C2D-B759-92A00E98A6B5">
                 <omgdc:Bounds height="48.20779831596326" width="24.558739824947907" x="1096.6073557273949" y="182.35664498980248"></omgdc:Bounds>
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape bpmnElement="mailTaskId" id="BPMNShape_mailTaskId">
-                <omgdc:Bounds height="80.0" width="100.0" x="525.0" y="744.3295478313918"></omgdc:Bounds>
+            <bpmndi:BPMNShape bpmnElement="manualTaskId" id="BPMNShape_manualTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="525.0" y="960.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
             <bpmndi:BPMNEdge bpmnElement="sid-99F42091-CFAA-4E13-BEE7-E3847B900351" id="BPMNEdge_sid-99F42091-CFAA-4E13-BEE7-E3847B900351">
                 <omgdi:waypoint x="1675.9274528546432" y="289.0070073210827"></omgdi:waypoint>
@@ -750,6 +765,10 @@
                 <omgdi:waypoint x="864.0" y="282.0"></omgdi:waypoint>
                 <omgdi:waypoint x="992.4393971085224" y="282.0703444060666"></omgdi:waypoint>
             </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-02AEFD69-C19B-40D9-85F9-F32F33A0C57A" id="BPMNEdge_sid-02AEFD69-C19B-40D9-85F9-F32F33A0C57A">
+                <omgdi:waypoint x="624.9499999999997" y="1039.407568817523"></omgdi:waypoint>
+                <omgdi:waypoint x="687.0734287674387" y="1088.4192463817544"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
             <bpmndi:BPMNEdge bpmnElement="onGatewayNokId" id="BPMNEdge_onGatewayNokId">
                 <omgdi:waypoint x="1437.4820177249235" y="293.49593640839294"></omgdi:waypoint>
                 <omgdi:waypoint x="1437.4820177249237" y="343.5367143837193"></omgdi:waypoint>
@@ -761,6 +780,10 @@
             <bpmndi:BPMNEdge bpmnElement="sid-3AE1411A-3E03-4C2A-B735-FD70FAEDA917" id="BPMNEdge_sid-3AE1411A-3E03-4C2A-B735-FD70FAEDA917">
                 <omgdi:waypoint x="1072.8181924337161" y="956.870892979649"></omgdi:waypoint>
                 <omgdi:waypoint x="1072.8181924337164" y="1017.5913451482573"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-EBB4E814-B8FA-42F5-9CB7-43F5A490A2A5" id="BPMNEdge_sid-EBB4E814-B8FA-42F5-9CB7-43F5A490A2A5">
+                <omgdi:waypoint x="689.9342527586626" y="929.6318726194644"></omgdi:waypoint>
+                <omgdi:waypoint x="624.9499999999996" y="969.400972006041"></omgdi:waypoint>
             </bpmndi:BPMNEdge>
             <bpmndi:BPMNEdge bpmnElement="sid-89F26497-BE15-44E2-B1F1-CC65948ABF1F" id="BPMNEdge_sid-89F26497-BE15-44E2-B1F1-CC65948ABF1F">
                 <omgdi:waypoint x="738.1087040830183" y="347.1452222984484"></omgdi:waypoint>
@@ -779,8 +802,8 @@
                 <omgdi:waypoint x="1675.9274528546434" y="534.3904445968968"></omgdi:waypoint>
             </bpmndi:BPMNEdge>
             <bpmndi:BPMNEdge bpmnElement="sid-53CEB6CB-534E-4D77-8748-2F6A084E2DCC" id="BPMNEdge_sid-53CEB6CB-534E-4D77-8748-2F6A084E2DCC">
-                <omgdi:waypoint x="615.5721881398225" y="824.2795478313917"></omgdi:waypoint>
-                <omgdi:waypoint x="689.9342527586626" y="897.5004874136187"></omgdi:waypoint>
+                <omgdi:waypoint x="624.9499999999998" y="818.9713073409514"></omgdi:waypoint>
+                <omgdi:waypoint x="689.9342527586626" y="864.0397529059973"></omgdi:waypoint>
             </bpmndi:BPMNEdge>
             <bpmndi:BPMNEdge bpmnElement="sid-31BC4B5F-0570-4D09-B92F-97F09FB8CD23" id="BPMNEdge_sid-31BC4B5F-0570-4D09-B92F-97F09FB8CD23">
                 <omgdi:waypoint x="1417.5937264287606" y="363.64814381579674"></omgdi:waypoint>

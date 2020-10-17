@@ -503,7 +503,8 @@ class FlowableParser : BpmnParser {
 
 
     private fun setToNode(node: Element, type: PropertyType, value: Any?) {
-        val details = PropertyTypeDetails.values().firstOrNull { it.propertyType == type }!!
+        val details = PropertyTypeDetails.values().firstOrNull { it.propertyType == type }
+                ?: throw IllegalStateException("Wrong (or unsupported) property type details $type")
         when {
             details.xmlPath.contains(".") -> setNestedToNode(node, type, details, value)
             else -> setAttributeOrValueOrCdataOrRemoveIfNull(node, details.xmlPath, details, asString(type.valueType, value))
