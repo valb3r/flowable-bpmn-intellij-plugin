@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin
+package com.valb3r.bpmn.intellij.plugin.flowable
 
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
@@ -8,13 +8,21 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnEdgeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnParentChangedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DraggedToEvent
+import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.tests.BaseUiTest
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import org.amshove.kluent.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.awt.geom.Point2D
 
 internal class UiMultiSelectTest: BaseUiTest() {
+
+    @BeforeEach
+    fun `Prepare object factory`() {
+        registerNewElementsFactory(FlowableObjectFactory())
+    }
 
     // Is affected by multiselect feature, this is why it is here
     @Test

@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin
+package com.valb3r.bpmn.intellij.plugin.flowable
 
 import com.nhaarman.mockitokotlin2.*
 import com.nhaarman.mockitokotlin2.any
@@ -9,12 +9,15 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceT
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.events.*
+import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.render.AnchorType
 import com.valb3r.bpmn.intellij.plugin.core.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.state.CurrentState
 import com.valb3r.bpmn.intellij.plugin.core.tests.BaseUiTest
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import org.amshove.kluent.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.awt.Graphics2D
 import java.awt.Shape
@@ -23,6 +26,11 @@ import java.awt.geom.Point2D
 import java.util.*
 
 internal class UiEditorLightE2ETest: BaseUiTest() {
+
+    @BeforeEach
+    fun `Prepare object factory`() {
+        registerNewElementsFactory(FlowableObjectFactory())
+    }
 
     @Test
     fun `Ui renders service tasks properly`() {

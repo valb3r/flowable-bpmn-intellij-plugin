@@ -53,7 +53,7 @@ class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer) {
         val data = readFile(bpmnFile)
         val process = parser.parse(data)
         newPropertiesVisualizer(properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
-        canvas.reset(data, process.toView(newElementsFactory()!!), bpmnProcessRenderer)
+        canvas.reset(data, process.toView(newElementsFactory()), bpmnProcessRenderer)
 
         currentVfsConnection?.let { it.disconnect(); it.dispose() }
         currentPaintConnection?.let { it.disconnect(); it.dispose() }
