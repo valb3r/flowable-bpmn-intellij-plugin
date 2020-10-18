@@ -1,6 +1,12 @@
 [![codecov](https://codecov.io/gh/valb3r/flowable-bpmn-intellij-plugin/branch/master/graph/badge.svg)](https://codecov.io/gh/valb3r/flowable-bpmn-intellij-plugin)
 [![Gitter](https://badges.gitter.im/flowable-bpmn-intellij-plugin/community.svg)](https://gitter.im/flowable-bpmn-intellij-plugin/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
+# News
+
+- 2020-18-10. From now this repository also ships plugin for **Activiti BPMN** (6.x and older), available 
+at [jetbrains-plugin-repository](https://plugins.jetbrains.com/plugin/15222-activiti-bpmn-visualizer)
+
+
 # What is this
 
 This project provides plugin for [Flowable BPMN engine](https://github.com/flowable/flowable-engine) process editor integration into IntelliJ,
