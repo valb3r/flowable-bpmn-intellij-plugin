@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/valb3r/flowable-bpmn-intellij-plugin/workflows/Java%20CI/badge.svg)](https://github.com/vab3r/flowable-bpmn-intellij-plugin/actions)
+[![Build Status](https://github.com/valb3r/flowable-bpmn-intellij-plugin/workflows/Java%20CI/badge.svg)](https://github.com/valb3r/flowable-bpmn-intellij-plugin/actions)
 [![codecov](https://codecov.io/gh/valb3r/flowable-bpmn-intellij-plugin/branch/master/graph/badge.svg)](https://codecov.io/gh/valb3r/flowable-bpmn-intellij-plugin)
 [![Gitter](https://badges.gitter.im/flowable-bpmn-intellij-plugin/community.svg)](https://gitter.im/flowable-bpmn-intellij-plugin/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
