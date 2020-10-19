@@ -10,8 +10,9 @@ at [jetbrains-plugin-repository](https://plugins.jetbrains.com/plugin/15222-acti
 User interface usage flow is the same as one for the **Flowable** plugin, so one can use instruction videos presented 
 below. 
 
-- 2020-10-17. **Announcement**: From version 0.4.3 (of both plugins) there will be a possibility to migrate your BPMN 
-diagrams from Activiti to Flowable (and vice-versa) using copy-paste between two Activiti and Flowable plugin windows. 
+- 2020-10-17. From version 0.4.3 (of both plugins) it can be possible to migrate your BPMN 
+diagrams from Activiti to Flowable (and vice-versa) using copy-paste between two Activiti and Flowable,
+please vote for this feature by thumbsup:  https://github.com/valb3r/flowable-bpmn-intellij-plugin/issues/195
 
 
 # What is this
