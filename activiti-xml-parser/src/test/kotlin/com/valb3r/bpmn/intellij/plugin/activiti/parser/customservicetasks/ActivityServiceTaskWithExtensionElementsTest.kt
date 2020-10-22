@@ -17,6 +17,6 @@ internal class ActivityServiceTaskWithExtensionElementsTest {
         val processObject = parser.parse(FILE.asResource()!!)
 
         processObject.process.body!!.serviceTask!![0].extensionElements!!.shouldNotBeEmpty()
-        processObject.process.body!!.serviceTask!![0].extensionElements!![0].cdata.shouldBeEqualTo("R10/PT5M")
+        processObject.process.body!!.serviceTask!![0].extensionElements!![0].failedJobRetryTimeCycle.shouldBeEqualTo("R10/PT5M")
     }
 }
