@@ -129,8 +129,8 @@ enum class PropertyTypeDetails(
     CLEAN_ENV(PropertyType.CLEAN_ENV, "extensionElements.activiti:field?name=cleanEnv.activiti:string.text", XmlType.CDATA),
     ERROR_CODE_VARIABLE(PropertyType.ERROR_CODE_VARIABLE, "extensionElements.activiti:field?name=errorCodeVariable.activiti:string.text", XmlType.CDATA),
     OUTPUT_VARIABLE(PropertyType.OUTPUT_VARIABLE, "extensionElements.activiti:field?name=outputVariable.activiti:string.text", XmlType.CDATA),
-    DIRECTORY(PropertyType.DIRECTORY, "extensionElements.activiti:field?name=directory.activiti:string.text", XmlType.CDATA)
-
+    DIRECTORY(PropertyType.DIRECTORY, "extensionElements.activiti:field?name=directory.activiti:string.text", XmlType.CDATA),
+    FAILED_JOB_RETRY_CYCLE(PropertyType.FAILED_JOB_RETRY_CYCLE, "extensionElements.activiti:failedJobRetryTimeCycle.text", XmlType.CDATA)
 }
 
 enum class XmlType {

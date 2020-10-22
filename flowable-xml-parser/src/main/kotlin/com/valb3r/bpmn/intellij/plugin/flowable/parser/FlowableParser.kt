@@ -137,8 +137,8 @@ enum class PropertyTypeDetails(
     CLEAN_ENV(PropertyType.CLEAN_ENV, "extensionElements.flowable:field?name=cleanEnv.flowable:string.text", XmlType.CDATA),
     ERROR_CODE_VARIABLE(PropertyType.ERROR_CODE_VARIABLE, "extensionElements.flowable:field?name=errorCodeVariable.flowable:string.text", XmlType.CDATA),
     OUTPUT_VARIABLE(PropertyType.OUTPUT_VARIABLE, "extensionElements.flowable:field?name=outputVariable.flowable:string.text", XmlType.CDATA),
-    DIRECTORY(PropertyType.DIRECTORY, "extensionElements.flowable:field?name=directory.flowable:string.text", XmlType.CDATA)
-
+    DIRECTORY(PropertyType.DIRECTORY, "extensionElements.flowable:field?name=directory.flowable:string.text", XmlType.CDATA),
+    FAILED_JOB_RETRY_CYCLE(PropertyType.FAILED_JOB_RETRY_CYCLE, "extensionElements.flowable:failedJobRetryTimeCycle.text", XmlType.CDATA)
 }
 
 enum class XmlType {

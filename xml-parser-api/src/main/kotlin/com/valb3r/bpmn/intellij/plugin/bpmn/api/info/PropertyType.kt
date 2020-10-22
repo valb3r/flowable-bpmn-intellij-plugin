@@ -95,5 +95,6 @@ enum class PropertyType(
     CLEAN_ENV("cleanEnv", "Clean environment", STRING),
     ERROR_CODE_VARIABLE("errorCodeVariable", "Error code variable", STRING),
     OUTPUT_VARIABLE("outputVariable", "Output variable", STRING),
-    DIRECTORY("directory", "Working directory", STRING)
+    DIRECTORY("directory", "Working directory", STRING),
+    FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycleExtension", "Failed job retry cycle", STRING)
 }
