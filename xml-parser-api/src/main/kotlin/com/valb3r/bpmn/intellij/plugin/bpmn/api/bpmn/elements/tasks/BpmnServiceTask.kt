@@ -23,7 +23,7 @@ data class BpmnServiceTask(
         // Customizations (Flowable) - http task, camel task,...:
         val type: String?  = null,
         val extensionElements: List<ExtensionElement>? = null,
-        val failedJobRetryTimeCycleExtension: String?
+        val failedJobRetryTimeCycleExtension: String? = null
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
