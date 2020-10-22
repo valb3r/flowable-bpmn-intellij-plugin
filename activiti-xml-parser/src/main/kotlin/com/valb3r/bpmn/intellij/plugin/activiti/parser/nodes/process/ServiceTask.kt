@@ -1,6 +1,12 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process
 
 import com.fasterxml.jackson.annotation.JsonMerge
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnMappable
@@ -8,6 +14,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceT
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.factory.Mappers
+
+
+
 
 data class ServiceTask(
         @JacksonXmlProperty(isAttribute = true) val id: String,
@@ -36,9 +45,44 @@ data class ServiceTask(
         fun convertToDto(input: ServiceTask) : BpmnServiceTask
     }
 
-    data class ExtensionElement(
-            @JacksonXmlProperty(isAttribute = true) val name: String?,
-            @JacksonXmlProperty(isAttribute = false) val string: String?,
-            @JacksonXmlProperty(isAttribute = false) val expression: String?
+    @JsonDeserialize(using = ExtensionElementDeserializer::class)
+    open class ExtensionElement(
+        val name: String? = null,
+        val string: String? = null,
+        val expression: String? = null,
+        val cdata: String? = null
     )
+
+    @JsonDeserialize(`as` = FieldExtensionElement::class)
+    class FieldExtensionElement(
+            @JacksonXmlProperty(isAttribute = true) name: String?,
+            @JacksonXmlProperty(isAttribute = false) string: String?,
+            @JacksonXmlProperty(isAttribute = false) expression: String?
+    ) : ExtensionElement(name, string, expression)
+
+    @JsonDeserialize(`as` = TextualExtensionElement::class)
+    class TextualExtensionElement(data: String) : ExtensionElement(cdata = data)
+
+    @JsonDeserialize(`as` = UnhandledExtensionElement::class)
+    class UnhandledExtensionElement : ExtensionElement()
+
+    class ExtensionElementDeserializer(vc: Class<*>? = null) : StdDeserializer<ExtensionElement?>(vc) {
+
+        override fun deserialize(parser: JsonParser, context: DeserializationContext?): ExtensionElement {
+            val node: JsonNode = parser.codec.readTree(parser)
+            val mapper: ObjectMapper = parser.codec as ObjectMapper
+
+            return when {
+                node.has("name") -> {
+                    mapper.treeToValue(node, FieldExtensionElement::class.java)
+                }
+                node.isTextual -> {
+                    TextualExtensionElement(node.textValue())
+                }
+                else -> {
+                    UnhandledExtensionElement()
+                }
+            }
+        }
+    }
 }
