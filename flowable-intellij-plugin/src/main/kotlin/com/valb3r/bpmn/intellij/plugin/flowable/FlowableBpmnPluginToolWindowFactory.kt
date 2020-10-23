@@ -7,7 +7,6 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import com.valb3r.bpmn.intellij.plugin.BpmnPluginToolWindow
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
-import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindowProjectService
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.core.xmlnav.registerXmlNavigator
@@ -27,7 +26,7 @@ class FlowableBpmnPluginToolWindowFactory: ToolWindowFactory {
         }
 
         // register the call graph tool window as a project service, so it can be accessed by editor menu actions.
-        val windowService = ServiceManager.getService(project, BpmnPluginToolWindowProjectService::class.java)
+        val windowService = ServiceManager.getService(project, FlowableBpmnPluginToolWindowProjectService::class.java)
         windowService.bpmnToolWindow = bpmnWindow
 
         // register the tool window content

@@ -5,8 +5,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.wm.ToolWindowManager
+import com.valb3r.bpmn.intellij.activiti.plugin.ActivitiBpmnPluginToolWindowProjectService
 import com.valb3r.bpmn.intellij.plugin.core.BpmnActionContext
-import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindowProjectService
 
 class ViewActivitiBpmnDiagramAction : AnAction() {
 
@@ -20,7 +20,7 @@ class ViewActivitiBpmnDiagramAction : AnAction() {
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("BPMN-Activiti-Diagram")!!
         toolWindow.title = file.name
         toolWindow.activate {
-            ServiceManager.getService(project, BpmnPluginToolWindowProjectService::class.java)
+            ServiceManager.getService(project, ActivitiBpmnPluginToolWindowProjectService::class.java)
                     .bpmnToolWindow
                     .run(
                             file,

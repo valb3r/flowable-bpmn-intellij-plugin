@@ -261,7 +261,7 @@
                 anchor="right"
                 factoryClass="com.valb3r.bpmn.intellij.plugin.flowable.FlowableBpmnPluginToolWindowFactory"/>
         <!-- Project service holds a reference to the tool window, which is accessible by an action (editor menu) -->
-        <projectService serviceImplementation="com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindowProjectService"/>
+        <projectService serviceImplementation="com.valb3r.bpmn.intellij.plugin.flowable.FlowableBpmnPluginToolWindowProjectService"/>
     </extensions>
 
     <!-- Inject SpEL for highlighting -->

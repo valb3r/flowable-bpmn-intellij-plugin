@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.wm.ToolWindowManager
 import com.valb3r.bpmn.intellij.plugin.core.BpmnActionContext
-import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindowProjectService
+import com.valb3r.bpmn.intellij.plugin.flowable.FlowableBpmnPluginToolWindowProjectService
 
 class ViewFlowableBpmnDiagramAction : AnAction() {
 
@@ -20,7 +20,7 @@ class ViewFlowableBpmnDiagramAction : AnAction() {
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("BPMN-Flowable-Diagram")!!
         toolWindow.title = file.name
         toolWindow.activate {
-            ServiceManager.getService(project, BpmnPluginToolWindowProjectService::class.java)
+            ServiceManager.getService(project, FlowableBpmnPluginToolWindowProjectService::class.java)
                     .bpmnToolWindow
                     .run(
                             file,
