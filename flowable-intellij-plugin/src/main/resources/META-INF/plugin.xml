@@ -149,7 +149,7 @@
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
             <action id="BpmnDiagram.ViewFlowableBpmnDiagram"
                     class="com.valb3r.bpmn.intellij.plugin.flowable.actions.ViewFlowableBpmnDiagramAction"
-                    text="View BPMN Diagram"
+                    text="View BPMN (Flowable) Diagram"
                     description="View BPMN (Flowable) Diagram"
                     icon="/icons/icon.png">
             </action>
@@ -184,7 +184,7 @@
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
             <action id="BpmnDiagram.AttachFlowableToDataSource"
                     class="com.valb3r.bpmn.intellij.plugin.flowable.actions.AttachFlowableBpmnDebuggerToDbAction"
-                    text="Attach To Schema"
+                    text="Attach To Schema (Flowable)"
                     description="Attach to database schema (Flowable) for BPMN process debugging"
                     icon="/icons/icon.png">
             </action>
@@ -218,7 +218,7 @@
                  - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
             <action id="BpmnDiagram.BpmnDetachFlowableFromDataSource"
                     class="com.valb3r.bpmn.intellij.plugin.flowable.actions.DetachFlowableBpmnDebuggerFromDbAction"
-                    text="Detach Debugger"
+                    text="Detach Debugger (Flowable)"
                     description="Detach BPMN debugger from DataSource (Flowable)"
                     icon="/icons/icon.png">
             </action>
