@@ -11,8 +11,10 @@ import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.core.render.Camera
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.Anchor
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.internal.CascadeTranslationOrChangesToWaypoint
+import java.awt.geom.Point2D
 
 class AnyShapeNestableIconShape(
         elementId: DiagramElementId,
@@ -49,7 +51,18 @@ class AnyShapeNestableIconShape(
     }
 
     override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
-        return mutableSetOf()
+        val rect = currentOnScreenRect(camera)
+        val halfWidth = rect.width / 2.0f
+        val halfHeight = rect.height / 2.0f
+
+        val cx = rect.x + rect.width / 2.0f
+        val cy = rect.y + rect.height / 2.0f
+        return mutableSetOf(
+                Anchor(Point2D.Float(cx - halfWidth, cy)),
+                Anchor(Point2D.Float(cx + halfWidth, cy)),
+                Anchor(Point2D.Float(cx, cy - halfHeight)),
+                Anchor(Point2D.Float(cx, cy + halfHeight))
+        )
     }
 
     override fun shapeAnchors(camera: Camera): MutableSet<Anchor> {
@@ -58,5 +71,13 @@ class AnyShapeNestableIconShape(
 
     override fun areaType(): AreaType {
         return AreaType.SELECTS_DRAG_TARGET
+    }
+
+    override fun parentForRelatedSequenceElem(): BaseBpmnRenderElement {
+        if (parents.first().parents.isEmpty()) {
+            return parents.first()
+        }
+
+        return parents.first().parents.first()
     }
 }

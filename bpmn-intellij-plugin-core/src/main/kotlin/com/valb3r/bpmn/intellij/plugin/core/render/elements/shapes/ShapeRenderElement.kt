@@ -231,6 +231,10 @@ abstract class ShapeRenderElement(
                 }
     }
 
+    protected open fun parentForRelatedSequenceElem(): BaseBpmnRenderElement {
+        return parents.first()
+    }
+
     private fun detectAndRenderNewSequenceAnchorMove() {
         val expected = viewTransform.transform(elementId, edgeExtractionAnchor.location)
         if (expected.distance(edgeExtractionAnchor.transformedLocation) > EPSILON && edgeExtractionAnchor.isActiveOrDragged()) {
@@ -301,7 +305,7 @@ abstract class ShapeRenderElement(
 
         return mutableListOf(
                 BpmnEdgeObjectAddedEvent(
-                        WithParentId(parents.first().bpmnElementId, newSequenceBpmn),
+                        WithParentId(parentForRelatedSequenceElem().bpmnElementId, newSequenceBpmn),
                         EdgeElementState(newSequenceDiagram),
                         props
                 )

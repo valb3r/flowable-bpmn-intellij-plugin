@@ -2,9 +2,12 @@ package com.valb3r.bpmn.intellij.plugin
 
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.core.events.BpmnEdgeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnParentChangedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DraggedToEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
@@ -12,10 +15,7 @@ import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFacto
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.tests.BaseUiTest
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeLessThan
-import org.amshove.kluent.shouldHaveSingleItem
-import org.amshove.kluent.shouldHaveSize
+import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.awt.geom.Point2D
@@ -161,6 +161,62 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
             parentChanged.newParentId.shouldBeEqualTo(parentProcessBpmnId)
             attachedRef.property.shouldBeEqualTo(PropertyType.ATTACHED_TO_REF)
             attachedRef.newValue.shouldBeEqualTo(parentProcessBpmnId.id)
+        }
+    }
+
+    @Test
+    fun `New edge element should be addable out of boundary element on plain process`() {
+        prepareServiceTaskWithBoundaryEventOnRootView()
+
+        clickOnId(optionalBoundaryErrorEventDiagramId)
+        val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
+        val newLinkLocation = clickOnId(newLink)
+        dragToButDontStop(newLinkLocation, elementCenter(serviceTaskStartDiagramId))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(1)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            lastValue.shouldContainSame(listOf(edgeBpmn))
+
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+
+            sequence.sourceRef.shouldBe(optionalBoundaryErrorEventBpmnId.id)
+            sequence.targetRef.shouldBe("")
+            edgeBpmn.props[PropertyType.SOURCE_REF]!!.value.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId.id)
+            edgeBpmn.props[PropertyType.TARGET_REF]!!.value.shouldBeEqualTo(serviceTaskStartBpmnId.id)
+        }
+    }
+
+    @Test
+    fun `New edge element should be addable out of boundary element on service task`() {
+        prepareServiceTaskWithAttachedBoundaryEventView()
+
+        clickOnId(optionalBoundaryErrorEventDiagramId)
+        val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
+        val newLinkLocation = clickOnId(newLink)
+        dragToButDontStop(newLinkLocation, elementCenter(serviceTaskStartDiagramId))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(1)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            lastValue.shouldContainSame(listOf(edgeBpmn))
+
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+
+            sequence.sourceRef.shouldBe(optionalBoundaryErrorEventBpmnId.id)
+            sequence.targetRef.shouldBe("")
+            edgeBpmn.props[PropertyType.SOURCE_REF]!!.value.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId.id)
+            edgeBpmn.props[PropertyType.TARGET_REF]!!.value.shouldBeEqualTo(serviceTaskStartBpmnId.id)
         }
     }
 }
