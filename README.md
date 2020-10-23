@@ -3,6 +3,12 @@
 [![Gitter](https://badges.gitter.im/flowable-bpmn-intellij-plugin/community.svg)](https://gitter.im/flowable-bpmn-intellij-plugin/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 
+# Support for `*.xml` in addition to `*.bpmn20.xml` extension
+
+To clarify how and why `*.xml` is used for BPMN diagrams when dedicated modelers support only `*.bpmn20.xml` please 
+add your comments on the `*.xml` file usage in this ticket: [#198](https://github.com/valb3r/flowable-bpmn-intellij-plugin/issues/198)
+
+
 # News
 
 - 2020-10-17. From now this repository also ships plugin for **Activiti BPMN** (6.x and older), available 
