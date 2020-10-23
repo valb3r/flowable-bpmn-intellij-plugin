@@ -74,6 +74,10 @@ class AnyShapeNestableIconShape(
     }
 
     override fun parentForRelatedSequenceElem(): BaseBpmnRenderElement {
+        if (parents.first().parents.isEmpty()) {
+            return parents.first()
+        }
+
         return parents.first().parents.first()
     }
 }
