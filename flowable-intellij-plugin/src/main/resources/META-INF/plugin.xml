@@ -150,7 +150,7 @@
             <action id="BpmnDiagram.ViewFlowableBpmnDiagram"
                     class="com.valb3r.bpmn.intellij.plugin.flowable.actions.ViewFlowableBpmnDiagramAction"
                     text="View BPMN Diagram"
-                    description="View BPMN Diagram"
+                    description="View BPMN (Flowable) Diagram"
                     icon="/icons/icon.png">
             </action>
             <!-- The <add-to-group> node specifies that the action should be added to an existing group.
@@ -185,7 +185,7 @@
             <action id="BpmnDiagram.AttachFlowableToDataSource"
                     class="com.valb3r.bpmn.intellij.plugin.flowable.actions.AttachFlowableBpmnDebuggerToDbAction"
                     text="Attach To Schema"
-                    description="Attach to database schema for BPMN process debugging"
+                    description="Attach to database schema (Flowable) for BPMN process debugging"
                     icon="/icons/icon.png">
             </action>
             <!-- The <add-to-group> node specifies that the action should be added to an existing group.
@@ -219,7 +219,7 @@
             <action id="BpmnDiagram.BpmnDetachFlowableFromDataSource"
                     class="com.valb3r.bpmn.intellij.plugin.flowable.actions.DetachFlowableBpmnDebuggerFromDbAction"
                     text="Detach Debugger"
-                    description="Detach BPMN debugger from DataSource"
+                    description="Detach BPMN debugger from DataSource (Flowable)"
                     icon="/icons/icon.png">
             </action>
             <!-- The <add-to-group> node specifies that the action should be added to an existing group.
