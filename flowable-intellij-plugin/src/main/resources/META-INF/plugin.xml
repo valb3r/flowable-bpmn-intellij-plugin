@@ -254,14 +254,17 @@
          The name of the tag within the <extensions> tag matches the name of the extension point,
          and the "implementation" class specifies the name of the class added to the extension point. -->
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow
+       <!-- FIXME <toolWindow
                 id="BPMN-Flowable-Diagram"
                 secondary="true"
                 icon="/icons/icon.png"
                 anchor="right"
-                factoryClass="com.valb3r.bpmn.intellij.plugin.flowable.FlowableBpmnPluginToolWindowFactory"/>
+                factoryClass="com.valb3r.bpmn.intellij.plugin.flowable.FlowableBpmnPluginToolWindowFactory"/> -->
         <!-- Project service holds a reference to the tool window, which is accessible by an action (editor menu) -->
         <projectService serviceImplementation="com.valb3r.bpmn.intellij.plugin.flowable.FlowableBpmnPluginToolWindowProjectService"/>
+
+        <fileEditorProvider implementation="com.valb3r.bpmn.intellij.plugin.flowable.FlowableBpmnDiagramEditorProvider"/>
+        <toolWindow id="Flowable BPMN diagram" anchor="right" factoryClass="com.valb3r.bpmn.intellij.plugin.flowable.FlowableBpmnPluginToolWindowFactory"/>
     </extensions>
 
     <!-- Inject SpEL for highlighting -->
