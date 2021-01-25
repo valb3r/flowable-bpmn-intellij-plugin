@@ -43,6 +43,12 @@ fun setCanvas(canvas: Canvas): Canvas {
     return canvas
 }
 
+interface ScrollZoomCallback {
+
+    fun scroll(dx: Float, dy: Float)
+    fun zoom(maxX: Float, maxY: Float)
+}
+
 class Canvas(private val settings: CanvasConstants) : JPanel() {
     private val stateProvider = currentStateProvider()
     private val closeAnchorRadius = 100.0f
