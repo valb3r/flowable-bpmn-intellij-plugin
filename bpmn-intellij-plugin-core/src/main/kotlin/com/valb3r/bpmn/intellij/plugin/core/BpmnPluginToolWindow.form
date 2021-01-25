@@ -35,7 +35,18 @@
             </constraints>
             <properties/>
             <border type="etched"/>
-            <children/>
+            <children>
+              <component id="857ad" class="javax.swing.JScrollBar" binding="canvasVScroll">
+                <constraints border-constraint="East"/>
+                <properties/>
+              </component>
+              <component id="68f12" class="javax.swing.JScrollBar" binding="canvasHScroll">
+                <constraints border-constraint="South"/>
+                <properties>
+                  <orientation value="0"/>
+                </properties>
+              </component>
+            </children>
           </grid>
         </children>
       </splitpane>

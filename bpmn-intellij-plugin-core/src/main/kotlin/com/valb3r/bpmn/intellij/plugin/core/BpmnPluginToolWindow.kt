@@ -25,10 +25,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.DefaultBpmnProcessRenderer
 import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.currentIconProvider
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
-import javax.swing.JComponent
-import javax.swing.JPanel
-import javax.swing.JSplitPane
-import javax.swing.JTable
+import javax.swing.*
 import javax.swing.table.DefaultTableModel
 
 
@@ -38,6 +35,8 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
     private lateinit var propertiesPanel: JPanel
     private lateinit var mainToolWindowForm: JPanel
     private lateinit var canvasPanel: JPanel
+    private lateinit var canvasVScroll: JScrollBar
+    private lateinit var canvasHScroll: JScrollBar
 
     private val canvasBuilder = CanvasBuilder(DefaultBpmnProcessRenderer(currentIconProvider()))
     private val canvas: Canvas = currentCanvas()
