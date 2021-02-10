@@ -23,6 +23,7 @@ repositories {
 }
 
 apply plugin: 'idea'
+apply plugin: 'org.jetbrains.intellij'
 apply plugin: 'kotlin'
 apply plugin: 'kotlin-kapt'
 
@@ -38,6 +39,10 @@ dependencies {
     implementation 'org.amshove.kluent:kluent:1.61'
     implementation 'org.mockito:mockito-inline:3.3.3'
     implementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
+}
+
+intellij {
+    version 'IU-2018.3'
 }
 
 sourceSets {
