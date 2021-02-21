@@ -91,10 +91,18 @@ It will create `bpmn-intellij-plugin/build/distributions/bpmn-intellij-plugin.zi
 You can install it by following steps [here](#from-github-releases).
 
 If you want just to run the plugin in the `sandbox` you can execute
+
+**Flowable:**
+
 ```shell script
-./gradlew clean bpmn-intellij-plugin:runIde
+./gradlew clean :flowable-intellij-plugin:runIde
 ```
 
+**Activiti:**
+
+```shell script
+./gradlew clean :activiti-intellij-plugin:runIde
+```
 
 # Workflow
 
