@@ -41,6 +41,10 @@ dependencies {
     implementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
 }
 
+intellij {
+    version 'IU-2018.3'
+}
+
 sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
