@@ -270,11 +270,6 @@
         <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.flowable.langinjection.xml.FlowableXmlFlowableInjector"/>
     </extensions>
 
-    <!-- Registers bmpn20.xml Flowable template -->
-    <extensions defaultExtensionNs="com.intellij">
-        <internalFileTemplate name="Flowable BPMN 2.0 diagram"/>
-    </extensions>
-
     <!-- Extensions which the plugin adds to extension points defined by the IntelliJ Platform or by other plugins.
          The "defaultExtensionNs " attribute must be set to the ID of the plugin defining the extension point,
          or to "com.intellij" if the extension point is defined by the IntelliJ Platform. The name of the tag
