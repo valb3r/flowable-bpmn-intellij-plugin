@@ -11,6 +11,8 @@ import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.properties.PropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.BaseEdgeRenderElement
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.CameraChangeEvent
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -43,18 +45,17 @@ fun setCanvas(canvas: Canvas): Canvas {
     return canvas
 }
 
-interface ScrollZoomCallback {
-
-    fun scroll(dx: Float, dy: Float)
-    fun zoom(maxX: Float, maxY: Float)
-}
-
 class Canvas(private val settings: CanvasConstants) : JPanel() {
     private val stateProvider = currentStateProvider()
     private val closeAnchorRadius = 100.0f
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
+        private set(camera) {
+            field = camera
+            currentUiEventBus().publish(CameraChangeEvent(camera))
+        }
+
     private var interactionCtx: ElementInteractionContext = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
     private var renderer: BpmnProcessRenderer? = null
     private var areaByElement: Map<DiagramElementId, AreaWithZindex>? = null

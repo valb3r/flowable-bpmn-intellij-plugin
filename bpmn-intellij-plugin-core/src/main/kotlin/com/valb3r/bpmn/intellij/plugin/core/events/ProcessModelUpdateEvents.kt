@@ -48,6 +48,9 @@ class IntelliJFileCommitter(private val parser: BpmnParser, private val project:
 
 }
 
+/**
+ * Responsible for model update (persistent events).
+ */
 class ProcessModelUpdateEvents(private val committer: FileCommitter, private val updates: MutableList<Order<out Event>>) {
 
     private var baseFileContent: String? = null

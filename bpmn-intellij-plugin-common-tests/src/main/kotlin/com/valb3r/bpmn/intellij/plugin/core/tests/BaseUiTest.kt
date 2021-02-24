@@ -32,6 +32,8 @@ import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.render.*
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.UiEventBus
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.setUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
@@ -103,6 +105,7 @@ abstract class BaseUiTest {
     protected val renderer = spy(DefaultBpmnProcessRenderer(icons))
     protected val canvasBuilder = CanvasBuilder(renderer)
     protected val canvas = setCanvas(Canvas(DefaultCanvasConstants().copy(baseCursorSize = 3.0f))) // Using small cursor size for clarity
+    protected val uiEventBus = setUiEventBus(UiEventBus())
     protected var renderResult: Map<DiagramElementId, AreaWithZindex>? = null
 
     protected val basicProcess = BpmnProcessObject(
