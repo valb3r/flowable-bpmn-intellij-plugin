@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable
 
-import com.valb3r.bpmn.intellij.plugin.BpmnPluginToolWindow
+import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
 
 class FlowableBpmnPluginToolWindowProjectService {
 

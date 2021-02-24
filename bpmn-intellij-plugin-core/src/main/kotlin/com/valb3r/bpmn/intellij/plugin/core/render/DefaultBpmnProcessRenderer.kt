@@ -35,8 +35,11 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.EdgeRenderElem
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.shapes.*
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ModelRectangleChangeEvent
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.Icon
 
@@ -119,6 +122,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         drawMultiremovalRect(state, rendered)
 
         lastState.set(RenderedState(state, elementsById))
+        computeAndReportModelRect(rendered)
         return rendered
     }
 
@@ -287,8 +291,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             actionElementId: DiagramElementId,
             locationX: Float,
             locationY: Float,
-            renderedArea:
-            MutableMap<DiagramElementId, AreaWithZindex>,
+            renderedArea: MutableMap<DiagramElementId, AreaWithZindex>,
             onClick: (ProcessModelUpdateEvents) -> Unit,
             icon: Icon
     ): Float {
@@ -313,5 +316,14 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
     private fun isActive(elemId: DiagramElementId, state: RenderState): Boolean {
         return elemId.let { state.ctx.selectedIds.contains(it) }
+    }
+
+    private fun computeAndReportModelRect(renderedArea: MutableMap<DiagramElementId, AreaWithZindex>) {
+        val minX = renderedArea.values.map { it.area.bounds2D.minX }.min() ?: 0.0
+        val minY = renderedArea.values.map { it.area.bounds2D.minY }.min() ?: 0.0
+        val maxX = renderedArea.values.map { it.area.bounds2D.maxX }.min() ?: 0.0
+        val maxY = renderedArea.values.map { it.area.bounds2D.maxY }.min() ?: 0.0
+
+        currentUiEventBus().publish(ModelRectangleChangeEvent(Rectangle2D.Float(minX.toFloat(), minY.toFloat(), maxX.toFloat() - minX.toFloat(), maxY.toFloat() - minY.toFloat())))
     }
 }

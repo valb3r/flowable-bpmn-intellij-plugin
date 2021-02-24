@@ -1,5 +1,6 @@
-package com.valb3r.bpmn.intellij.plugin
+package com.valb3r.bpmn.intellij.plugin.core
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileTypes.StdFileTypes
@@ -14,9 +15,6 @@ import com.intellij.ui.components.JBTextField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.core.BpmnActionContext
-import com.valb3r.bpmn.intellij.plugin.core.CanvasBuilder
-import com.valb3r.bpmn.intellij.plugin.core.MouseEventHandler
 import com.valb3r.bpmn.intellij.plugin.core.events.IntelliJFileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
@@ -31,6 +29,8 @@ import javax.swing.table.DefaultTableModel
 
 class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFileOpenCallback: (PsiFile) -> Unit) {
 
+    private val log = Logger.getInstance(BpmnPluginToolWindow::class.java)
+
     private lateinit var canvasAndProperties: JSplitPane
     private lateinit var propertiesPanel: JPanel
     private lateinit var mainToolWindowForm: JPanel
@@ -42,6 +42,7 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
     private val canvas: Canvas = currentCanvas()
 
     init {
+        log.info("BPMN plugin started")
         // attach event listeners to canvas
         val mouseEventHandler = MouseEventHandler(this.canvas)
         this.canvas.addMouseListener(mouseEventHandler)
