@@ -17,9 +17,9 @@ private const val NEW_FILE = "New Flowable BPMN 2.0 file"
 
 class NewFlowableBpmnAction:
         CreateFileFromTemplateAction(
-        "Flowable BPMN 2.0 file",
-        "Create new Flowable BPMN process",
-        currentIconProvider().script), DumbAware {
+            NEW_FILE,
+            "Create new Flowable BPMN process",
+            currentIconProvider().script), DumbAware {
 
     companion object {
         fun createProperties(project: Project, processName: String): Properties {
