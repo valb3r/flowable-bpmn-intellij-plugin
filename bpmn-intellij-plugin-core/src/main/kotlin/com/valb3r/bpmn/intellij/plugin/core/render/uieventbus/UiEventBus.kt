@@ -30,13 +30,17 @@ fun setUiEventBus(eventBus: UiEventBus): UiEventBus {
  */
 class UiEventBus {
 
-    private val subscribers: ConcurrentMap<KClass<out UiEvent>, MutableList<(UiEvent) -> Void>> = ConcurrentHashMap()
+    private val subscribers: ConcurrentMap<KClass<out UiEvent>, MutableList<(UiEvent) -> Unit>> = ConcurrentHashMap()
 
-    fun <T: UiEvent> subscribe(event: KClass<T>, subscription: (T) -> Void) {
-        subscribers.computeIfAbsent(event) { CopyOnWriteArrayList() }.add(subscription as (UiEvent) -> Void)
+    fun <T: UiEvent> subscribe(event: KClass<T>, subscription: (T) -> Unit) {
+        subscribers.computeIfAbsent(event) { CopyOnWriteArrayList() }.add(subscription as (UiEvent) -> Unit)
     }
 
     fun <T: UiEvent> publish(event: T) {
         subscribers[event::class]?.forEach { it(event) }
+    }
+
+    fun clearSubscriptions() {
+        subscribers.clear()
     }
 }

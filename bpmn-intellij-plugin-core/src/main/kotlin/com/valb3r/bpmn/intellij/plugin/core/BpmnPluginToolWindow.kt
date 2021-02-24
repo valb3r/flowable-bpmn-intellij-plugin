@@ -18,11 +18,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.events.IntelliJFileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
-import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
-import com.valb3r.bpmn.intellij.plugin.core.render.DefaultBpmnProcessRenderer
-import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
-import com.valb3r.bpmn.intellij.plugin.core.render.currentIconProvider
+import com.valb3r.bpmn.intellij.plugin.core.render.*
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.CameraChangeEvent
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ModelRectangleChangeEvent
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
+import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
+import java.util.concurrent.atomic.AtomicReference
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
 
@@ -81,6 +84,7 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
                 virtualFile
         )
         setupUiAfterRun()
+        attachScrollListenersAndClearSubs()
     }
 
     fun createTextField(value: String): TextValueAccessor {
@@ -158,6 +162,34 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
         this.canvas.isVisible = true
         this.canvasPanel.updateUI()
         this.canvasPanel.isEnabled = true
+    }
+
+    private fun attachScrollListenersAndClearSubs() {
+        val bus = currentUiEventBus()
+        val model = AtomicReference<Rectangle2D.Float>()
+        val camera = AtomicReference<Camera>()
+        bus.clearSubscriptions()
+        bus.subscribe(ModelRectangleChangeEvent::class) {
+            model.set(it.model)
+            camera.get()?.let { cam -> updateScrollBars(cam, it.model)}
+        }
+        bus.subscribe(CameraChangeEvent::class) {
+            camera.set(it.camera)
+            model.get()?.let { mdl -> updateScrollBars(it.camera, mdl)}
+        }
+    }
+
+    private fun updateScrollBars(camera: Camera, model: Rectangle2D.Float) {
+        val origin = camera.fromCameraView(Point2D.Float(0.0f, 0.0f))
+        val dest = camera.fromCameraView(Point2D.Float(canvasPanel.width.toFloat(), canvasPanel.height.toFloat()))
+        canvasHScroll.minimum = model.x.toInt()
+        canvasHScroll.maximum = (model.x + model.width).toInt()
+        canvasHScroll.value = (origin.x).toInt()
+        canvasHScroll.visibleAmount = (dest.x - origin.x).toInt()
+        canvasVScroll.minimum = model.y.toInt()
+        canvasVScroll.maximum = (model.y + model.height).toInt()
+        canvasVScroll.value = (origin.y).toInt()
+        canvasVScroll.visibleAmount = (dest.y - origin.y).toInt()
     }
 
     class JavaEditorTextField(document: Document, project: Project): EditorTextField(document, project, StdFileTypes.JAVA) {
