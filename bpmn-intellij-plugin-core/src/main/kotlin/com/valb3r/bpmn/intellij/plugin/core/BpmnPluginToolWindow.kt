@@ -25,6 +25,9 @@ import com.valb3r.bpmn.intellij.plugin.core.render.currentIconProvider
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ViewRectangleChangeEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
+import java.awt.event.AdjustmentEvent
+import java.awt.event.AdjustmentListener
+import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
@@ -167,7 +170,7 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
 
     private fun attachScrollListenersAndClearSubs() {
         currentUiEventBus().clearSubscriptions()
-        this.scrollHandler = ScrollBarInteractionHandler(canvasPanel, canvasHScroll, canvasVScroll)
+        this.scrollHandler = ScrollBarInteractionHandler(canvas, canvasPanel, canvasHScroll, canvasVScroll)
     }
 
     class JavaEditorTextField(document: Document, project: Project): EditorTextField(document, project, StdFileTypes.JAVA) {
@@ -178,20 +181,66 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
     }
 }
 
-class ScrollBarInteractionHandler(private val canvasPanel: JPanel, private val canvasHScroll: JScrollBar, private val canvasVScroll: JScrollBar) {
+class ScrollBarInteractionHandler(private val canvas: Canvas, private val canvasPanel: JPanel, private val canvasHScroll: JScrollBar, private val canvasVScroll: JScrollBar) {
 
-    init {
-        currentUiEventBus().subscribe(ViewRectangleChangeEvent::class) { updateScrollBars(it.model) }
+    private val hListener = ScrollListener { prev, current ->
+        canvas.dragCanvas(
+            Point2D.Float(current, 0.0f),
+            Point2D.Float(prev, 0.0f)
+        )
+    }
+    private val vListener = ScrollListener { prev, current ->
+        canvas.dragCanvas(
+            Point2D.Float(0.0f, current),
+            Point2D.Float(0.0f, prev)
+        )
     }
 
-    private fun updateScrollBars(model: Rectangle2D.Float) {
-        canvasHScroll.minimum = model.x.toInt()
-        canvasHScroll.maximum = (model.x + model.width).toInt()
-        canvasHScroll.value = 0
+    init {
+        currentUiEventBus().subscribe(ViewRectangleChangeEvent::class) { updateScrollBars(it.onScreenModel) }
+        canvasHScroll.adjustmentListeners.forEach { canvasHScroll.removeAdjustmentListener(it) }
+        canvasHScroll.addAdjustmentListener(hListener)
+
+        canvasVScroll.adjustmentListeners.forEach { canvasVScroll.removeAdjustmentListener(it) }
+        canvasVScroll.addAdjustmentListener(vListener)
+    }
+
+    private fun updateScrollBars(onScreenModel: Rectangle2D.Float) {
+        if (vListener.scrolling || hListener.scrolling) {
+            return
+        }
+
+        canvasHScroll.minimum = 0
+        canvasHScroll.maximum = onScreenModel.width.toInt()
+        canvasHScroll.value = -onScreenModel.x.toInt()
         canvasHScroll.visibleAmount = canvasPanel.width
-        canvasVScroll.minimum = model.y.toInt()
-        canvasVScroll.maximum = (model.y + model.height).toInt()
-        canvasVScroll.value = 0
+        canvasVScroll.minimum = 0
+        canvasVScroll.maximum = onScreenModel.height.toInt()
+        canvasVScroll.value = -onScreenModel.y.toInt()
         canvasVScroll.visibleAmount = canvasPanel.height
+    }
+
+    class ScrollListener(private val onScroll: (Float, Float) -> Unit): AdjustmentListener {
+
+        private var prevValue: Int? = null
+        var scrolling = false
+            private set
+
+        override fun adjustmentValueChanged(e: AdjustmentEvent) {
+            scrolling = true
+            if (e.valueIsAdjusting && null == prevValue) {
+                prevValue = e.value
+            }
+
+            prevValue?.apply {
+                onScroll(this.toFloat(), e.value.toFloat())
+                prevValue = e.value
+            }
+
+            if (!e.valueIsAdjusting) {
+                prevValue = null
+                scrolling = false
+            }
+        }
     }
 }
