@@ -35,9 +35,8 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.EdgeRenderElem
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.shapes.*
-import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ModelRectangleChangeEvent
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ViewRectangleChangeEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
-import com.valb3r.bpmn.intellij.plugin.core.state.CurrentState
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -123,7 +122,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         drawMultiremovalRect(state, rendered)
 
         lastState.set(RenderedState(state, elementsById))
-        computeAndReportModelRect(currentState)
+        computeAndReportModelRect(rendered.values)
         return rendered
     }
 
@@ -138,7 +137,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         state.currentState.shapes.forEach {
             val elem = state.currentState.elementByBpmnId[it.bpmnElement]
             elem?.let { bpmn ->
-                mapFromShape(state, it.id, it, bpmn.element)?.let { shape ->
+                mapFromShape(state, it.id, it, bpmn.element).let { shape ->
                     elements += shape
                     elementsById[bpmn.id] = shape
                 }
@@ -169,7 +168,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         root.children.forEach { linkDiagramElementId(it, elementsByDiagramId)}
     }
 
-    private fun mapFromShape(state: RenderState, id: DiagramElementId, shape: ShapeElement, bpmn: WithBpmnId): BaseBpmnRenderElement? {
+    private fun mapFromShape(state: RenderState, id: DiagramElementId, shape: ShapeElement, bpmn: WithBpmnId): BaseBpmnRenderElement {
         val icons = state.icons
         return when (bpmn) {
             is BpmnStartEvent -> EllipticIconOnLayerShape(id, bpmn.id, icons.startEvent, shape, state, Colors.START_EVENT)
@@ -319,15 +318,13 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         return elemId.let { state.ctx.selectedIds.contains(it) }
     }
 
-    private fun computeAndReportModelRect(state: CurrentState) {
-        val shapeBounds = state.shapes.map { it.rectBounds() }
-        val edgeBounds = state.edges.flatMap { it.waypoint }
+    private fun computeAndReportModelRect(allRendered: Collection<AreaWithZindex>) {
+        val filter = {it: AreaWithZindex -> it.areaType != AreaType.PARENT_PROCESS_SHAPE }
+        val minX = allRendered.filter(filter).map { it.area.bounds2D.x }.min() ?: 0.0
+        val minY = allRendered.filter(filter).map { it.area.bounds2D.y }.min() ?: 0.0
+        val maxX = allRendered.filter(filter).map { it.area.bounds2D.x + it.area.bounds2D.width }.max() ?: 0.0
+        val maxY = allRendered.filter(filter).map { it.area.bounds2D.y + it.area.bounds2D.height }.max() ?: 0.0
 
-        val minX = (shapeBounds.map { it.x } + edgeBounds.map { it.x }).min() ?: 0.0f
-        val minY = (shapeBounds.map { it.y } + edgeBounds.map { it.y }).min() ?: 0.0f
-        val maxX = (shapeBounds.map { it.x + it.width } + edgeBounds.map { it.x }).max() ?: 0.0f
-        val maxY = (shapeBounds.map { it.y + it.height } + edgeBounds.map { it.y }).max() ?: 0.0f
-
-        currentUiEventBus().publish(ModelRectangleChangeEvent(Rectangle2D.Float(minX, minY, maxX - minX, maxY - minY)))
+        currentUiEventBus().publish(ViewRectangleChangeEvent(Rectangle2D.Float(minX.toFloat(), minY.toFloat(), (maxX - minX).toFloat(), (maxY - minY).toFloat())))
     }
 }

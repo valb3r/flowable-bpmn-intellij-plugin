@@ -11,8 +11,6 @@ import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.properties.PropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.BaseEdgeRenderElement
-import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.CameraChangeEvent
-import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -26,6 +24,7 @@ import javax.swing.JPanel
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 
 private val currentCanvas = AtomicReference<Canvas>()
 
@@ -51,10 +50,6 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
-        private set(camera) {
-            field = camera
-            currentUiEventBus().publish(CameraChangeEvent(camera))
-        }
 
     private var interactionCtx: ElementInteractionContext = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
     private var renderer: BpmnProcessRenderer? = null
@@ -286,7 +281,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
     }
 
     fun zoom(anchor: Point2D.Float, factor: Int) {
-        val scale = Math.pow(settings.zoomFactor.toDouble(), factor.toDouble()).toFloat()
+        val scale = settings.zoomFactor.toDouble().pow(factor.toDouble()).toFloat()
 
         if (min(camera.zoom.x, camera.zoom.y) * scale < 0.3f || max(camera.zoom.x, camera.zoom.y) * scale > 2.0f) {
             return
