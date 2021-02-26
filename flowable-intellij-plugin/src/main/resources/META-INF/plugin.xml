@@ -4,7 +4,7 @@
     <name>Flowable BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.4.4</version>
+    <version>0.4.4.1</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -29,30 +29,21 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
-     <p>0.4.4:</p>
-      <ul>
-        <li>
-          Fixed bug that boundary events and alike couldn't have attached sequence flow element
-        </li>
-        <li>
-          Fixed MismatchedInputException when parsing failedJobRetryTimeCycle
-        </li>
-      </ul>
-     <p>0.4.2:</p>
-      <ul>
-        <li>
-          Fixed: Fix for broken non-ASCII symbols when locale is not UTF-8 (Windows + non-ASCII/UTF-8 locale)
-        </li>
-        <li>
-          Fixed: Process name should be optional
-        </li>
-        <li>
-          Fixed: Exception when changing element ID and clicking on it
-        </li>
-        <li>
-          Fixed: Changing process ID causes diagram to disappear
-        </li>
-      </ul>
+      <p>0.4.4.1:</p>
+        <ul>
+          <li>
+            Hotfix for 'Template not found: Flowable BPMN 2.0 diagram' that prevents plugin to start
+          </li>
+        </ul>
+      <p>0.4.4:</p>
+        <ul>
+          <li>
+            Fixed bug that boundary events and alike couldn't have attached sequence flow element
+          </li>
+          <li>
+            Fixed MismatchedInputException when parsing failedJobRetryTimeCycle
+          </li>
+        </ul>
     ]]></change-notes>
 
     <!-- The vendor of the plugin. The optional "url" attribute specifies the URL of the vendor homepage.
@@ -268,11 +259,6 @@
     <extensions defaultExtensionNs="com.intellij">
         <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.flowable.langinjection.FlowableDelegateExpressionUiInjector"/>
         <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.flowable.langinjection.xml.FlowableXmlFlowableInjector"/>
-    </extensions>
-
-    <!-- Registers bmpn20.xml Flowable template -->
-    <extensions defaultExtensionNs="com.intellij">
-        <internalFileTemplate name="Flowable BPMN 2.0 diagram"/>
     </extensions>
 
     <!-- Extensions which the plugin adds to extension points defined by the IntelliJ Platform or by other plugins.

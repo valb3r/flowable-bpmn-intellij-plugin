@@ -17,9 +17,9 @@ private const val NEW_FILE = "New Activiti 6.x BPMN 2.0 file"
 
 class NewActivitiBpmnAction:
         CreateFileFromTemplateAction(
-        "New Activiti 6.x BPMN 2.0 file",
-        "Create new Activiti BPMN process",
-        currentIconProvider().script), DumbAware {
+            NEW_FILE,
+            "Create new Activiti BPMN process",
+            currentIconProvider().script), DumbAware {
 
     companion object {
         fun createProperties(project: Project, processName: String): Properties {
