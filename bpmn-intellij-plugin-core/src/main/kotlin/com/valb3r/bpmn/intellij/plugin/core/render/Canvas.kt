@@ -81,14 +81,13 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
         }
 
         currentUiEventBus().subscribe(ResetAndCenterEvent::class) {
-            latestOnScreenModelDimensions?.let {
-                val modelOrigSt = camera.fromCameraView(Point2D.Float(it.x, it.y))
-                val modelOrigEn = camera.fromCameraView(Point2D.Float(it.x + it.width, it.y + it.height))
-                val zoomRatio = max(settings.zoomMin, min(width / (modelOrigEn.x - modelOrigSt.x + 1e-6f), height / (modelOrigEn.y - modelOrigSt.y + 1e-6f)))
-                val zoom = Point2D.Float(zoomRatio, zoomRatio)
-                camera = camera.copy(origin = cameraOriginToPinCenter(it, zoom), zoom = zoom)
-                repaint()
-            }
+            val dimensions = latestOnScreenModelDimensions ?: return@subscribe
+            val modelOrigSt = camera.fromCameraView(Point2D.Float(dimensions.x, dimensions.y))
+            val modelOrigEn = camera.fromCameraView(Point2D.Float(dimensions.x + dimensions.width, dimensions.y + dimensions.height))
+            val zoomRatio = min(settings.zoomMax, max(settings.zoomMin, min(width / (modelOrigEn.x - modelOrigSt.x + 1e-6f), height / (modelOrigEn.y - modelOrigSt.y + 1e-6f))))
+            val zoom = Point2D.Float(zoomRatio, zoomRatio)
+            camera = camera.copy(origin = cameraOriginToPinCenter(dimensions, zoom), zoom = zoom)
+            repaint()
         }
 
         currentUiEventBus().subscribe(ViewRectangleChangeEvent::class) {
@@ -121,6 +120,13 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
         this.propsVisualizer?.clear()
         this.stateProvider.resetStateTo(fileContent, processObject)
         selectedElements = mutableSetOf()
+
+        // publish rough model dimension estimations
+        val shapes = currentStateProvider().currentState().shapes.map { it.rectBounds() }
+        val st = camera.toCameraView(Point2D.Float(shapes.map { it.x }.min() ?: 0.0f, shapes.map { it.y }.min() ?: 0.0f))
+        val en = camera.toCameraView(Point2D.Float(shapes.map { it.x + it.width }.max() ?: 0.0f, shapes.map { it.y  + it.height }.max() ?: 0.0f))
+        currentUiEventBus().publish(ViewRectangleChangeEvent(Rectangle2D.Float(st.x, st.y, en.x - st.x, en.y - st.y)))
+
         repaint()
     }
 
