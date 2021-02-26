@@ -85,6 +85,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     private val closeAnchorRadius = 2f
     private val anchorRadius = 5f
     private val actionsIcoSize = 15f
+    private val fitScaleModelFactor = 1.3f
 
     private val zoomInId = DiagramElementId(":ZOOM-IN")
     private val zoomOutId = DiagramElementId(":ZOOM-OUT")
@@ -119,7 +120,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
         root.applyContextChangesAndPrecomputeExpandViewTransform()
         val rendered = root.render()
-        computeAndReportModelRect(rendered.values)
+        val modelRect = computeModelRect(rendered.values)
 
         // Overlay system elements on top of rendered BPMN diagram
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
@@ -128,6 +129,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         drawMultiremovalRect(state, rendered)
 
         lastState.set(RenderedState(state, elementsById))
+        currentUiEventBus().publish(ViewRectangleChangeEvent(modelRect))
         return rendered
     }
 
@@ -336,13 +338,17 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         return elemId.let { state.ctx.selectedIds.contains(it) }
     }
 
-    private fun computeAndReportModelRect(allRendered: Collection<AreaWithZindex>) {
+    private fun computeModelRect(allRendered: Collection<AreaWithZindex>): Rectangle2D.Float {
         val filter = {it: AreaWithZindex -> it.areaType != AreaType.PARENT_PROCESS_SHAPE }
         val minX = allRendered.filter(filter).map { it.area.bounds2D.x }.min() ?: 0.0
         val minY = allRendered.filter(filter).map { it.area.bounds2D.y }.min() ?: 0.0
         val maxX = allRendered.filter(filter).map { it.area.bounds2D.x + it.area.bounds2D.width }.max() ?: 0.0
         val maxY = allRendered.filter(filter).map { it.area.bounds2D.y + it.area.bounds2D.height }.max() ?: 0.0
 
-        currentUiEventBus().publish(ViewRectangleChangeEvent(Rectangle2D.Float(minX.toFloat(), minY.toFloat(), (maxX - minX).toFloat(), (maxY - minY).toFloat())))
+        val cx = (maxX + minX).toFloat() / 2.0f
+        val cy = (maxY + minY).toFloat() / 2.0f
+        val width = (maxX - minX).toFloat() * fitScaleModelFactor
+        val height = (maxY - minY).toFloat() * fitScaleModelFactor
+        return Rectangle2D.Float(cx - width / 2.0f, cy - height / 2.0f, width, height)
     }
 }

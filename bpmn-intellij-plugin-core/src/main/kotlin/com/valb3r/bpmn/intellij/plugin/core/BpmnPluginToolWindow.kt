@@ -22,7 +22,6 @@ import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.core.render.DefaultBpmnProcessRenderer
 import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.currentIconProvider
-import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ResetAndCenterEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ViewRectangleChangeEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
@@ -32,6 +31,7 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
+import kotlin.math.abs
 
 
 class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFileOpenCallback: (PsiFile) -> Unit) {
@@ -169,7 +169,6 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
         this.canvas.isVisible = true
         this.canvasPanel.updateUI()
         this.canvasPanel.isEnabled = true
-        currentUiEventBus().publish(ResetAndCenterEvent())
     }
 
     private fun attachScrollListenersAndClearSubs() {
@@ -203,7 +202,7 @@ class ScrollBarInteractionHandler(private val canvas: Canvas, private val canvas
     }
 
     init {
-        currentUiEventBus().subscribe(ViewRectangleChangeEvent::class) { updateScrollBars(it.onScreenModel) }
+        currentUiEventBus().subscribe(ViewRectangleChangeEvent::class, this) { updateScrollBars(it.onScreenModel) }
         canvasHScroll.adjustmentListeners.forEach { canvasHScroll.removeAdjustmentListener(it) }
         canvasHScroll.addAdjustmentListener(hListener)
 
@@ -217,13 +216,13 @@ class ScrollBarInteractionHandler(private val canvas: Canvas, private val canvas
         }
 
         canvasHScroll.minimum = if (-onScreenModel.x < 0.0f) -onScreenModel.x.toInt() else 0
-        canvasHScroll.maximum = if (-onScreenModel.x > onScreenModel.width) -onScreenModel.x.toInt() else onScreenModel.width.toInt()
+        canvasHScroll.maximum = if (-onScreenModel.x >= onScreenModel.width) -onScreenModel.x.toInt() else onScreenModel.width.toInt()
         canvasHScroll.value = -onScreenModel.x.toInt()
-        canvasHScroll.visibleAmount = canvasPanel.width
+        canvasHScroll.visibleAmount = minOf(canvasPanel.width, abs(canvasHScroll.maximum), abs(onScreenModel.width.toInt() + onScreenModel.x.toInt()))
         canvasVScroll.minimum = if (-onScreenModel.y < 0.0f) -onScreenModel.y.toInt() else 0
-        canvasVScroll.maximum = if (-onScreenModel.y > onScreenModel.height) -onScreenModel.y.toInt() else onScreenModel.height.toInt()
+        canvasVScroll.maximum = if (-onScreenModel.y >= onScreenModel.height) -onScreenModel.y.toInt() else onScreenModel.height.toInt()
         canvasVScroll.value = -onScreenModel.y.toInt()
-        canvasVScroll.visibleAmount = canvasPanel.height
+        canvasVScroll.visibleAmount = minOf(canvasPanel.height, abs(canvasVScroll.maximum), abs(onScreenModel.height.toInt() + onScreenModel.y.toInt()))
     }
 
     class ScrollListener(private val onScroll: (Float, Float) -> Unit): AdjustmentListener {

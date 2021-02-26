@@ -91,6 +91,10 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
         }
 
         currentUiEventBus().subscribe(ViewRectangleChangeEvent::class) {
+            if (null == latestOnScreenModelDimensions) {
+                latestOnScreenModelDimensions = it.onScreenModel
+                currentUiEventBus().publish(ResetAndCenterEvent())
+            }
             latestOnScreenModelDimensions = it.onScreenModel
         }
     }
@@ -115,18 +119,12 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
 
     fun reset(fileContent: String, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
         this.renderer = renderer
+        this.latestOnScreenModelDimensions = null
         this.camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
         this.propsVisualizer = propertiesVisualizer()
         this.propsVisualizer?.clear()
         this.stateProvider.resetStateTo(fileContent, processObject)
         selectedElements = mutableSetOf()
-
-        // publish rough model dimension estimations
-        val shapes = currentStateProvider().currentState().shapes.map { it.rectBounds() }
-        val st = camera.toCameraView(Point2D.Float(shapes.map { it.x }.min() ?: 0.0f, shapes.map { it.y }.min() ?: 0.0f))
-        val en = camera.toCameraView(Point2D.Float(shapes.map { it.x + it.width }.max() ?: 0.0f, shapes.map { it.y  + it.height }.max() ?: 0.0f))
-        currentUiEventBus().publish(ViewRectangleChangeEvent(Rectangle2D.Float(st.x, st.y, en.x - st.x, en.y - st.y)))
-
         repaint()
     }
 
