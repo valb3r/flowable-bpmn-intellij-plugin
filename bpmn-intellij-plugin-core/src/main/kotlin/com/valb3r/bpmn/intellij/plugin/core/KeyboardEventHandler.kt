@@ -10,6 +10,7 @@ import java.awt.geom.Point2D
 
 
 private const val ARROW_BUTTON_STEP = 5.0f
+private const val ARROW_BUTTON_BIG_STEP = 50.0f
 
 class KeyboardEventHandler(private val canvas: Canvas): KeyListener {
 
@@ -26,15 +27,20 @@ class KeyboardEventHandler(private val canvas: Canvas): KeyListener {
             when (e.keyChar) {
                 '+' -> currentUiEventBus().publish(ZoomInEvent())
                 '-' -> currentUiEventBus().publish(ZoomOutEvent())
+                else -> handleKeyboardKeys(e, ARROW_BUTTON_BIG_STEP)
             }
         } else {
-            val start = Point2D.Float(0.0f, 0.0f)
-            when (e.keyCode) {
-                KeyEvent.VK_UP -> canvas.dragCanvas(start, Point2D.Float(0.0f, ARROW_BUTTON_STEP))
-                KeyEvent.VK_DOWN -> canvas.dragCanvas(start, Point2D.Float(0.0f, -ARROW_BUTTON_STEP))
-                KeyEvent.VK_LEFT -> canvas.dragCanvas(start, Point2D.Float(ARROW_BUTTON_STEP, 0.0f))
-                KeyEvent.VK_RIGHT -> canvas.dragCanvas(start, Point2D.Float(-ARROW_BUTTON_STEP, 0.0f))
-            }
+            handleKeyboardKeys(e, ARROW_BUTTON_STEP)
+        }
+    }
+
+    private fun handleKeyboardKeys(e: KeyEvent, step: Float) {
+        val start = Point2D.Float(0.0f, 0.0f)
+        when (e.keyCode) {
+            KeyEvent.VK_UP -> canvas.dragCanvas(start, Point2D.Float(0.0f, step))
+            KeyEvent.VK_DOWN -> canvas.dragCanvas(start, Point2D.Float(0.0f, -step))
+            KeyEvent.VK_LEFT -> canvas.dragCanvas(start, Point2D.Float(step, 0.0f))
+            KeyEvent.VK_RIGHT -> canvas.dragCanvas(start, Point2D.Float(-step, 0.0f))
         }
     }
 }
