@@ -22,6 +22,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.core.render.DefaultBpmnProcessRenderer
 import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.currentIconProvider
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ResetAndCenterEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ViewRectangleChangeEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
@@ -166,10 +167,13 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
         this.canvas.isVisible = true
         this.canvasPanel.updateUI()
         this.canvasPanel.isEnabled = true
+        currentUiEventBus().publish(ResetAndCenterEvent())
     }
 
     private fun attachScrollListenersAndClearSubs() {
-        currentUiEventBus().clearSubscriptions()
+        if (this::scrollHandler.isInitialized) {
+            currentUiEventBus().clearSubscriptionsOf(ViewRectangleChangeEvent::class, this.scrollHandler)
+        }
         this.scrollHandler = ScrollBarInteractionHandler(canvas, canvasPanel, canvasHScroll, canvasVScroll)
     }
 

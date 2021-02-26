@@ -35,8 +35,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.EdgeRenderElem
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.shapes.*
-import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ViewRectangleChangeEvent
-import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
 import groovy.lang.Tuple2
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
@@ -120,6 +119,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
         root.applyContextChangesAndPrecomputeExpandViewTransform()
         val rendered = root.render()
+        computeAndReportModelRect(rendered.values)
 
         // Overlay system elements on top of rendered BPMN diagram
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
@@ -128,7 +128,6 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         drawMultiremovalRect(state, rendered)
 
         lastState.set(RenderedState(state, elementsById))
-        computeAndReportModelRect(rendered.values)
         return rendered
     }
 
@@ -298,11 +297,11 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         }
 
         locationX = undoRedoStartMargin
-        locationX += drawIconWithAction(state, zoomInId, locationX, locationY, renderedArea, { dest -> dest.undo() }, icons.zoomIn).first + iconMargin
-        locationY += drawIconWithAction(state, zoomOutId, locationX, locationY, renderedArea, { dest -> dest.undo() }, icons.zoomOut).second + iconMargin
+        locationX += drawIconWithAction(state, zoomInId, locationX, locationY, renderedArea, { currentUiEventBus().publish(ZoomInEvent()) }, icons.zoomIn).first + iconMargin
+        locationY += drawIconWithAction(state, zoomOutId, locationX, locationY, renderedArea, { currentUiEventBus().publish(ZoomOutEvent()) }, icons.zoomOut).second + iconMargin
         locationX = undoRedoStartMargin
-        locationX += drawIconWithAction(state, zoomResetId, locationX, locationY, renderedArea, { dest -> dest.undo() }, icons.zoomReset).first + iconMargin
-        drawIconWithAction(state, centerImageId, locationX, locationY, renderedArea, { dest -> dest.undo() }, icons.centerImage).first + iconMargin
+        locationX += drawIconWithAction(state, zoomResetId, locationX, locationY, renderedArea, { currentUiEventBus().publish(ResetAndCenterEvent()) }, icons.zoomReset).first + iconMargin
+        drawIconWithAction(state, centerImageId, locationX, locationY, renderedArea, { currentUiEventBus().publish(CenterModelEvent()) }, icons.centerImage).first + iconMargin
     }
 
     private fun drawIconWithAction(
