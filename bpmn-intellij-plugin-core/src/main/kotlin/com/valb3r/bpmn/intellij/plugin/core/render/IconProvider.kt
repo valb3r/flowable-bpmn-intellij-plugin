@@ -8,6 +8,10 @@ import javax.swing.Icon
 interface IconProvider {
     val undo: Icon
     val redo: Icon
+    val centerImage: Icon
+    val zoomIn: Icon
+    val zoomOut: Icon
+    val zoomReset: Icon
     val gear: Icon
     val script: Icon
     val businessRule: Icon
@@ -77,6 +81,10 @@ private fun String.asResource(): String? = DefaultBpmnProcessRenderer::class.jav
 data class IconProviderImpl(
         override val undo: Icon = IconLoader.getIcon("/icons/actions/undo.png"),
         override val redo: Icon = IconLoader.getIcon("/icons/actions/redo.png"),
+        override val centerImage: Icon = IconLoader.getIcon("/icons/actions/center_image.png"),
+        override val zoomIn: Icon = IconLoader.getIcon("/icons/actions/zoom_in.png"),
+        override val zoomOut: Icon = IconLoader.getIcon("/icons/actions/zoom_out.png"),
+        override val zoomReset: Icon = IconLoader.getIcon("/icons/actions/zoom_reset.png"),
         override val gear: Icon = IconLoader.getIcon("/icons/ui-icons/gear.png"),
         override val script: Icon = IconLoader.getIcon("/icons/ui-icons/script.png"),
         override val businessRule: Icon = IconLoader.getIcon("/icons/ui-icons/business-rule.png"),
