@@ -216,12 +216,12 @@ class ScrollBarInteractionHandler(private val canvas: Canvas, private val canvas
             return
         }
 
-        canvasHScroll.minimum = 0
-        canvasHScroll.maximum = onScreenModel.width.toInt()
+        canvasHScroll.minimum = if (-onScreenModel.x < 0.0f) -onScreenModel.x.toInt() else 0
+        canvasHScroll.maximum = if (-onScreenModel.x > onScreenModel.width) -onScreenModel.x.toInt() else onScreenModel.width.toInt()
         canvasHScroll.value = -onScreenModel.x.toInt()
         canvasHScroll.visibleAmount = canvasPanel.width
-        canvasVScroll.minimum = 0
-        canvasVScroll.maximum = onScreenModel.height.toInt()
+        canvasVScroll.minimum = if (-onScreenModel.y < 0.0f) -onScreenModel.y.toInt() else 0
+        canvasVScroll.maximum = if (-onScreenModel.y > onScreenModel.height) -onScreenModel.y.toInt() else onScreenModel.height.toInt()
         canvasVScroll.value = -onScreenModel.y.toInt()
         canvasVScroll.visibleAmount = canvasPanel.height
     }
