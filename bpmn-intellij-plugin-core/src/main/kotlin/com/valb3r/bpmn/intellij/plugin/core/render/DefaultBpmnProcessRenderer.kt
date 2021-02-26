@@ -314,8 +314,8 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             icon: Icon
     ): Tuple2<Float, Float> {
         val color = if (isActive(actionElementId, state)) Colors.SELECTED_COLOR else null
-        val areaRedo = color?.let { state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icon, it.color) }
-                ?: state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icon)
+        val areaRedo = color?.let { state.ctx.canvas.drawFilledIconAtScreen(Point2D.Float(locationX, locationY), icon, Colors.BACKGROUND_COLOR.color, it.color) }
+                ?: state.ctx.canvas.drawFilledIconAtScreen(Point2D.Float(locationX, locationY), icon, Colors.BACKGROUND_COLOR.color)
         renderedArea[actionElementId] = AreaWithZindex(areaRedo, AreaType.SHAPE, index = ICON_Z_INDEX)
         state.ctx.interactionContext.clickCallbacks[actionElementId] = onClick
         return Tuple2(icon.iconWidth.toFloat(), icon.iconHeight.toFloat())
