@@ -35,8 +35,11 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.EdgeRenderElem
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.shapes.*
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
+import groovy.lang.Tuple2
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.Icon
 
@@ -78,12 +81,18 @@ fun lastRenderedState(): RenderedState? {
 
 class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer {
     private val undoRedoStartMargin = 20.0f
+    private val iconMargin = 10.0f
     private val closeAnchorRadius = 2f
     private val anchorRadius = 5f
     private val actionsIcoSize = 15f
+    private val fitScaleModelFactor = 1.3f
 
-    private val undoId = DiagramElementId("UNDO")
-    private val redoId = DiagramElementId("REDO")
+    private val zoomInId = DiagramElementId(":ZOOM-IN")
+    private val zoomOutId = DiagramElementId(":ZOOM-OUT")
+    private val zoomResetId = DiagramElementId(":ZOOM-RESET")
+    private val centerImageId = DiagramElementId(":CENTER-IMAGE")
+    private val undoId = DiagramElementId(":UNDO")
+    private val redoId = DiagramElementId(":REDO")
 
     private val DASHED_STROKE = BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(5.0f), 0.0f)
     private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
@@ -111,14 +120,16 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
         root.applyContextChangesAndPrecomputeExpandViewTransform()
         val rendered = root.render()
+        val modelRect = computeModelRect(rendered.values)
 
         // Overlay system elements on top of rendered BPMN diagram
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
-        drawUndoRedo(state, rendered)
+        drawUndoRedoAndZoomIcons(state, rendered)
         drawSelectionRect(ctx)
         drawMultiremovalRect(state, rendered)
 
         lastState.set(RenderedState(state, elementsById))
+        currentUiEventBus().publish(ViewRectangleChangeEvent(modelRect))
         return rendered
     }
 
@@ -133,7 +144,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         state.currentState.shapes.forEach {
             val elem = state.currentState.elementByBpmnId[it.bpmnElement]
             elem?.let { bpmn ->
-                mapFromShape(state, it.id, it, bpmn.element)?.let { shape ->
+                mapFromShape(state, it.id, it, bpmn.element).let { shape ->
                     elements += shape
                     elementsById[bpmn.id] = shape
                 }
@@ -164,7 +175,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         root.children.forEach { linkDiagramElementId(it, elementsByDiagramId)}
     }
 
-    private fun mapFromShape(state: RenderState, id: DiagramElementId, shape: ShapeElement, bpmn: WithBpmnId): BaseBpmnRenderElement? {
+    private fun mapFromShape(state: RenderState, id: DiagramElementId, shape: ShapeElement, bpmn: WithBpmnId): BaseBpmnRenderElement {
         val icons = state.icons
         return when (bpmn) {
             is BpmnStartEvent -> EllipticIconOnLayerShape(id, bpmn.id, icons.startEvent, shape, state, Colors.START_EVENT)
@@ -266,20 +277,33 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         }
     }
 
-    private fun drawUndoRedo(
+    private fun drawUndoRedoAndZoomIcons(
             state: RenderState,
             renderedArea: MutableMap<DiagramElementId, AreaWithZindex>
     ) {
         var locationX = undoRedoStartMargin
-        val locationY = undoRedoStartMargin
+        var locationY = undoRedoStartMargin
 
-        if (state.currentState.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.UNDO)) {
-            locationX += drawIconWithAction(state, undoId, locationX, locationY, renderedArea, { dest -> dest.undo() }, icons.undo)
+        if (state.currentState.undoRedo.isNotEmpty()) {
+            var sizes = Tuple2(0.0f, 0.0f)
+            if (state.currentState.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.UNDO)) {
+                sizes = drawIconWithAction(state, undoId, locationX, locationY, renderedArea, { dest -> dest.undo() }, icons.undo)
+                locationX += sizes.first + iconMargin
+            }
+
+            if (state.currentState.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.REDO)) {
+                sizes = drawIconWithAction(state, redoId, locationX, locationY, renderedArea, { dest -> dest.redo() }, icons.redo)
+            }
+
+            locationY += sizes.second + iconMargin
         }
 
-        if (state.currentState.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.REDO)) {
-            locationX += drawIconWithAction(state, redoId, locationX, locationY, renderedArea, { dest -> dest.redo() }, icons.redo)
-        }
+        locationX = undoRedoStartMargin
+        locationX += drawIconWithAction(state, zoomInId, locationX, locationY, renderedArea, { currentUiEventBus().publish(ZoomInEvent()) }, icons.zoomIn).first + iconMargin
+        locationY += drawIconWithAction(state, zoomOutId, locationX, locationY, renderedArea, { currentUiEventBus().publish(ZoomOutEvent()) }, icons.zoomOut).second + iconMargin
+        locationX = undoRedoStartMargin
+        locationX += drawIconWithAction(state, zoomResetId, locationX, locationY, renderedArea, { currentUiEventBus().publish(ResetAndCenterEvent()) }, icons.zoomReset).first + iconMargin
+        drawIconWithAction(state, centerImageId, locationX, locationY, renderedArea, { currentUiEventBus().publish(CenterModelEvent()) }, icons.centerImage).first + iconMargin
     }
 
     private fun drawIconWithAction(
@@ -287,17 +311,16 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             actionElementId: DiagramElementId,
             locationX: Float,
             locationY: Float,
-            renderedArea:
-            MutableMap<DiagramElementId, AreaWithZindex>,
+            renderedArea: MutableMap<DiagramElementId, AreaWithZindex>,
             onClick: (ProcessModelUpdateEvents) -> Unit,
             icon: Icon
-    ): Float {
+    ): Tuple2<Float, Float> {
         val color = if (isActive(actionElementId, state)) Colors.SELECTED_COLOR else null
-        val areaRedo = color?.let { state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icon, it.color) }
-                ?: state.ctx.canvas.drawIconAtScreen(Point2D.Float(locationX, locationY), icon)
+        val areaRedo = color?.let { state.ctx.canvas.drawFilledIconAtScreen(Point2D.Float(locationX, locationY), icon, Colors.BACKGROUND_COLOR.color, it.color) }
+                ?: state.ctx.canvas.drawFilledIconAtScreen(Point2D.Float(locationX, locationY), icon, Colors.BACKGROUND_COLOR.color)
         renderedArea[actionElementId] = AreaWithZindex(areaRedo, AreaType.SHAPE, index = ICON_Z_INDEX)
         state.ctx.interactionContext.clickCallbacks[actionElementId] = onClick
-        return icon.iconWidth + undoRedoStartMargin
+        return Tuple2(icon.iconWidth.toFloat(), icon.iconHeight.toFloat())
     }
 
     private fun drawAnchorsHit(canvas: CanvasPainter, anchors: AnchorHit) {
@@ -313,5 +336,19 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
     private fun isActive(elemId: DiagramElementId, state: RenderState): Boolean {
         return elemId.let { state.ctx.selectedIds.contains(it) }
+    }
+
+    private fun computeModelRect(allRendered: Collection<AreaWithZindex>): Rectangle2D.Float {
+        val filter = {it: AreaWithZindex -> it.areaType != AreaType.PARENT_PROCESS_SHAPE }
+        val minX = allRendered.filter(filter).map { it.area.bounds2D.x }.min() ?: 0.0
+        val minY = allRendered.filter(filter).map { it.area.bounds2D.y }.min() ?: 0.0
+        val maxX = allRendered.filter(filter).map { it.area.bounds2D.x + it.area.bounds2D.width }.max() ?: 0.0
+        val maxY = allRendered.filter(filter).map { it.area.bounds2D.y + it.area.bounds2D.height }.max() ?: 0.0
+
+        val cx = (maxX + minX).toFloat() / 2.0f
+        val cy = (maxY + minY).toFloat() / 2.0f
+        val width = (maxX - minX).toFloat() * fitScaleModelFactor
+        val height = (maxY - minY).toFloat() * fitScaleModelFactor
+        return Rectangle2D.Float(cx - width / 2.0f, cy - height / 2.0f, width, height)
     }
 }

@@ -10,6 +10,8 @@ interface CanvasConstants {
    val baseCursorSize: Float
    val defaultCameraOrigin: Point2D.Float
    val defaultZoomRatio: Float
+   val zoomMin: Float
+   val zoomMax: Float
 }
 
 data class DefaultCanvasConstants(
@@ -18,5 +20,7 @@ data class DefaultCanvasConstants(
         override val zoomFactor: Float = 1.2f,
         override val baseCursorSize: Float = if (UIUtil.isJreHiDPIEnabled()) 20.0f else 10.0f,
         override val defaultCameraOrigin: Point2D.Float = Point2D.Float(0f, 0f),
-        override val defaultZoomRatio: Float = 1f
+        override val defaultZoomRatio: Float = 1f,
+        override val zoomMin: Float = 0.3f,
+        override val zoomMax: Float = 2.0f
 ): CanvasConstants

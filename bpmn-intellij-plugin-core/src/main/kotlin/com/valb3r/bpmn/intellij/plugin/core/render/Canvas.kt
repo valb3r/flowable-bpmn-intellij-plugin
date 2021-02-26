@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.properties.PropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.BaseEdgeRenderElement
+import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -24,6 +25,7 @@ import javax.swing.JPanel
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 
 private val currentCanvas = AtomicReference<Canvas>()
 
@@ -43,12 +45,13 @@ fun setCanvas(canvas: Canvas): Canvas {
     return canvas
 }
 
-class Canvas(private val settings: CanvasConstants) : JPanel() {
+class Canvas(val settings: CanvasConstants) : JPanel() {
     private val stateProvider = currentStateProvider()
     private val closeAnchorRadius = 100.0f
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
+
     private var interactionCtx: ElementInteractionContext = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
     private var renderer: BpmnProcessRenderer? = null
     private var areaByElement: Map<DiagramElementId, AreaWithZindex>? = null
@@ -58,6 +61,43 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
             .expireAfterAccess(10L, TimeUnit.SECONDS)
             .maximumSize(100)
             .build<String, BufferedImage>()
+
+    private var latestOnScreenModelDimensions: Rectangle2D.Float? = null
+
+    init {
+        currentUiEventBus().subscribe(ZoomInEvent::class) {
+            zoom(Point2D.Float(width / 2.0f, height / 2.0f), 1)
+        }
+
+        currentUiEventBus().subscribe(ZoomOutEvent::class) {
+            zoom(Point2D.Float(width / 2.0f, height / 2.0f), -1)
+        }
+
+        currentUiEventBus().subscribe(CenterModelEvent::class) {
+            latestOnScreenModelDimensions?.let {
+                camera = camera.copy(origin = cameraOriginToPinCenter(it))
+                repaint()
+            }
+        }
+
+        currentUiEventBus().subscribe(ResetAndCenterEvent::class) {
+            val dimensions = latestOnScreenModelDimensions ?: return@subscribe
+            val modelOrigSt = camera.fromCameraView(Point2D.Float(dimensions.x, dimensions.y))
+            val modelOrigEn = camera.fromCameraView(Point2D.Float(dimensions.x + dimensions.width, dimensions.y + dimensions.height))
+            val zoomRatio = min(settings.zoomMax, max(settings.zoomMin, min(width / (modelOrigEn.x - modelOrigSt.x + 1e-6f), height / (modelOrigEn.y - modelOrigSt.y + 1e-6f))))
+            val zoom = Point2D.Float(zoomRatio, zoomRatio)
+            camera = camera.copy(origin = cameraOriginToPinCenter(dimensions, zoom), zoom = zoom)
+            repaint()
+        }
+
+        currentUiEventBus().subscribe(ViewRectangleChangeEvent::class) {
+            if (null == latestOnScreenModelDimensions) {
+                latestOnScreenModelDimensions = it.onScreenModel
+                currentUiEventBus().publish(ResetAndCenterEvent())
+            }
+            latestOnScreenModelDimensions = it.onScreenModel
+        }
+    }
 
     @VisibleForTesting
     public override fun paintComponent(graphics: Graphics) {
@@ -79,6 +119,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
 
     fun reset(fileContent: String, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
         this.renderer = renderer
+        this.latestOnScreenModelDimensions = null
         this.camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
         this.propsVisualizer = propertiesVisualizer()
         this.propsVisualizer?.clear()
@@ -279,7 +320,7 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
     }
 
     fun zoom(anchor: Point2D.Float, factor: Int) {
-        val scale = Math.pow(settings.zoomFactor.toDouble(), factor.toDouble()).toFloat()
+        val scale = settings.zoomFactor.toDouble().pow(factor.toDouble()).toFloat()
 
         if (min(camera.zoom.x, camera.zoom.y) * scale < 0.3f || max(camera.zoom.x, camera.zoom.y) * scale > 2.0f) {
             return
@@ -487,6 +528,13 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
         )
 
         repaint()
+    }
+
+    private fun cameraOriginToPinCenter(modelRect: Rectangle2D.Float, zoom: Point2D.Float = camera.zoom): Point2D.Float {
+        val modelCenter = camera.fromCameraView(Point2D.Float(modelRect.x + modelRect.width / 2.0f, modelRect.y + modelRect.height / 2.0f))
+        val screenCenter = Point2D.Float(width / 2.0f, height / 2.0f)
+        val camOriginPin = Point2D.Float(zoom.x * modelCenter.x - screenCenter.x, zoom.y * modelCenter.y - screenCenter.y)
+        return camOriginPin
     }
 
     private data class AnchorDetails(

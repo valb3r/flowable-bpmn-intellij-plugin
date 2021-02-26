@@ -1,12 +1,13 @@
 package com.valb3r.bpmn.intellij.plugin.flowable
 
 import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
-import com.valb3r.bpmn.intellij.plugin.BpmnPluginToolWindow
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
+import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.core.xmlnav.registerXmlNavigator
@@ -17,7 +18,10 @@ import com.valb3r.bpmn.intellij.plugin.flowable.xmlnav.FlowableXmlNavigator
 
 class FlowableBpmnPluginToolWindowFactory: ToolWindowFactory {
 
+    private val log = Logger.getInstance(FlowableBpmnPluginToolWindowFactory::class.java)
+
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        log.info("Creating tool window content")
         registerPopupMenuProvider(FlowableCanvasPopupMenuProvider())
         registerNewElementsFactory(FlowableObjectFactory())
         val bpmnWindow = BpmnPluginToolWindow(FlowableParser()) {
@@ -36,5 +40,6 @@ class FlowableBpmnPluginToolWindowFactory: ToolWindowFactory {
                 false
         )
         toolWindow.contentManager.addContent(content)
+        log.info("Tool window content created")
     }
 }
