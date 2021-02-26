@@ -174,6 +174,10 @@ abstract class BaseUiTest {
         whenever(icons.undo).thenReturn(mock())
         whenever(icons.dragToResizeBottom).thenReturn(mock())
         whenever(icons.dragToResizeTop).thenReturn(mock())
+        whenever(icons.zoomIn).thenReturn(mock())
+        whenever(icons.zoomOut).thenReturn(mock())
+        whenever(icons.zoomReset).thenReturn(mock())
+        whenever(icons.centerImage).thenReturn(mock())
 
         doAnswer {
             val result = it.callRealMethod()!! as Map<DiagramElementId, AreaWithZindex>
