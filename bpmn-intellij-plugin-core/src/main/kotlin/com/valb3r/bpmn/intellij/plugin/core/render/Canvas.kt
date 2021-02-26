@@ -66,11 +66,11 @@ class Canvas(private val settings: CanvasConstants) : JPanel() {
 
     init {
         currentUiEventBus().subscribe(ZoomInEvent::class) {
-            zoom(camera.toCameraView(camera.origin), 1)
+            zoom(Point2D.Float(width / 2.0f, height / 2.0f), 1)
         }
 
         currentUiEventBus().subscribe(ZoomOutEvent::class) {
-            zoom(camera.toCameraView(camera.origin), -1)
+            zoom(Point2D.Float(width / 2.0f, height / 2.0f), -1)
         }
 
         currentUiEventBus().subscribe(CenterModelEvent::class) {
