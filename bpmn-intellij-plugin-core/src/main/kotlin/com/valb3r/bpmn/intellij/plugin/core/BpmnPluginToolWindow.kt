@@ -56,6 +56,8 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
         this.canvas.addMouseListener(mouseEventHandler)
         this.canvas.addMouseMotionListener(mouseEventHandler)
         this.canvas.addMouseWheelListener(mouseEventHandler)
+        this.canvas.isFocusable = true
+        this.canvas.addKeyListener(KeyboardEventHandler(canvas))
         this.canvasPanel.add(this.canvas)
         canvasAndProperties.dividerLocation = (canvasAndProperties.height * 0.8f).toInt()
     }

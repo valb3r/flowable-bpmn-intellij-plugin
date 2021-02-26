@@ -45,7 +45,7 @@ fun setCanvas(canvas: Canvas): Canvas {
     return canvas
 }
 
-class Canvas(private val settings: CanvasConstants) : JPanel() {
+class Canvas(val settings: CanvasConstants) : JPanel() {
     private val stateProvider = currentStateProvider()
     private val closeAnchorRadius = 100.0f
 
