@@ -14,7 +14,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.events.FileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.events.initializeUpdateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
-import com.valb3r.bpmn.intellij.plugin.core.newelements.NewElementsProvider
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
@@ -33,7 +32,6 @@ val CANVAS_PAINT_TOPIC = Topic<PaintTopicListener>("BPMN Flowable (plugin family
 
 class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer) {
 
-    private var newObjectsFactory: NewElementsProvider? = null
     private var currentVfsConnection: MessageBusConnection? = null
     private var currentPaintConnection: MessageBusConnection? = null
 

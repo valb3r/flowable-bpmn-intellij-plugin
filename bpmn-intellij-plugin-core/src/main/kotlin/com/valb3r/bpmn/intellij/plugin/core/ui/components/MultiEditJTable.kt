@@ -16,13 +16,12 @@ import javax.swing.table.TableCellRenderer
 import javax.swing.table.TableModel
 import kotlin.math.max
 
+
 class MultiEditJTable(tableModel: TableModel): JBTable(tableModel) {
-    val intraCellSpacingWidth = 10
+    private val intraCellSpacingWidth = 10
 
     override fun getCellEditor(row: Int, column: Int): TableCellEditor {
-        val value = modelValue(row, column)
-
-        return when (value) {
+        return when (val value = modelValue(row, column)) {
             is EditorTextField -> EditorTextFieldCellEditor(value)
             is JBTextField -> JBTextFieldCellEditor(value)
             is JBCheckBox -> JBCheckBoxCellEditor(value)
@@ -32,9 +31,7 @@ class MultiEditJTable(tableModel: TableModel): JBTable(tableModel) {
     }
 
     override fun getCellRenderer(row: Int, column: Int): TableCellRenderer {
-        val value = modelValue(row, column)
-
-        return when (value) {
+        return when (val value = modelValue(row, column)) {
             is EditorTextField -> EditorTextFieldCellRenderer(value)
             is JBTextField -> JBTextFieldCellRenderer(value)
             is JBCheckBox -> JBCheckBoxCellRenderer(value)
@@ -49,10 +46,7 @@ class MultiEditJTable(tableModel: TableModel): JBTable(tableModel) {
         val component = super.prepareRenderer(renderer, row, column)
         val rendererWidth = component.preferredSize.width
         val tableColumn = getColumnModel().getColumn(column)
-        tableColumn.preferredWidth = max(
-                rendererWidth + intercellSpacing.width + intraCellSpacingWidth,
-                tableColumn.preferredWidth
-        )
+        tableColumn.preferredWidth = max(rendererWidth + intercellSpacing.width + intraCellSpacingWidth, tableColumn.preferredWidth)
         return component
     }
 
