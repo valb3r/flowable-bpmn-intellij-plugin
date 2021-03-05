@@ -4,6 +4,8 @@ import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteFromClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.currentRemoveActionHandler
+import com.valb3r.bpmn.intellij.plugin.core.events.ProcessModelUpdateEvents
+import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ZoomInEvent
@@ -48,6 +50,14 @@ class KeyboardEventHandler(private val canvas: Canvas): KeyListener {
 
     private fun handleKeyWithControl(e: KeyEvent) {
         when (e.keyCode) {
+            KeyEvent.VK_Y -> if (updateEventsRegistry().undoRedoStatus().contains(ProcessModelUpdateEvents.UndoRedo.REDO)) {
+                updateEventsRegistry().redo()
+                currentCanvas().repaint()
+            }
+            KeyEvent.VK_Z -> if (updateEventsRegistry().undoRedoStatus().contains(ProcessModelUpdateEvents.UndoRedo.UNDO)) {
+                updateEventsRegistry().undo()
+                currentCanvas().repaint()
+            }
             KeyEvent.VK_C -> copyToClipboard()
             KeyEvent.VK_X -> cutToClipboard()
             KeyEvent.VK_V -> currentCanvas().let { canvas ->
