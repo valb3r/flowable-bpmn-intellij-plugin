@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ZoomInEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ZoomOutEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.popupMenuProvider
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import java.awt.geom.Point2D
@@ -28,23 +29,37 @@ class KeyboardEventHandler(private val canvas: Canvas): KeyListener {
     }
 
     override fun keyReleased(e: KeyEvent) {
-        if (e.isControlDown) {
-            when (e.keyCode) {
-                KeyEvent.VK_C -> copyToClipboard()
-                KeyEvent.VK_X -> cutToClipboard()
-                KeyEvent.VK_V -> currentCanvas().let { canvas ->
-                    currentMouseEventHandler().lastPosition()?.let { pos ->
-                        pasteToClipboard(canvas.fromCameraView(pos), canvas.parentableElementAt(pos))
-                    }
+        when {
+            e.isControlDown -> handleKeyWithControl(e)
+            e.isShiftDown -> handleKeyWithShift(e)
+            else -> handleKeyboardKeys(e, ARROW_BUTTON_STEP)
+        }
+    }
+
+    private fun handleKeyWithShift(e: KeyEvent) {
+        when (e.keyChar) {
+            'N' -> currentCanvas().let { canvas ->
+                currentMouseEventHandler().lastPosition()?.let { pos ->
+                    popupMenuProvider().popupMenu(canvas.fromCameraView(pos), canvas.parentableElementAt(pos)).show(e.component, pos.x.toInt(), pos.y.toInt())
                 }
             }
-            when (e.keyChar) {
-                '+' -> currentUiEventBus().publish(ZoomInEvent())
-                '-' -> currentUiEventBus().publish(ZoomOutEvent())
-                else -> handleKeyboardKeys(e, ARROW_BUTTON_BIG_STEP)
+        }
+    }
+
+    private fun handleKeyWithControl(e: KeyEvent) {
+        when (e.keyCode) {
+            KeyEvent.VK_C -> copyToClipboard()
+            KeyEvent.VK_X -> cutToClipboard()
+            KeyEvent.VK_V -> currentCanvas().let { canvas ->
+                currentMouseEventHandler().lastPosition()?.let { pos ->
+                    pasteToClipboard(canvas.fromCameraView(pos), canvas.parentableElementAt(pos))
+                }
             }
-        } else {
-            handleKeyboardKeys(e, ARROW_BUTTON_STEP)
+        }
+        when (e.keyChar) {
+            '+' -> currentUiEventBus().publish(ZoomInEvent())
+            '-' -> currentUiEventBus().publish(ZoomOutEvent())
+            else -> handleKeyboardKeys(e, ARROW_BUTTON_BIG_STEP)
         }
     }
 
