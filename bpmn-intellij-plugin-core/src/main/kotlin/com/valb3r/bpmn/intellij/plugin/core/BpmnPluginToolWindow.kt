@@ -54,7 +54,7 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
     init {
         log.info("BPMN plugin started")
         // attach event listeners to canvas
-        val mouseEventHandler = MouseEventHandler(this.canvas)
+        val mouseEventHandler = setCurrentMouseEventHandler(this.canvas)
         this.canvas.addMouseListener(mouseEventHandler)
         this.canvas.addMouseMotionListener(mouseEventHandler)
         this.canvas.addMouseWheelListener(mouseEventHandler)

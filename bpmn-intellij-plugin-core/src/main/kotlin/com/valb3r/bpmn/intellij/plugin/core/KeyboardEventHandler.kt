@@ -1,7 +1,11 @@
 package com.valb3r.bpmn.intellij.plugin.core
 
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.currentRemoveActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
+import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ZoomInEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ZoomOutEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
@@ -25,6 +29,15 @@ class KeyboardEventHandler(private val canvas: Canvas): KeyListener {
 
     override fun keyReleased(e: KeyEvent) {
         if (e.isControlDown) {
+            when (e.keyCode) {
+                KeyEvent.VK_C -> copyToClipboard()
+                KeyEvent.VK_X -> cutToClipboard()
+                KeyEvent.VK_V -> currentCanvas().let { canvas ->
+                    currentMouseEventHandler().lastPosition()?.let { pos ->
+                        pasteToClipboard(canvas.fromCameraView(pos), canvas.parentableElementAt(pos))
+                    }
+                }
+            }
             when (e.keyChar) {
                 '+' -> currentUiEventBus().publish(ZoomInEvent())
                 '-' -> currentUiEventBus().publish(ZoomOutEvent())
