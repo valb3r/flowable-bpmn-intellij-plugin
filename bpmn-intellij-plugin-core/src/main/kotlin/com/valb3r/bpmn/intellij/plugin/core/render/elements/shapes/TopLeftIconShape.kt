@@ -21,6 +21,9 @@ class TopLeftIconShape(
         private val textColor: Colors = Colors.INNER_TEXT_COLOR
 ) : ResizeableShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
+    override val areaType: AreaType
+        get() = AreaType.SHAPE
+
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 
         val area = ctx.canvas.drawRoundedRectWithIconAtCorner(
@@ -32,6 +35,6 @@ class TopLeftIconShape(
                 textColor.color
         )
 
-        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = bpmnElementId))
+        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, areaType, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = bpmnElementId))
     }
 }

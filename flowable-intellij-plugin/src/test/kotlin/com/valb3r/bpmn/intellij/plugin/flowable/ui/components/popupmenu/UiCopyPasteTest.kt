@@ -14,10 +14,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceT
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.core.copypaste.CopyPasteActionHandler
-import com.valb3r.bpmn.intellij.plugin.core.copypaste.DATA_FLAVOR
-import com.valb3r.bpmn.intellij.plugin.core.copypaste.SystemClipboard
-import com.valb3r.bpmn.intellij.plugin.core.copypaste.setCopyPasteActionHandler
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.CopyPasteActionHandler
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.DATA_FLAVOR
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.SystemClipboard
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.setCopyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState

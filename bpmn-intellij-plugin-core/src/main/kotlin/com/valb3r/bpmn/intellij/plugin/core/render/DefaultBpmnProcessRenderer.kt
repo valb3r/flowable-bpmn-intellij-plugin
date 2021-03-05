@@ -23,9 +23,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.core.Colors
+import com.valb3r.bpmn.intellij.plugin.core.actions.currentRemoveActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.debugger.currentDebugger
-import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementRemovedEvent
-import com.valb3r.bpmn.intellij.plugin.core.events.DiagramElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.ProcessModelUpdateEvents
 import com.valb3r.bpmn.intellij.plugin.core.properties.uionly.UiOnlyPropertyType
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElement
@@ -261,18 +260,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             state.ctx.canvas.drawRectNoCameraTransform(Point2D.Float(minX, minY), maxX - minX, maxY - minY, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
             val delId = DiagramElementId(ownerId).elemIdToRemove()
             val deleteIconArea = state.ctx.canvas.drawIconNoCameraTransform(BoundsElement(maxX, minY, actionsIcoSize, actionsIcoSize), icons.recycleBin)
-            state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
-                val targetIds = state.ctx.selectedIds.filter {
-                    renderedArea[it]?.areaType == AreaType.SHAPE_THAT_NESTS
-                            || renderedArea[it]?.areaType == AreaType.SHAPE
-                            || renderedArea[it]?.areaType == AreaType.EDGE
-                }
-
-                dest.addElementRemovedEvent(
-                        targetIds.map { DiagramElementRemovedEvent(it) },
-                        targetIds.mapNotNull { state.currentState.elementByDiagramId[it] }.map { BpmnElementRemovedEvent(it) }
-                )
-            }
+            state.ctx.interactionContext.clickCallbacks[delId] = { currentRemoveActionHandler().deleteElem() }
             renderedArea[delId] = AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, null)
         }
     }

@@ -19,6 +19,9 @@ class EdgeExtractionAnchor(
         state: RenderState
 ) : IconAnchorElement(elementId, parent, bottomPoint, state) {
 
+    override val areaType: AreaType
+        get() = AreaType.SELECTS_DRAG_TARGET
+
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         val icon = icon()
         val left = camera.fromCameraView(Point2D.Float(0.0f, 0.0f))
@@ -55,7 +58,7 @@ class EdgeExtractionAnchor(
 
         val result = super.doRenderWithoutChildren(ctx).toMutableMap()
         result[elementId]?.let {
-            result[elementId] = it.copy(areaType = AreaType.SELECTS_DRAG_TARGET, anchorsForWaypoints = waypointAnchors(ctx.canvas.camera))
+            result[elementId] = it.copy(areaType = areaType, anchorsForWaypoints = waypointAnchors(ctx.canvas.camera))
         }
         return result
     }

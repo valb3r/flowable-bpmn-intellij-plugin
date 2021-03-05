@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core
 
+import com.valb3r.bpmn.intellij.plugin.core.actions.currentRemoveActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ZoomInEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ZoomOutEvent
@@ -41,6 +42,7 @@ class KeyboardEventHandler(private val canvas: Canvas): KeyListener {
             KeyEvent.VK_DOWN -> canvas.dragCanvas(start, Point2D.Float(0.0f, -step))
             KeyEvent.VK_LEFT -> canvas.dragCanvas(start, Point2D.Float(step, 0.0f))
             KeyEvent.VK_RIGHT -> canvas.dragCanvas(start, Point2D.Float(-step, 0.0f))
+            KeyEvent.VK_DELETE -> currentRemoveActionHandler().deleteElem()
         }
     }
 }

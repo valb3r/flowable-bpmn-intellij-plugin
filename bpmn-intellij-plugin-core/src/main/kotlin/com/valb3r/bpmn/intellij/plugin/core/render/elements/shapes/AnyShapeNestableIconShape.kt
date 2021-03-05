@@ -24,6 +24,9 @@ class AnyShapeNestableIconShape(
         state: RenderState
 ) : IconShape(elementId, bpmnElementId, icon, shape, state) {
 
+    override val areaType: AreaType
+        get() = AreaType.SELECTS_DRAG_TARGET
+
     override fun handlePossibleNestingTo(allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>, cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {
         val allDroppedOn = linkedMapOf<AreaType, BpmnElementId>()
         allDroppedOnAreas.forEach { if (!allDroppedOn.containsKey(it.value.areaType)) allDroppedOn[it.value.areaType] = it.key}
@@ -67,10 +70,6 @@ class AnyShapeNestableIconShape(
 
     override fun shapeAnchors(camera: Camera): MutableSet<Anchor> {
         return mutableSetOf()
-    }
-
-    override fun areaType(): AreaType {
-        return AreaType.SELECTS_DRAG_TARGET
     }
 
     override fun parentForRelatedSequenceElem(): BaseBpmnRenderElement {
