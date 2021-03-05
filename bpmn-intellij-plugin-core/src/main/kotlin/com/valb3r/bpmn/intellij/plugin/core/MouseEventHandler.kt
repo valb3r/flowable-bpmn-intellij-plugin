@@ -38,6 +38,7 @@ class MouseEventHandler(private val canvas: Canvas): MouseListener, MouseMotionL
     }
 
     override fun mousePressed(event: MouseEvent) {
+        this.canvas.requestFocus()
         val point2D = Point2D.Float(event.x.toFloat(), event.y.toFloat())
         if (SwingUtilities.isLeftMouseButton(event) && event.isShiftDown) {
             this.canvas.startCanvasDragWithButton(point2D)
