@@ -232,7 +232,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     }
 
     private fun isCollapsed(id: BpmnElementId, state: RenderState): Boolean {
-        return state.currentState.elemUiOnlyPropertiesByStaticElementId[id]?.get(UiOnlyPropertyType.EXPANDED)?.value as Boolean? ?: false
+        return !(state.currentState.elemUiOnlyPropertiesByStaticElementId[id]?.get(UiOnlyPropertyType.EXPANDED)?.value as Boolean? ?: false)
     }
 
     private fun drawSelectionRect(state: RenderContext) {
