@@ -1,8 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.ui.components.popupmenu
 
-import ClipboardCopier
-import ClipboardCutter
-import ClipboardPaster
 import com.nhaarman.mockitokotlin2.*
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
@@ -14,10 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceT
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.core.copypaste.CopyPasteActionHandler
-import com.valb3r.bpmn.intellij.plugin.core.copypaste.DATA_FLAVOR
-import com.valb3r.bpmn.intellij.plugin.core.copypaste.SystemClipboard
-import com.valb3r.bpmn.intellij.plugin.core.copypaste.setCopyPasteActionHandler
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.*
 import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
@@ -58,14 +52,14 @@ internal class UiCopyPasteTest: BaseUiTest() {
         clickOnId(serviceTaskStartDiagramId)
         lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
-        ClipboardCutter().actionPerformed(null)
+        cutToClipboard()
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
         lastRenderedState()!!.elementsById.keys.shouldContainSame(arrayOf(parentProcessBpmnId, serviceTaskEndBpmnId))
         verifyPlainServiceTaskWasCut()
 
         updateEventsRegistry().reset("")
-        ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        pasteFromClipboard(pasteStart, parentProcessBpmnId)
         canvas.paintComponent(graphics) // forcefully paint for state
         verifyPlainServiceTaskWasPasted(2)
     }
@@ -76,9 +70,9 @@ internal class UiCopyPasteTest: BaseUiTest() {
         clickOnId(serviceTaskStartDiagramId)
         lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
-        ClipboardCopier().actionPerformed(null)
+        copyToClipboard()
 
-        ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        pasteFromClipboard(pasteStart, parentProcessBpmnId)
         canvas.paintComponent(graphics)
         verifyPlainServiceTaskWasPasted(1)
     }
@@ -110,7 +104,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         clickOnId(serviceTaskStartDiagramId)
         lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
-        ClipboardCutter().actionPerformed(null)
+        cutToClipboard()
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
         // cascaded-cut:
@@ -118,7 +112,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         verifyServiceTaskWithBoundaryEventWereCut()
 
         updateEventsRegistry().reset("")
-        ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        pasteFromClipboard(pasteStart, parentProcessBpmnId)
         canvas.paintComponent(graphics) // forcefully paint for state
         verifyServiceTaskWithBoundaryEventTaskWerePasted()
     }
@@ -129,12 +123,12 @@ internal class UiCopyPasteTest: BaseUiTest() {
         clickOnId(serviceTaskStartDiagramId)
         lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
-        ClipboardCopier().actionPerformed(null)
+        copyToClipboard()
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldHaveSize(1)
 
         updateEventsRegistry().reset("")
-        ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        pasteFromClipboard(pasteStart, parentProcessBpmnId)
         canvas.paintComponent(graphics) // forcefully paint for state
         verifyServiceTaskWithBoundaryEventTaskWerePasted(1)
     }
@@ -146,7 +140,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         clickOnId(addedEdge.edge.id)
         lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
-        ClipboardCutter().actionPerformed(null)
+        cutToClipboard()
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
         // cascaded-cut:
@@ -154,7 +148,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         verifyEdgeWasCut(addedEdge.bpmnObject.id, addedEdge.edge.id)
 
         updateEventsRegistry().reset("")
-        ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        pasteFromClipboard(pasteStart, parentProcessBpmnId)
         canvas.paintComponent(graphics) // forcefully paint for state
         verifyEdgeWasPasted(addedEdge.bpmnObject.id, addedEdge.edge.id)
     }
@@ -166,12 +160,12 @@ internal class UiCopyPasteTest: BaseUiTest() {
         clickOnId(addedEdge.edge.id)
         lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
-        ClipboardCopier().actionPerformed(null)
+        copyToClipboard()
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldHaveSize(1)
 
         updateEventsRegistry().reset("")
-        ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        pasteFromClipboard(pasteStart, parentProcessBpmnId)
         canvas.paintComponent(graphics) // forcefully paint for state
         verifyEdgeWasPasted(addedEdge.bpmnObject.id, addedEdge.edge.id, 2)
     }
@@ -190,7 +184,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
-        ClipboardCutter().actionPerformed(null)
+        cutToClipboard()
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
         // cascaded-cut:
@@ -198,7 +192,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         verifyEdgeWithServiceTasksWereCut(addedEdge.bpmnObject.id, addedEdge.edge.id)
 
         updateEventsRegistry().reset("")
-        ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        pasteFromClipboard(pasteStart, parentProcessBpmnId)
         canvas.paintComponent(graphics) // forcefully paint for state
         verifyEdgeWithServiceTasksWerePasted(addedEdge.bpmnObject.id, addedEdge.edge.id)
     }
@@ -217,12 +211,12 @@ internal class UiCopyPasteTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
-        ClipboardCopier().actionPerformed(null)
+        copyToClipboard()
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldHaveSize(6)
 
         updateEventsRegistry().reset("")
-        ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        pasteFromClipboard(pasteStart, parentProcessBpmnId)
         canvas.paintComponent(graphics) // forcefully paint for state
         verifyEdgeWithServiceTasksWerePasted(addedEdge.bpmnObject.id, addedEdge.edge.id, 2)
     }
@@ -233,7 +227,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         clickOnId(subprocessDiagramId)
         lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
-        ClipboardCutter().actionPerformed(null)
+        cutToClipboard()
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
         // cascaded-cut:
@@ -241,7 +235,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         verifySubprocessWithServiceTaskAndBoundaryEventOnItWasCut()
 
         updateEventsRegistry().reset("")
-        ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        pasteFromClipboard(pasteStart, parentProcessBpmnId)
         canvas.paintComponent(graphics) // forcefully paint for state
         verifySubprocessWithServiceTaskAndBoundaryEventOnItWasPasted()
     }
@@ -252,12 +246,12 @@ internal class UiCopyPasteTest: BaseUiTest() {
         clickOnId(subprocessDiagramId)
         lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
-        ClipboardCopier().actionPerformed(null)
+        copyToClipboard()
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldHaveSize(1)
 
         updateEventsRegistry().reset("")
-        ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        pasteFromClipboard(pasteStart, parentProcessBpmnId)
         canvas.paintComponent(graphics) // forcefully paint for state
         verifySubprocessWithServiceTaskAndBoundaryEventOnItWasPasted(1)
     }
@@ -269,7 +263,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         clickOnId(optionalBoundaryErrorEventDiagramId)
         lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
-        ClipboardCutter().actionPerformed(null)
+        cutToClipboard()
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
         // cascaded-cut:
@@ -277,7 +271,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         verifyBoundaryEventWasCut()
 
         updateEventsRegistry().reset("")
-        ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        pasteFromClipboard(pasteStart, parentProcessBpmnId)
         canvas.paintComponent(graphics) // forcefully paint for state
         verifyBoundaryEventWasPasted()
     }
@@ -288,12 +282,12 @@ internal class UiCopyPasteTest: BaseUiTest() {
         clickOnId(optionalBoundaryErrorEventDiagramId)
         lastRenderedState()!!.canCopyOrCut().shouldBeTrue()
 
-        ClipboardCopier().actionPerformed(null)
+        copyToClipboard()
         canvas.paintComponent(graphics)
         lastRenderedState()!!.state.ctx.selectedIds.shouldHaveSize(1)
 
         updateEventsRegistry().reset("")
-        ClipboardPaster(pasteStart, parentProcessBpmnId).actionPerformed(null)
+        pasteFromClipboard(pasteStart, parentProcessBpmnId)
         canvas.paintComponent(graphics) // forcefully paint for state
         verifyBoundaryEventWasPasted(1)
     }

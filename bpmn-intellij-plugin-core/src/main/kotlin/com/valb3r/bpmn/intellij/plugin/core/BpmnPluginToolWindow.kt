@@ -2,10 +2,12 @@ package com.valb3r.bpmn.intellij.plugin.core
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileTypes.StdFileTypes
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.*
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.JavaReferenceEditorUtil
@@ -52,7 +54,7 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
     init {
         log.info("BPMN plugin started")
         // attach event listeners to canvas
-        val mouseEventHandler = MouseEventHandler(this.canvas)
+        val mouseEventHandler = setCurrentMouseEventHandler(this.canvas)
         this.canvas.addMouseListener(mouseEventHandler)
         this.canvas.addMouseMotionListener(mouseEventHandler)
         this.canvas.addMouseWheelListener(mouseEventHandler)
@@ -179,9 +181,24 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
     }
 
     class JavaEditorTextField(document: Document, project: Project): EditorTextField(document, project, StdFileTypes.JAVA) {
+
         override fun createEditor(): EditorEx {
             val editorEx: EditorEx = super.createEditor()
             return editorEx
+        }
+
+        // If not overridden causes NPE when calling editCellAt of JTable (when changing selected cell with TAB fast)
+        override fun requestFocus() {
+            if (editor != null) {
+                IdeFocusManager.getGlobalInstance().doWhenFocusSettlesDown {
+                    val currEditor = editor
+                    if (currEditor != null) {
+                        IdeFocusManager.getGlobalInstance().requestFocus(currEditor.contentComponent, true)
+                    }
+                }
+                val currEditor = editor
+                currEditor?.scrollingModel?.scrollToCaret(ScrollType.RELATIVE)
+            }
         }
     }
 }

@@ -17,6 +17,9 @@ abstract class IconAnchorElement(
         state: RenderState
 ): AnchorElement(elementId, attachedTo, currentLocation, state) {
 
+    override val areaType: AreaType
+        get() = AreaType.POINT
+
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val icon = icon()
         val active = isActive()
@@ -27,7 +30,7 @@ abstract class IconAnchorElement(
             dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: Map<BpmnElementId, AreaWithZindex> -> onDragEnd(dx, dy, droppedOn, allDroppedOn)
         }
 
-        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT, index = zIndex()))
+        return mutableMapOf(elementId to AreaWithZindex(area, areaType, index = zIndex()))
     }
 
     protected abstract fun icon(): Icon

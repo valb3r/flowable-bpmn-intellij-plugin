@@ -19,6 +19,9 @@ class EllipticIconOnLayerShape(
         private val layerColor: Colors
 ) : ShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
+    override val areaType: AreaType
+        get() = AreaType.SHAPE
+
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 
         val area = ctx.canvas.drawWrappedIconWithLayer(
@@ -30,6 +33,6 @@ class EllipticIconOnLayerShape(
                 layerColor.color
         )
 
-        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, AreaType.SHAPE, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = bpmnElementId))
+        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, areaType, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = bpmnElementId))
     }
 }

@@ -34,6 +34,9 @@ class PhysicalWaypoint(
     val owningEdgeId: DiagramElementId
         get() = parentElementId
 
+    override val areaType: AreaType
+        get() = AreaType.POINT
+
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         if (isEdgeBeginOrEnd()) {
             return mutableMapOf()
@@ -51,7 +54,7 @@ class PhysicalWaypoint(
                     edge.epoch + 1
             )))
         }
-        return mutableMapOf(delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(),  ICON_Z_INDEX, elementId))
+        return mutableMapOf(delId to AreaWithZindex(deleteIconArea, areaType, mutableSetOf(), mutableSetOf(),  ICON_Z_INDEX, elementId))
     }
 
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {

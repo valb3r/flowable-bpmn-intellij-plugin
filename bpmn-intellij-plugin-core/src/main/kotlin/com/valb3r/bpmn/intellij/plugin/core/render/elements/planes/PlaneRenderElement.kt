@@ -23,6 +23,9 @@ class PlaneRenderElement(
         override val children: MutableList<BaseDiagramRenderElement> = mutableListOf()
 ): BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 
+    override val areaType: AreaType
+        get() = AreaType.PARENT_PROCESS_SHAPE
+
     override fun drawActionsElement(): Map<DiagramElementId, AreaWithZindex> {
         return mutableMapOf()
     }
@@ -61,7 +64,7 @@ class PlaneRenderElement(
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val area = InfiniteShape()
-        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.PARENT_PROCESS_SHAPE, mutableSetOf(), mutableSetOf(), bpmnElementId = bpmnElementId, index = zIndex()))
+        return mutableMapOf(elementId to AreaWithZindex(area, areaType, mutableSetOf(), mutableSetOf(), bpmnElementId = bpmnElementId, index = zIndex()))
     }
 
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {

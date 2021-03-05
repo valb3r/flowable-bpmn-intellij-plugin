@@ -4,12 +4,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
-import com.valb3r.bpmn.intellij.plugin.core.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnShapeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
-import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
-import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.geom.Point2D
@@ -27,42 +24,6 @@ private fun <T: WithBpmnId> newShapeElement(sceneLocation: Point2D.Float, forObj
                     bounds.height
             )
     )
-}
-
-class ClipboardCopier: ActionListener {
-
-    override fun actionPerformed(e: ActionEvent?) {
-        val state = lastRenderedState() ?: return
-        if (!state.canCopyOrCut()) {
-            return
-        }
-        copyPasteActionHandler().copy(state.state, state.elementsById)
-    }
-}
-
-class ClipboardCutter: ActionListener {
-
-    override fun actionPerformed(e: ActionEvent?) {
-        val state = lastRenderedState() ?: return
-        if (!state.canCopyOrCut()) {
-            return
-        }
-        copyPasteActionHandler().cut(state.state, updateEventsRegistry(), state.elementsById)
-        currentCanvas().clearSelection()
-        currentCanvas().repaint()
-    }
-}
-
-class ClipboardPaster(private val sceneLocation: Point2D.Float, private val parent: BpmnElementId): ActionListener {
-
-    override fun actionPerformed(e: ActionEvent?) {
-        val data = copyPasteActionHandler().paste(sceneLocation, parent) ?: return
-        // TODO - cursor position update
-        updateEventsRegistry().addEvents( data.shapes.toMutableList() + data.edges.toMutableList())
-        currentCanvas().clearSelection()
-        currentCanvas().selectElements(data.selectElements.toSet())
-        currentCanvas().repaint()
-    }
 }
 
 class ShapeCreator<T : WithBpmnId> (private val clazz: KClass<T>, private val sceneLocation: Point2D.Float, private val parent: BpmnElementId): ActionListener {

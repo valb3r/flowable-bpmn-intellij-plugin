@@ -8,21 +8,27 @@ import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.AbstractTableCellEditor
 import java.awt.Component
 import java.awt.Font
+import java.awt.event.ActionEvent
+import javax.swing.AbstractAction
 import javax.swing.JLabel
 import javax.swing.JTable
+import javax.swing.KeyStroke
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableCellEditor
 import javax.swing.table.TableCellRenderer
 import javax.swing.table.TableModel
 import kotlin.math.max
 
+
 class MultiEditJTable(tableModel: TableModel): JBTable(tableModel) {
-    val intraCellSpacingWidth = 10
+    private val intraCellSpacingWidth = 10
+
+    init {
+        attachShiftAndShiftTabActions()
+    }
 
     override fun getCellEditor(row: Int, column: Int): TableCellEditor {
-        val value = modelValue(row, column)
-
-        return when (value) {
+        return when (val value = modelValue(row, column)) {
             is EditorTextField -> EditorTextFieldCellEditor(value)
             is JBTextField -> JBTextFieldCellEditor(value)
             is JBCheckBox -> JBCheckBoxCellEditor(value)
@@ -32,9 +38,7 @@ class MultiEditJTable(tableModel: TableModel): JBTable(tableModel) {
     }
 
     override fun getCellRenderer(row: Int, column: Int): TableCellRenderer {
-        val value = modelValue(row, column)
-
-        return when (value) {
+        return when (val value = modelValue(row, column)) {
             is EditorTextField -> EditorTextFieldCellRenderer(value)
             is JBTextField -> JBTextFieldCellRenderer(value)
             is JBCheckBox -> JBCheckBoxCellRenderer(value)
@@ -49,10 +53,7 @@ class MultiEditJTable(tableModel: TableModel): JBTable(tableModel) {
         val component = super.prepareRenderer(renderer, row, column)
         val rendererWidth = component.preferredSize.width
         val tableColumn = getColumnModel().getColumn(column)
-        tableColumn.preferredWidth = max(
-                rendererWidth + intercellSpacing.width + intraCellSpacingWidth,
-                tableColumn.preferredWidth
-        )
+        tableColumn.preferredWidth = max(rendererWidth + intercellSpacing.width + intraCellSpacingWidth, tableColumn.preferredWidth)
         return component
     }
 
@@ -60,6 +61,29 @@ class MultiEditJTable(tableModel: TableModel): JBTable(tableModel) {
         val modelRow = convertRowIndexToModel(row)
         val modelColumn = convertColumnIndexToModel(column)
         return super.dataModel.getValueAt(modelRow, modelColumn)
+    }
+
+    private fun attachShiftAndShiftTabActions() {
+        val nextRow = this.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(KeyStroke.getKeyStroke("TAB"))
+        val prevRow = this.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(KeyStroke.getKeyStroke("shift pressed TAB"))
+        if (null == nextRow || null == prevRow) {
+            return
+        }
+
+        this.actionMap.put(nextRow, object : AbstractAction() {
+            override fun actionPerformed(e: ActionEvent) {
+                val newRow = if (selectedRow == rowCount - 1) 0 else selectedRow + 1
+                changeSelection(newRow, selectedColumn, false, false)
+                editCellAt(newRow, selectedColumn)
+            }
+        })
+        this.actionMap.put(prevRow, object : AbstractAction() {
+            override fun actionPerformed(e: ActionEvent) {
+                val newRow = if (selectedRow == 0) rowCount - 1 else selectedRow - 1
+                changeSelection(newRow, selectedColumn, false, false)
+                editCellAt(newRow, selectedColumn)
+            }
+        })
     }
 }
 

@@ -1,8 +1,5 @@
 package com.valb3r.bpmn.intellij.activiti.plugin.popupmenu
 
-import ClipboardCopier
-import ClipboardCutter
-import ClipboardPaster
 import ShapeCreator
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
@@ -27,7 +24,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParal
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
-import com.valb3r.bpmn.intellij.plugin.core.copypaste.copyPasteActionHandler
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyPasteActionHandler
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteFromClipboard
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.CanvasPopupMenuProvider
 import java.awt.event.ActionListener
@@ -112,12 +112,12 @@ class ActivitiCanvasPopupMenuProvider : CanvasPopupMenuProvider {
     private fun addCopyAndpasteIfNeeded(popup: JBPopupMenu, sceneLocation: Point2D.Float, parent: BpmnElementId) {
         val renderedState = lastRenderedState()
         if (true == renderedState?.canCopyOrCut()) {
-            addItem(popup, "Copy", COPY, ClipboardCopier())
-            addItem(popup, "Cut", CUT, ClipboardCutter())
+            addItem(popup, "Copy", COPY, ActionListener { copyToClipboard() })
+            addItem(popup, "Cut", CUT, ActionListener { cutToClipboard() })
         }
 
         if (copyPasteActionHandler().hasDataToPaste()) {
-            addItem(popup, "Paste", PASTE, ClipboardPaster(sceneLocation, parent))
+            addItem(popup, "Paste", PASTE, ActionListener { pasteFromClipboard(sceneLocation, parent) })
         }
     }
 

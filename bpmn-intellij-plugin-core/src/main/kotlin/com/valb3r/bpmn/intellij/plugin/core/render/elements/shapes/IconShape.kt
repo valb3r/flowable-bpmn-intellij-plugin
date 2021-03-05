@@ -19,6 +19,9 @@ open class IconShape(
         state: RenderState
 ) : ShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
+    override val areaType: AreaType
+        get() = AreaType.SHAPE
+
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 
         val area = ctx.canvas.drawWrappedIcon(
@@ -28,7 +31,7 @@ open class IconShape(
                 selectionColor()
         )
 
-        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, areaType(), waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = bpmnElementId))
+        return mapOf(shapeCtx.diagramId to AreaWithZindex(area, areaType, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = bpmnElementId))
     }
 
     override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
@@ -44,9 +47,5 @@ open class IconShape(
                 Anchor(Point2D.Float(cx, cy - halfHeight)),
                 Anchor(Point2D.Float(cx, cy + halfHeight))
         )
-    }
-
-    protected open fun areaType(): AreaType {
-        return AreaType.SHAPE
     }
 }

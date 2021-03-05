@@ -21,6 +21,9 @@ class EdgeRenderElement(
         state: RenderState
 ): BaseEdgeRenderElement(elementId, bpmnElementId, edge, Colors.ARROW_COLOR, state) {
 
+    override val areaType: AreaType
+        get() =  AreaType.EDGE
+
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         val delId = elementId.elemIdToRemove()
         val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)

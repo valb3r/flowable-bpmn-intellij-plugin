@@ -4,12 +4,24 @@ import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.popupMenuProvider
 import java.awt.event.*
 import java.awt.geom.Point2D
+import java.util.concurrent.atomic.AtomicReference
 import javax.swing.SwingUtilities
+
+private val mouseEventHandler = AtomicReference<MouseEventHandler>()
+
+fun currentMouseEventHandler(): MouseEventHandler {
+    return mouseEventHandler.get()!!
+}
+
+fun setCurrentMouseEventHandler(canvas: Canvas): MouseEventHandler {
+    return mouseEventHandler.updateAndGet { MouseEventHandler(canvas) }
+}
 
 class MouseEventHandler(private val canvas: Canvas): MouseListener, MouseMotionListener, MouseWheelListener {
 
     private val popupMenuProvider = popupMenuProvider()
-    private var prevMousePosition: Point2D.Float? = null
+    private var prevActionableMousePosition: Point2D.Float? = null
+    private var currentMousePosition: Point2D.Float? = null
 
     override fun mouseClicked(event: MouseEvent) {
         val point2D = Point2D.Float(event.x.toFloat(), event.y.toFloat())
@@ -39,7 +51,7 @@ class MouseEventHandler(private val canvas: Canvas): MouseListener, MouseMotionL
 
     override fun mouseReleased(event: MouseEvent) {
         this.canvas.stopDragOrSelect()
-        prevMousePosition = null
+        prevActionableMousePosition = null
     }
 
     override fun mouseEntered(e: MouseEvent?) {
@@ -51,24 +63,28 @@ class MouseEventHandler(private val canvas: Canvas): MouseListener, MouseMotionL
     }
 
     override fun mouseDragged(event: MouseEvent) {
-        val currentMousePosition = Point2D.Float(event.x.toFloat(), event.y.toFloat())
-        val prevMousePos = prevMousePosition ?: currentMousePosition
+        val mousePos = Point2D.Float(event.x.toFloat(), event.y.toFloat())
+        val prevMousePos = prevActionableMousePosition ?: mousePos
 
         if (SwingUtilities.isMiddleMouseButton(event)) {
-            this.canvas.dragWithWheel(prevMousePos, currentMousePosition)
+            this.canvas.dragWithWheel(prevMousePos, mousePos)
         } else if (SwingUtilities.isLeftMouseButton(event)) {
-            this.canvas.dragOrSelectWithLeftButton(prevMousePos, currentMousePosition)
+            this.canvas.dragOrSelectWithLeftButton(prevMousePos, mousePos)
         }
 
-        prevMousePosition = currentMousePosition
+        prevActionableMousePosition = mousePos
     }
 
     override fun mouseMoved(event: MouseEvent) {
-        // NOP
+        currentMousePosition = Point2D.Float(event.x.toFloat(), event.y.toFloat())
     }
 
     override fun mouseWheelMoved(event: MouseWheelEvent) {
         val currentMousePosition = Point2D.Float(event.x.toFloat(), event.y.toFloat())
         this.canvas.zoom(currentMousePosition, event.wheelRotation)
+    }
+
+    fun lastPosition(): Point2D.Float? {
+        return currentMousePosition
     }
 }

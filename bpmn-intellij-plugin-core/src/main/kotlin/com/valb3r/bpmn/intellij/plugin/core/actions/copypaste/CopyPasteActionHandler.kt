@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin.core.copypaste
+package com.valb3r.bpmn.intellij.plugin.core.actions.copypaste
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.databind.ObjectMapper

@@ -23,6 +23,9 @@ abstract class CircleAnchorElement(
         state: RenderState
 ) : AnchorElement(elementId, attachedTo, currentLocation, state) {
 
+    override val areaType: AreaType
+        get() = AreaType.POINT
+
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         return viewTransform.transform(
                 elementId,
@@ -47,7 +50,7 @@ abstract class CircleAnchorElement(
         if (!isVisible() || ifVisibleNoRenderIf()) {
             val point = ctx.canvas.camera.toCameraView(Point2D.Float(rect.x, rect.y))
             return mutableMapOf(
-                    elementId to AreaWithZindex(Area(Rectangle2D.Float(point.x, point.y, 0.1f, 0.1f)), AreaType.POINT, waypointAnchors(ctx.canvas.camera), index = zIndex())
+                    elementId to AreaWithZindex(Area(Rectangle2D.Float(point.x, point.y, 0.1f, 0.1f)), areaType, waypointAnchors(ctx.canvas.camera), index = zIndex())
             )
         }
 
@@ -61,7 +64,7 @@ abstract class CircleAnchorElement(
         state.ctx.interactionContext.dragEndCallbacks[elementId] = {
             dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: Map<BpmnElementId, AreaWithZindex> -> onDragEnd(dx, dy, droppedOn, allDroppedOn)
         }
-        return mutableMapOf(elementId to AreaWithZindex(area, AreaType.POINT, waypointAnchors(ctx.canvas.camera), index = zIndex()))
+        return mutableMapOf(elementId to AreaWithZindex(area, areaType, waypointAnchors(ctx.canvas.camera), index = zIndex()))
     }
 
     override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
