@@ -2,7 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.core
 
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
-import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteToClipboard
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteFromClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.currentRemoveActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
@@ -52,7 +52,7 @@ class KeyboardEventHandler(private val canvas: Canvas): KeyListener {
             KeyEvent.VK_X -> cutToClipboard()
             KeyEvent.VK_V -> currentCanvas().let { canvas ->
                 currentMouseEventHandler().lastPosition()?.let { pos ->
-                    pasteToClipboard(canvas.fromCameraView(pos), canvas.parentableElementAt(pos))
+                    pasteFromClipboard(canvas.fromCameraView(pos), canvas.parentableElementAt(pos))
                 }
             }
         }

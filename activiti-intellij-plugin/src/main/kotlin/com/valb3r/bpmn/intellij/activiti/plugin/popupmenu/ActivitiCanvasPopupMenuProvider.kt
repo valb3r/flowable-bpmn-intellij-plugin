@@ -27,7 +27,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
-import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteToClipboard
+import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteFromClipboard
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.CanvasPopupMenuProvider
 import java.awt.event.ActionListener
@@ -117,7 +117,7 @@ class ActivitiCanvasPopupMenuProvider : CanvasPopupMenuProvider {
         }
 
         if (copyPasteActionHandler().hasDataToPaste()) {
-            addItem(popup, "Paste", PASTE, ActionListener { pasteToClipboard(sceneLocation, parent) })
+            addItem(popup, "Paste", PASTE, ActionListener { pasteFromClipboard(sceneLocation, parent) })
         }
     }
 

@@ -25,7 +25,7 @@ fun cutToClipboard() {
     currentCanvas().repaint()
 }
 
-fun pasteToClipboard(sceneLocation: Point2D.Float, parent: BpmnElementId) {
+fun pasteFromClipboard(sceneLocation: Point2D.Float, parent: BpmnElementId) {
     val data = copyPasteActionHandler().paste(sceneLocation, parent) ?: return
     // TODO - cursor position update
     updateEventsRegistry().addEvents( data.shapes.toMutableList() + data.edges.toMutableList())
