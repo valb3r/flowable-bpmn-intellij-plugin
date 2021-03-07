@@ -5,6 +5,7 @@ import com.google.common.hash.Hashing
 import com.intellij.util.ui.UIUtil
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import org.apache.batik.transcoder.TranscoderInput
 import org.apache.batik.transcoder.TranscoderOutput
 import org.apache.batik.transcoder.image.ImageTranscoder
@@ -28,10 +29,10 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
 
     private val iconMargin = 5.0f
     private val textMargin = 5.0f
-    private val font = Font("Courier", Font.PLAIN, 10)
+    private val font = Font(currentSettings().fontName, Font.PLAIN, currentSettings().fontSize)
     private val arrowWidth = 10
     private val arrowStyle = Polygon(intArrayOf(0, -arrowWidth, -arrowWidth), intArrayOf(0, 5, -5), 3)
-    private val regularLineWidth = 2f
+    private val regularLineWidth = currentSettings().lineThickness
     private val nodeRadius = 25f
 
     fun drawZeroAreaLine(start: Point2D.Float, end: Point2D.Float, stroke: Stroke, color: Color): Area {

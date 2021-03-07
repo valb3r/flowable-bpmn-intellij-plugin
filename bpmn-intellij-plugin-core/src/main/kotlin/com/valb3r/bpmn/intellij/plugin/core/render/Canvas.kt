@@ -12,6 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.core.properties.PropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.BaseEdgeRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -84,7 +85,7 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
             val dimensions = latestOnScreenModelDimensions ?: return@subscribe
             val modelOrigSt = camera.fromCameraView(Point2D.Float(dimensions.x, dimensions.y))
             val modelOrigEn = camera.fromCameraView(Point2D.Float(dimensions.x + dimensions.width, dimensions.y + dimensions.height))
-            val zoomRatio = min(settings.zoomMax, max(settings.zoomMin, min(width / (modelOrigEn.x - modelOrigSt.x + 1e-6f), height / (modelOrigEn.y - modelOrigSt.y + 1e-6f))))
+            val zoomRatio = min(currentSettings().zoomMax, max(currentSettings().zoomMin, min(width / (modelOrigEn.x - modelOrigSt.x + 1e-6f), height / (modelOrigEn.y - modelOrigSt.y + 1e-6f))))
             val zoom = Point2D.Float(zoomRatio, zoomRatio)
             camera = camera.copy(origin = cameraOriginToPinCenter(dimensions, zoom), zoom = zoom)
             repaint()
@@ -320,7 +321,7 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
     }
 
     fun zoom(anchor: Point2D.Float, factor: Int) {
-        val scale = settings.zoomFactor.toDouble().pow(factor.toDouble()).toFloat()
+        val scale = currentSettings().zoomFactor.toDouble().pow(factor.toDouble()).toFloat()
 
         if (min(camera.zoom.x, camera.zoom.y) * scale < 0.3f || max(camera.zoom.x, camera.zoom.y) * scale > 2.0f) {
             return

@@ -35,6 +35,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.shapes.*
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import groovy.lang.Tuple2
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
@@ -93,8 +94,8 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     private val undoId = DiagramElementId(":UNDO")
     private val redoId = DiagramElementId(":REDO")
 
-    private val DASHED_STROKE = BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(5.0f), 0.0f)
-    private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
+    private val DASHED_STROKE = BasicStroke(currentSettings().borderThickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(5.0f), 0.0f)
+    private val ACTION_AREA_STROKE = BasicStroke(currentSettings().borderThickness * 2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
 
     override fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val elementsByDiagramId = mutableMapOf<DiagramElementId, BaseDiagramRenderElement>()

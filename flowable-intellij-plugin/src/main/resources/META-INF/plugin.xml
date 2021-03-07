@@ -276,10 +276,10 @@
 
     <!-- Settings screen -->
     <extensions defaultExtensionNs="com.intellij">
-        <applicationConfigurable parentId="tools" instance="com.valb3r.bpmn.intellij.plugin.core.settings.SettingsConfigurable"
-                                 id="com.valb3r.bpmn.intellij.plugin.core.settings.SettingsConfigurable"
+        <applicationConfigurable parentId="tools" instance="com.valb3r.bpmn.intellij.plugin.core.settings.BpmnPluginSettingsConfigurable"
+                                 id="com.valb3r.bpmn.intellij.plugin.core.settings.BpmnPluginSettingsConfigurable"
                                  displayName="Flowable BPMN plugin config"/>
-        <applicationService serviceImplementation="com.valb3r.bpmn.intellij.plugin.core.settings.SettingsState"/>
+        <applicationService serviceImplementation="com.valb3r.bpmn.intellij.plugin.core.settings.BpmnPluginSettingsState"/>
     </extensions>
 
     <!-- Extensions which the plugin adds to extension points defined by the IntelliJ Platform or by other plugins.

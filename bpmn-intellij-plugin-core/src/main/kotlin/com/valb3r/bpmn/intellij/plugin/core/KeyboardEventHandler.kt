@@ -11,14 +11,11 @@ import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ZoomInEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ZoomOutEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.popupMenuProvider
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import java.awt.geom.Point2D
-
-
-private const val ARROW_BUTTON_STEP = 5.0f
-private const val ARROW_BUTTON_BIG_STEP = 50.0f
 
 class KeyboardEventHandler(private val canvas: Canvas): KeyListener {
 
@@ -34,7 +31,7 @@ class KeyboardEventHandler(private val canvas: Canvas): KeyListener {
         when {
             e.isControlDown -> handleKeyWithControl(e)
             e.isShiftDown -> handleKeyWithShift(e)
-            else -> handleKeyboardKeys(e, ARROW_BUTTON_STEP)
+            else -> handleKeyboardKeys(e, currentSettings().keyboardSmallStep)
         }
     }
 
@@ -69,7 +66,7 @@ class KeyboardEventHandler(private val canvas: Canvas): KeyListener {
         when (e.keyChar) {
             '+' -> currentUiEventBus().publish(ZoomInEvent())
             '-' -> currentUiEventBus().publish(ZoomOutEvent())
-            else -> handleKeyboardKeys(e, ARROW_BUTTON_BIG_STEP)
+            else -> handleKeyboardKeys(e, currentSettings().keyboardLargeStep)
         }
     }
 
