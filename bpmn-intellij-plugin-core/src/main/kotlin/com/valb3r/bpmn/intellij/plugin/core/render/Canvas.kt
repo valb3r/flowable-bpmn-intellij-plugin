@@ -323,7 +323,7 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
     fun zoom(anchor: Point2D.Float, factor: Int) {
         val scale = currentSettings().zoomFactor.toDouble().pow(factor.toDouble()).toFloat()
 
-        if (min(camera.zoom.x, camera.zoom.y) * scale < 0.3f || max(camera.zoom.x, camera.zoom.y) * scale > 2.0f) {
+        if (min(camera.zoom.x, camera.zoom.y) * scale < currentSettings().zoomMin || max(camera.zoom.x, camera.zoom.y) * scale > currentSettings().zoomMax) {
             return
         }
 
