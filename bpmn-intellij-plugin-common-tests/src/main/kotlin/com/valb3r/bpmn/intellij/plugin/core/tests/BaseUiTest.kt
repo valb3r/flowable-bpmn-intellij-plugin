@@ -34,6 +34,8 @@ import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.render.*
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.UiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.setUiEventBus
+import com.valb3r.bpmn.intellij.plugin.core.settings.BpmnPluginSettingsState
+import com.valb3r.bpmn.intellij.plugin.core.settings.intellijServiceManagerServicesProvider
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
@@ -153,6 +155,7 @@ abstract class BaseUiTest {
 
     @BeforeEach
     fun setupMocks() {
+        intellijServiceManagerServicesProvider = { BpmnPluginSettingsState() }
         textFieldsConstructed.clear()
         boolFieldsConstructed.clear()
 

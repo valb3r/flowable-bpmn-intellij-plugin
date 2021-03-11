@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.settings
 
+import com.google.common.annotations.VisibleForTesting
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.components.State
@@ -17,6 +18,9 @@ fun currentSettings(): BpmnPluginSettingsState.PluginStateData {
     return currentSettingsState().pluginState
 }
 
+@VisibleForTesting
+var intellijServiceManagerServicesProvider = { ServiceManager.getService(BpmnPluginSettingsState::class.java) }
+
 @State(name = "BpmnPluginSettingsState", storages = [Storage("valb3r-bpmn-editor-plugin.xml")]) // fancy XML name to avoid collisions
 class BpmnPluginSettingsState: PersistentStateComponent<BpmnPluginSettingsState.PluginStateData> {
 
@@ -24,7 +28,7 @@ class BpmnPluginSettingsState: PersistentStateComponent<BpmnPluginSettingsState.
 
     companion object {
         val instance: BpmnPluginSettingsState
-            get() = ServiceManager.getService(BpmnPluginSettingsState::class.java)
+            get() = intellijServiceManagerServicesProvider()
     }
 
     override fun getState(): PluginStateData {
