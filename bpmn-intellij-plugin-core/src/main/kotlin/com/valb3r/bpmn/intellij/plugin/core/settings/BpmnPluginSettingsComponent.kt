@@ -15,7 +15,6 @@ class BpmnPluginSettingsComponent {
     private lateinit var zoomFactor: JSlider
     private lateinit var keyboardSmallStep: JSlider
     private lateinit var keyboardLargeStep: JSlider
-    private lateinit var borderThickness: JSlider
     private lateinit var lineThickness: JSlider
     private lateinit var uiFontName: JComboBox<String>
     private lateinit var uiFontSize: JSpinner
@@ -38,7 +37,6 @@ class BpmnPluginSettingsComponent {
         zoomFactor.value = state.zoomFactor.asSlider()
         keyboardSmallStep.value = state.keyboardSmallStep.asSlider()
         keyboardLargeStep.value = state.keyboardLargeStep.asSlider()
-        borderThickness.value = state.borderThickness.asSlider()
         lineThickness.value = state.lineThickness.asSlider()
         uiFontSize.value = state.uiFontSize
         dataFontSize.value = state.dataFontSize
@@ -77,7 +75,6 @@ class BpmnPluginSettingsComponent {
         zoomFactor.addChangeListener { state.zoomFactor = zoomFactor.value.fromSlider() }
         keyboardSmallStep.addChangeListener { state.keyboardSmallStep = keyboardSmallStep.value.fromSlider() }
         keyboardLargeStep.addChangeListener { state.keyboardLargeStep = keyboardLargeStep.value.fromSlider() }
-        borderThickness.addChangeListener { state.borderThickness = borderThickness.value.fromSlider() }
         lineThickness.addChangeListener { state.lineThickness = lineThickness.value.fromSlider() }
         uiFontName.addActionListener { state.uiFontName = uiFontName.selectedItem as String }
         uiFontSize.addChangeListener { state.uiFontSize = uiFontSize.value  as Int }

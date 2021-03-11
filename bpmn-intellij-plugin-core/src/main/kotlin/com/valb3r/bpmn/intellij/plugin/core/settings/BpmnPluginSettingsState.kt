@@ -42,7 +42,6 @@ class BpmnPluginSettingsState: PersistentStateComponent<BpmnPluginSettingsState.
         var keyboardSmallStep = 5.0f
         var keyboardLargeStep = 50.0f
         // UI
-        var borderThickness = 1.0f
         var lineThickness = 2.0f
 
         var uiFontSize = 10
@@ -57,7 +56,6 @@ class BpmnPluginSettingsState: PersistentStateComponent<BpmnPluginSettingsState.
             if (zoomFactor != other.zoomFactor) return false
             if (keyboardSmallStep != other.keyboardSmallStep) return false
             if (keyboardLargeStep != other.keyboardLargeStep) return false
-            if (borderThickness != other.borderThickness) return false
             if (lineThickness != other.lineThickness) return false
             if (uiFontSize != other.uiFontSize) return false
             if (uiFontName != other.uiFontName) return false
