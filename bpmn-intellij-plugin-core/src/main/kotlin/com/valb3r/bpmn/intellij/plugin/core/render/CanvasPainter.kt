@@ -29,7 +29,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
 
     private val iconMargin = 5.0f
     private val textMargin = 5.0f
-    private val font = Font(currentSettings().fontName, Font.PLAIN, currentSettings().fontSize)
+    private val font = Font(currentSettings().uiFontName, Font.PLAIN, currentSettings().uiFontSize)
     private val arrowWidth = 10
     private val arrowStyle = Polygon(intArrayOf(0, -arrowWidth, -arrowWidth), intArrayOf(0, 5, -5), 3)
     private val regularLineWidth = currentSettings().lineThickness

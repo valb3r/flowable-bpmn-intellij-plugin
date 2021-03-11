@@ -36,28 +36,31 @@ class BpmnPluginSettingsState: PersistentStateComponent<BpmnPluginSettingsState.
     }
 
     class PluginStateData {
-        var zoomFactor: Float = 1.2f
         var zoomMin: Float = 0.3f
         var zoomMax: Float = 2.0f
+        var zoomFactor: Float = 1.2f
         var keyboardSmallStep = 5.0f
         var keyboardLargeStep = 50.0f
         // UI
         var borderThickness = 1.0f
         var lineThickness = 2.0f
 
-        var fontSize = 10
-        var fontName = "Courier"
+        var uiFontSize = 10
+        var uiFontName = "Courier"
+
+        var dataFontSize = 12
+        var dataFontName = "Consolas"
 
         fun stateEquals(other: PluginStateData): Boolean {
-            if (zoomFactor != other.zoomFactor) return false
             if (zoomMin != other.zoomMin) return false
             if (zoomMax != other.zoomMax) return false
+            if (zoomFactor != other.zoomFactor) return false
             if (keyboardSmallStep != other.keyboardSmallStep) return false
             if (keyboardLargeStep != other.keyboardLargeStep) return false
             if (borderThickness != other.borderThickness) return false
             if (lineThickness != other.lineThickness) return false
-            if (fontSize != other.fontSize) return false
-            if (fontName != other.fontName) return false
+            if (uiFontSize != other.uiFontSize) return false
+            if (uiFontName != other.uiFontName) return false
 
             return true
         }

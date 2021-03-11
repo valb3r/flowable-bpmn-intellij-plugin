@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.settings
 
 import com.intellij.openapi.options.Configurable
+import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import javax.swing.JComponent
 
 
@@ -9,7 +10,7 @@ class BpmnPluginSettingsConfigurable : Configurable {
     private var pluginBpmnPluginSettingsComponent: BpmnPluginSettingsComponent? = null
 
     override fun isModified(): Boolean {
-        return currentSettings().stateEquals(pluginBpmnPluginSettingsComponent!!.state!!)
+        return currentSettings().stateEquals(pluginBpmnPluginSettingsComponent!!.state)
     }
 
     override fun getDisplayName(): String {
@@ -22,17 +23,19 @@ class BpmnPluginSettingsConfigurable : Configurable {
 
     override fun createComponent(): JComponent {
         pluginBpmnPluginSettingsComponent = BpmnPluginSettingsComponent()
-        return pluginBpmnPluginSettingsComponent!!.panel
+        return pluginBpmnPluginSettingsComponent!!.settingsPanel
     }
 
     override fun apply() {
         val bpmnPluginSettings: BpmnPluginSettingsState = currentSettingsState()
-        bpmnPluginSettings.pluginState = pluginBpmnPluginSettingsComponent!!.state!!
+        bpmnPluginSettings.pluginState = pluginBpmnPluginSettingsComponent!!.state
+        currentCanvas().repaint()
     }
 
     override fun reset() {
         val bpmnPluginSettings: BpmnPluginSettingsState = currentSettingsState()
         pluginBpmnPluginSettingsComponent!!.state = bpmnPluginSettings.pluginState
+        currentCanvas().repaint()
     }
 
     override fun disposeUIResources() {

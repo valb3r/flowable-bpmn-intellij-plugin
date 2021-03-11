@@ -6,6 +6,7 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.AbstractTableCellEditor
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import java.awt.Component
 import java.awt.Font
 import java.awt.event.ActionEvent
@@ -169,7 +170,7 @@ class LabelTextFieldCellRenderer(val field: String): TableCellRenderer {
     override fun getTableCellRendererComponent(
             table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
         val label = JLabel(field)
-        label.font = Font("Consolas", Font.BOLD, 12)
+        label.font = Font(currentSettings().dataFontName, Font.BOLD, currentSettings().dataFontSize)
         return label
     }
 }
