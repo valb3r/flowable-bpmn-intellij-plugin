@@ -1,19 +1,21 @@
 package com.valb3r.bpmn.intellij.plugin.core.xmlnav
 
+import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import java.util.concurrent.atomic.AtomicReference
+import com.valb3r.bpmn.intellij.plugin.core.id
+import java.util.concurrent.ConcurrentHashMap
 
 interface XmlNavigator {
 
     fun jumpTo(id: BpmnElementId)
 }
 
-private val xmlNavigator = AtomicReference<XmlNavigator>()
+private val xmlNavigator = ConcurrentHashMap<String, XmlNavigator>()
 
-fun registerXmlNavigator(navigator: XmlNavigator) {
-    xmlNavigator.set(navigator)
+fun registerXmlNavigator(project: Project, navigator: XmlNavigator) {
+    xmlNavigator[project.id()] = navigator
 }
 
-fun xmlNavigator(): XmlNavigator {
-    return xmlNavigator.get()!!
+fun xmlNavigator(project: Project): XmlNavigator {
+    return xmlNavigator[project.id()]!!
 }

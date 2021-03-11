@@ -1,19 +1,21 @@
 package com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu
 
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.JBPopupMenu
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.core.id
 import java.awt.geom.Point2D
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.ConcurrentHashMap
 
 
-private val popupMenuProvider = AtomicReference<CanvasPopupMenuProvider>()
+private val popupMenuProvider = ConcurrentHashMap<String, CanvasPopupMenuProvider>()
 
-fun popupMenuProvider(): CanvasPopupMenuProvider {
-    return popupMenuProvider.get()
+fun popupMenuProvider(project: Project): CanvasPopupMenuProvider {
+    return popupMenuProvider[project.id()]!!
 }
 
-fun registerPopupMenuProvider(provider: CanvasPopupMenuProvider) {
-    popupMenuProvider.set(provider)
+fun registerPopupMenuProvider(project: Project, provider: CanvasPopupMenuProvider) {
+    popupMenuProvider[project.id()] = provider
 }
 
 interface CanvasPopupMenuProvider {

@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.properties
 
+import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
@@ -8,12 +9,13 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import com.valb3r.bpmn.intellij.plugin.core.events.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
+import com.valb3r.bpmn.intellij.plugin.core.id
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstColumnReadOnlyModel
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.ConcurrentHashMap
 import javax.swing.JComponent
 import javax.swing.JTable
 
-private val visualizer = AtomicReference<PropertiesVisualizer>()
+private val visualizer = ConcurrentHashMap<String, PropertiesVisualizer>()
 
 interface TextValueAccessor {
     val text: String
@@ -25,22 +27,25 @@ interface SelectedValueAccessor {
     val component: JComponent
 }
 
-fun newPropertiesVisualizer(table: JTable,
+fun newPropertiesVisualizer(
+                            project: Project,
+                            table: JTable,
                             dropDownFactory: (id: BpmnElementId, type: PropertyType, value: String, availableValues: Set<String>) -> TextValueAccessor,
                             classEditorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor): PropertiesVisualizer {
-    return visualizer.updateAndGet {
-        return@updateAndGet PropertiesVisualizer(table, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
+    return visualizer.computeIfAbsent(project.id()) {
+        PropertiesVisualizer(project, table, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
     }
 }
 
-fun propertiesVisualizer(): PropertiesVisualizer {
-    return visualizer.get()!!
+fun propertiesVisualizer(project: Project): PropertiesVisualizer {
+    return visualizer[project.id()]!!
 }
 
 class PropertiesVisualizer(
+        private val project: Project,
         val table: JTable,
         val dropDownFactory: (id: BpmnElementId, type: PropertyType, value: String, availableValues: Set<String>) -> TextValueAccessor,
         val classEditorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
@@ -124,7 +129,7 @@ class PropertiesVisualizer(
 
         listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
             if (initialValue != field.isSelected) {
-                updateEventsRegistry().addPropertyUpdateEvent(BooleanValueUpdatedEvent(bpmnElementId, type, field.isSelected))
+                updateEventsRegistry(project).addPropertyUpdateEvent(BooleanValueUpdatedEvent(bpmnElementId, type, field.isSelected))
             }
         }
         return field.component
@@ -188,7 +193,7 @@ class PropertiesVisualizer(
             }
         }
 
-        updateEventsRegistry().addEvents(listOf(event) + cascades)
+        updateEventsRegistry(project).addEvents(listOf(event) + cascades)
     }
 
     private fun removeQuotes(value: String): String {
@@ -196,7 +201,7 @@ class PropertiesVisualizer(
     }
 
     private fun lastStringValueFromRegistry(bpmnElementId: BpmnElementId, type: PropertyType): String? {
-        return (updateEventsRegistry().currentPropertyUpdateEventList(bpmnElementId)
+        return (updateEventsRegistry(project).currentPropertyUpdateEventList(bpmnElementId)
                 .map { it.event }
                 .filter {
                     bpmnElementId == it.bpmnElementId && it.property.id == type.id
@@ -207,7 +212,7 @@ class PropertiesVisualizer(
 
     private fun lastBooleanValueFromRegistry(bpmnElementId: BpmnElementId, type: PropertyType): Boolean? {
         // It is not possible to handle boolean cascades due to ambiguities
-        return (updateEventsRegistry().currentPropertyUpdateEventList(bpmnElementId)
+        return (updateEventsRegistry(project).currentPropertyUpdateEventList(bpmnElementId)
                 .map { it.event }
                 .filter { it.property.id == type.id }
                 .lastOrNull { it is BooleanValueUpdatedEvent } as BooleanValueUpdatedEvent?)

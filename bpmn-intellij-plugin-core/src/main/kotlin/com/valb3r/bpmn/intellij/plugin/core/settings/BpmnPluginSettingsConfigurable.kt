@@ -1,7 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.settings
 
 import com.intellij.openapi.options.Configurable
-import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
+import com.valb3r.bpmn.intellij.plugin.core.render.allCanvas
 import javax.swing.JComponent
 
 
@@ -29,12 +29,12 @@ class BpmnPluginSettingsConfigurable : Configurable {
     override fun apply() {
         val bpmnPluginSettings: BaseBpmnPluginSettingsState = currentSettingsState()
         bpmnPluginSettings.pluginState = pluginBpmnPluginSettingsComponent!!.state.copy()
-        currentCanvas().repaint()
+        allCanvas().forEach { it.repaint() }
     }
 
     override fun reset() {
         pluginBpmnPluginSettingsComponent!!.state = currentSettings().copy()
-        currentCanvas().repaint()
+        allCanvas().forEach { it.repaint() }
     }
 
     override fun disposeUIResources() {

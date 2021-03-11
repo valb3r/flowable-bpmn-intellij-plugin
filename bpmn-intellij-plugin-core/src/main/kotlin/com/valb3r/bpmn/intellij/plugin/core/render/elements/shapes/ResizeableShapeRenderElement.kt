@@ -62,7 +62,7 @@ abstract class ResizeableShapeRenderElement(
         currY += spaceCoeff * ySpacing
         val toXmlId = DiagramElementId("TOXML:$elementId")
         val toXmlArea = state.ctx.canvas.drawText(Point2D.Float(x, currY), "<XML/>", Colors.INNER_TEXT_COLOR.color)
-        state.ctx.interactionContext.clickCallbacks[toXmlId] = { dest -> xmlNavigator().jumpTo(bpmnElementId)}
+        state.ctx.interactionContext.clickCallbacks[toXmlId] = { dest -> xmlNavigator(state.ctx.project).jumpTo(bpmnElementId)}
 
         return mutableMapOf(
                 delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId),

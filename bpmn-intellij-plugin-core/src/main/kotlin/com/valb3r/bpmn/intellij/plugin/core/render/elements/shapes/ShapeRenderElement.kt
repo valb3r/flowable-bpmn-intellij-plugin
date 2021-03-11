@@ -288,19 +288,19 @@ abstract class ShapeRenderElement(
 
         val elem = state.currentState.elementByBpmnId[bpmnElementId] ?: return mutableListOf()
 
-        val newSequenceBpmn = newElementsFactory().newOutgoingSequence(elem.element)
+        val newSequenceBpmn = newElementsFactory(state.ctx.project).newOutgoingSequence(elem.element)
         val anchors = findSequenceAnchors(targetArea) ?: return mutableListOf()
         val notYetExistingDiagramId = DiagramElementId("")
         val sourceBounds = shape.rectBounds()
         val firstAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.first, Point2D.Float(sourceBounds.centerX.toFloat(), sourceBounds.centerY.toFloat()))
         val secondAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.second, anchors.second)
-        val newSequenceDiagram = newElementsFactory().newDiagramObject(EdgeElement::class, newSequenceBpmn)
+        val newSequenceDiagram = newElementsFactory(state.ctx.project).newDiagramObject(EdgeElement::class, newSequenceBpmn)
                 .copy(waypoint = listOf(
                         WaypointElement(firstAnchorCompensated.x, firstAnchorCompensated.y),
                         WaypointElement(secondAnchorCompensated.x, secondAnchorCompensated.y)
                 ))
 
-        val props = newElementsFactory().propertiesOf(newSequenceBpmn).toMutableMap()
+        val props = newElementsFactory(state.ctx.project).propertiesOf(newSequenceBpmn).toMutableMap()
         props[PropertyType.TARGET_REF] = Property(droppedOn.id)
 
         return mutableListOf(

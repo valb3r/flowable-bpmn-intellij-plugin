@@ -71,7 +71,6 @@ fun currentIconProvider(): IconProvider {
         if (null == it) {
             return@updateAndGet IconProviderImpl()
         }
-
         return@updateAndGet it
     }
 }
