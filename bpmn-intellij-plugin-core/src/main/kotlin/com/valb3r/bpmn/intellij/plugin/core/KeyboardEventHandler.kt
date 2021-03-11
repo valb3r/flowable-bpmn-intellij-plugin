@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core
 
+import com.intellij.openapi.util.SystemInfo
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteFromClipboard
@@ -18,6 +19,7 @@ import java.awt.event.KeyListener
 import java.awt.geom.Point2D
 
 class KeyboardEventHandler(private val canvas: Canvas): KeyListener {
+    val isMac = SystemInfo.isMac
 
     override fun keyTyped(e: KeyEvent) {
         // NOP
@@ -29,7 +31,8 @@ class KeyboardEventHandler(private val canvas: Canvas): KeyListener {
 
     override fun keyReleased(e: KeyEvent) {
         when {
-            e.isControlDown -> handleKeyWithControl(e)
+            !isMac && e.isControlDown -> handleKeyWithControl(e)
+            isMac && e.isMetaDown -> handleKeyWithControl(e)
             e.isShiftDown -> handleKeyWithShift(e)
             else -> handleKeyboardKeys(e, currentSettings().keyboardSmallStep)
         }

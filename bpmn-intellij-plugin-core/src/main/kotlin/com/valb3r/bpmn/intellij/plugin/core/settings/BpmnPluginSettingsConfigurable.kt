@@ -10,7 +10,7 @@ class BpmnPluginSettingsConfigurable : Configurable {
     private var pluginBpmnPluginSettingsComponent: BpmnPluginSettingsComponent? = null
 
     override fun isModified(): Boolean {
-        return currentSettings().stateEquals(pluginBpmnPluginSettingsComponent!!.state)
+        return !currentSettings().stateEquals(pluginBpmnPluginSettingsComponent!!.state)
     }
 
     override fun getDisplayName(): String {
@@ -27,14 +27,13 @@ class BpmnPluginSettingsConfigurable : Configurable {
     }
 
     override fun apply() {
-        val bpmnPluginSettings: BpmnPluginSettingsState = currentSettingsState()
-        bpmnPluginSettings.pluginState = pluginBpmnPluginSettingsComponent!!.state
+        val bpmnPluginSettings: BaseBpmnPluginSettingsState = currentSettingsState()
+        bpmnPluginSettings.pluginState = pluginBpmnPluginSettingsComponent!!.state.copy()
         currentCanvas().repaint()
     }
 
     override fun reset() {
-        val bpmnPluginSettings: BpmnPluginSettingsState = currentSettingsState()
-        pluginBpmnPluginSettingsComponent!!.state = bpmnPluginSettings.pluginState
+        pluginBpmnPluginSettingsComponent!!.state = currentSettings().copy()
         currentCanvas().repaint()
     }
 

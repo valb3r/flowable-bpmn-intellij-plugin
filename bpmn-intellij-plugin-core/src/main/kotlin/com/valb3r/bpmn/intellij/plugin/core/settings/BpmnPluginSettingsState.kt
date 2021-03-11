@@ -1,35 +1,26 @@
 package com.valb3r.bpmn.intellij.plugin.core.settings
 
-import com.google.common.annotations.VisibleForTesting
 import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.ServiceManager
-import com.intellij.openapi.components.State
-import com.intellij.openapi.components.Storage
+import java.util.concurrent.atomic.AtomicReference
 
-fun currentSettingsState(): BpmnPluginSettingsState {
+val currentSettingsStateProvider = AtomicReference<() -> BaseBpmnPluginSettingsState>()
+
+fun currentSettingsState(): BaseBpmnPluginSettingsState {
     // This is required to access state this way, because ServiceManagerImpl.getComponentInstance -> ComponentStoreImpl.initComponent are
     // responsible for loading from XML
-    return BpmnPluginSettingsState.instance
+    return currentSettingsStateProvider.get()()
 }
 
-fun currentSettings(): BpmnPluginSettingsState.PluginStateData {
+fun currentSettings(): BaseBpmnPluginSettingsState.PluginStateData {
     // This is required to access state this way, because ServiceManagerImpl.getComponentInstance -> ComponentStoreImpl.initComponent are
     // responsible for loading from XML
     return currentSettingsState().pluginState
 }
 
-@VisibleForTesting
-var intellijServiceManagerServicesProvider = { ServiceManager.getService(BpmnPluginSettingsState::class.java) }
-
-@State(name = "BpmnPluginSettingsState", storages = [Storage("valb3r-bpmn-editor-plugin.xml")]) // fancy XML name to avoid collisions
-class BpmnPluginSettingsState: PersistentStateComponent<BpmnPluginSettingsState.PluginStateData> {
+// Due to class name collision each plugin implementation should reference its own class
+abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPluginSettingsState.PluginStateData> {
 
     var pluginState: PluginStateData = PluginStateData()
-
-    companion object {
-        val instance: BpmnPluginSettingsState
-            get() = intellijServiceManagerServicesProvider()
-    }
 
     override fun getState(): PluginStateData {
         return pluginState
@@ -39,6 +30,7 @@ class BpmnPluginSettingsState: PersistentStateComponent<BpmnPluginSettingsState.
         pluginState = stateBpmnPlugin
     }
 
+    // TODO investigate possibility to use data class
     class PluginStateData {
         var zoomMin: Float = 0.3f
         var zoomMax: Float = 2.0f
@@ -65,6 +57,21 @@ class BpmnPluginSettingsState: PersistentStateComponent<BpmnPluginSettingsState.
             if (uiFontName != other.uiFontName) return false
 
             return true
+        }
+
+        fun copy(): PluginStateData {
+            val data = PluginStateData()
+            data.zoomMin = zoomMin
+            data.zoomMax = zoomMax
+            data.zoomFactor = zoomFactor
+            data.keyboardSmallStep = keyboardSmallStep
+            data.keyboardLargeStep = keyboardLargeStep
+            data.lineThickness = lineThickness
+            data.uiFontSize = uiFontSize
+            data.uiFontName = uiFontName
+            data.dataFontSize = dataFontSize
+            data.dataFontName = dataFontName
+            return data
         }
     }
 }

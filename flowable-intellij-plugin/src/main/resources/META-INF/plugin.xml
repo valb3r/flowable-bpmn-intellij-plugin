@@ -4,7 +4,7 @@
     <name>Flowable BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.4.5</version>
+    <version>0.4.6</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -23,12 +23,31 @@
         <li>Language injections to underlying XML file, so that class usage and refactoring is available</li>
         <li>BPMN process debugging</li>
       </ul>
+      <p><strong>Keyboard shortcuts</strong></p>
+      <ul>
+        <li>Undo/Redo Ctrl-Z/Ctrl-Y</li>
+        <li>Zoom in/out Ctrl +/-</li>
+        <li>Arrow pane navigation, (Ctrl for larger step)</li>
+        <li>Copy/Paste Ctrl-C/Ctrl-V/Ctrl-X</li>
+      </ul>
       <p><strong>Plugin status: Work in progress. Please use issue tracker to report any problems found</strong></p>
     ]]></description>
 
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+      <p>0.4.6:</p>
+        <ul>
+          <li>
+            UI/UX improvements - support for undo/redo keyboard shortcuts
+          </li>
+          <li>
+            Fixed keyboard shortcuts handling - after some actions shortcuts stopped working
+          </li>
+          <li>
+            Added settings screen
+          </li>
+        </ul>
       <p>0.4.5:</p>
         <ul>
           <li>
@@ -279,7 +298,7 @@
         <applicationConfigurable parentId="tools" instance="com.valb3r.bpmn.intellij.plugin.core.settings.BpmnPluginSettingsConfigurable"
                                  id="com.valb3r.bpmn.intellij.plugin.core.settings.BpmnPluginSettingsConfigurable"
                                  displayName="Flowable BPMN plugin config"/>
-        <applicationService serviceImplementation="com.valb3r.bpmn.intellij.plugin.core.settings.BpmnPluginSettingsState"/>
+        <applicationService serviceImplementation="com.valb3r.bpmn.intellij.plugin.flowable.settings.FlowableBpmnPluginSettingsState"/>
     </extensions>
 
     <!-- Extensions which the plugin adds to extension points defined by the IntelliJ Platform or by other plugins.

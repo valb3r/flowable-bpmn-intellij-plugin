@@ -8,7 +8,7 @@ import javax.swing.*
 class BpmnPluginSettingsComponent {
     lateinit var settingsPanel: JPanel
     var preferredFocusedComponent: JComponent
-    var state = currentSettings()
+    var state = currentSettings().copy()
 
     private lateinit var zoomMin: JSlider
     private lateinit var zoomMax: JSlider
@@ -22,9 +22,6 @@ class BpmnPluginSettingsComponent {
     private lateinit var dataFontSize: JSpinner
 
     init {
-        val actualUiFont = Font(state.uiFontName, 0, 10)
-        val actualDataFont = Font(state.dataFontName, 0, 10)
-        populateFontComboboxes(actualUiFont, actualDataFont)
         AutoCompleteDecorator.decorate(uiFontName)
         AutoCompleteDecorator.decorate(dataFontName)
 
@@ -32,6 +29,14 @@ class BpmnPluginSettingsComponent {
         uiFontSize.model =  SpinnerNumberModel(10, 6, 32, 1)
         dataFontSize.model =  SpinnerNumberModel(10, 6, 32, 1)
 
+        bindDataFromModel()
+        attachListeners()
+    }
+
+    private fun bindDataFromModel() {
+        val actualUiFont = Font(state.uiFontName, 0, 10)
+        val actualDataFont = Font(state.dataFontName, 0, 10)
+        populateFontComboboxes(actualUiFont, actualDataFont)
         zoomMin.value = state.zoomMin.asSlider()
         zoomMax.value = state.zoomMax.asSlider()
         zoomFactor.value = state.zoomFactor.asSlider()
@@ -40,7 +45,6 @@ class BpmnPluginSettingsComponent {
         lineThickness.value = state.lineThickness.asSlider()
         uiFontSize.value = state.uiFontSize
         dataFontSize.value = state.dataFontSize
-        attachListeners()
     }
 
     private fun populateFontComboboxes(actualUiFont: Font, actualDataFont: Font) {

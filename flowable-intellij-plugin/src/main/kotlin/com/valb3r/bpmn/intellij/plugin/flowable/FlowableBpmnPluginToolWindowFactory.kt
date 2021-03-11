@@ -9,10 +9,12 @@ import com.intellij.ui.content.ContentFactory
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
 import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.core.xmlnav.registerXmlNavigator
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
+import com.valb3r.bpmn.intellij.plugin.flowable.settings.FlowableBpmnPluginSettingsState
 import com.valb3r.bpmn.intellij.plugin.flowable.ui.components.popupmenu.FlowableCanvasPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.flowable.xmlnav.FlowableXmlNavigator
 
@@ -22,6 +24,7 @@ class FlowableBpmnPluginToolWindowFactory: ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         log.info("Creating tool window content")
+        currentSettingsStateProvider.set { ServiceManager.getService(FlowableBpmnPluginSettingsState::class.java) }
         registerPopupMenuProvider(FlowableCanvasPopupMenuProvider())
         registerNewElementsFactory(FlowableObjectFactory())
         val bpmnWindow = BpmnPluginToolWindow(FlowableParser()) {
