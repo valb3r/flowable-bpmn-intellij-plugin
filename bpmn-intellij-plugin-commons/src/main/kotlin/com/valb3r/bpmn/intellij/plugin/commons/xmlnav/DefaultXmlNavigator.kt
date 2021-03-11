@@ -17,7 +17,7 @@ abstract class DefaultXmlNavigator(private val project: Project): XmlNavigator {
 
     override fun jumpTo(id: BpmnElementId) {
         ApplicationManager.getApplication().invokeLater {
-            val virtualFile = getCurrentFile().virtualFile
+            val virtualFile = getCurrentFile(project).virtualFile
             val descriptor = OpenFileDescriptor(project, virtualFile)
             val fileEditor = FileEditorManager.getInstance(project).openEditor(descriptor, true).firstOrNull()
             fileEditor?.apply {

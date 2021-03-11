@@ -22,11 +22,11 @@ class ActivitiBpmnPluginToolWindowFactory: ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         log.info("Creating tool window content")
-        registerPopupMenuProvider(ActivitiCanvasPopupMenuProvider())
-        registerNewElementsFactory(ActivitiObjectFactory())
-        val bpmnWindow = BpmnPluginToolWindow(ActivitiParser()) {
-            registerCurrentFile(it)
-            registerXmlNavigator(ActivitiXmlNavigator(project))
+        registerPopupMenuProvider(project, ActivitiCanvasPopupMenuProvider(project))
+        registerNewElementsFactory(project, ActivitiObjectFactory())
+        val bpmnWindow = BpmnPluginToolWindow(project, ActivitiParser()) {
+            registerCurrentFile(project, it)
+            registerXmlNavigator(project, ActivitiXmlNavigator(project))
         }
 
         // register the call graph tool window as a project service, so it can be accessed by editor menu actions.

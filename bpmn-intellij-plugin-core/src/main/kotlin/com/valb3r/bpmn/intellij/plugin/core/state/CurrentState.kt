@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.state
 
+import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
@@ -17,17 +18,13 @@ import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.properties.uionly.UiOnlyPropertyType
 import com.valb3r.bpmn.intellij.plugin.core.render.EdgeElementState
 import org.mapstruct.factory.Mappers
-import java.util.concurrent.atomic.AtomicReference
+import java.util.*
 
-private val currentStateProvider = AtomicReference<CurrentStateProvider>()
+private val currentStateProvider = Collections.synchronizedMap(WeakHashMap<Project,  CurrentStateProvider>())
 
-fun currentStateProvider(): CurrentStateProvider {
-    return currentStateProvider.updateAndGet {
-        if (null == it) {
-            return@updateAndGet CurrentStateProvider()
-        }
-
-        return@updateAndGet it
+fun currentStateProvider(project: Project): CurrentStateProvider {
+    return currentStateProvider.computeIfAbsent(project) {
+        CurrentStateProvider(project)
     }
 }
 
@@ -54,7 +51,7 @@ data class CurrentState(
 }
 
 // Global singleton
-class CurrentStateProvider {
+class CurrentStateProvider(private val project: Project) {
     private var fileState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet())
     private var currentState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet())
 
@@ -70,7 +67,7 @@ class CurrentStateProvider {
                 emptySet()
         )
         currentState = fileState
-        updateEventsRegistry().reset(fileContent)
+        updateEventsRegistry(project).reset(fileContent)
     }
 
     fun currentState(): CurrentState {
@@ -86,8 +83,8 @@ class CurrentStateProvider {
         val updatedElemUiOnlyPropertiesByStaticElementId = state.elemUiOnlyPropertiesByStaticElementId.toMutableMap()
         var updatedProcessId = state.processId
 
-        val undoRedoStatus = updateEventsRegistry().undoRedoStatus()
-        val updates = updateEventsRegistry().getUpdateEventList()
+        val undoRedoStatus = updateEventsRegistry(project).undoRedoStatus()
+        val updates = updateEventsRegistry(project).getUpdateEventList()
 
         updates.map { it.event }.forEach { event ->
             when (event) {

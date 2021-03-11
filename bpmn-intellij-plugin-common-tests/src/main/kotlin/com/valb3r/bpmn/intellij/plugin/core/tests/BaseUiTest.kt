@@ -55,6 +55,19 @@ import javax.swing.table.TableColumnModel
 
 abstract class BaseUiTest {
 
+    protected val sequenceIcon = mock<Icon>()
+    protected val graphics = mock<Graphics2D>()
+    protected val fontMetrics = mock<FontMetrics>()
+    protected val messageBus = mock<MessageBus>()
+    protected val messageBusConnection = mock<MessageBusConnection>()
+    protected val parser = mock<BpmnParser>()
+    protected val fileCommitter = mock<FileCommitter>()
+    protected val project = mock<Project>()
+    protected val virtualFile = mock<VirtualFile>()
+    protected val columnModel = mock<TableColumnModel>()
+    protected val tableColumn = mock<TableColumn>()
+    protected val propertiesTable = mock<JTable>()
+
     protected val newLink = "NEW-SEQUENCE"
     protected val doDel = "DEL"
 
@@ -104,10 +117,10 @@ abstract class BaseUiTest {
     protected val diagramSequenceFlow = EdgeElement(sequenceFlowDiagramId, sequenceFlowBpmnId, listOf(WaypointElement(endElemX, endElemY), WaypointElement(endElemX - 20.0f, endElemY - 20.0f), WaypointElement(endElemX - 30.0f, endElemY - 30.0f)))
 
     protected val icons = mock<IconProvider>()
-    protected val renderer = spy(DefaultBpmnProcessRenderer(icons))
+    protected val renderer = spy(DefaultBpmnProcessRenderer(project, icons))
     protected val canvasBuilder = CanvasBuilder(renderer)
-    protected val canvas = setCanvas(Canvas(DefaultCanvasConstants().copy(baseCursorSize = 3.0f))) // Using small cursor size for clarity
-    protected val uiEventBus = setUiEventBus(UiEventBus())
+    protected val canvas = setCanvas(project, Canvas(project, DefaultCanvasConstants().copy(baseCursorSize = 3.0f))) // Using small cursor size for clarity
+    protected val uiEventBus = setUiEventBus(project, UiEventBus())
     protected var renderResult: Map<DiagramElementId, AreaWithZindex>? = null
 
     protected val basicProcess = BpmnProcessObject(
@@ -121,19 +134,6 @@ abstract class BaseUiTest {
             ),
             mutableListOf()
     )
-
-    protected val sequenceIcon = mock<Icon>()
-    protected val graphics = mock<Graphics2D>()
-    protected val fontMetrics = mock<FontMetrics>()
-    protected val messageBus = mock<MessageBus>()
-    protected val messageBusConnection = mock<MessageBusConnection>()
-    protected val parser = mock<BpmnParser>()
-    protected val fileCommitter = mock<FileCommitter>()
-    protected val project = mock<Project>()
-    protected val virtualFile = mock<VirtualFile>()
-    protected val columnModel = mock<TableColumnModel>()
-    protected val tableColumn = mock<TableColumn>()
-    protected val propertiesTable = mock<JTable>()
 
     protected val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
     protected val boolFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, SelectedValueAccessor> = mutableMapOf()
@@ -202,22 +202,22 @@ abstract class BaseUiTest {
     protected fun changeIdViaPropertiesVisualizer(diagramElementId: DiagramElementId, elementId: BpmnElementId, newId: String) {
         val id = Pair(elementId, PropertyType.ID)
         clickOnId(diagramElementId)
-        propertiesVisualizer().visualize(
-                currentStateProvider().currentState().elemPropertiesByStaticElementId,
+        propertiesVisualizer(project).visualize(
+                currentStateProvider(project).currentState().elemPropertiesByStaticElementId,
                 elementId
         )
         whenever(textFieldsConstructed[id]!!.text).thenReturn(newId)
-        propertiesVisualizer().clear()
+        propertiesVisualizer(project).clear()
     }
 
     protected fun changeSelectedIdViaPropertiesVisualizer(elementId: BpmnElementId, newId: String) {
         val id = Pair(elementId, PropertyType.ID)
-        propertiesVisualizer().visualize(
-                currentStateProvider().currentState().elemPropertiesByStaticElementId,
+        propertiesVisualizer(project).visualize(
+                currentStateProvider(project).currentState().elemPropertiesByStaticElementId,
                 elementId
         )
         whenever(textFieldsConstructed[id]!!.text).thenReturn(newId)
-        propertiesVisualizer().clear()
+        propertiesVisualizer(project).clear()
     }
 
     protected fun newServiceTask(intermediateX: Float, intermediateY: Float): BpmnElementId {
@@ -226,7 +226,7 @@ abstract class BaseUiTest {
                 id = DiagramElementId("sid-" + UUID.randomUUID().toString()),
                 bounds = BoundsElement(intermediateX, intermediateY, serviceTaskSize, serviceTaskSize)
         )
-        updateEventsRegistry().addObjectEvent(
+        updateEventsRegistry(project).addObjectEvent(
                 BpmnShapeObjectAddedEvent(WithParentId(basicProcess.process.id, task), shape, mapOf(PropertyType.ID to Property(task.id)))
         )
 

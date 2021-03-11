@@ -46,12 +46,12 @@ class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer) {
             project: Project,
             bpmnFile: VirtualFile) {
 
-        initializeUpdateEventsRegistry(committerFactory.invoke(parser))
+        initializeUpdateEventsRegistry(project, committerFactory.invoke(parser))
 
         val data = readFile(bpmnFile)
         val process = parser.parse(data)
-        newPropertiesVisualizer(properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
-        canvas.reset(data, process.toView(newElementsFactory()), bpmnProcessRenderer)
+        newPropertiesVisualizer(project, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
+        canvas.reset(data, process.toView(newElementsFactory(project)), bpmnProcessRenderer)
 
         currentVfsConnection?.let { it.disconnect(); it.dispose() }
         currentPaintConnection?.let { it.disconnect(); it.dispose() }
@@ -63,7 +63,7 @@ class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer) {
 
     private fun attachFileChangeListener(project: Project, bpmnFile: VirtualFile, onUpdate: ((bpmnFile: VirtualFile) -> Unit)): MessageBusConnection {
         val connection = project.messageBus.connect()
-        val registry = updateEventsRegistry()
+        val registry = updateEventsRegistry(project)
 
         connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
             override fun after(events: MutableList<out VFileEvent>) {

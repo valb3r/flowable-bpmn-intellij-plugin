@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.common.annotations.VisibleForTesting
+import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -14,6 +15,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypo
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.events.*
+import com.valb3r.bpmn.intellij.plugin.core.id
 import com.valb3r.bpmn.intellij.plugin.core.render.EdgeElementState
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
@@ -25,24 +27,20 @@ import java.awt.datatransfer.*
 import java.awt.geom.Point2D
 import java.io.IOException
 import java.util.*
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
 
-private val copyPasteActionHandler = AtomicReference<CopyPasteActionHandler>()
+private val copyPasteActionHandler = Collections.synchronizedMap(WeakHashMap<Project,  CopyPasteActionHandler>())
 
-fun copyPasteActionHandler(): CopyPasteActionHandler {
-    return copyPasteActionHandler.updateAndGet {
-        if (null == it) {
-            return@updateAndGet CopyPasteActionHandler(DefaultSystemClipboard(Toolkit.getDefaultToolkit().systemClipboard))
-        }
-
-        return@updateAndGet it
+fun copyPasteActionHandler(project: Project): CopyPasteActionHandler {
+    return copyPasteActionHandler.computeIfAbsent(project) {
+        CopyPasteActionHandler(DefaultSystemClipboard(Toolkit.getDefaultToolkit().systemClipboard))
     }
 }
 
 @VisibleForTesting
-fun setCopyPasteActionHandler(handler: CopyPasteActionHandler) {
-    copyPasteActionHandler.set(handler)
+fun setCopyPasteActionHandler(project: Project, handler: CopyPasteActionHandler) {
+    copyPasteActionHandler[project] = handler
 }
 
 val DATA_FLAVOR = DataFlavor("text/flowable-alike-bpmn-plugin-intellij", "Flowable (plugin family) BPMN IntelliJ editor plugin clipboard data")

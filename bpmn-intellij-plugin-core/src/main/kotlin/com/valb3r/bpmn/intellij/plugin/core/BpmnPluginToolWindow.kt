@@ -36,7 +36,7 @@ import javax.swing.table.DefaultTableModel
 import kotlin.math.abs
 
 
-class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFileOpenCallback: (PsiFile) -> Unit) {
+class BpmnPluginToolWindow(private val project: Project, private val bpmnParser: BpmnParser, private val onFileOpenCallback: (PsiFile) -> Unit) {
 
     private val log = Logger.getInstance(BpmnPluginToolWindow::class.java)
 
@@ -47,19 +47,19 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
     private lateinit var canvasVScroll: JScrollBar
     private lateinit var canvasHScroll: JScrollBar
 
-    private val canvasBuilder = CanvasBuilder(DefaultBpmnProcessRenderer(currentIconProvider()))
-    private val canvas: Canvas = currentCanvas()
+    private val canvasBuilder = CanvasBuilder(DefaultBpmnProcessRenderer(project, currentIconProvider()))
+    private val canvas: Canvas = currentCanvas(project)
     private lateinit var scrollHandler: ScrollBarInteractionHandler
 
     init {
         log.info("BPMN plugin started")
         // attach event listeners to canvas
-        val mouseEventHandler = setCurrentMouseEventHandler(this.canvas)
+        val mouseEventHandler = setCurrentMouseEventHandler(project, this.canvas)
         this.canvas.addMouseListener(mouseEventHandler)
         this.canvas.addMouseMotionListener(mouseEventHandler)
         this.canvas.addMouseWheelListener(mouseEventHandler)
         this.canvas.isFocusable = true
-        this.canvas.addKeyListener(KeyboardEventHandler(canvas))
+        this.canvas.addKeyListener(KeyboardEventHandler(project, canvas))
         this.canvasPanel.add(this.canvas)
         canvasAndProperties.dividerLocation = (canvasAndProperties.height * 0.8f).toInt()
     }
@@ -175,9 +175,9 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
 
     private fun attachScrollListenersAndClearSubs() {
         if (this::scrollHandler.isInitialized) {
-            currentUiEventBus().clearSubscriptionsOf(ViewRectangleChangeEvent::class, this.scrollHandler)
+            currentUiEventBus(project).clearSubscriptionsOf(ViewRectangleChangeEvent::class, this.scrollHandler)
         }
-        this.scrollHandler = ScrollBarInteractionHandler(canvas, canvasPanel, canvasHScroll, canvasVScroll)
+        this.scrollHandler = ScrollBarInteractionHandler(project, canvas, canvasPanel, canvasHScroll, canvasVScroll)
     }
 
     class JavaEditorTextField(document: Document, project: Project): EditorTextField(document, project, StdFileTypes.JAVA) {
@@ -203,7 +203,7 @@ class BpmnPluginToolWindow(private val bpmnParser: BpmnParser, private val onFil
     }
 }
 
-class ScrollBarInteractionHandler(private val canvas: Canvas, private val canvasPanel: JPanel, private val canvasHScroll: JScrollBar, private val canvasVScroll: JScrollBar) {
+class ScrollBarInteractionHandler(project: Project, private val canvas: Canvas, private val canvasPanel: JPanel, private val canvasHScroll: JScrollBar, private val canvasVScroll: JScrollBar) {
 
     private val hListener = ScrollListener { prev, current ->
         canvas.dragCanvas(
@@ -219,7 +219,7 @@ class ScrollBarInteractionHandler(private val canvas: Canvas, private val canvas
     }
 
     init {
-        currentUiEventBus().subscribe(ViewRectangleChangeEvent::class, this) { updateScrollBars(it.onScreenModel) }
+        currentUiEventBus(project).subscribe(ViewRectangleChangeEvent::class, this) { updateScrollBars(it.onScreenModel) }
         canvasHScroll.adjustmentListeners.forEach { canvasHScroll.removeAdjustmentListener(it) }
         canvasHScroll.addAdjustmentListener(hListener)
 

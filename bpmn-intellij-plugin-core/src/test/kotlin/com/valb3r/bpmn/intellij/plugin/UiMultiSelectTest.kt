@@ -21,7 +21,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
 
     @BeforeEach
     fun `Prepare object factory`() {
-        registerNewElementsFactory(FlowableObjectFactory())
+        registerNewElementsFactory(project, FlowableObjectFactory())
     }
 
     // Is affected by multiselect feature, this is why it is here
@@ -46,9 +46,9 @@ internal class UiMultiSelectTest: BaseUiTest() {
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
 
-        lastRenderedState()!!.state.ctx.selectedIds.shouldHaveSize(2)
-        lastRenderedState()!!.state.ctx.selectedIds.shouldContain(serviceTaskEndDiagramId)
-        lastRenderedState()!!.state.ctx.selectedIds.shouldNotContain(serviceTaskStartDiagramId)
+        lastRenderedState(project)!!.state.ctx.selectedIds.shouldHaveSize(2)
+        lastRenderedState(project)!!.state.ctx.selectedIds.shouldContain(serviceTaskEndDiagramId)
+        lastRenderedState(project)!!.state.ctx.selectedIds.shouldNotContain(serviceTaskStartDiagramId)
     }
 
     @Test

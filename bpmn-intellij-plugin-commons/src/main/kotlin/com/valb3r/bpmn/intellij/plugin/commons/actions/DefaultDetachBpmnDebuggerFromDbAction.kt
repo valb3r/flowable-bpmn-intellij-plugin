@@ -13,8 +13,8 @@ import com.valb3r.bpmn.intellij.plugin.core.debugger.detachDebugger
 abstract class DefaultDetachBpmnDebuggerFromDbAction : AnAction() {
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
-        anActionEvent.project ?: return
-        detachDebugger()
+        val project = anActionEvent.project ?: return
+        detachDebugger(project)
         ApplicationManager.getApplication().invokeLater {
             anActionEvent.project!!.messageBus.syncPublisher(CANVAS_PAINT_TOPIC).repaint()
         }
@@ -23,7 +23,7 @@ abstract class DefaultDetachBpmnDebuggerFromDbAction : AnAction() {
     override fun update(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project
         anActionEvent.presentation.isEnabledAndVisible =
-                project != null && null != properElem(anActionEvent) && (null != currentDebugger())
+                project != null && null != properElem(anActionEvent) && (null != currentDebugger(project))
     }
 
     private fun properElem(anActionEvent: AnActionEvent): DbElement? {

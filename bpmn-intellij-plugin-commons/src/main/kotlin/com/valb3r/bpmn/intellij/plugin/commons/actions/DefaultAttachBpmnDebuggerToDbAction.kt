@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.core.CANVAS_PAINT_TOPIC
 import com.valb3r.bpmn.intellij.plugin.core.debugger.BpmnDebugger
@@ -24,9 +25,9 @@ import java.util.concurrent.atomic.AtomicReference
 abstract class DefaultAttachBpmnDebuggerToDbAction(private val debugger: (schema: DbElement) -> BpmnDebugger) : AnAction() {
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
-        anActionEvent.project ?: return
+        val project = anActionEvent.project ?: return
         val schema = properElem(anActionEvent) ?: return
-        prepareDebugger(debugger(schema))
+        prepareDebugger(project, debugger(schema))
         ApplicationManager.getApplication().invokeLater {
             anActionEvent.project!!.messageBus.syncPublisher(CANVAS_PAINT_TOPIC).repaint()
         }
@@ -56,21 +57,21 @@ abstract class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger
     private var cachedResult: AtomicReference<ExecutedElements?> = AtomicReference()
     private var cachedAtTime: AtomicReference<Instant?> = AtomicReference()
 
-    override fun executionSequence(processId: String): ExecutedElements? {
+    override fun executionSequence(project: Project, processId: String): ExecutedElements? {
         val cachedExpiry = cachedAtTime.get()?.plus(cacheTTL)
         if (cachedExpiry?.isAfter(Instant.now()) == true) {
             return cachedResult.get()
         }
 
         worker.submit {
-            cachedResult.set(fetchFromDb(processId))
+            cachedResult.set(fetchFromDb(project, processId))
             cachedAtTime.set(Instant.now())
         }
 
         return cachedResult.get()
     }
 
-    private fun fetchFromDb(processId: String): ExecutedElements? {
+    private fun fetchFromDb(project: Project, processId: String): ExecutedElements? {
         try {
             val connProvider = DbImplUtil.getDatabaseConnection(schema, DGDepartment.INTROSPECTION)?.get()
             // Old IntelliJ provides only getJdbcConnection
@@ -96,7 +97,7 @@ abstract class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger
                 }
             }
         } catch (ex: RuntimeException) {
-            detachDebugger()
+            detachDebugger(project)
         }
 
         return null

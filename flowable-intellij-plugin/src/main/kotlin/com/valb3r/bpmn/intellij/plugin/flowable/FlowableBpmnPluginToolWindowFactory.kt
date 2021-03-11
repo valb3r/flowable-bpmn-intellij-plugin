@@ -25,11 +25,11 @@ class FlowableBpmnPluginToolWindowFactory: ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         log.info("Creating tool window content")
         currentSettingsStateProvider.set { ServiceManager.getService(FlowableBpmnPluginSettingsState::class.java) }
-        registerPopupMenuProvider(FlowableCanvasPopupMenuProvider())
-        registerNewElementsFactory(FlowableObjectFactory())
-        val bpmnWindow = BpmnPluginToolWindow(FlowableParser()) {
-            registerCurrentFile(it)
-            registerXmlNavigator(FlowableXmlNavigator(project))
+        registerPopupMenuProvider(project, FlowableCanvasPopupMenuProvider(project))
+        registerNewElementsFactory(project, FlowableObjectFactory())
+        val bpmnWindow = BpmnPluginToolWindow(project, FlowableParser()) {
+            registerCurrentFile(project, it)
+            registerXmlNavigator(project, FlowableXmlNavigator(project))
         }
 
         // register the call graph tool window as a project service, so it can be accessed by editor menu actions.

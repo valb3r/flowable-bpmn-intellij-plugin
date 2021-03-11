@@ -1,4 +1,5 @@
 
+import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
@@ -12,8 +13,8 @@ import java.awt.event.ActionListener
 import java.awt.geom.Point2D
 import kotlin.reflect.KClass
 
-private fun <T: WithBpmnId> newShapeElement(sceneLocation: Point2D.Float, forObject: T): ShapeElement {
-    val templateShape = newElementsFactory().newDiagramObject(ShapeElement::class, forObject)
+private fun <T: WithBpmnId> newShapeElement(project: Project, sceneLocation: Point2D.Float, forObject: T): ShapeElement {
+    val templateShape = newElementsFactory(project).newDiagramObject(ShapeElement::class, forObject)
 
     val bounds = templateShape.rectBounds()
     return templateShape.copy(
@@ -26,14 +27,14 @@ private fun <T: WithBpmnId> newShapeElement(sceneLocation: Point2D.Float, forObj
     )
 }
 
-class ShapeCreator<T : WithBpmnId> (private val clazz: KClass<T>, private val sceneLocation: Point2D.Float, private val parent: BpmnElementId): ActionListener {
+class ShapeCreator<T : WithBpmnId> (private val project: Project, private val clazz: KClass<T>, private val sceneLocation: Point2D.Float, private val parent: BpmnElementId): ActionListener {
 
     override fun actionPerformed(e: ActionEvent?) {
-        val newObject = newElementsFactory().newBpmnObject(clazz)
-        val shape = newShapeElement(sceneLocation, newObject)
+        val newObject = newElementsFactory(project).newBpmnObject(clazz)
+        val shape = newShapeElement(project, sceneLocation, newObject)
 
-        updateEventsRegistry().addObjectEvent(
-                BpmnShapeObjectAddedEvent(WithParentId(parent, newObject), shape, newElementsFactory().propertiesOf(newObject))
+        updateEventsRegistry(project).addObjectEvent(
+                BpmnShapeObjectAddedEvent(WithParentId(parent, newObject), shape, newElementsFactory(project).propertiesOf(newObject))
         )
     }
 }

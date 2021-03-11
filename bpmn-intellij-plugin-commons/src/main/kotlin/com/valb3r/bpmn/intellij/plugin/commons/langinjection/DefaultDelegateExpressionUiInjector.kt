@@ -3,21 +3,22 @@ package com.valb3r.bpmn.intellij.plugin.commons.langinjection
 import com.intellij.lang.Language
 import com.intellij.lang.injection.MultiHostInjector
 import com.intellij.lang.injection.MultiHostRegistrar
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.intellij.psi.PsiLiteralExpression
-import java.util.concurrent.atomic.AtomicReference
+import java.util.*
 
-private val currentFile = AtomicReference<PsiFile>()
+private val currentFile = Collections.synchronizedMap(WeakHashMap<Project,  PsiFile>())
 
-fun registerCurrentFile(file: PsiFile) {
-    currentFile.set(file)
+fun registerCurrentFile(project: Project, file: PsiFile) {
+    currentFile[project] = file
 }
 
-fun getCurrentFile(): PsiFile {
-    return currentFile.get()!!
+fun getCurrentFile(project: Project): PsiFile {
+    return currentFile[project]!!
 }
 
 abstract class DefaultDelegateExpressionUiInjector: MultiHostInjector {
@@ -31,7 +32,7 @@ abstract class DefaultDelegateExpressionUiInjector: MultiHostInjector {
             return
         }
 
-        val expectedFile = currentFile.get() ?: return
+        val expectedFile = currentFile.get(context.project) ?: return
 
         if (context.containingFile != expectedFile && context.containingFile?.context?.containingFile != expectedFile) {
             return

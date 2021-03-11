@@ -1,25 +1,28 @@
 package com.valb3r.bpmn.intellij.plugin.core
 
+import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.popupMenuProvider
 import java.awt.event.*
 import java.awt.geom.Point2D
-import java.util.concurrent.atomic.AtomicReference
+import java.util.*
 import javax.swing.SwingUtilities
 
-private val mouseEventHandler = AtomicReference<MouseEventHandler>()
+private val mouseEventHandler = Collections.synchronizedMap(WeakHashMap<Project,  MouseEventHandler>())
 
-fun currentMouseEventHandler(): MouseEventHandler {
-    return mouseEventHandler.get()!!
+fun currentMouseEventHandler(project: Project): MouseEventHandler {
+    return mouseEventHandler[project]!!
 }
 
-fun setCurrentMouseEventHandler(canvas: Canvas): MouseEventHandler {
-    return mouseEventHandler.updateAndGet { MouseEventHandler(canvas) }
+fun setCurrentMouseEventHandler(project: Project, canvas: Canvas): MouseEventHandler {
+    val handler = MouseEventHandler(project, canvas)
+    mouseEventHandler[project] = handler
+    return handler
 }
 
-class MouseEventHandler(private val canvas: Canvas): MouseListener, MouseMotionListener, MouseWheelListener {
+class MouseEventHandler(project: Project, private val canvas: Canvas): MouseListener, MouseMotionListener, MouseWheelListener {
 
-    private val popupMenuProvider = popupMenuProvider()
+    private val popupMenuProvider = popupMenuProvider(project)
     private var prevActionableMousePosition: Point2D.Float? = null
     private var currentMousePosition: Point2D.Float? = null
 

@@ -39,6 +39,9 @@
       <p>0.4.6:</p>
         <ul>
           <li>
+            Fixed multiple opened projects bug - empty gray canvas shown
+          </li>
+          <li>
             UI/UX improvements - support for undo/redo keyboard shortcuts
           </li>
           <li>

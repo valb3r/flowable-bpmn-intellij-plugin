@@ -3,7 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.core.settings
 import com.intellij.openapi.components.PersistentStateComponent
 import java.util.concurrent.atomic.AtomicReference
 
-val currentSettingsStateProvider = AtomicReference<() -> BaseBpmnPluginSettingsState>()
+val currentSettingsStateProvider = AtomicReference<() -> BaseBpmnPluginSettingsState>() // Not map as is global
 
 fun currentSettingsState(): BaseBpmnPluginSettingsState {
     // This is required to access state this way, because ServiceManagerImpl.getComponentInstance -> ComponentStoreImpl.initComponent are

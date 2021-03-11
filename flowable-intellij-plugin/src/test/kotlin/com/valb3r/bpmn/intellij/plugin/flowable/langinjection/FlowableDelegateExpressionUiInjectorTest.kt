@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.flowable.langinjection
 import com.intellij.diagnostic.ImplementationConflictException
 import com.intellij.lang.Language
 import com.intellij.lang.injection.MultiHostRegistrar
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLanguageInjectionHost
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test
 
 internal class FlowableDelegateExpressionUiInjectorTest {
 
+    private val project = mock<Project>()
     private val unDesiredFile = mock<PsiFile>()
     private val desiredFile = mock<PsiFile>()
     private val registrar = mock<MultiHostRegistrar>()
@@ -30,13 +32,14 @@ internal class FlowableDelegateExpressionUiInjectorTest {
         } catch (ex: ImplementationConflictException) {
             // NOP
         }
+        whenever(context.project).doReturn(project)
     }
 
     @Test
     fun `Injection applies to opened file with direct context`() {
         whenever(context.containingFile).doReturn(desiredFile)
         whenever(context.text).doReturn("\${someBean}")
-        registerCurrentFile(desiredFile)
+        registerCurrentFile(project, desiredFile)
 
         tested.getLanguagesToInject(registrar, context)
 
@@ -49,7 +52,7 @@ internal class FlowableDelegateExpressionUiInjectorTest {
         whenever(nestedFile.context).doReturn(nestedContext)
         whenever(context.text).doReturn("\${someBean}")
         whenever(nestedContext.containingFile).doReturn(desiredFile)
-        registerCurrentFile(desiredFile)
+        registerCurrentFile(project, desiredFile)
 
         tested.getLanguagesToInject(registrar, context)
 
@@ -60,7 +63,7 @@ internal class FlowableDelegateExpressionUiInjectorTest {
     fun `Injection does not apply to non-matching file`() {
         whenever(context.containingFile).doReturn(unDesiredFile)
         whenever(context.text).doReturn("\${someBean}")
-        registerCurrentFile(desiredFile)
+        registerCurrentFile(project, desiredFile)
 
         tested.getLanguagesToInject(registrar, context)
 
@@ -73,7 +76,7 @@ internal class FlowableDelegateExpressionUiInjectorTest {
         whenever(nestedFile.context).doReturn(nestedContext)
         whenever(context.text).doReturn("\${someBean}")
         whenever(nestedContext.containingFile).doReturn(unDesiredFile)
-        registerCurrentFile(desiredFile)
+        registerCurrentFile(project, desiredFile)
 
         tested.getLanguagesToInject(registrar, context)
 

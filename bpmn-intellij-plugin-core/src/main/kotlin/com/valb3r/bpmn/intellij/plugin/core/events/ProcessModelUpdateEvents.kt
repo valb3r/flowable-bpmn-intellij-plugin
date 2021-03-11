@@ -10,18 +10,20 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import java.nio.charset.StandardCharsets
+import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.atomic.AtomicReference
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
-private val updateEvents = AtomicReference<ProcessModelUpdateEvents>()
+private val updateEvents = Collections.synchronizedMap(WeakHashMap<Project,  ProcessModelUpdateEvents>())
 
-fun initializeUpdateEventsRegistry(committer: FileCommitter) {
-    updateEvents.set(ProcessModelUpdateEvents(committer, ArrayList()))
+fun initializeUpdateEventsRegistry(project: Project, committer: FileCommitter) {
+    updateEvents[project] = ProcessModelUpdateEvents(committer, ArrayList())
 }
 
-fun updateEventsRegistry(): ProcessModelUpdateEvents {
-    return updateEvents.get()!!
+fun updateEventsRegistry(project: Project): ProcessModelUpdateEvents {
+    return updateEvents[project]!!
 }
 
 interface FileCommitter {

@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.activiti.plugin.popupmenu
 
 import ShapeCreator
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.openapi.util.IconLoader
@@ -36,7 +37,7 @@ import javax.swing.Icon
 import javax.swing.JMenu
 import javax.swing.JPopupMenu
 
-class ActivitiCanvasPopupMenuProvider : CanvasPopupMenuProvider {
+class ActivitiCanvasPopupMenuProvider(private val project: Project) : CanvasPopupMenuProvider {
 
     // Functional
     private val COPY = IconLoader.getIcon("/icons/actions/copy.png")
@@ -110,91 +111,91 @@ class ActivitiCanvasPopupMenuProvider : CanvasPopupMenuProvider {
     }
 
     private fun addCopyAndpasteIfNeeded(popup: JBPopupMenu, sceneLocation: Point2D.Float, parent: BpmnElementId) {
-        val renderedState = lastRenderedState()
+        val renderedState = lastRenderedState(project)
         if (true == renderedState?.canCopyOrCut()) {
-            addItem(popup, "Copy", COPY, ActionListener { copyToClipboard() })
-            addItem(popup, "Cut", CUT, ActionListener { cutToClipboard() })
+            addItem(popup, "Copy", COPY, ActionListener { copyToClipboard(project) })
+            addItem(popup, "Cut", CUT, ActionListener { cutToClipboard(project) })
         }
 
-        if (copyPasteActionHandler().hasDataToPaste()) {
-            addItem(popup, "Paste", PASTE, ActionListener { pasteFromClipboard(sceneLocation, parent) })
+        if (copyPasteActionHandler(project).hasDataToPaste()) {
+            addItem(popup, "Paste", PASTE, ActionListener { pasteFromClipboard(project, sceneLocation, parent) })
         }
     }
 
     private fun startEvents(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
         val menu = JMenu("Start events")
-        addItem(menu, "Start event", START_EVENT, ShapeCreator(BpmnStartEvent::class, sceneLocation, parent))
-        addItem(menu, "Start timer event", START_TIMER_EVENT, ShapeCreator(BpmnStartTimerEvent::class, sceneLocation, parent))
-        addItem(menu, "Start signal event", START_SIGNAL_EVENT, ShapeCreator(BpmnStartSignalEvent::class, sceneLocation, parent))
-        addItem(menu, "Start message event", START_MESSAGE_EVENT, ShapeCreator(BpmnStartMessageEvent::class, sceneLocation, parent))
-        addItem(menu, "Start error event", START_ERROR_EVENT, ShapeCreator(BpmnStartErrorEvent::class, sceneLocation, parent))
+        addItem(menu, "Start event", START_EVENT, ShapeCreator(project, BpmnStartEvent::class, sceneLocation, parent))
+        addItem(menu, "Start timer event", START_TIMER_EVENT, ShapeCreator(project, BpmnStartTimerEvent::class, sceneLocation, parent))
+        addItem(menu, "Start signal event", START_SIGNAL_EVENT, ShapeCreator(project, BpmnStartSignalEvent::class, sceneLocation, parent))
+        addItem(menu, "Start message event", START_MESSAGE_EVENT, ShapeCreator(project, BpmnStartMessageEvent::class, sceneLocation, parent))
+        addItem(menu, "Start error event", START_ERROR_EVENT, ShapeCreator(project, BpmnStartErrorEvent::class, sceneLocation, parent))
         return menu
     }
 
     private fun activities(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
         val menu = JMenu("Activities")
-        addItem(menu, "User task", USER_TASK, ShapeCreator(BpmnUserTask::class, sceneLocation, parent))
-        addItem(menu, "Service task", SERVICE_TASK, ShapeCreator(BpmnServiceTask::class, sceneLocation, parent))
-        addItem(menu, "Script task", SCRIPT_TASK, ShapeCreator(BpmnScriptTask::class, sceneLocation, parent))
-        addItem(menu, "Business rule task", BUSINESS_RULE_TASK, ShapeCreator(BpmnBusinessRuleTask::class, sceneLocation, parent))
-        addItem(menu, "Receive task", RECEIVE_TASK, ShapeCreator(BpmnReceiveTask::class, sceneLocation, parent))
-        addItem(menu, "Manual task", MANUAL_TASK, ShapeCreator(BpmnManualTask::class, sceneLocation, parent))
-        addItem(menu, "Mail task", MAIL_TASK, ShapeCreator(BpmnMailTask::class, sceneLocation, parent))
-        addItem(menu, "Camel task", CAMEL_TASK, ShapeCreator(BpmnCamelTask::class, sceneLocation, parent))
-        addItem(menu, "Mule task", MULE_TASK, ShapeCreator(BpmnMuleTask::class, sceneLocation, parent))
-        addItem(menu, "Decision task", DECISION_TASK, ShapeCreator(BpmnDecisionTask::class, sceneLocation, parent))
+        addItem(menu, "User task", USER_TASK, ShapeCreator(project, BpmnUserTask::class, sceneLocation, parent))
+        addItem(menu, "Service task", SERVICE_TASK, ShapeCreator(project, BpmnServiceTask::class, sceneLocation, parent))
+        addItem(menu, "Script task", SCRIPT_TASK, ShapeCreator(project, BpmnScriptTask::class, sceneLocation, parent))
+        addItem(menu, "Business rule task", BUSINESS_RULE_TASK, ShapeCreator(project, BpmnBusinessRuleTask::class, sceneLocation, parent))
+        addItem(menu, "Receive task", RECEIVE_TASK, ShapeCreator(project, BpmnReceiveTask::class, sceneLocation, parent))
+        addItem(menu, "Manual task", MANUAL_TASK, ShapeCreator(project, BpmnManualTask::class, sceneLocation, parent))
+        addItem(menu, "Mail task", MAIL_TASK, ShapeCreator(project, BpmnMailTask::class, sceneLocation, parent))
+        addItem(menu, "Camel task", CAMEL_TASK, ShapeCreator(project, BpmnCamelTask::class, sceneLocation, parent))
+        addItem(menu, "Mule task", MULE_TASK, ShapeCreator(project, BpmnMuleTask::class, sceneLocation, parent))
+        addItem(menu, "Decision task", DECISION_TASK, ShapeCreator(project, BpmnDecisionTask::class, sceneLocation, parent))
         return menu
     }
 
     private fun structural(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
         val menu = JMenu("Structural")
-        addItem(menu, "Sub process", SUB_PROCESS, ShapeCreator(BpmnSubProcess::class, sceneLocation, parent))
-        addItem(menu, "Event sub process", EVENT_SUB_PROCESS, ShapeCreator(BpmnEventSubprocess::class, sceneLocation, parent))
-        addItem(menu, "Call activity", CALL_ACTIVITY, ShapeCreator(BpmnCallActivity::class, sceneLocation, parent))
+        addItem(menu, "Sub process", SUB_PROCESS, ShapeCreator(project, BpmnSubProcess::class, sceneLocation, parent))
+        addItem(menu, "Event sub process", EVENT_SUB_PROCESS, ShapeCreator(project, BpmnEventSubprocess::class, sceneLocation, parent))
+        addItem(menu, "Call activity", CALL_ACTIVITY, ShapeCreator(project, BpmnCallActivity::class, sceneLocation, parent))
         return menu
     }
 
     private fun gateways(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
         val menu = JMenu("Gateways")
-        addItem(menu, "Exclusive gateway", EXCLUSIVE_GATEWAY, ShapeCreator(BpmnExclusiveGateway::class, sceneLocation, parent))
-        addItem(menu, "Parallel gateway", PARALLEL_GATEWAY, ShapeCreator(BpmnParallelGateway::class, sceneLocation, parent))
-        addItem(menu, "Inclusive gateway", INCLUSIVE_GATEWAY, ShapeCreator(BpmnInclusiveGateway::class, sceneLocation, parent))
-        addItem(menu, "Event gateway", EVENT_GATEWAY, ShapeCreator(BpmnEventGateway::class, sceneLocation, parent))
+        addItem(menu, "Exclusive gateway", EXCLUSIVE_GATEWAY, ShapeCreator(project, BpmnExclusiveGateway::class, sceneLocation, parent))
+        addItem(menu, "Parallel gateway", PARALLEL_GATEWAY, ShapeCreator(project, BpmnParallelGateway::class, sceneLocation, parent))
+        addItem(menu, "Inclusive gateway", INCLUSIVE_GATEWAY, ShapeCreator(project, BpmnInclusiveGateway::class, sceneLocation, parent))
+        addItem(menu, "Event gateway", EVENT_GATEWAY, ShapeCreator(project, BpmnEventGateway::class, sceneLocation, parent))
         return menu
     }
 
     private fun boundaryEvents(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
         val menu = JMenu("Boundary events")
-        addItem(menu, "Boundary error event", BOUNDARY_ERROR_EVENT, ShapeCreator(BpmnBoundaryErrorEvent::class, sceneLocation, parent))
-        addItem(menu, "Boundary timer event", BOUNDARY_TIMER_EVENT, ShapeCreator(BpmnBoundaryTimerEvent::class, sceneLocation, parent))
-        addItem(menu, "Boundary signal event", BOUNDARY_SIGNAL_EVENT, ShapeCreator(BpmnBoundarySignalEvent::class, sceneLocation, parent))
-        addItem(menu, "Boundary message event", BOUNDARY_MESSAGE_EVENT, ShapeCreator(BpmnBoundaryMessageEvent::class, sceneLocation, parent))
-        addItem(menu, "Boundary cancel event", BOUNDARY_CANCEL_EVENT, ShapeCreator(BpmnBoundaryCancelEvent::class, sceneLocation, parent))
-        addItem(menu, "Boundary compensation event", BOUNDARY_COMPENSATION_EVENT, ShapeCreator(BpmnBoundaryCompensationEvent::class, sceneLocation, parent))
+        addItem(menu, "Boundary error event", BOUNDARY_ERROR_EVENT, ShapeCreator(project, BpmnBoundaryErrorEvent::class, sceneLocation, parent))
+        addItem(menu, "Boundary timer event", BOUNDARY_TIMER_EVENT, ShapeCreator(project, BpmnBoundaryTimerEvent::class, sceneLocation, parent))
+        addItem(menu, "Boundary signal event", BOUNDARY_SIGNAL_EVENT, ShapeCreator(project, BpmnBoundarySignalEvent::class, sceneLocation, parent))
+        addItem(menu, "Boundary message event", BOUNDARY_MESSAGE_EVENT, ShapeCreator(project, BpmnBoundaryMessageEvent::class, sceneLocation, parent))
+        addItem(menu, "Boundary cancel event", BOUNDARY_CANCEL_EVENT, ShapeCreator(project, BpmnBoundaryCancelEvent::class, sceneLocation, parent))
+        addItem(menu, "Boundary compensation event", BOUNDARY_COMPENSATION_EVENT, ShapeCreator(project, BpmnBoundaryCompensationEvent::class, sceneLocation, parent))
         return menu
     }
 
     private fun intermediateCatchingEvents(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
         val menu = JMenu("Intermediate catching events")
-        addItem(menu, "Intermediate timer catching event", INTERMEDIATE_TIMER_CATCHING, ShapeCreator(BpmnIntermediateTimerCatchingEvent::class, sceneLocation, parent))
-        addItem(menu, "Intermediate message catching event", INTERMEDIATE_MESSAGE_CATCHING, ShapeCreator(BpmnIntermediateMessageCatchingEvent::class, sceneLocation, parent))
-        addItem(menu, "Intermediate signal catching event", INTERMEDIATE_SIGNAL_CATCHING, ShapeCreator(BpmnIntermediateSignalCatchingEvent::class, sceneLocation, parent))
+        addItem(menu, "Intermediate timer catching event", INTERMEDIATE_TIMER_CATCHING, ShapeCreator(project, BpmnIntermediateTimerCatchingEvent::class, sceneLocation, parent))
+        addItem(menu, "Intermediate message catching event", INTERMEDIATE_MESSAGE_CATCHING, ShapeCreator(project, BpmnIntermediateMessageCatchingEvent::class, sceneLocation, parent))
+        addItem(menu, "Intermediate signal catching event", INTERMEDIATE_SIGNAL_CATCHING, ShapeCreator(project, BpmnIntermediateSignalCatchingEvent::class, sceneLocation, parent))
         return menu
     }
 
     private fun intermediateThrowingEvents(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
         val menu = JMenu("Intermediate throwing events")
-        addItem(menu, "Intermediate none throwing event", INTERMEDIATE_NONE_THROWING, ShapeCreator(BpmnIntermediateNoneThrowingEvent::class, sceneLocation, parent))
-        addItem(menu, "Intermediate signal throwing event", INTERMEDIATE_SIGNAL_THROWING, ShapeCreator(BpmnIntermediateSignalThrowingEvent::class, sceneLocation, parent))
+        addItem(menu, "Intermediate none throwing event", INTERMEDIATE_NONE_THROWING, ShapeCreator(project, BpmnIntermediateNoneThrowingEvent::class, sceneLocation, parent))
+        addItem(menu, "Intermediate signal throwing event", INTERMEDIATE_SIGNAL_THROWING, ShapeCreator(project, BpmnIntermediateSignalThrowingEvent::class, sceneLocation, parent))
         return menu
     }
 
     private fun endEvents(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
         val menu = JMenu("End events")
-        addItem(menu, "End event", END_EVENT, ShapeCreator(BpmnEndEvent::class, sceneLocation, parent))
-        addItem(menu, "End error event", ERROR_END_EVENT, ShapeCreator(BpmnEndErrorEvent::class, sceneLocation, parent))
-        addItem(menu, "End cancel event", CANCEL_END_EVENT, ShapeCreator(BpmnEndCancelEvent::class, sceneLocation, parent))
-        addItem(menu, "End terminate event", TERMINATE_END_EVENT, ShapeCreator(BpmnEndTerminateEvent::class, sceneLocation, parent))
+        addItem(menu, "End event", END_EVENT, ShapeCreator(project, BpmnEndEvent::class, sceneLocation, parent))
+        addItem(menu, "End error event", ERROR_END_EVENT, ShapeCreator(project, BpmnEndErrorEvent::class, sceneLocation, parent))
+        addItem(menu, "End cancel event", CANCEL_END_EVENT, ShapeCreator(project, BpmnEndCancelEvent::class, sceneLocation, parent))
+        addItem(menu, "End terminate event", TERMINATE_END_EVENT, ShapeCreator(project, BpmnEndTerminateEvent::class, sceneLocation, parent))
         return menu
     }
 

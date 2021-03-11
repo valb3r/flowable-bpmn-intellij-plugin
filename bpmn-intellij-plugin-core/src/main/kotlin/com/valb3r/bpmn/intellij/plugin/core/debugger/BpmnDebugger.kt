@@ -1,25 +1,26 @@
 package com.valb3r.bpmn.intellij.plugin.core.debugger
 
+import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import java.util.concurrent.atomic.AtomicReference
+import java.util.*
 
 
-private val bpmnDebugger = AtomicReference<BpmnDebugger>()
+private val bpmnDebugger = Collections.synchronizedMap(WeakHashMap<Project,  BpmnDebugger>())
 
-fun prepareDebugger(debugger: BpmnDebugger) {
-    bpmnDebugger.set(debugger)
+fun prepareDebugger(project: Project, debugger: BpmnDebugger) {
+    bpmnDebugger[project] = debugger
 }
 
-fun detachDebugger() {
-    bpmnDebugger.set(null)
+fun detachDebugger(project: Project) {
+    bpmnDebugger.remove(project)
 }
 
-fun currentDebugger(): BpmnDebugger? {
-    return bpmnDebugger.get()
+fun currentDebugger(project: Project): BpmnDebugger? {
+    return bpmnDebugger[project]
 }
 
 interface BpmnDebugger {
-    fun executionSequence(processId: String): ExecutedElements?
+    fun executionSequence(project: Project, processId: String): ExecutedElements?
 }
 
 data class ExecutedElements(val history: List<BpmnElementId>)

@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.render
 
+import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
@@ -39,14 +40,14 @@ import groovy.lang.Tuple2
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
-import java.util.concurrent.atomic.AtomicReference
+import java.util.*
 import javax.swing.Icon
 
 interface BpmnProcessRenderer {
     fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
 }
 
-private val lastState = AtomicReference<RenderedState>()
+private val lastState = Collections.synchronizedMap(WeakHashMap<Project,  RenderedState>())
 data class RenderedState(val state: RenderState, val elementsById: Map<BpmnElementId, BaseDiagramRenderElement>) {
 
     fun canCopyOrCut(): Boolean {
@@ -74,11 +75,11 @@ data class RenderedState(val state: RenderState, val elementsById: Map<BpmnEleme
     }
 }
 
-fun lastRenderedState(): RenderedState? {
-    return lastState.get()
+fun lastRenderedState(project: Project): RenderedState? {
+    return lastState[project]
 }
 
-class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer {
+class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconProvider) : BpmnProcessRenderer {
     private val undoRedoStartMargin = 20.0f
     private val iconMargin = 10.0f
     private val closeAnchorRadius = 2f
@@ -99,7 +100,7 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
     override fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val elementsByDiagramId = mutableMapOf<DiagramElementId, BaseDiagramRenderElement>()
         val currentState = ctx.stateProvider.currentState()
-        val history = currentDebugger()?.executionSequence(currentState.processId.id)?.history ?: emptyList()
+        val history = currentDebugger(project)?.executionSequence(project, currentState.processId.id)?.history ?: emptyList()
         val state = RenderState(
                 elementsByDiagramId,
                 currentState,
@@ -123,12 +124,12 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
 
         // Overlay system elements on top of rendered BPMN diagram
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
-        drawUndoRedoAndZoomIcons(state, rendered)
+        drawUndoRedoAndZoomIcons(ctx.project, state, rendered)
         drawSelectionRect(ctx)
         drawMultiremovalRect(state, rendered)
 
-        lastState.set(RenderedState(state, elementsById))
-        currentUiEventBus().publish(ViewRectangleChangeEvent(modelRect))
+        lastState[ctx.project] = RenderedState(state, elementsById)
+        currentUiEventBus(ctx.project).publish(ViewRectangleChangeEvent(modelRect))
         return rendered
     }
 
@@ -260,12 +261,13 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
             state.ctx.canvas.drawRectNoCameraTransform(Point2D.Float(minX, minY), maxX - minX, maxY - minY, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
             val delId = DiagramElementId(ownerId).elemIdToRemove()
             val deleteIconArea = state.ctx.canvas.drawIconNoCameraTransform(BoundsElement(maxX, minY, actionsIcoSize, actionsIcoSize), icons.recycleBin)
-            state.ctx.interactionContext.clickCallbacks[delId] = { currentRemoveActionHandler().deleteElem() }
+            state.ctx.interactionContext.clickCallbacks[delId] = { currentRemoveActionHandler(project).deleteElem() }
             renderedArea[delId] = AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, null)
         }
     }
 
     private fun drawUndoRedoAndZoomIcons(
+            project: Project,
             state: RenderState,
             renderedArea: MutableMap<DiagramElementId, AreaWithZindex>
     ) {
@@ -287,11 +289,11 @@ class DefaultBpmnProcessRenderer(val icons: IconProvider) : BpmnProcessRenderer 
         }
 
         locationX = undoRedoStartMargin
-        locationX += drawIconWithAction(state, zoomInId, locationX, locationY, renderedArea, { currentUiEventBus().publish(ZoomInEvent()) }, icons.zoomIn).first + iconMargin
-        locationY += drawIconWithAction(state, zoomOutId, locationX, locationY, renderedArea, { currentUiEventBus().publish(ZoomOutEvent()) }, icons.zoomOut).second + iconMargin
+        locationX += drawIconWithAction(state, zoomInId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(ZoomInEvent()) }, icons.zoomIn).first + iconMargin
+        locationY += drawIconWithAction(state, zoomOutId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(ZoomOutEvent()) }, icons.zoomOut).second + iconMargin
         locationX = undoRedoStartMargin
-        locationX += drawIconWithAction(state, zoomResetId, locationX, locationY, renderedArea, { currentUiEventBus().publish(ResetAndCenterEvent()) }, icons.zoomReset).first + iconMargin
-        drawIconWithAction(state, centerImageId, locationX, locationY, renderedArea, { currentUiEventBus().publish(CenterModelEvent()) }, icons.centerImage).first + iconMargin
+        locationX += drawIconWithAction(state, zoomResetId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(ResetAndCenterEvent()) }, icons.zoomReset).first + iconMargin
+        drawIconWithAction(state, centerImageId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(CenterModelEvent()) }, icons.centerImage).first + iconMargin
     }
 
     private fun drawIconWithAction(

@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.cache.CacheBuilder
+import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
@@ -20,34 +21,34 @@ import java.awt.RenderingHints
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
+import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicReference
 import javax.swing.JPanel
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
-private val currentCanvas = AtomicReference<Canvas>()
+private val currentCanvas = Collections.synchronizedMap(WeakHashMap<Project,  Canvas>())
 
-fun currentCanvas(): Canvas {
-    return currentCanvas.updateAndGet {
-        if (null == it) {
-            return@updateAndGet Canvas(DefaultCanvasConstants())
-        }
-
-        return@updateAndGet it
+fun currentCanvas(project: Project): Canvas {
+    return currentCanvas.computeIfAbsent(project) {
+        Canvas(project, DefaultCanvasConstants())
     }
 }
 
+fun allCanvas(): Collection<Canvas> {
+    return currentCanvas.values
+}
+
 @VisibleForTesting
-fun setCanvas(canvas: Canvas): Canvas {
-    currentCanvas.set(canvas)
+fun setCanvas(project: Project, canvas: Canvas): Canvas {
+    currentCanvas[project] = canvas
     return canvas
 }
 
-class Canvas(val settings: CanvasConstants) : JPanel() {
-    private val stateProvider = currentStateProvider()
+class Canvas(private val project: Project, private val settings: CanvasConstants) : JPanel() {
+    private val stateProvider = currentStateProvider(project)
     private val closeAnchorRadius = 100.0f
 
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
@@ -66,22 +67,22 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
     private var latestOnScreenModelDimensions: Rectangle2D.Float? = null
 
     init {
-        currentUiEventBus().subscribe(ZoomInEvent::class) {
+        currentUiEventBus(project).subscribe(ZoomInEvent::class) {
             zoom(Point2D.Float(width / 2.0f, height / 2.0f), 1)
         }
 
-        currentUiEventBus().subscribe(ZoomOutEvent::class) {
+        currentUiEventBus(project).subscribe(ZoomOutEvent::class) {
             zoom(Point2D.Float(width / 2.0f, height / 2.0f), -1)
         }
 
-        currentUiEventBus().subscribe(CenterModelEvent::class) {
+        currentUiEventBus(project).subscribe(CenterModelEvent::class) {
             latestOnScreenModelDimensions?.let {
                 camera = camera.copy(origin = cameraOriginToPinCenter(it))
                 repaint()
             }
         }
 
-        currentUiEventBus().subscribe(ResetAndCenterEvent::class) {
+        currentUiEventBus(project).subscribe(ResetAndCenterEvent::class) {
             val dimensions = latestOnScreenModelDimensions ?: return@subscribe
             val modelOrigSt = camera.fromCameraView(Point2D.Float(dimensions.x, dimensions.y))
             val modelOrigEn = camera.fromCameraView(Point2D.Float(dimensions.x + dimensions.width, dimensions.y + dimensions.height))
@@ -91,10 +92,10 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
             repaint()
         }
 
-        currentUiEventBus().subscribe(ViewRectangleChangeEvent::class) {
+        currentUiEventBus(project).subscribe(ViewRectangleChangeEvent::class) {
             if (null == latestOnScreenModelDimensions) {
                 latestOnScreenModelDimensions = it.onScreenModel
-                currentUiEventBus().publish(ResetAndCenterEvent())
+                currentUiEventBus(project).publish(ResetAndCenterEvent())
             }
             latestOnScreenModelDimensions = it.onScreenModel
         }
@@ -110,6 +111,7 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
         val shallowCopyOfCtx = interactionCtx.copy()
         areaByElement = renderer?.render(
                 RenderContext(
+                        project,
                         CanvasPainter(graphics2D, camera.copy(), cachedIcons),
                         selectedElements.toSet(),
                         shallowCopyOfCtx,
@@ -122,7 +124,7 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
         this.renderer = renderer
         this.latestOnScreenModelDimensions = null
         this.camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
-        this.propsVisualizer = propertiesVisualizer()
+        this.propsVisualizer = propertiesVisualizer(project)
         this.propsVisualizer?.clear()
         this.stateProvider.resetStateTo(fileContent, processObject)
         selectedElements = mutableSetOf()
@@ -132,7 +134,7 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
     fun click(location: Point2D.Float) {
         propsVisualizer?.clear()
         val clickedElements = elemUnderCursor(location)
-        clickedElements.forEach { interactionCtx.clickCallbacks[it]?.invoke(updateEventsRegistry()) }
+        clickedElements.forEach { interactionCtx.clickCallbacks[it]?.invoke(updateEventsRegistry(project)) }
 
         this.selectedElements.clear()
         interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
@@ -305,7 +307,7 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
             interactionCtx = attractToAnchors(interactionCtx)
             val dx = interactionCtx.dragCurrent.x - interactionCtx.dragStart.x
             val dy = interactionCtx.dragCurrent.y - interactionCtx.dragStart.y
-            updateEventsRegistry().addEvents(interactionCtx.draggedIds.flatMap {
+            updateEventsRegistry(project).addEvents(interactionCtx.draggedIds.flatMap {
                 val droppedOn = bpmnElemsUnderCurrentCursorForDrag()
                 interactionCtx.dragEndCallbacks[it]?.invoke(
                         dx,
@@ -375,7 +377,7 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
                 ?.sortedByDescending { it.second.index }
                 ?.filter { !interactionCtx.draggedIds.contains(it.first) && !selectedElements.contains(it.first) } ?: emptyList()
 
-        val childrenOfDragged = lastRenderedState()?.allChildrenOf(interactionCtx.draggedIds + selectedElements) ?: emptySet()
+        val childrenOfDragged = lastRenderedState(project)?.allChildrenOf(interactionCtx.draggedIds + selectedElements) ?: emptySet()
 
         val result = linkedMapOf<BpmnElementId, AreaWithZindex>()
         for (elem in elems) {
@@ -433,7 +435,7 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
                 ?.forEach { result += it.key; it.value.parentToSelect?.apply { result += this } }
 
         fun removeSubprocessChildren() {
-            val childExclusions = intersection?.let { lastRenderedState()?.allChildrenOf(it.filter { it.value.areaType == AreaType.SHAPE_THAT_NESTS }.keys) }
+            val childExclusions = intersection?.let { lastRenderedState(project)?.allChildrenOf(it.filter { it.value.areaType == AreaType.SHAPE_THAT_NESTS }.keys) }
                     ?: emptySet()
             result.removeAll(childExclusions)
         }
@@ -444,10 +446,10 @@ class Canvas(val settings: CanvasConstants) : JPanel() {
         // as this causes parent ambiguity - which parent to use onDragEnd
         fun selectMajorityOfElementsWithSameParent() {
             val groupedByParent = result.groupBy {
-                val parent = lastRenderedState()?.state?.elemMap?.get(it)?.parents?.getOrNull(0)
+                val parent = lastRenderedState(project)?.state?.elemMap?.get(it)?.parents?.getOrNull(0)
                 // For anchor points return not edge, but edge parent
                 if (parent is BaseEdgeRenderElement) {
-                    return@groupBy parent.parents.get(0)
+                    return@groupBy parent.parents[0]
                 }
 
                 return@groupBy parent
