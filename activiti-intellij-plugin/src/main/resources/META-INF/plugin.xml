@@ -287,11 +287,15 @@
     <!-- Settings screen -->
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable parentId="tools" instance="com.valb3r.bpmn.intellij.plugin.core.settings.BpmnPluginSettingsConfigurable"
-                                 id="com.valb3r.bpmn.intellij.plugin.core.settings.BpmnPluginSettingsConfigurable"
+                                 id="com.valb3r.bpmn.intellij.plugin.core.settings.ActivitiBpmnPluginSettingsConfigurable"
                                  displayName="Activiti BPMN plugin config"/>
         <applicationService serviceImplementation="com.valb3r.bpmn.intellij.activiti.plugin.settings.ActivitiBpmnPluginSettingsState"/>
     </extensions>
 
+    <!-- Pre/Post load -->
+    <extensions defaultExtensionNs="com.intellij">
+        <preloadingActivity implementation="com.valb3r.bpmn.intellij.activiti.plugin.ActivitiPluginPreloaded"/>
+    </extensions>
     <!-- Extensions which the plugin adds to extension points defined by the IntelliJ Platform or by other plugins.
          The "defaultExtensionNs " attribute must be set to the ID of the plugin defining the extension point,
          or to "com.intellij" if the extension point is defined by the IntelliJ Platform. The name of the tag
