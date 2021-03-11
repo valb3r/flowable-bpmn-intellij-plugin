@@ -29,7 +29,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
     @BeforeEach
     fun `Prepare object factory`() {
-        registerNewElementsFactory(FlowableObjectFactory())
+        registerNewElementsFactory(project, FlowableObjectFactory())
     }
 
     @Test
@@ -1094,7 +1094,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
     fun `Name should be rendered on sequence element`() {
         prepareTwoServiceTaskView()
         val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
-        updateEventsRegistry().addPropertyUpdateEvent(StringValueUpdatedEvent(addedEdge.bpmnObject.id, PropertyType.NAME, "test"))
+        updateEventsRegistry(project).addPropertyUpdateEvent(StringValueUpdatedEvent(addedEdge.bpmnObject.id, PropertyType.NAME, "test"))
 
         val capturingGraphics = mock<Graphics2D>()
         prepareGraphics(capturingGraphics)
@@ -1144,8 +1144,8 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         canvas.paintComponent(graphics)
         verifyServiceTasksAreDrawn()
         canvas.click(onlyRootProcessPoint)
-        lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
-        lastRenderedState()!!.state.ctx.stateProvider.currentState()
+        lastRenderedState(project)!!.state.ctx.selectedIds.shouldBeEmpty()
+        lastRenderedState(project)!!.state.ctx.stateProvider.currentState()
                 .elementByDiagramId[CurrentState.processDiagramId(BpmnElementId(newRootProcessId))].shouldNotBeNull()
 
 
@@ -1156,8 +1156,8 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         verifyServiceTasksAreDrawn()
         canvas.click(onlyRootProcessPoint)
-        lastRenderedState()!!.state.ctx.selectedIds.shouldBeEmpty()
-        lastRenderedState()!!.state.ctx.stateProvider.currentState()
+        lastRenderedState(project)!!.state.ctx.selectedIds.shouldBeEmpty()
+        lastRenderedState(project)!!.state.ctx.stateProvider.currentState()
                 .elementByDiagramId[CurrentState.processDiagramId(BpmnElementId(anotherNewRootProcessId))].shouldNotBeNull()
     }
 }

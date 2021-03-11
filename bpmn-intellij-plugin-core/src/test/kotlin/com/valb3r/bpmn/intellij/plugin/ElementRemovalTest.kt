@@ -18,7 +18,7 @@ internal class ElementRemovalTest: BaseUiTest() {
 
     @BeforeEach
     fun prepare() {
-        registerNewElementsFactory(FlowableObjectFactory())
+        registerNewElementsFactory(project, FlowableObjectFactory())
         prepareOneSubProcessWithServiceTaskAndAttachedBoundaryEventOneNestedSubprocessAndServiceTaskWithSequence()
     }
 
