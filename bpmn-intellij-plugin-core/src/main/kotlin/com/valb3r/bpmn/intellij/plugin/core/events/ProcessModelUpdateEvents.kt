@@ -9,20 +9,21 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
-import com.valb3r.bpmn.intellij.plugin.core.id
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.ConcurrentHashMap
+import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
-private val updateEvents = ConcurrentHashMap<String, ProcessModelUpdateEvents>()
+private val updateEvents = Collections.synchronizedMap(WeakHashMap<Project,  ProcessModelUpdateEvents>())
 
 fun initializeUpdateEventsRegistry(project: Project, committer: FileCommitter) {
-    updateEvents[project.id()] = ProcessModelUpdateEvents(committer, ArrayList())
+    updateEvents[project] = ProcessModelUpdateEvents(committer, ArrayList())
 }
 
 fun updateEventsRegistry(project: Project): ProcessModelUpdateEvents {
-    return updateEvents[project.id()]!!
+    return updateEvents[project]!!
 }
 
 interface FileCommitter {

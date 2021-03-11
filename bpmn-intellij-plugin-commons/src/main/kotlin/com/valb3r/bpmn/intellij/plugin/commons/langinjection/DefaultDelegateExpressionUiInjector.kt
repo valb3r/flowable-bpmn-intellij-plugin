@@ -9,17 +9,16 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.intellij.psi.PsiLiteralExpression
-import com.valb3r.bpmn.intellij.plugin.core.id
-import java.util.concurrent.ConcurrentHashMap
+import java.util.*
 
-private val currentFile = ConcurrentHashMap<String, PsiFile>()
+private val currentFile = Collections.synchronizedMap(WeakHashMap<Project,  PsiFile>())
 
 fun registerCurrentFile(project: Project, file: PsiFile) {
-    currentFile[project.id()] = file
+    currentFile[project] = file
 }
 
 fun getCurrentFile(project: Project): PsiFile {
-    return currentFile[project.id()]!!
+    return currentFile[project]!!
 }
 
 abstract class DefaultDelegateExpressionUiInjector: MultiHostInjector {
@@ -33,7 +32,7 @@ abstract class DefaultDelegateExpressionUiInjector: MultiHostInjector {
             return
         }
 
-        val expectedFile = currentFile.get(context.project.id()) ?: return
+        val expectedFile = currentFile.get(context.project) ?: return
 
         if (context.containingFile != expectedFile && context.containingFile?.context?.containingFile != expectedFile) {
             return

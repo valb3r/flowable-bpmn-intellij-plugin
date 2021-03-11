@@ -27,7 +27,6 @@ import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.actions.currentRemoveActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.debugger.currentDebugger
 import com.valb3r.bpmn.intellij.plugin.core.events.ProcessModelUpdateEvents
-import com.valb3r.bpmn.intellij.plugin.core.id
 import com.valb3r.bpmn.intellij.plugin.core.properties.uionly.UiOnlyPropertyType
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseDiagramRenderElement
@@ -41,14 +40,14 @@ import groovy.lang.Tuple2
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
-import java.util.concurrent.ConcurrentHashMap
+import java.util.*
 import javax.swing.Icon
 
 interface BpmnProcessRenderer {
     fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
 }
 
-private val lastState = ConcurrentHashMap<String, RenderedState>()
+private val lastState = Collections.synchronizedMap(WeakHashMap<Project,  RenderedState>())
 data class RenderedState(val state: RenderState, val elementsById: Map<BpmnElementId, BaseDiagramRenderElement>) {
 
     fun canCopyOrCut(): Boolean {
@@ -77,7 +76,7 @@ data class RenderedState(val state: RenderState, val elementsById: Map<BpmnEleme
 }
 
 fun lastRenderedState(project: Project): RenderedState? {
-    return lastState[project.id()]
+    return lastState[project]
 }
 
 class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconProvider) : BpmnProcessRenderer {
@@ -129,7 +128,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         drawSelectionRect(ctx)
         drawMultiremovalRect(state, rendered)
 
-        lastState[ctx.project.id()] = RenderedState(state, elementsById)
+        lastState[ctx.project] = RenderedState(state, elementsById)
         currentUiEventBus(ctx.project).publish(ViewRectangleChangeEvent(modelRect))
         return rendered
     }

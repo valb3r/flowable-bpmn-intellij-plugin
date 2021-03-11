@@ -2,22 +2,21 @@ package com.valb3r.bpmn.intellij.plugin.core.debugger
 
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.core.id
-import java.util.concurrent.ConcurrentHashMap
+import java.util.*
 
 
-private val bpmnDebugger = ConcurrentHashMap<String, BpmnDebugger>()
+private val bpmnDebugger = Collections.synchronizedMap(WeakHashMap<Project,  BpmnDebugger>())
 
 fun prepareDebugger(project: Project, debugger: BpmnDebugger) {
-    bpmnDebugger[project.id()] = debugger
+    bpmnDebugger[project] = debugger
 }
 
 fun detachDebugger(project: Project) {
-    bpmnDebugger.remove(project.id())
+    bpmnDebugger.remove(project)
 }
 
 fun currentDebugger(project: Project): BpmnDebugger? {
-    return bpmnDebugger[project.id()]
+    return bpmnDebugger[project]
 }
 
 interface BpmnDebugger {

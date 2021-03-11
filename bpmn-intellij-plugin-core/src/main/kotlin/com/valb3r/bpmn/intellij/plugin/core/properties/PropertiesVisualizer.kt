@@ -9,13 +9,12 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import com.valb3r.bpmn.intellij.plugin.core.events.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
-import com.valb3r.bpmn.intellij.plugin.core.id
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstColumnReadOnlyModel
-import java.util.concurrent.ConcurrentHashMap
+import java.util.*
 import javax.swing.JComponent
 import javax.swing.JTable
 
-private val visualizer = ConcurrentHashMap<String, PropertiesVisualizer>()
+private val visualizer = Collections.synchronizedMap(WeakHashMap<Project,  PropertiesVisualizer>())
 
 interface TextValueAccessor {
     val text: String
@@ -35,13 +34,13 @@ fun newPropertiesVisualizer(
                             editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor): PropertiesVisualizer {
-    return visualizer.computeIfAbsent(project.id()) {
+    return visualizer.computeIfAbsent(project) {
         PropertiesVisualizer(project, table, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
     }
 }
 
 fun propertiesVisualizer(project: Project): PropertiesVisualizer {
-    return visualizer[project.id()]!!
+    return visualizer[project]!!
 }
 
 class PropertiesVisualizer(

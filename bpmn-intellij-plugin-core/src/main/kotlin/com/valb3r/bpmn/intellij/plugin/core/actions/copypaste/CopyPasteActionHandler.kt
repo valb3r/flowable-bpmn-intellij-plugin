@@ -30,17 +30,17 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
 
-private val copyPasteActionHandler = ConcurrentHashMap<String, CopyPasteActionHandler>()
+private val copyPasteActionHandler = Collections.synchronizedMap(WeakHashMap<Project,  CopyPasteActionHandler>())
 
 fun copyPasteActionHandler(project: Project): CopyPasteActionHandler {
-    return copyPasteActionHandler.computeIfAbsent(project.id()) {
+    return copyPasteActionHandler.computeIfAbsent(project) {
         CopyPasteActionHandler(DefaultSystemClipboard(Toolkit.getDefaultToolkit().systemClipboard))
     }
 }
 
 @VisibleForTesting
 fun setCopyPasteActionHandler(project: Project, handler: CopyPasteActionHandler) {
-    copyPasteActionHandler[project.id()] = handler
+    copyPasteActionHandler[project] = handler
 }
 
 val DATA_FLAVOR = DataFlavor("text/flowable-alike-bpmn-plugin-intellij", "Flowable (plugin family) BPMN IntelliJ editor plugin clipboard data")

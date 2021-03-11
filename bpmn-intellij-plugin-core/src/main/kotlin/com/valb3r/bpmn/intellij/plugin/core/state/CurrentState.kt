@@ -15,16 +15,15 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.mappers.MapTransactionalSubproce
 import com.valb3r.bpmn.intellij.plugin.core.events.BooleanUiOnlyValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.ProcessModelUpdateEvents
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
-import com.valb3r.bpmn.intellij.plugin.core.id
 import com.valb3r.bpmn.intellij.plugin.core.properties.uionly.UiOnlyPropertyType
 import com.valb3r.bpmn.intellij.plugin.core.render.EdgeElementState
 import org.mapstruct.factory.Mappers
-import java.util.concurrent.ConcurrentHashMap
+import java.util.*
 
-private val currentStateProvider = ConcurrentHashMap<String, CurrentStateProvider>()
+private val currentStateProvider = Collections.synchronizedMap(WeakHashMap<Project,  CurrentStateProvider>())
 
 fun currentStateProvider(project: Project): CurrentStateProvider {
-    return currentStateProvider.computeIfAbsent(project.id()) {
+    return currentStateProvider.computeIfAbsent(project) {
         CurrentStateProvider(project)
     }
 }

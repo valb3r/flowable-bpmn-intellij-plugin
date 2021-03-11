@@ -5,18 +5,18 @@ import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.popupMenuProvider
 import java.awt.event.*
 import java.awt.geom.Point2D
-import java.util.concurrent.ConcurrentHashMap
+import java.util.*
 import javax.swing.SwingUtilities
 
-private val mouseEventHandler = ConcurrentHashMap<String, MouseEventHandler>()
+private val mouseEventHandler = Collections.synchronizedMap(WeakHashMap<Project,  MouseEventHandler>())
 
 fun currentMouseEventHandler(project: Project): MouseEventHandler {
-    return mouseEventHandler[project.id()]!!
+    return mouseEventHandler[project]!!
 }
 
 fun setCurrentMouseEventHandler(project: Project, canvas: Canvas): MouseEventHandler {
     val handler = MouseEventHandler(project, canvas)
-    mouseEventHandler[project.id()] = handler
+    mouseEventHandler[project] = handler
     return handler
 }
 

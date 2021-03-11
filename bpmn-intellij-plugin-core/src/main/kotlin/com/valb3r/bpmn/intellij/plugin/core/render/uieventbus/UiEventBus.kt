@@ -2,23 +2,23 @@ package com.valb3r.bpmn.intellij.plugin.core.render.uieventbus
 
 import com.google.common.annotations.VisibleForTesting
 import com.intellij.openapi.project.Project
-import com.valb3r.bpmn.intellij.plugin.core.id
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.reflect.KClass
 
-private val uiEventBus = ConcurrentHashMap<String, UiEventBus>()
+private val uiEventBus = Collections.synchronizedMap(WeakHashMap<Project,  UiEventBus>())
 
 fun currentUiEventBus(project: Project): UiEventBus {
-    return uiEventBus.computeIfAbsent(project.id()) {
+    return uiEventBus.computeIfAbsent(project) {
         UiEventBus()
     }
 }
 
 @VisibleForTesting
 fun setUiEventBus(project: Project, eventBus: UiEventBus): UiEventBus {
-    uiEventBus[project.id()] = eventBus
+    uiEventBus[project] = eventBus
     return eventBus
 }
 

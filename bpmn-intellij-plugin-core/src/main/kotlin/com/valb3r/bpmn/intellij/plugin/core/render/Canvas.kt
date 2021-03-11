@@ -9,7 +9,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
-import com.valb3r.bpmn.intellij.plugin.core.id
 import com.valb3r.bpmn.intellij.plugin.core.properties.PropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.BaseEdgeRenderElement
@@ -22,7 +21,7 @@ import java.awt.RenderingHints
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
-import java.util.concurrent.ConcurrentHashMap
+import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.swing.JPanel
 import kotlin.math.abs
@@ -30,10 +29,10 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
-private val currentCanvas = ConcurrentHashMap<String, Canvas>()
+private val currentCanvas = Collections.synchronizedMap(WeakHashMap<Project,  Canvas>())
 
 fun currentCanvas(project: Project): Canvas {
-    return currentCanvas.computeIfAbsent(project.id()) {
+    return currentCanvas.computeIfAbsent(project) {
         Canvas(project, DefaultCanvasConstants())
     }
 }
@@ -44,7 +43,7 @@ fun allCanvas(): Collection<Canvas> {
 
 @VisibleForTesting
 fun setCanvas(project: Project, canvas: Canvas): Canvas {
-    currentCanvas[project.id()] = canvas
+    currentCanvas[project] = canvas
     return canvas
 }
 

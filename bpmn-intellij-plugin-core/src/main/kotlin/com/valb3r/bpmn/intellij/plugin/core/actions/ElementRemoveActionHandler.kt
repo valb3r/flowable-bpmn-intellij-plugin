@@ -4,16 +4,15 @@ import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DiagramElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
-import com.valb3r.bpmn.intellij.plugin.core.id
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
-import java.util.concurrent.ConcurrentHashMap
+import java.util.*
 
-private val currentRemoveActionHandler = ConcurrentHashMap<String, ElementRemoveActionHandler>()
+private val currentRemoveActionHandler = Collections.synchronizedMap(WeakHashMap<Project,  ElementRemoveActionHandler>())
 
 fun currentRemoveActionHandler(project: Project): ElementRemoveActionHandler {
-    return currentRemoveActionHandler.computeIfAbsent(project.id()) {
+    return currentRemoveActionHandler.computeIfAbsent(project) {
         ElementRemoveActionHandler(project)
     }
 }
