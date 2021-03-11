@@ -274,6 +274,14 @@
         <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.flowable.langinjection.xml.FlowableXmlFlowableInjector"/>
     </extensions>
 
+    <!-- Settings screen -->
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationConfigurable parentId="tools" instance="com.valb3r.bpmn.intellij.plugin.core.settings.BpmnPluginSettingsConfigurable"
+                                 id="com.valb3r.bpmn.intellij.plugin.core.settings.BpmnPluginSettingsConfigurable"
+                                 displayName="Flowable BPMN plugin config"/>
+        <applicationService serviceImplementation="com.valb3r.bpmn.intellij.plugin.core.settings.BpmnPluginSettingsState"/>
+    </extensions>
+
     <!-- Extensions which the plugin adds to extension points defined by the IntelliJ Platform or by other plugins.
          The "defaultExtensionNs " attribute must be set to the ID of the plugin defining the extension point,
          or to "com.intellij" if the extension point is defined by the IntelliJ Platform. The name of the tag
