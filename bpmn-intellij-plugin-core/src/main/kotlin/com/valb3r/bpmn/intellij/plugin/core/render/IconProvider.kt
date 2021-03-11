@@ -76,7 +76,9 @@ fun currentIconProvider(): IconProvider {
     }
 }
 
-private fun String.asResource(): String? = DefaultBpmnProcessRenderer::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
+// Attempt to solve https://github.com/valb3r/flowable-bpmn-intellij-plugin/issues/217
+// Use https://github.com/JetBrains/gradle-intellij-plugin/issues/425#issuecomment-524805655
+private fun String.asResource(): String? = DefaultBpmnProcessRenderer::class.java.getResource(this)?.readText(StandardCharsets.UTF_8)
 
 data class IconProviderImpl(
         override val undo: Icon = IconLoader.getIcon("/icons/actions/undo.png"),
