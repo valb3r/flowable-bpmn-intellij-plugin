@@ -7,9 +7,9 @@ import java.util.*
 private val newElements = Collections.synchronizedMap(WeakHashMap<Project,  NewElementsProvider>())
 
 fun registerNewElementsFactory(project: Project, factory: BpmnObjectFactory): NewElementsProvider {
-    return newElements.computeIfAbsent(project) {
-        NewElementsProvider(factory)
-    }
+    val newFactory = NewElementsProvider(factory)
+    newElements[project] = NewElementsProvider(factory)
+    return newFactory
 }
 
 fun newElementsFactory(project: Project): NewElementsProvider {
