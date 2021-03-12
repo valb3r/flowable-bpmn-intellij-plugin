@@ -34,9 +34,9 @@ fun newPropertiesVisualizer(
                             editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor): PropertiesVisualizer {
-    return visualizer.computeIfAbsent(project) {
-        PropertiesVisualizer(project, table, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
-    }
+    val newVisualizer = PropertiesVisualizer(project, table, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
+    visualizer[project] = newVisualizer
+    return newVisualizer
 }
 
 fun propertiesVisualizer(project: Project): PropertiesVisualizer {
