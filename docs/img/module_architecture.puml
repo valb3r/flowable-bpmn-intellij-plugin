@@ -1,0 +1,62 @@
+@startuml
+
+skinparam ranksep 60
+skinparam nodesep 60
+skinparam linetype ortho
+
+node flowable_xml_parser [
+<b>flowable-xml-parser</b>
+--
+Provides parser to parse Flowable XML
+model into dialect-agnostic format
+]
+
+node activiti_xml_parser [
+<b>activiti-xml-parser</b>
+--
+Provides parser to parse Activiti XML
+model into dialect-agnostic format
+]
+
+node xml_parser_api [
+<b>xml-parser-api</b>
+--
+Provides dialect-agnostic DTOs
+that represent BPMN model
+]
+
+node bpmn_intellij_plugin_core [
+<b>bpmn-intellij-plugin-core</b>
+--
+Provides core rendering and element
+manipulation logic
+]
+
+node flowable_intellij_plugin [
+<b>flowable-intellij-plugin</b>
+--
+Provides final IntelliJ plugin deliverable
+for Flowable-BPMN and relevant customizations
+(flowable-intellij-plugin/build/distributions)
+]
+
+node activiti_intellij_plugin [
+<b>activiti-intellij-plugin</b>
+--
+Provides final IntelliJ plugin deliverable
+for Activiti-BPMN and relevant customizations
+(activiti-intellij-plugin/build/distributions)
+]
+
+
+flowable_intellij_plugin --> flowable_xml_parser
+flowable_intellij_plugin --> xml_parser_api
+flowable_intellij_plugin --> bpmn_intellij_plugin_core
+activiti_intellij_plugin --> activiti_xml_parser
+activiti_intellij_plugin --> xml_parser_api
+activiti_intellij_plugin --> bpmn_intellij_plugin_core
+bpmn_intellij_plugin_core --> xml_parser_api
+flowable_xml_parser --> xml_parser_api
+activiti_xml_parser --> xml_parser_api
+
+@enduml

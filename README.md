@@ -9,18 +9,6 @@ To clarify how and why `*.xml` is used for BPMN diagrams when dedicated modelers
 add your comments on the `*.xml` file usage in this ticket: [#198](https://github.com/valb3r/flowable-bpmn-intellij-plugin/issues/198)
 
 
-# News
-
-- 2020-10-17. From now this repository also ships plugin for **Activiti BPMN** (6.x and older), available 
-at [jetbrains-plugin-repository](https://plugins.jetbrains.com/plugin/15222-activiti-bpmn-visualizer). 
-User interface usage flow is the same as one for the **Flowable** plugin, so one can use instruction videos presented 
-below. 
-
-- 2020-10-17. From version 0.4.3 (of both plugins) it can be possible to migrate your BPMN 
-diagrams from Activiti to Flowable (and vice-versa) using copy-paste between two Activiti and Flowable,
-please vote for this feature by thumbsup:  https://github.com/valb3r/flowable-bpmn-intellij-plugin/issues/195
-
-
 # What is this
 
 This project provides plugin for [Flowable BPMN engine](https://github.com/flowable/flowable-engine) process editor integration into IntelliJ,
@@ -162,9 +150,19 @@ select 'Paste' popup menu item
 
 **A**: Check [this link](https://github.com/valb3r/flowable-bpmn-intellij-plugin/projects/1) for the status of your feature. 
 If it is in 'Done' (or Closed) column this doesn't mean it is released - it must proceed to next columns to appear in 
-any kind of release-artifact. After feature is 'Closed' it will wait for GitHub release 
+any kind of release-artifact. After a feature is 'Closed' it will wait for GitHub release 
 at [Releases](https://github.com/valb3r/flowable-bpmn-intellij-plugin/releases) page and after that it will be 
 published to JetBrains marketplace. It can take up to two days for plugin to be available on JetBrains marketplace.
+
+
+# Technical details
+
+
+## Architectural diagrams
+
+### Plugin modules
+
+![Modules diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/valb3r/flowable-bpmn-intellij-plugin/master/docs/diagrams/module_achitecture.puml&fmt=svg&vvv=1&sanitize=true)
 
 
 # Flowable XML subset support
