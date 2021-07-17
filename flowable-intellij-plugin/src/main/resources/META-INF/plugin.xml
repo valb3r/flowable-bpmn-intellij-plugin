@@ -4,7 +4,7 @@
     <name>Flowable BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.4.6</version>
+    <version>0.4.6.1</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -36,6 +36,12 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+      <p>0.4.6.1:</p>
+        <ul>
+          <li>
+            Preserve &lt;documentation&gt; element formatting
+          </li>
+        </ul>
       <p>0.4.6:</p>
         <ul>
           <li>
@@ -62,21 +68,6 @@
           </li>
           <li>
             Jump through properties in table with TAB
-          </li>
-        </ul>
-      <p>0.4.4.1:</p>
-        <ul>
-          <li>
-            Hotfix for 'Template not found: Flowable BPMN 2.0 diagram' that prevents plugin to start
-          </li>
-        </ul>
-      <p>0.4.4:</p>
-        <ul>
-          <li>
-            Fixed bug that boundary events and alike couldn't have attached sequence flow element
-          </li>
-          <li>
-            Fixed MismatchedInputException when parsing failedJobRetryTimeCycle
           </li>
         </ul>
     ]]></change-notes>
