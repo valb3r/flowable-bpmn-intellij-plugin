@@ -28,6 +28,7 @@ apply plugin: 'kotlin-kapt'
 
 dependencies {
     api project(":xml-parser-api")
+    implementation project(":xml-parser-core")
 
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.10.1'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.10.1'
