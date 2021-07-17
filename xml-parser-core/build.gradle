@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+group 'com.valb3r.bpmn.intellij.plugin'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'java'
+
+dependencies {
+    api 'org.dom4j:dom4j:2.0.0' // Implementation comes from IntelliJ
+}

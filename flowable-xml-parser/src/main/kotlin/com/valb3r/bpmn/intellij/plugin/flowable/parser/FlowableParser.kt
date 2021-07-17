@@ -35,13 +35,13 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.CustomizedXmlWriter
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnFile
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.DiagramNode
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.ProcessNode
 import org.dom4j.*
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.SAXReader
-import org.dom4j.io.XMLWriter
 import java.awt.geom.Point2D
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -176,11 +176,8 @@ class FlowableParser : BpmnParser {
 
         val format = OutputFormat.createPrettyPrint()
         format.isPadText = false
-        format.isNewLineAfterDeclaration = true
-        format.isTrimText = false
-        format.isNewlines = false
-        format.isExpandEmptyElements = false
-        val writer = XMLWriter(os, format)
+        format.isNewLineAfterDeclaration = false
+        val writer = CustomizedXmlWriter(os, format)
         writer.write(doc)
     }
 
