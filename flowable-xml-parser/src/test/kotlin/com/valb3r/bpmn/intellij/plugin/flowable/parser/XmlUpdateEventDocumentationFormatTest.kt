@@ -1,9 +1,9 @@
-package com.valb3r.bpmn.intellij.plugin.activiti.parser
+package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BpmnElementRemovedEvent
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeNull
 import org.junit.jupiter.api.Test
@@ -13,7 +13,7 @@ class XmlUpdateEventDocumentationFormatTest {
     private val startEventId = "startevent1"
     private val documentationProcessName = "documentation-element-formatting.bpmn20.xml"
 
-    private val parser = ActivitiParser()
+    private val parser = FlowableParser()
 
     @Test
     fun `Removing element does not break 'documentation' element formatting`() {

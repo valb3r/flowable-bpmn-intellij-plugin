@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="ELEKTRONISCHER_ANTRAG">
+    <process id="m40191.SBWS-CallActivity-PdfGenerator-MapParameter" name="SBWS-CallActivity-PdfGenerator-Map-Parameter" isExecutable="true">
+        <startEvent id="startevent1" name="Start"></startEvent>
+        <scriptTask id="sid-0152746A-45A2-485C-B831-B05EF4B71BC8" name="Evaluate Map" scriptFormat="groovy" flowable:autoStoreVariables="false">
+            <documentation>Subprocess to evaluate an incoming map.
+
+                In:
+                testMap - to be passed in by caller</documentation>
+            <script><![CDATA[log = org.slf4j.LoggerFactory.getLogger("com.example.EvaluateMap");
+def map= execution.getVariable("testMap")
+
+log.info(map)
+log.info("${testMap}")]]></script>
+        </scriptTask>
+        <sequenceFlow id="sid-76A2706A-8FF4-4CF4-8EFE-15494A17A256" sourceRef="startevent1" targetRef="sid-0152746A-45A2-485C-B831-B05EF4B71BC8"></sequenceFlow>
+        <endEvent id="sid-85B92D35-1ACD-49D3-83F0-F5C63CD1ECA9"></endEvent>
+        <sequenceFlow id="sid-6F09B97C-576A-4157-B5C7-97F870886832" sourceRef="sid-0152746A-45A2-485C-B831-B05EF4B71BC8" targetRef="sid-85B92D35-1ACD-49D3-83F0-F5C63CD1ECA9"></sequenceFlow>
+    </process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_m40191.SBWS-CallActivity-PdfGenerator-MapParameter">
+        <bpmndi:BPMNPlane bpmnElement="m40191.SBWS-CallActivity-PdfGenerator-MapParameter" id="BPMNPlane_m40191.SBWS-CallActivity-PdfGenerator-MapParameter">
+            <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+                <omgdc:Bounds height="30.0" width="30.0" x="142.0" y="85.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-0152746A-45A2-485C-B831-B05EF4B71BC8" id="BPMNShape_sid-0152746A-45A2-485C-B831-B05EF4B71BC8">
+                <omgdc:Bounds height="80.0" width="100.0" x="255.0" y="60.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-85B92D35-1ACD-49D3-83F0-F5C63CD1ECA9" id="BPMNShape_sid-85B92D35-1ACD-49D3-83F0-F5C63CD1ECA9">
+                <omgdc:Bounds height="28.0" width="28.0" x="400.0" y="86.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNEdge bpmnElement="sid-6F09B97C-576A-4157-B5C7-97F870886832" id="BPMNEdge_sid-6F09B97C-576A-4157-B5C7-97F870886832">
+                <omgdi:waypoint x="355.0" y="100.0"></omgdi:waypoint>
+                <omgdi:waypoint x="400.0" y="100.0"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge bpmnElement="sid-76A2706A-8FF4-4CF4-8EFE-15494A17A256" id="BPMNEdge_sid-76A2706A-8FF4-4CF4-8EFE-15494A17A256">
+                <omgdi:waypoint x="172.0" y="100.0"></omgdi:waypoint>
+                <omgdi:waypoint x="255.0" y="100.0"></omgdi:waypoint>
+            </bpmndi:BPMNEdge>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</definitions>
