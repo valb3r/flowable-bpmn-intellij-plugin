@@ -16,6 +16,13 @@ class XmlUpdateEventDocumentationFormatTest {
     private val parser = FlowableParser()
 
     @Test
+    fun `Parsing respects newline formatting`() {
+        val originalProcess = documentationProcessName.asResource()!!
+        val updated = parser.update(documentationProcessName.asResource()!!, listOf())
+        originalProcess.count { it == '\n' }.shouldBeEqualTo(updated.count { it == '\n' })
+    }
+
+    @Test
     fun `Removing element does not break 'documentation' element formatting`() {
         val originalProcess = readProcess()
         val updatedProcess = readAndUpdateProcess(BpmnElementRemovedEvent(BpmnElementId(startEventId)))

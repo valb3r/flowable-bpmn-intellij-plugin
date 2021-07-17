@@ -176,8 +176,10 @@ class FlowableParser : BpmnParser {
 
         val format = OutputFormat.createPrettyPrint()
         format.isPadText = false
-        format.isNewLineAfterDeclaration = false
+        format.isNewLineAfterDeclaration = true
         format.isTrimText = false
+        format.isNewlines = false
+        format.isExpandEmptyElements = false
         val writer = XMLWriter(os, format)
         writer.write(doc)
     }
