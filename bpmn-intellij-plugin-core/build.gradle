@@ -32,7 +32,7 @@ dependencies {
 
     implementation project(":xml-parser-api")
 
-    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.12.0'
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.10.1'
 
     // Tests
     testImplementation project(':flowable-xml-parser')
