@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.core.render
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.cache.CacheBuilder
 import com.intellij.openapi.project.Project
+import com.intellij.ui.JBColor
 import com.intellij.util.ui.UIUtil
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -16,6 +17,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.BaseEdgeRender
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
+import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
@@ -123,10 +125,14 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
 
     fun renderToBitmap() : BufferedImage? {
         val doRender = { image: BufferedImage, ctx: ElementInteractionContext, camera: Camera ->
+            val graphics = setupGraphicsAntialiasing(image.createGraphics())
+            // fill the background for entire canvas
+            graphics.color = Colors.TRANSPARENT.color
+            graphics.fillRect(0, 0, image.width, image.height)
             renderer?.renderOnlyDiagram(
                 RenderContext(
                     project,
-                    CanvasPainter(setupGraphicsAntialiasing(image.createGraphics()), camera, cachedIcons),
+                    CanvasPainter(graphics, camera, cachedIcons),
                     setOf(),
                     ctx,
                     stateProvider
@@ -147,7 +153,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         val renderedImage = UIUtil.createImage(
             (width * borderSpaceCoeff).toInt(),
             (height * borderSpaceCoeff).toInt(),
-            BufferedImage.TYPE_INT_RGB
+            BufferedImage.TYPE_INT_ARGB
         )
         doRender(
             renderedImage,

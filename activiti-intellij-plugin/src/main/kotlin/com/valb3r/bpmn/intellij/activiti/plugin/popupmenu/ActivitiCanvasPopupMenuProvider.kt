@@ -29,6 +29,7 @@ import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyPasteActionHan
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteFromClipboard
+import com.valb3r.bpmn.intellij.plugin.core.actions.saveDiagramToPng
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.CanvasPopupMenuProvider
 import java.awt.event.ActionListener
@@ -43,6 +44,7 @@ class ActivitiCanvasPopupMenuProvider(private val project: Project) : CanvasPopu
     private val COPY = IconLoader.getIcon("/icons/actions/copy.png")
     private val CUT = IconLoader.getIcon("/icons/actions/cut.png")
     private val PASTE = IconLoader.getIcon("/icons/actions/paste.png")
+    private val SAVE_TO_PNG = IconLoader.getIcon("/icons/actions/save-to-png.png")
 
     // Events
     // Start
@@ -107,6 +109,7 @@ class ActivitiCanvasPopupMenuProvider(private val project: Project) : CanvasPopu
         popup.add(intermediateCatchingEvents(sceneLocation, parent))
         popup.add(intermediateThrowingEvents(sceneLocation, parent))
         popup.add(endEvents(sceneLocation, parent))
+        addItem(popup, "Save to PNG", SAVE_TO_PNG, ActionListener { saveDiagramToPng(project) })
         return popup
     }
 
