@@ -45,6 +45,7 @@ import javax.swing.Icon
 
 interface BpmnProcessRenderer {
     fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
+    fun renderOnlyDiagram(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
 }
 
 private val lastState = Collections.synchronizedMap(WeakHashMap<Project,  RenderedState>())
@@ -98,17 +99,25 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
 
     override fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+        return doRender(ctx)
+    }
+
+    override fun renderOnlyDiagram(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+        return doRender(ctx, true)
+    }
+
+    private fun doRender(ctx: RenderContext, onlyDiagram: Boolean = false): MutableMap<DiagramElementId, AreaWithZindex> {
         val elementsByDiagramId = mutableMapOf<DiagramElementId, BaseDiagramRenderElement>()
         val currentState = ctx.stateProvider.currentState()
         val history = currentDebugger(project)?.executionSequence(project, currentState.processId.id)?.history ?: emptyList()
         val state = RenderState(
-                elementsByDiagramId,
-                currentState,
-                history,
-                ctx,
-                icons
+            elementsByDiagramId,
+            currentState,
+            history,
+            ctx,
+            icons
         )
-        
+
         val elements = mutableListOf<BaseBpmnRenderElement>()
         val elementsById = mutableMapOf<BpmnElementId, BaseDiagramRenderElement>()
         val root = createRootProcessElem(state, elements, elementsById)
@@ -121,6 +130,10 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         root.applyContextChangesAndPrecomputeExpandViewTransform()
         val rendered = root.render()
         val modelRect = computeModelRect(rendered.values)
+
+        if (onlyDiagram) {
+            return rendered
+        }
 
         // Overlay system elements on top of rendered BPMN diagram
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
