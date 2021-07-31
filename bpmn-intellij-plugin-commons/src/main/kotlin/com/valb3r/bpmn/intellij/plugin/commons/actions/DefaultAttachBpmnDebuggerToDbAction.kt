@@ -74,7 +74,7 @@ abstract class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger
     private fun fetchFromDb(project: Project, processId: String): ExecutedElements? {
         try {
             val connProvider = DbImplUtil.getDatabaseConnection(schema, DGDepartment.INTROSPECTION)?.get()
-            // Old IntelliJ provides only getJdbcConnection
+            // TODO !COMPATIBILITY: Old IntelliJ provides only getJdbcConnection
             try {
                 val jdbcSupplier = connProvider?.javaClass?.getMethod("getJdbcConnection")
                 if (true != jdbcSupplier?.isAccessible) {
