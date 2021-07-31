@@ -23,7 +23,7 @@ fun isJreHiDPIEnabled(): Boolean {
         val jreHighDpiUtil = Class.forName("com.intellij.ui.JreHiDpiUtil")
         jreHighDpiUtil.getMethod("isJreHiDPIEnabled").invoke(null) as Boolean
     } catch (ex: Exception) {
-        // TODO com.intellij.util.ui.UIUtil.isJreHiDPIEnabled is scheduled for removal in 2021.3, keeping it as fallback for 2018.1
+        // TODO !COMPATIBILITY: com.intellij.util.ui.UIUtil.isJreHiDPIEnabled is scheduled for removal in 2021.3, keeping it as fallback for 2018.1
         val uiUtil = Class.forName("com.intellij.util.ui.UIUtil")
         uiUtil.getMethod("isJreHiDPIEnabled").invoke(null) as Boolean
     }
