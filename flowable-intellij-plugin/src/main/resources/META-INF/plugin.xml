@@ -4,7 +4,7 @@
     <name>Flowable BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.4.6.1</version>
+    <version>0.4.6.2</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -36,6 +36,15 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+      <p>0.4.6.2:</p>
+        <ul>
+          <li>
+            Capability to save diagram as PNG image (via context menu)
+          </li>
+          <li>
+            Stop using scheduled for removal JB API method (support 2021.3+)
+          </li>
+        </ul>
       <p>0.4.6.1:</p>
         <ul>
           <li>
@@ -55,19 +64,6 @@
           </li>
           <li>
             Added settings screen
-          </li>
-        </ul>
-      <p>0.4.5:</p>
-        <ul>
-          <li>
-            UI/UX improvements - added scroll bars, fit to window buttons
-          </li>
-          <li>
-            Keyboard shortcuts: Pan/Zoom(Arrow keys, Ctrl + / Ctrl -), Copy/Cut/Paste(Ctrl C / Ctrl V),
-            New element(Shift N), Delete element(delete key)
-          </li>
-          <li>
-            Jump through properties in table with TAB
           </li>
         </ul>
     ]]></change-notes>
