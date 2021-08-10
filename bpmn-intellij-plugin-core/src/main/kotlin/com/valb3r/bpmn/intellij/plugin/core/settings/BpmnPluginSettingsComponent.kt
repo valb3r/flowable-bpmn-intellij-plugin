@@ -20,6 +20,7 @@ class BpmnPluginSettingsComponent {
     private lateinit var uiFontSize: JSpinner
     private lateinit var dataFontName: JComboBox<String>
     private lateinit var dataFontSize: JSpinner
+    private lateinit var allowOpeningBpmnExtension: JCheckBox
 
     init {
         AutoCompleteDecorator.decorate(uiFontName)
@@ -45,6 +46,7 @@ class BpmnPluginSettingsComponent {
         lineThickness.value = state.lineThickness.asSlider()
         uiFontSize.value = state.uiFontSize
         dataFontSize.value = state.dataFontSize
+        allowOpeningBpmnExtension.isSelected = state.allowOpeningBpmnExtension
     }
 
     private fun populateFontComboboxes(actualUiFont: Font, actualDataFont: Font) {
@@ -84,6 +86,7 @@ class BpmnPluginSettingsComponent {
         uiFontSize.addChangeListener { state.uiFontSize = uiFontSize.value  as Int }
         dataFontName.addActionListener { state.dataFontName = dataFontName.selectedItem as String }
         dataFontSize.addChangeListener { state.dataFontSize = dataFontSize.value as Int }
+        allowOpeningBpmnExtension.addChangeListener { state.allowOpeningBpmnExtension = allowOpeningBpmnExtension.isSelected }
     }
 
     private fun Float.asSlider(): Int = (this * 100.0f).toInt()

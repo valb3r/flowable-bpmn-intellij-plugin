@@ -45,6 +45,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
 
         var dataFontSize = 12
         var dataFontName = "Consolas"
+        var allowOpeningBpmnExtension = false
 
         fun stateEquals(other: PluginStateData): Boolean {
             if (zoomMin != other.zoomMin) return false
@@ -55,6 +56,9 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             if (lineThickness != other.lineThickness) return false
             if (uiFontSize != other.uiFontSize) return false
             if (uiFontName != other.uiFontName) return false
+            if (dataFontSize != other.dataFontSize) return false
+            if (dataFontName != other.dataFontName) return false
+            if (allowOpeningBpmnExtension != other.allowOpeningBpmnExtension) return false
 
             return true
         }
@@ -71,6 +75,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             data.uiFontName = uiFontName
             data.dataFontSize = dataFontSize
             data.dataFontName = dataFontName
+            data.allowOpeningBpmnExtension = allowOpeningBpmnExtension
             return data
         }
     }
