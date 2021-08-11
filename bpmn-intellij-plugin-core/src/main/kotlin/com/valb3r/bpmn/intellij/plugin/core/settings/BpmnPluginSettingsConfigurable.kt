@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.settings
 
 import com.intellij.openapi.options.Configurable
+import com.intellij.openapi.options.ConfigurationException
 import com.valb3r.bpmn.intellij.plugin.core.render.allCanvas
 import javax.swing.JComponent
 
@@ -28,6 +29,11 @@ class BpmnPluginSettingsConfigurable : Configurable {
 
     override fun apply() {
         val bpmnPluginSettings: BaseBpmnPluginSettingsState = currentSettingsState()
+        val errors = pluginBpmnPluginSettingsComponent!!.isValid()
+        if (null != errors) {
+            throw ConfigurationException(errors)
+        }
+
         bpmnPluginSettings.pluginState = pluginBpmnPluginSettingsComponent!!.state.copy()
         allCanvas().forEach { it.repaint() }
     }

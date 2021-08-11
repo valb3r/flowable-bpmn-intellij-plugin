@@ -40,6 +40,7 @@ class ViewActivitiBpmnDiagramAction : AnAction() {
 
     private fun isValidFileName(fileName: String?): Boolean {
         val name = fileName ?: return false
-        return name.contains("bpmn20.xml") || (currentSettings().allowOpeningBpmnExtension && name.endsWith(".bpmn"))
+        val allowedExt = currentSettings().openExtensions
+        return allowedExt.any { name.endsWith(it) }
     }
 }
