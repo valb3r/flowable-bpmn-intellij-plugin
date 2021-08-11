@@ -3,9 +3,13 @@ package com.valb3r.bpmn.intellij.plugin.core.settings
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator
 import java.awt.Font
 import java.awt.GraphicsEnvironment
+import java.awt.event.FocusEvent
+import java.awt.event.FocusListener
 import javax.swing.*
 
-class BpmnPluginSettingsComponent {
+private const val DELIMITER = ","
+
+class BpmnPluginSettingsComponent() {
     lateinit var settingsPanel: JPanel
     var preferredFocusedComponent: JComponent
     var state = currentSettings().copy()
@@ -20,17 +24,30 @@ class BpmnPluginSettingsComponent {
     private lateinit var uiFontSize: JSpinner
     private lateinit var dataFontName: JComboBox<String>
     private lateinit var dataFontSize: JSpinner
+    private lateinit var openExtensions: JTextField
 
     init {
         AutoCompleteDecorator.decorate(uiFontName)
         AutoCompleteDecorator.decorate(dataFontName)
 
         preferredFocusedComponent = zoomMin
-        uiFontSize.model =  SpinnerNumberModel(10, 6, 32, 1)
-        dataFontSize.model =  SpinnerNumberModel(10, 6, 32, 1)
+        uiFontSize.model = SpinnerNumberModel(10, 6, 32, 1)
+        dataFontSize.model = SpinnerNumberModel(10, 6, 32, 1)
 
         bindDataFromModel()
         attachListeners()
+    }
+
+    fun isValid(): String? {
+        if (openExtensions.text.isBlank()) {
+            return "Extension list should not be blank"
+        }
+
+        if (extensions().any { it.isBlank() }) {
+            return "Extension should not be blank"
+        }
+
+        return null
     }
 
     private fun bindDataFromModel() {
@@ -45,6 +62,7 @@ class BpmnPluginSettingsComponent {
         lineThickness.value = state.lineThickness.asSlider()
         uiFontSize.value = state.uiFontSize
         dataFontSize.value = state.dataFontSize
+        openExtensions.text = state.openExtensions.joinToString(DELIMITER)
     }
 
     private fun populateFontComboboxes(actualUiFont: Font, actualDataFont: Font) {
@@ -81,10 +99,17 @@ class BpmnPluginSettingsComponent {
         keyboardLargeStep.addChangeListener { state.keyboardLargeStep = keyboardLargeStep.value.fromSlider() }
         lineThickness.addChangeListener { state.lineThickness = lineThickness.value.fromSlider() }
         uiFontName.addActionListener { state.uiFontName = uiFontName.selectedItem as String }
-        uiFontSize.addChangeListener { state.uiFontSize = uiFontSize.value  as Int }
+        uiFontSize.addChangeListener { state.uiFontSize = uiFontSize.value as Int }
         dataFontName.addActionListener { state.dataFontName = dataFontName.selectedItem as String }
         dataFontSize.addChangeListener { state.dataFontSize = dataFontSize.value as Int }
+        openExtensions.addFocusListener(object : FocusListener {
+            override fun focusGained(e: FocusEvent?) { /* NOP */}
+            override fun focusLost(e: FocusEvent?) { state.openExtensions = extensions()
+            }
+        })
     }
+
+    private fun extensions() = openExtensions.text.split(DELIMITER).toSet()
 
     private fun Float.asSlider(): Int = (this * 100.0f).toInt()
     private fun Int.fromSlider(): Float = this / 100.0f
