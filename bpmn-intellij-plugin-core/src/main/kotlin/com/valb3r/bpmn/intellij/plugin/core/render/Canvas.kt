@@ -159,7 +159,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
             renderedImage,
             interactionContext,
             Camera(
-                Point2D.Float(width * (1.0f - borderSpaceCoeff) / 2.0f, height * (1.0f - borderSpaceCoeff) / 2.0f),
+                Point2D.Float(width * (1.0f - borderSpaceCoeff) / 2.0f + minX, height * (1.0f - borderSpaceCoeff) / 2.0f + minY),
                 Point2D.Float(1.0f, 1.0f)
             )
         )
