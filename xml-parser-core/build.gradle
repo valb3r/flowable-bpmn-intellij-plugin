@@ -3,7 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
 
-group 'com.valb3r.bpmn.intellij.plugin'
+group = 'com.valb3r.bpmn.intellij.plugin'
 
 sourceCompatibility = 1.8
 

@@ -3,13 +3,11 @@ package com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
-import com.github.pozo.KotlinBuilder
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryEvent
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
-@KotlinBuilder
 data class BoundaryEvent(
         @JacksonXmlProperty(isAttribute = true) val id: String,
         @JacksonXmlProperty(isAttribute = true) val name: String?,

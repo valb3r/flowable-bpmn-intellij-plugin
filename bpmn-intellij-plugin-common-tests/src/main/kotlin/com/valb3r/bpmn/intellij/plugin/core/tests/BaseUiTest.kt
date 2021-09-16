@@ -5,8 +5,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.messages.MessageBus
 import com.intellij.util.messages.MessageBusConnection
 import com.nhaarman.mockitokotlin2.*
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.mock
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId

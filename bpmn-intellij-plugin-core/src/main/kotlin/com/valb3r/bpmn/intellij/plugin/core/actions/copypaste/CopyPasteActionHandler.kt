@@ -15,7 +15,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypo
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.events.*
-import com.valb3r.bpmn.intellij.plugin.core.id
 import com.valb3r.bpmn.intellij.plugin.core.render.EdgeElementState
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
@@ -27,7 +26,6 @@ import java.awt.datatransfer.*
 import java.awt.geom.Point2D
 import java.io.IOException
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
 
 private val copyPasteActionHandler = Collections.synchronizedMap(WeakHashMap<Project,  CopyPasteActionHandler>())
@@ -114,8 +112,13 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
             val updatedIds = mutableMapOf(BpmnElementId(ROOT_NAME) to parent)
             val updatedDiagramIds = mutableMapOf<DiagramElementId, DiagramElementId>()
 
-            val minX = context.shapes.map { it.shape.rectBounds().x}.min() ?: context.edges.map { min(it.edge.waypoint[0].x, it.edge.waypoint[it.edge.waypoint.size - 1].x) }.min() ?: 0.0f
-            val minY = context.shapes.map { it.shape.rectBounds().y}.min() ?: context.edges.map { min(it.edge.waypoint[0].y, it.edge.waypoint[it.edge.waypoint.size - 1].y) }.min() ?: 0.0f
+            val minX = context.shapes.map { it.shape.rectBounds().x }.minOrNull()
+                ?: context.edges.map { min(it.edge.waypoint[0].x, it.edge.waypoint[it.edge.waypoint.size - 1].x) }
+                    .minOrNull() ?: 0.0f
+            val minY = context.shapes.map { it.shape.rectBounds().y }.minOrNull()
+                ?: context.edges.map { min(it.edge.waypoint[0].y, it.edge.waypoint[it.edge.waypoint.size - 1].y) }
+                    .minOrNull()
+                ?: 0.0f
             val delta = Point2D.Float(sceneLocation.x - minX, sceneLocation.y - minY)
 
             val updatedShapes = updateShapes(delta, context.shapes, updatedIds, updatedDiagramIds)

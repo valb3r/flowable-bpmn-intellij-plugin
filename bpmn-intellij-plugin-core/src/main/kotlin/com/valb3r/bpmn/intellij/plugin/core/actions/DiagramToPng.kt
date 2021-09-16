@@ -4,6 +4,7 @@ import com.intellij.openapi.fileChooser.FileChooserFactory
 import com.intellij.openapi.fileChooser.FileSaverDescriptor
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
+import java.nio.file.Path
 import javax.imageio.ImageIO
 
 fun saveDiagramToPng(project: Project) {
@@ -11,6 +12,6 @@ fun saveDiagramToPng(project: Project) {
     val image = canvas.renderToBitmap() ?: return
     val descriptor = FileSaverDescriptor("Save Diagram To", "Save diagram to file", "png")
     val dialog = FileChooserFactory.getInstance().createSaveFileDialog(descriptor, project)
-    val dest = dialog.save(null, "diagram") ?: return
+    val dest = dialog.save(null as Path?, "diagram") ?: return
     ImageIO.write(image, "png", dest.file)
 }

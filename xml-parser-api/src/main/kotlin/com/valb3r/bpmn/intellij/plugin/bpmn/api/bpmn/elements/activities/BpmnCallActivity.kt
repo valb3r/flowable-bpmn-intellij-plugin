@@ -1,10 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities
 
-import com.github.pozo.KotlinBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
-@KotlinBuilder
 data class BpmnCallActivity(
         override val id: BpmnElementId,
         val name: String?,
@@ -22,10 +20,8 @@ data class BpmnCallActivity(
     }
 }
 
-@KotlinBuilder
 data class ExtensionElements(
         val out: List<OutExtensionElement>?
 )
 
-@KotlinBuilder
 data class OutExtensionElement(val source: String?, val target: String?)

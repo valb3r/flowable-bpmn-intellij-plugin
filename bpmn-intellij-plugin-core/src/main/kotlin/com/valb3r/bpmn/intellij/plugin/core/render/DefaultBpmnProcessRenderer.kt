@@ -263,19 +263,29 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
         val areas = state.ctx.selectedIds.mapNotNull { renderedArea[it] }
 
-        val minX = areas.map { it.area.bounds2D.minX }.min()?.toFloat()
-        val minY = areas.map { it.area.bounds2D.minY }.min()?.toFloat()
-        val maxX = areas.map { it.area.bounds2D.maxX }.max()?.toFloat()
-        val maxY = areas.map { it.area.bounds2D.maxY }.max()?.toFloat()
+        val minX = areas.map { it.area.bounds2D.minX }.minOrNull()?.toFloat()
+        val minY = areas.map { it.area.bounds2D.minY }.minOrNull()?.toFloat()
+        val maxX = areas.map { it.area.bounds2D.maxX }.maxOrNull()?.toFloat()
+        val maxY = areas.map { it.area.bounds2D.maxY }.maxOrNull()?.toFloat()
 
         // TODO: This currently does not support event cascading, so only plain elements can be removed
         if (null != minX && null != minY && null != maxX && null != maxY) {
             val ownerId = state.ctx.selectedIds.joinToString { it.id }
-            state.ctx.canvas.drawRectNoCameraTransform(Point2D.Float(minX, minY), maxX - minX, maxY - minY, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
+            state.ctx.canvas.drawRectNoCameraTransform(
+                Point2D.Float(minX, minY),
+                maxX - minX,
+                maxY - minY,
+                ACTION_AREA_STROKE,
+                Colors.ACTIONS_BORDER_COLOR.color
+            )
             val delId = DiagramElementId(ownerId).elemIdToRemove()
-            val deleteIconArea = state.ctx.canvas.drawIconNoCameraTransform(BoundsElement(maxX, minY, actionsIcoSize, actionsIcoSize), icons.recycleBin)
+            val deleteIconArea = state.ctx.canvas.drawIconNoCameraTransform(
+                BoundsElement(maxX, minY, actionsIcoSize, actionsIcoSize),
+                icons.recycleBin
+            )
             state.ctx.interactionContext.clickCallbacks[delId] = { currentRemoveActionHandler(project).deleteElem() }
-            renderedArea[delId] = AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, null)
+            renderedArea[delId] =
+                AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, null)
         }
     }
 
@@ -342,11 +352,11 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     }
 
     private fun computeModelRect(allRendered: Collection<AreaWithZindex>): Rectangle2D.Float {
-        val filter = {it: AreaWithZindex -> it.areaType != AreaType.PARENT_PROCESS_SHAPE }
-        val minX = allRendered.filter(filter).map { it.area.bounds2D.x }.min() ?: 0.0
-        val minY = allRendered.filter(filter).map { it.area.bounds2D.y }.min() ?: 0.0
-        val maxX = allRendered.filter(filter).map { it.area.bounds2D.x + it.area.bounds2D.width }.max() ?: 0.0
-        val maxY = allRendered.filter(filter).map { it.area.bounds2D.y + it.area.bounds2D.height }.max() ?: 0.0
+        val filter = { it: AreaWithZindex -> it.areaType != AreaType.PARENT_PROCESS_SHAPE }
+        val minX = allRendered.filter(filter).map { it.area.bounds2D.x }.minOrNull() ?: 0.0
+        val minY = allRendered.filter(filter).map { it.area.bounds2D.y }.minOrNull() ?: 0.0
+        val maxX = allRendered.filter(filter).map { it.area.bounds2D.x + it.area.bounds2D.width }.maxOrNull() ?: 0.0
+        val maxY = allRendered.filter(filter).map { it.area.bounds2D.y + it.area.bounds2D.height }.maxOrNull() ?: 0.0
 
         val cx = (maxX + minX).toFloat() / 2.0f
         val cy = (maxY + minY).toFloat() / 2.0f

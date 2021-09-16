@@ -1,48 +1,27 @@
-buildscript {
-    ext.kotlin_version = '1.3.72'
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm'
 }
 
-group 'com.valb3r.bpmn.intellij.plugin.core.tests'
+group = 'com.valb3r.bpmn.intellij.plugin.core.tests'
 
 sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
-apply plugin: 'idea'
-apply plugin: 'org.jetbrains.intellij'
-apply plugin: 'kotlin'
-apply plugin: 'kotlin-kapt'
-
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-
     implementation project(":xml-parser-api")
     implementation project(":bpmn-intellij-plugin-core")
 
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21"
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.10.1'
 
     implementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
-    implementation 'org.amshove.kluent:kluent:1.61'
+    implementation 'org.amshove.kluent:kluent:1.68'
     implementation 'org.mockito:mockito-inline:3.3.3'
     implementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
-}
-
-intellij {
-    version 'IU-2018.3'
 }
 
 sourceSets {

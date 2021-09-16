@@ -3,7 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
 
-group 'com.valb3r.bpmn.intellij.plugin'
+group = 'com.valb3r.bpmn.intellij.plugin'
 
 sourceCompatibility = 1.8
 
@@ -15,13 +15,11 @@ apply plugin: 'kotlin'
 apply plugin: 'kotlin-kapt'
 
 dependencies {
-    api 'com.github.pozo:mapstruct-kotlin:1.3.1.2'
-    kapt 'com.github.pozo:mapstruct-kotlin-processor:1.3.1.2'
     api 'com.fasterxml.jackson.core:jackson-annotations:2.12.1'
-    api "org.jetbrains.kotlin:kotlin-stdlib:1.3.72"
+    api "org.jetbrains.kotlin:kotlin-stdlib:1.5.30"
 
-    api 'org.mapstruct:mapstruct:1.3.1.Final'
-    kapt 'org.mapstruct:mapstruct-processor:1.3.1.Final'
+    api 'org.mapstruct:mapstruct:1.4.1.Final'
+    kapt 'org.mapstruct:mapstruct-processor:1.4.1.Final'
 }
 
 apply plugin: 'kotlin'

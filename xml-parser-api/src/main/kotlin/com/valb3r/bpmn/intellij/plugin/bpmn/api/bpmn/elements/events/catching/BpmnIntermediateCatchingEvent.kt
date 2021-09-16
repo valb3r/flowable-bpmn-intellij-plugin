@@ -1,11 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching
 
-import com.github.pozo.KotlinBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import java.time.LocalDateTime
 
-@KotlinBuilder
 data class BpmnIntermediateCatchingEvent(
         override val id: BpmnElementId,
         val name: String?,
