@@ -1,11 +1,13 @@
 package com.valb3r.bpmn.intellij.activiti.plugin
 
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
+import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.activiti.plugin.popupmenu.ActivitiCanvasPopupMenuProvider
 import com.valb3r.bpmn.intellij.activiti.plugin.xmlnav.ActivitiXmlNavigator
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiObjectFactory
@@ -25,6 +27,7 @@ class ActivitiBpmnPluginToolWindowFactory: ToolWindowFactory {
         registerPopupMenuProvider(project, ActivitiCanvasPopupMenuProvider(project))
         registerNewElementsFactory(project, ActivitiObjectFactory())
         val bpmnWindow = BpmnPluginToolWindow(project, ActivitiParser()) {
+            showNotificationBalloon(project, "Error", NotificationType.ERROR)
             registerCurrentFile(project, it)
             registerXmlNavigator(project, ActivitiXmlNavigator(project))
         }
