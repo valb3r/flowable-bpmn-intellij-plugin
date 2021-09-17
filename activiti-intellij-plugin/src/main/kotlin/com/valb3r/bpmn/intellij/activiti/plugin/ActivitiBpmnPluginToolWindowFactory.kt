@@ -26,8 +26,7 @@ class ActivitiBpmnPluginToolWindowFactory: ToolWindowFactory {
         log.info("Creating tool window content")
         registerPopupMenuProvider(project, ActivitiCanvasPopupMenuProvider(project))
         registerNewElementsFactory(project, ActivitiObjectFactory())
-        val bpmnWindow = BpmnPluginToolWindow(project, ActivitiParser()) {
-            showNotificationBalloon(project, "Error", NotificationType.ERROR)
+        val bpmnWindow = BpmnPluginToolWindow(project, ActivitiParser(), { showNotificationBalloon(project, it, NotificationType.ERROR) }) {
             registerCurrentFile(project, it)
             registerXmlNavigator(project, ActivitiXmlNavigator(project))
         }
