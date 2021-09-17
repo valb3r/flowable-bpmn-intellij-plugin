@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'org.jetbrains.intellij'
     id 'org.jetbrains.kotlin.jvm'
 }
 
@@ -22,6 +23,13 @@ dependencies {
     implementation 'org.amshove.kluent:kluent:1.68'
     implementation 'org.mockito:mockito-inline:3.3.3'
     implementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
+}
+
+intellij {
+    version = 'IU-2020.3'
+    // Build target 2020+ requires this - 2018 does not have 'java' plugin:
+    plugins = ['java', 'DatabaseTools']
+    //plugins = ['DatabaseTools'] // DatabaseTools is for BPMN process 'debugging'
 }
 
 sourceSets {
