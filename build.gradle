@@ -6,10 +6,10 @@ plugins {
 }
 
 ext {
-    intellijPlatform = 'IU-2020.3'
+    intellijPlatform = 'IU-2018.3'
     // Build target 2020+ requires this - 2018 does not have 'java' plugin:
-    intellijPlatformPlugins = ['java', 'DatabaseTools']
     //intellijPlatformPlugins = ['DatabaseTools'] // DatabaseTools is for BPMN process 'debugging'
+    intellijPlatformPlugins = ['DatabaseTools']
 
     kotlinStdlib = '1.5.30'
 
