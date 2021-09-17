@@ -13,7 +13,7 @@ fun genericShowNotificationBalloon(project: Project, groupId: String, text: Stri
         try {
             val notificationManagerClz = Class.forName("com.intellij.notification.NotificationGroupManager")
             val notificationManager = notificationManagerClz.getMethod("getInstance").invoke(null)
-            return@computeIfAbsent notificationManager.javaClass.getMethod("getNotificationGroup").invoke(notificationManager, groupId) as NotificationGroup
+            return@computeIfAbsent notificationManager.javaClass.getMethod("getNotificationGroup", String::class.java).invoke(notificationManager, groupId) as NotificationGroup
         } catch (ex: Exception) {
             // TODO !COMPATIBILITY - pre 2020.3 versions are missing NotificationGroupManager
             val notificationGroupClz = Class.forName("com.intellij.notification.NotificationGroup")
