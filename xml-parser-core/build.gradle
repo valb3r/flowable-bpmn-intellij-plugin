@@ -11,8 +11,6 @@ repositories {
     mavenCentral()
 }
 
-apply plugin: 'java'
-
 dependencies {
     api 'org.dom4j:dom4j:2.0.0' // Implementation comes from IntelliJ
 }

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'kotlin-kapt'
     id 'org.jetbrains.kotlin.jvm'
 }
 
@@ -11,9 +12,6 @@ repositories {
     mavenCentral()
 }
 
-apply plugin: 'kotlin'
-apply plugin: 'kotlin-kapt'
-
 dependencies {
     api 'com.fasterxml.jackson.core:jackson-annotations:2.12.1'
     api "org.jetbrains.kotlin:kotlin-stdlib:1.5.30"
@@ -21,5 +19,3 @@ dependencies {
     api 'org.mapstruct:mapstruct:1.4.1.Final'
     kapt 'org.mapstruct:mapstruct-processor:1.4.1.Final'
 }
-
-apply plugin: 'kotlin'
