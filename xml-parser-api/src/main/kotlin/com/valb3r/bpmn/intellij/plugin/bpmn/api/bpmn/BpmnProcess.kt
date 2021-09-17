@@ -1,6 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn
 
-import com.github.pozo.KotlinBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
@@ -19,7 +18,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParal
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 
-@KotlinBuilder
 data class BpmnProcessBody(
 
         // Events
@@ -96,7 +94,6 @@ data class BpmnProcessBody(
         val sequenceFlow: List<BpmnSequenceFlow>?
 )
 
-@KotlinBuilder
 data class BpmnProcess(
         override val id: BpmnElementId,
         val name: String?,

@@ -1,10 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks
 
-import com.github.pozo.KotlinBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
-@KotlinBuilder
 data class BpmnScriptTask(
         override val id: BpmnElementId,
         val name: String?,

@@ -149,6 +149,17 @@ class ActivitiParser : BpmnParser {
         return toProcessObject(dto)
     }
 
+    override fun validate(input: String): String? {
+        if (!input.contains("BPMNDiagram")) {
+            return "Unable to parse, missing BPMNDiagram XML tag that is required to build diagram"
+        }
+        if (!input.contains("BPMNPlane")) {
+            return "Unable to parse, missing BPMNPlane XML tag that is required to build diagram"
+        }
+
+        return null
+    }
+
     /**
      * Impossible to use FasterXML - Multiple objects of same type issue:
      * https://github.com/FasterXML/jackson-dataformat-xml/issues/205

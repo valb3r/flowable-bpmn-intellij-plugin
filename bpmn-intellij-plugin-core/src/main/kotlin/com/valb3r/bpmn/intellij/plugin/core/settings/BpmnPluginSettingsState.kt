@@ -8,7 +8,9 @@ val currentSettingsStateProvider = AtomicReference<() -> BaseBpmnPluginSettingsS
 fun currentSettingsState(): BaseBpmnPluginSettingsState {
     // This is required to access state this way, because ServiceManagerImpl.getComponentInstance -> ComponentStoreImpl.initComponent are
     // responsible for loading from XML
-    return currentSettingsStateProvider.get()()
+    // TODO this null-replacing dummy is is a hack for 'Searchable options index builder failed' java.lang.NullPointerException of build
+    val current = currentSettingsStateProvider.get() ?: return object : BaseBpmnPluginSettingsState() {}
+    return current()
 }
 
 fun currentSettings(): BaseBpmnPluginSettingsState.PluginStateData {

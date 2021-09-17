@@ -1,10 +1,30 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.6.5'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.72'
+    id 'org.jetbrains.intellij' version '1.1.6'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.30'
+    id 'org.jetbrains.kotlin.kapt' version '1.5.30'
 }
 
-group 'com.valb3r'
+ext {
+    intellijPlatform = 'IU-2018.3'
+    // Build target 2020+ requires this - 2018 does not have 'java' plugin:
+    //intellijPlatformPlugins = ['java', 'DatabaseTools'] // DatabaseTools is for BPMN process 'debugging'
+    intellijPlatformPlugins = ['DatabaseTools']
+
+    kotlinStdlib = '1.5.30'
+
+    mapstruct = '1.4.2.Final'
+    jackson = '2.10.1'
+    dom4j = '2.0.0'
+
+    junitJupiter = '5.6.2'
+    junitPlatformRunner = '1.6.2'
+    kluent = '1.68'
+    mockitoInline = '3.3.3'
+    mockitoKotlin = '2.2.0'
+}
+
+group = 'com.valb3r'
 
 sourceCompatibility = 1.8
 
@@ -12,18 +32,18 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
+intellij {
+    version = intellijPlatform
+    pluginName = 'flowable-bpmn-plugin'
+    updateSinceUntilBuild = false
+    plugins = intellijPlatformPlugins
 }
-
-apply plugin: 'idea'
-apply plugin: 'org.jetbrains.intellij'
-apply plugin: 'kotlin'
 
 allprojects {
     apply plugin: 'jacoco'
 
     jacoco {
-        toolVersion = '0.8.5'
+        toolVersion = '0.8.7'
     }
 }
 

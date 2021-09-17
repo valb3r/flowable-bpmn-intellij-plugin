@@ -1,11 +1,13 @@
 package com.valb3r.bpmn.intellij.plugin.flowable
 
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
+import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
 import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
@@ -27,7 +29,7 @@ class FlowableBpmnPluginToolWindowFactory: ToolWindowFactory {
         currentSettingsStateProvider.set { ServiceManager.getService(FlowableBpmnPluginSettingsState::class.java) }
         registerPopupMenuProvider(project, FlowableCanvasPopupMenuProvider(project))
         registerNewElementsFactory(project, FlowableObjectFactory())
-        val bpmnWindow = BpmnPluginToolWindow(project, FlowableParser()) {
+        val bpmnWindow = BpmnPluginToolWindow(project, FlowableParser(), { showNotificationBalloon(project, it, NotificationType.ERROR) }) {
             registerCurrentFile(project, it)
             registerXmlNavigator(project, FlowableXmlNavigator(project))
         }
