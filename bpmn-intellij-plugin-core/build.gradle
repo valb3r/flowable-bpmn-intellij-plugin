@@ -15,18 +15,19 @@ repositories {
 dependencies {
     implementation project(":xml-parser-api")
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21"
-    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.10.1'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson"
 
     // Tests
     testImplementation project(':flowable-xml-parser')
     testImplementation project(':bpmn-intellij-plugin-common-tests')
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
-    testImplementation 'org.junit.platform:junit-platform-runner:1.6.2'
-    testImplementation 'org.amshove.kluent:kluent:1.68'
-    testImplementation 'org.mockito:mockito-inline:3.3.3'
-    testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiter"
+    testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformRunner"
+    testImplementation "org.amshove.kluent:kluent:$kluent"
+    testImplementation "org.mockito:mockito-inline:$mockitoInline"
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlin"
 }
 
 sourceSets {
@@ -34,9 +35,9 @@ sourceSets {
 }
 
 intellij {
-    version = 'IU-2020.3'
+    version = intellijPlatform
     updateSinceUntilBuild = false
-    plugins = ['java', 'DatabaseTools']
+    plugins = intellijPlatformPlugins
 }
 
 compileKotlin {

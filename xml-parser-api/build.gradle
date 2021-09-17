@@ -13,9 +13,10 @@ repositories {
 }
 
 dependencies {
-    api 'com.fasterxml.jackson.core:jackson-annotations:2.12.1'
-    api "org.jetbrains.kotlin:kotlin-stdlib:1.5.30"
+    api "org.jetbrains.kotlin:kotlin-stdlib"
 
-    api 'org.mapstruct:mapstruct:1.4.1.Final'
-    kapt 'org.mapstruct:mapstruct-processor:1.4.1.Final'
+    api "com.fasterxml.jackson.core:jackson-annotations:$jackson"
+
+    api "org.mapstruct:mapstruct:$mapstruct"
+    kapt "org.mapstruct:mapstruct-processor:$mapstruct"
 }

@@ -12,5 +12,5 @@ repositories {
 }
 
 dependencies {
-    api 'org.dom4j:dom4j:2.0.0' // Implementation comes from IntelliJ
+    api "org.dom4j:dom4j:$dom4j" // Implementation comes from IntelliJ
 }
