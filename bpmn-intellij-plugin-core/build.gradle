@@ -66,10 +66,7 @@ test {
     }
 }
 
-jacoco {
-    // You may modify the Jacoco version here
-    toolVersion = "0.8.5"
-}
+
 
 jacocoTestReport {
     // Adjust the output of the test report
