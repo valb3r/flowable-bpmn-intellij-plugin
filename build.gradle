@@ -34,8 +34,6 @@ repositories {
 
 intellij {
     version = intellijPlatform
-    pluginName = 'flowable-bpmn-plugin'
-    updateSinceUntilBuild = false
     plugins = intellijPlatformPlugins
 }
 
