@@ -45,18 +45,6 @@ import java.nio.charset.StandardCharsets
 
 const val CDATA_FIELD = "CDATA"
 
-data class PropertyType(
-    val id: String,
-    val caption: String,
-    val valueType: PropertyValueType,
-    val path: String = id,
-    val cascades: Boolean = false,
-    val updatedBy: PropertyType? = null,
-    val updateOrder: Int = 0,
-    val elementUpdateChangesClass: Boolean = false,
-    val defaultValueIfNull: Any? = null
-)
-
 data class PropertyTypeDetails(
     val propertyType: PropertyType,
     val xmlPath: String,
