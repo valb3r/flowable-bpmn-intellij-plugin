@@ -21,6 +21,7 @@ dependencies {
 
     // Tests
     testImplementation project(':flowable-xml-parser')
+    testImplementation project(":xml-parser-core")
     testImplementation project(':bpmn-intellij-plugin-common-tests')
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiter"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiter"
