@@ -23,7 +23,7 @@ internal class ActivityParserDumbTest {
     private val diagramElementId = DiagramElementId(UUID.randomUUID().toString())
     
     @Test
-    fun `XML process with all Flowable elements is parseable without error`() {
+    fun `XML process with all Activiti elements is parseable without error`() {
         val processObject: BpmnProcessObject?
 
         processObject = ActivitiParser().parse("popurri.bpmn20.xml".asResource()!!)
