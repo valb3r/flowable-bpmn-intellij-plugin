@@ -141,10 +141,10 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         val interactionContext = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
         val dummyImage = UIUtil.createImage(1, 1, BufferedImage.TYPE_INT_RGB)
         val dimensions = doRender(dummyImage, interactionContext, Camera(Point2D.Float(0.0f, 0.0f), Point2D.Float(1.0f, 1.0f))) ?: return null
-        val maxX = dimensions.map { it.value.area.bounds2D.maxX }.maxOrNull()?.toInt() ?: return null
-        val minX = dimensions.map { it.value.area.bounds2D.minX }.minOrNull()?.toInt() ?: return null
-        val maxY = dimensions.map { it.value.area.bounds2D.maxY }.maxOrNull()?.toInt() ?: return null
-        val minY = dimensions.map { it.value.area.bounds2D.minY }.minOrNull()?.toInt() ?: return null
+        val maxX = dimensions.map { it.value.area.bounds2D.maxX }.max()?.toInt() ?: return null
+        val minX = dimensions.map { it.value.area.bounds2D.minX }.min()?.toInt() ?: return null
+        val maxY = dimensions.map { it.value.area.bounds2D.maxY }.max()?.toInt() ?: return null
+        val minY = dimensions.map { it.value.area.bounds2D.minY }.min()?.toInt() ?: return null
         val width = maxX - minX
         val height = maxY - minY
 
@@ -233,9 +233,9 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
 
     fun attractToAnchors(ctx: ElementInteractionContext): ElementInteractionContext {
         val cameraPoint = camera.toCameraView(ctx.dragCurrent)
-        val dragged = ctx.draggedIds.minByOrNull {
+        val dragged = ctx.draggedIds.minBy {
             val bounds = areaByElement?.get(it)?.area?.bounds2D ?: Rectangle2D.Float()
-            return@minByOrNull Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat()).distance(cameraPoint)
+            return@minBy Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat()).distance(cameraPoint)
         }
 
         val draggedArea = areaByElement?.get(dragged) ?: return ctx
@@ -286,11 +286,11 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         }
 
         val pointAnchor = anchors.filter { it.type == AnchorType.POINT }
-            .minByOrNull { it.anchor.distance(it.objectAnchor) }
+            .minBy { it.anchor.distance(it.objectAnchor) }
         val anchorX = anchors.filter { it.type == AnchorType.HORIZONTAL }
-            .minByOrNull { it.anchor.distance(it.objectAnchor) }
+            .minBy { it.anchor.distance(it.objectAnchor) }
         val anchorY = anchors.filter { it.type == AnchorType.VERTICAL }
-            .minByOrNull { it.anchor.distance(it.objectAnchor) }
+            .minBy { it.anchor.distance(it.objectAnchor) }
 
         val selectedAnchors: AnchorHit = if (null == pointAnchor) applyOrthoAnchors(anchorX, anchorY, ctx) else applyPointAnchor(pointAnchor, ctx)
         val allAnchors = selectedAnchors.copy(closeAnchors = closeAnchors.toList())
@@ -318,7 +318,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         val target = dragTargettableElements(cursorRect(point))
             .filter { !ctx.draggedIds.contains(it) }
             .filter { areas[it]?.areaType == AreaType.SHAPE || areas[it]?.areaType == AreaType.SHAPE_THAT_NESTS }
-            .maxByOrNull { it: DiagramElementId -> areas[it]?.index ?: ICON_Z_INDEX }
+            .maxBy { it: DiagramElementId -> areas[it]?.index ?: ICON_Z_INDEX }
 
         return ctx.copy(dragTargetedIds = if (null != target) setOf(target) else emptySet())
     }
@@ -463,13 +463,13 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
     private fun elemUnderCursor(cursorPoint: Point2D.Float, excludeAreas: Set<AreaType> = setOf(AreaType.PARENT_PROCESS_SHAPE)): List<DiagramElementId> {
         val withinRect = cursorRect(cursorPoint)
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
-        val maxZindex = intersection?.maxByOrNull { it: Map.Entry<DiagramElementId, AreaWithZindex> -> it.value.index }
+        val maxZindex = intersection?.maxBy { it: Map.Entry<DiagramElementId, AreaWithZindex> -> it.value.index }
         val result = mutableListOf<DiagramElementId>()
         val centerRect = Point2D.Float(withinRect.centerX.toFloat(), withinRect.centerY.toFloat())
         intersection
             ?.filter { !excludeAreas.contains(it.value.areaType) }
             ?.filter { it.value.index == maxZindex?.value?.index }
-            ?.minByOrNull { it: Map.Entry<DiagramElementId, AreaWithZindex> ->
+            ?.minBy { it: Map.Entry<DiagramElementId, AreaWithZindex> ->
                 Point2D.Float(
                     it.value.area.bounds2D.centerX.toFloat(),
                     it.value.area.bounds2D.centerY.toFloat()
@@ -508,7 +508,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
                 return@groupBy parent
             }
             val maxSize =
-                groupedByParent.maxByOrNull { it: Map.Entry<BaseBpmnRenderElement?, List<DiagramElementId>> -> it.value.size }
+                groupedByParent.maxBy { it: Map.Entry<BaseBpmnRenderElement?, List<DiagramElementId>> -> it.value.size }
             result.clear()
             result.addAll(maxSize?.value ?: emptyList())
         }

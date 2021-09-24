@@ -169,18 +169,21 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         return result
     }
 
+    protected open fun fillForSequenceFlow(activity: BpmnSequenceFlow): Map<PropertyType, Property> {
+        verifyConditionalExpressionInSequenceFlow(activity)
+        return processDtoToPropertyMap(activity)
+    }
+
+    protected open fun verifyConditionalExpressionInSequenceFlow(activity: BpmnSequenceFlow) {
+        if (null != activity.conditionExpression && activity.conditionExpression!!.type != "tFormalExpression") {
+            throw IllegalArgumentException("Unknown type: ${activity.conditionExpression!!.type}")
+        }
+    }
+
     private fun fillForCallActivity(activity: BpmnCallActivity): Map<PropertyType, Property> {
         val properties = processDtoToPropertyMap(activity)
         // TODO: handle extension elements
         return properties
-    }
-
-    private fun fillForSequenceFlow(activity: BpmnSequenceFlow): Map<PropertyType, Property> {
-        if (null != activity.conditionExpression && activity.conditionExpression!!.type != "tFormalExpression") {
-            throw IllegalArgumentException("Unknown type: ${activity.conditionExpression!!.type}")
-        }
-
-        return processDtoToPropertyMap(activity)
     }
 
     private fun tryParseNestedValue(

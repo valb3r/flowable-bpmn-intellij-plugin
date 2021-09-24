@@ -299,12 +299,12 @@ abstract class BaseBpmnParser: BpmnParser {
             )
 
             // Service tasks
-            is BpmnUserTask -> diagramParent.addElement("userTask")
-            is BpmnScriptTask -> diagramParent.addElement("scriptTask")
+            is BpmnUserTask -> diagramParent.addElement(modelNs().named("userTask"))
+            is BpmnScriptTask -> diagramParent.addElement(modelNs().named("scriptTask"))
             is BpmnServiceTask -> createServiceTask(diagramParent)
-            is BpmnBusinessRuleTask -> diagramParent.addElement("businessRuleTask")
-            is BpmnReceiveTask -> diagramParent.addElement("receiveTask")
-            is BpmnManualTask -> diagramParent.addElement("manualTask")
+            is BpmnBusinessRuleTask -> diagramParent.addElement(modelNs().named("businessRuleTask"))
+            is BpmnReceiveTask -> diagramParent.addElement(modelNs().named("receiveTask"))
+            is BpmnManualTask -> diagramParent.addElement(modelNs().named("manualTask"))
             is BpmnCamelTask -> createServiceTaskWithType(diagramParent, "camel")
             is BpmnHttpTask -> createServiceTaskWithType(diagramParent, "http")
             is BpmnMailTask -> createServiceTaskWithType(diagramParent, "mail")
@@ -381,7 +381,7 @@ abstract class BaseBpmnParser: BpmnParser {
     }
 
     private fun createServiceTaskWithType(elem: Element, type: String? = null): Element {
-        val newElem = elem.addElement("serviceTask")
+        val newElem = elem.addElement(modelNs().named("serviceTask"))
         type?.let { newElem.addAttribute(engineNs().named("type"), type) }
         return newElem
     }

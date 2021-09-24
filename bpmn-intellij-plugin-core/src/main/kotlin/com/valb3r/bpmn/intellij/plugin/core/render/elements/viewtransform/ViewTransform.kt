@@ -311,7 +311,7 @@ class ViewTransformInverter {
             minimizeGradientDescent(elementId, target, guess, batch, introspection)
         }
 
-        return result.minByOrNull { it: PointWithResidual -> it.residual }!!.point
+        return result.minBy { it: PointWithResidual -> it.residual }!!.point
     }
 
     private fun minimizeGradientDescent(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch, introspection: PointTransformationIntrospection): PointWithResidual {

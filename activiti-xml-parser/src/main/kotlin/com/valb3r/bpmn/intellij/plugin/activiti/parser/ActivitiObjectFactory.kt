@@ -4,14 +4,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnObjectFactory
 
-class ActivitiObjectFactory: BaseBpmnObjectFactory() {
+open class ActivitiObjectFactory: BaseBpmnObjectFactory() {
 
     override fun propertyTypes(): List<PropertyType> {
-        return PropertyType.values().toList()
+        return ActivitiPropertyTypeDetails.values().map { it.details.propertyType }
     }
 
     override fun processDtoToPropertyMap(dto: Any): MutableMap<PropertyType, Property> {
-        val result = super.processDtoToPropertyMap(dto);
+        val result = super.processDtoToPropertyMap(dto)
         result.remove(PropertyType.HEADERS)
         result.remove(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE)
         result.remove(PropertyType.IS_TRIGGERABLE)
