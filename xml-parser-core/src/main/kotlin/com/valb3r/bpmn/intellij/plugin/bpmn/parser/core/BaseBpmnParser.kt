@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin.flowable.parser
+package com.valb3r.bpmn.intellij.plugin.bpmn.parser.core
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.MapperFeature
@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
@@ -33,7 +34,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.CustomizedXmlWriter
 import org.dom4j.*
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.SAXReader
@@ -51,11 +51,11 @@ data class PropertyTypeDetails(
     val type: XmlType
 )
 
-abstract class BaseBpmnParser {
+abstract class BaseBpmnParser: BpmnParser {
 
-    abstract fun parse(input: String): BpmnProcessObject
+    abstract override fun parse(input: String): BpmnProcessObject
 
-    fun validate(input: String): String? {
+    override fun validate(input: String): String? {
         if (!input.contains("BPMNDiagram")) {
             return "Unable to parse, missing BPMNDiagram XML tag that is required to build diagram"
         }
@@ -70,7 +70,7 @@ abstract class BaseBpmnParser {
      * Impossible to use FasterXML - Multiple objects of same type issue:
      * https://github.com/FasterXML/jackson-dataformat-xml/issues/205
      */
-    fun update(input: String, events: List<EventPropagatableToXml>): String {
+    override fun update(input: String, events: List<EventPropagatableToXml>): String {
         val reader = SAXReader()
         val doc = reader.read(ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8)))
 

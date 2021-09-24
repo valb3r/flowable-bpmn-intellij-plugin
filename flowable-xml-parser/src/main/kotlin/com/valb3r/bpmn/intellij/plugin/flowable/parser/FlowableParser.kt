@@ -5,6 +5,10 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnParser
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.NS
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.PropertyTypeDetails
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.XmlType
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnFile
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.DiagramNode
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.ProcessNode
@@ -97,7 +101,7 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     FAILED_JOB_RETRY_CYCLE(PropertyTypeDetails(PropertyType.FAILED_JOB_RETRY_CYCLE, "extensionElements.flowable:failedJobRetryTimeCycle.text", XmlType.CDATA))
 }
 
-class FlowableParser : BpmnParser, BaseBpmnParser() {
+class FlowableParser : BaseBpmnParser() {
 
     private val mapper: XmlMapper = mapper()
 

@@ -17,6 +17,7 @@ dependencies {
 
     implementation project(":xml-parser-api")
     implementation project(":activiti-xml-parser")
+    implementation project(":xml-parser-core")
     implementation project(":bpmn-intellij-plugin-core")
     implementation project(":bpmn-intellij-plugin-commons")
 

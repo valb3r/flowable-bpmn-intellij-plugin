@@ -7,10 +7,10 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.DiagramNode
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.ProcessNode
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.BaseBpmnParser
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.NS
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.PropertyTypeDetails
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.XmlType
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnParser
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.NS
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.PropertyTypeDetails
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.XmlType
 import org.dom4j.Element
 
 
