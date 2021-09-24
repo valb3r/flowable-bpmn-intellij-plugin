@@ -13,9 +13,7 @@ repositories {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-
-    implementation project(":xml-parser-api")
+    implementation project(":xml-parser-core")
     implementation project(":activiti-xml-parser")
     implementation project(":bpmn-intellij-plugin-core")
     implementation project(":bpmn-intellij-plugin-commons")
