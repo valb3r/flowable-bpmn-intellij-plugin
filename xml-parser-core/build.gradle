@@ -25,11 +25,13 @@ dependencies {
 compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
+        apiVersion = kotlinApiVersion
     }
 }
 compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
+        apiVersion = kotlinApiVersion
     }
 }
 

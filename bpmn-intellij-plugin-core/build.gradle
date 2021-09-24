@@ -17,6 +17,7 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
+    implementation "com.fasterxml.jackson.core:jackson-databind:$jackson"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson"
 
     // Tests
@@ -44,11 +45,13 @@ intellij {
 compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
+        apiVersion = kotlinApiVersion
     }
 }
 compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
+        apiVersion = kotlinApiVersion
     }
 }
 

@@ -10,6 +10,7 @@ import com.intellij.ui.content.ContentFactory
 import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.activiti.plugin.popupmenu.ActivitiCanvasPopupMenuProvider
 import com.valb3r.bpmn.intellij.activiti.plugin.xmlnav.ActivitiXmlNavigator
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.Activiti7ObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
@@ -25,7 +26,7 @@ class ActivitiBpmnPluginToolWindowFactory: ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         log.info("Creating tool window content")
         registerPopupMenuProvider(project, ActivitiCanvasPopupMenuProvider(project))
-        registerNewElementsFactory(project, ActivitiObjectFactory())
+        registerNewElementsFactory(project, Activiti7ObjectFactory()) // FIXME is rather a hack, we need dynamic selection
         val bpmnWindow = BpmnPluginToolWindow(project, ActivitiParser(), { showNotificationBalloon(project, it, NotificationType.ERROR) }) {
             registerCurrentFile(project, it)
             registerXmlNavigator(project, ActivitiXmlNavigator(project))

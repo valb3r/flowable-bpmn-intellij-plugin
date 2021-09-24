@@ -359,7 +359,7 @@ abstract class ShapeRenderElement(
 
         return cartesianProduct(startAvailable, endAvailable)
             .filter { if (allowShapeIntersection) true else doesNotIntersectArea(it) }
-            .minByOrNull { it: Pair<Anchor, Anchor> -> it.first.point.distance(it.second.point) }
+            .minBy { it: Pair<Anchor, Anchor> -> it.first.point.distance(it.second.point) }
             ?.let { Pair(it.first.point, it.second.point) }
     }
 

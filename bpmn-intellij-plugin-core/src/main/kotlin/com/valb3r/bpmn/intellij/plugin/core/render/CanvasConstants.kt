@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.render
 
+import com.intellij.ui.JreHiDpiUtil
 import java.awt.geom.Point2D
 
 interface CanvasConstants {
@@ -19,12 +20,5 @@ data class DefaultCanvasConstants(
 ): CanvasConstants
 
 fun isJreHiDPIEnabled(): Boolean {
-    return try {
-        val jreHighDpiUtil = Class.forName("com.intellij.ui.JreHiDpiUtil")
-        jreHighDpiUtil.getMethod("isJreHiDPIEnabled").invoke(null) as Boolean
-    } catch (ex: Exception) {
-        // TODO !COMPATIBILITY: com.intellij.util.ui.UIUtil.isJreHiDPIEnabled is scheduled for removal in 2021.3, keeping it as fallback for 2018.1
-        val uiUtil = Class.forName("com.intellij.util.ui.UIUtil")
-        uiUtil.getMethod("isJreHiDPIEnabled").invoke(null) as Boolean
-    }
+    return JreHiDpiUtil.isJreHiDPIEnabled()
 }

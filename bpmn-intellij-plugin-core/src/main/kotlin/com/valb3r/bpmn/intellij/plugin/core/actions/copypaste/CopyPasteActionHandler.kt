@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.actions.copypaste
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.common.annotations.VisibleForTesting
@@ -112,12 +113,12 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
             val updatedIds = mutableMapOf(BpmnElementId(ROOT_NAME) to parent)
             val updatedDiagramIds = mutableMapOf<DiagramElementId, DiagramElementId>()
 
-            val minX = context.shapes.map { it.shape.rectBounds().x }.minOrNull()
+            val minX = context.shapes.map { it.shape.rectBounds().x }.min()
                 ?: context.edges.map { min(it.edge.waypoint[0].x, it.edge.waypoint[it.edge.waypoint.size - 1].x) }
-                    .minOrNull() ?: 0.0f
-            val minY = context.shapes.map { it.shape.rectBounds().y }.minOrNull()
+                    .min() ?: 0.0f
+            val minY = context.shapes.map { it.shape.rectBounds().y }.min()
                 ?: context.edges.map { min(it.edge.waypoint[0].y, it.edge.waypoint[it.edge.waypoint.size - 1].y) }
-                    .minOrNull()
+                    .min()
                 ?: 0.0f
             val delta = Point2D.Float(sceneLocation.x - minX, sceneLocation.y - minY)
 
@@ -332,6 +333,7 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
 
     private fun constructMapper(): ObjectMapper {
         val builtMapper: ObjectMapper = ObjectMapper().registerModule(KotlinModule())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         builtMapper.setVisibility(builtMapper.serializationConfig.defaultVisibilityChecker
                 .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
                 .withGetterVisibility(JsonAutoDetect.Visibility.NONE)

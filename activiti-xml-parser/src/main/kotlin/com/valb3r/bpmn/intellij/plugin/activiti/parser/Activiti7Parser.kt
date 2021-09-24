@@ -1,0 +1,73 @@
+package com.valb3r.bpmn.intellij.plugin.activiti.parser
+
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.NS
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.PropertyTypeDetails
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.XmlType
+
+enum class Activiti7PropertyTypeDetails(val details: PropertyTypeDetails) {
+    ID(PropertyTypeDetails(PropertyType.ID, "id", XmlType.ATTRIBUTE)),
+    NAME(PropertyTypeDetails(PropertyType.NAME,"name", XmlType.ATTRIBUTE)),
+    DOCUMENTATION(PropertyTypeDetails(PropertyType.DOCUMENTATION, "documentation.text", XmlType.CDATA)),
+    ASYNC(PropertyTypeDetails(PropertyType.ASYNC, "activiti:async", XmlType.ATTRIBUTE)),
+    ASSIGNEE(PropertyTypeDetails(PropertyType.ASSIGNEE, "activiti:assignee", XmlType.ATTRIBUTE)),
+    CALLED_ELEM(PropertyTypeDetails(PropertyType.CALLED_ELEM, "calledElement", XmlType.ATTRIBUTE)),
+    CALLED_ELEM_TYPE(PropertyTypeDetails(PropertyType.CALLED_ELEM_TYPE, "activiti:calledElementType", XmlType.ATTRIBUTE)),
+    INHERIT_VARS(PropertyTypeDetails(PropertyType.INHERIT_VARS, "activiti:inheritVariables", XmlType.ATTRIBUTE)),
+    FALLBACK_TO_DEF_TENANT(PropertyTypeDetails(PropertyType.FALLBACK_TO_DEF_TENANT, "activiti:fallbackToDefaultTenant", XmlType.ATTRIBUTE)),
+    EXCLUSIVE(PropertyTypeDetails(PropertyType.EXCLUSIVE,"activiti:exclusive", XmlType.ATTRIBUTE)),
+    EXPRESSION(PropertyTypeDetails(PropertyType.EXPRESSION, "activiti:expression", XmlType.ATTRIBUTE)),
+    DELEGATE_EXPRESSION(PropertyTypeDetails(PropertyType.DELEGATE_EXPRESSION, "activiti:delegateExpression", XmlType.ATTRIBUTE)),
+    CLASS(PropertyTypeDetails(PropertyType.CLASS, "activiti:class", XmlType.ATTRIBUTE)),
+    DUE_DATE(PropertyTypeDetails(PropertyType.DUE_DATE, "activiti:dueDate", XmlType.ATTRIBUTE)),
+    FORM_KEY(PropertyTypeDetails(PropertyType.FORM_KEY, "activiti:formKey", XmlType.ATTRIBUTE)),
+    PRIORITY(PropertyTypeDetails(PropertyType.PRIORITY, "activiti:priority", XmlType.ATTRIBUTE)),
+    SCRIPT(PropertyTypeDetails(PropertyType.SCRIPT, "script.text", XmlType.CDATA)),
+    SCRIPT_FORMAT(PropertyTypeDetails(PropertyType.SCRIPT_FORMAT, "scriptFormat", XmlType.ATTRIBUTE)),
+    RULES(PropertyTypeDetails(PropertyType.RULES, "activiti:rules", XmlType.ATTRIBUTE)),
+    RESULT_VARIABLE(PropertyTypeDetails(PropertyType.RESULT_VARIABLE, "activiti:resultVariable", XmlType.ATTRIBUTE)),
+    RESULT_VARIABLE_NAME(PropertyTypeDetails(PropertyType.RESULT_VARIABLE_NAME, "activiti:resultVariableName", XmlType.ATTRIBUTE)),
+    EXCLUDE(PropertyTypeDetails(PropertyType.EXCLUDE, "activiti:exclude", XmlType.ATTRIBUTE)),
+    SOURCE_REF(PropertyTypeDetails(PropertyType.SOURCE_REF,"sourceRef", XmlType.ATTRIBUTE)),
+    TARGET_REF(PropertyTypeDetails(PropertyType.TARGET_REF, "targetRef", XmlType.ATTRIBUTE)),
+    ATTACHED_TO_REF(PropertyTypeDetails(PropertyType.ATTACHED_TO_REF, "attachedToRef", XmlType.ATTRIBUTE)),
+    CONDITION_EXPR_VALUE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_VALUE, "bpmn2:conditionExpression.text", XmlType.CDATA)),
+    CONDITION_EXPR_TYPE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_TYPE, "bpmn2:conditionExpression.xsi:type", XmlType.ATTRIBUTE)),
+    COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "bpmn2:completionCondition.text", XmlType.CDATA)),
+    DEFAULT_FLOW(PropertyTypeDetails(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE))
+}
+
+class Activiti7Parser : ActivitiParser() {
+
+    override fun hackActiviti7(input: String): Boolean {
+        return false
+    }
+
+    override fun propertyTypeDetails(): List<PropertyTypeDetails> {
+        return Activiti7PropertyTypeDetails.values().map { it.details }
+    }
+
+    override fun modelNs(): NS {
+        return NS("bpmn2", "http://www.omg.org/spec/BPMN/20100524/MODEL")
+    }
+
+    override fun bpmndiNs(): NS {
+        return NS("bpmdi", "http://www.omg.org/spec/BPMN/20100524/DI")
+    }
+
+    override fun omgdcNs(): NS {
+        return NS("dc", "http://www.omg.org/spec/DD/20100524/DC")
+    }
+
+    override fun omgdiNs(): NS {
+        return NS("omgdi", "http://www.omg.org/spec/DD/20100524/DI")
+    }
+
+    override fun xsiNs(): NS {
+        return NS("xsi", "http://www.w3.org/2001/XMLSchema-instance")
+    }
+
+    override fun engineNs(): NS {
+        return NS("activiti", "http://activiti.org/bpmn")
+    }
+}
