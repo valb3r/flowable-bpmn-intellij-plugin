@@ -437,14 +437,18 @@ abstract class BaseUiTest {
 
 
     protected fun prepareTwoServiceTaskView() {
+        prepareTwoServiceTaskView(bpmnServiceTaskStart, bpmnServiceTaskEnd)
+    }
+
+    protected fun prepareTwoServiceTaskView(one: BpmnServiceTask, two: BpmnServiceTask) {
         val process = basicProcess.copy(
-                basicProcess.process.copy(
-                    body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
-                ),
-                listOf(DiagramElement(
-                        diagramMainElementId,
-                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, diagramServiceTaskEnd), listOf()))
-                )
+            basicProcess.process.copy(
+                body = basicProcessBody.copy(serviceTask = listOf(one, two))
+            ),
+            listOf(DiagramElement(
+                diagramMainElementId,
+                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, diagramServiceTaskEnd), listOf()))
+            )
         )
         whenever(parser.parse("")).thenReturn(process)
         initializeCanvas()

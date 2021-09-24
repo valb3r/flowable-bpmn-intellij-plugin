@@ -46,7 +46,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
     @Test
     fun `Flat service task can be cut and pasted`() {
-        prepareTwoServiceTaskView()
+        prepareTwoServiceTaskView(bpmnServiceTaskStart.copy(isForCompensation = true), bpmnServiceTaskEnd.copy(isForCompensation = true)) // Jackson behaves weirdly for 'is' fields
         clickOnId(serviceTaskStartDiagramId)
         lastRenderedState(project)!!.canCopyOrCut().shouldBeTrue()
 
@@ -64,7 +64,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
 
     @Test
     fun `Flat service task can be copied and pasted`() {
-        prepareTwoServiceTaskView()
+        prepareTwoServiceTaskView(bpmnServiceTaskStart.copy(isForCompensation = true), bpmnServiceTaskEnd.copy(isForCompensation = true)) // Jackson behaves weirdly for 'is' fields
         clickOnId(serviceTaskStartDiagramId)
         lastRenderedState(project)!!.canCopyOrCut().shouldBeTrue()
 
@@ -318,6 +318,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
             shapeBpmn.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y)
             shapeBpmn.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
             shapeBpmn.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
+            shapeBpmn.props[PropertyType.IS_FOR_COMPENSATION]!!.value.shouldBeEqualTo(true)
 
             lastRenderedState(project)!!.state.ctx.selectedIds.shouldContainSame(listOf(shapeBpmn.shape.id))
         }

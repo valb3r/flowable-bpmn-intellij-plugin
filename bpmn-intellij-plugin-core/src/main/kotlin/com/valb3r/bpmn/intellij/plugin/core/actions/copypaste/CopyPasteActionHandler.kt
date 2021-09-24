@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.actions.copypaste
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.common.annotations.VisibleForTesting
@@ -332,6 +333,7 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
 
     private fun constructMapper(): ObjectMapper {
         val builtMapper: ObjectMapper = ObjectMapper().registerModule(KotlinModule())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         builtMapper.setVisibility(builtMapper.serializationConfig.defaultVisibilityChecker
                 .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
                 .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
