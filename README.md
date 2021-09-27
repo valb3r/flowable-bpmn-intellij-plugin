@@ -6,11 +6,11 @@
 
 # What is this
 
-This project provides plugin for 
+This project provides BPMN modeler plugin for 
  - [Flowable BPMN engine](https://github.com/flowable/flowable-engine)
  - [Activiti BPMN engine](https://github.com/Activiti/Activiti)
 
-process editor integration into IntelliJ, aiming for code navigation support between BPMN diagram and your classes including Spring beans.
+process editing integration into IntelliJ, aiming for code navigation support between BPMN diagram and your classes including Spring beans.
 
 **Currently, it is work-in-progress.**
 
@@ -24,7 +24,7 @@ Don't hesitate - ask or tell your opinion in gitter:
 
 # Key features
 
-1. BPMN process editing - adding/removing elements, changing their properties, undo/redo, bulk drag-n-drop, bulk removal of elements
+1. BPMN process editing (BPMN modeler) - adding/removing elements, changing their properties, undo/redo, bulk drag-n-drop, bulk removal of elements
 1. Code navigation - jump from `Delegate Expression` or `Class` property directly to bean/function/class in code
 1. IntelliJ refactorings propagation to backing XML file of the process (i.e. rename bean)
 1. Jump from an element to the underlying XML
