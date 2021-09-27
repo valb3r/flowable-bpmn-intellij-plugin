@@ -6,11 +6,11 @@
 
 # What is this
 
-This project provides BPMN modeler plugin for 
+This project provides BPMN modeler plugin for these BPMN-engines:
  - [Flowable BPMN engine](https://github.com/flowable/flowable-engine)
  - [Activiti BPMN engine](https://github.com/Activiti/Activiti)
 
-process editing integration into IntelliJ, aiming for code navigation support between BPMN diagram and your classes including Spring beans.
+Key goals are: process editing integration into IntelliJ, code navigation support between BPMN diagram and your classes including Spring beans.
 
 **Currently, it is work-in-progress.**
 
