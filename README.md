@@ -148,7 +148,7 @@ published to JetBrains marketplace. It can take up to two days for plugin to be 
 
 ### Plugin modules
 
-![Modules diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/valb3r/flowable-bpmn-intellij-plugin/master/docs/img/module_architecture.puml&fmt=svg&vvv=2&sanitize=true)
+![Modules diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/valb3r/flowable-bpmn-intellij-plugin/master/docs/img/module_architecture.puml&fmt=svg&vvv=3&sanitize=true)
 
 
 # Flowable XML subset support
