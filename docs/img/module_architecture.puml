@@ -7,15 +7,22 @@ skinparam linetype ortho
 node flowable_xml_parser [
 <b>flowable-xml-parser</b>
 --
-Provides parser to parse Flowable XML
-model into dialect-agnostic format
+Provides parser, BPMN model mapping to convert
+Flowable XML into dialect-agnostic format
 ]
 
 node activiti_xml_parser [
 <b>activiti-xml-parser</b>
 --
-Provides parser to parse Activiti XML
-model into dialect-agnostic format
+Provides parser, BPMN model mapping to convert
+Activiti XML into dialect-agnostic format
+]
+
+node xml_parser_core [
+<b>xml-parser-core</b>
+--
+Provides core BPMN XML parsing
+and update (primarily) logic
 ]
 
 node xml_parser_api [
@@ -49,13 +56,15 @@ for Activiti-BPMN and relevant customizations
 ]
 
 
-flowable_intellij_plugin --> flowable_xml_parser
-flowable_intellij_plugin --> xml_parser_api
-flowable_intellij_plugin --> bpmn_intellij_plugin_core
-activiti_intellij_plugin --> activiti_xml_parser
-activiti_intellij_plugin --> xml_parser_api
-activiti_intellij_plugin --> bpmn_intellij_plugin_core
-bpmn_intellij_plugin_core --> xml_parser_api
+flowable_intellij_plugin -up-> flowable_xml_parser
+flowable_intellij_plugin -up-> xml_parser_api
+flowable_intellij_plugin -up-> bpmn_intellij_plugin_core
+activiti_intellij_plugin -up-> activiti_xml_parser
+activiti_intellij_plugin -up-> xml_parser_api
+activiti_intellij_plugin -up-> bpmn_intellij_plugin_core
+bpmn_intellij_plugin_core -up-> xml_parser_api
+flowable_xml_parser -up-> xml_parser_core
+activiti_xml_parser -up-> xml_parser_core
 flowable_xml_parser --> xml_parser_api
 activiti_xml_parser --> xml_parser_api
 

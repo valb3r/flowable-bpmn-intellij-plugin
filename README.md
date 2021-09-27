@@ -3,16 +3,14 @@
 [![Gitter](https://badges.gitter.im/flowable-bpmn-intellij-plugin/community.svg)](https://gitter.im/flowable-bpmn-intellij-plugin/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 
-# Support for `*.xml` in addition to `*.bpmn20.xml` extension
-
-To clarify how and why `*.xml` is used for BPMN diagrams when dedicated modelers support only `*.bpmn20.xml` please 
-add your comments on the `*.xml` file usage in this ticket: [#198](https://github.com/valb3r/flowable-bpmn-intellij-plugin/issues/198)
-
 
 # What is this
 
-This project provides plugin for [Flowable BPMN engine](https://github.com/flowable/flowable-engine) process editor integration into IntelliJ,
-aiming for code navigation support between BPMN diagram and your classes including Spring beans.
+This project provides plugin for 
+ - [Flowable BPMN engine](https://github.com/flowable/flowable-engine)
+ - [Activiti BPMN engine](https://github.com/Activiti/Activiti)
+
+process editor integration into IntelliJ, aiming for code navigation support between BPMN diagram and your classes including Spring beans.
 
 **Currently, it is work-in-progress.**
 
@@ -102,18 +100,6 @@ If you want just to run the plugin in the `sandbox` you can execute
 
 [![Work with plugin](https://img.youtube.com/vi/8-_XmOlEyXM/0.jpg)](https://youtu.be/8-_XmOlEyXM)
 
-<details><summary><b>Basic usage for older versions (< 0.4.1)</b></summary>
-
-[![Work with plugin](https://img.youtube.com/vi/pBfAGdp169s/0.jpg)](https://youtu.be/pBfAGdp169s)
-
-</details>
-
-<details><summary><b>Basic usage for older versions (< 0.3.2)</b></summary>
-
-[![Work with plugin](https://img.youtube.com/vi/fdl2JQuIWl8/0.jpg)](https://youtu.be/fdl2JQuIWl8)
-
-</details>
-
 
 ### Adding new elements
 
@@ -162,7 +148,7 @@ published to JetBrains marketplace. It can take up to two days for plugin to be 
 
 ### Plugin modules
 
-![Modules diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/valb3r/flowable-bpmn-intellij-plugin/master/docs/img/module_architecture.puml&fmt=svg&vvv=1&sanitize=true)
+![Modules diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/valb3r/flowable-bpmn-intellij-plugin/master/docs/img/module_architecture.puml&fmt=svg&vvv=2&sanitize=true)
 
 
 # Flowable XML subset support
