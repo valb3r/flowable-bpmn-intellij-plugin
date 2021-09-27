@@ -57,10 +57,14 @@ abstract class BaseBpmnParser: BpmnParser {
 
     override fun validate(input: String): String? {
         if (!input.contains("BPMNDiagram")) {
-            return "Unable to parse, missing BPMNDiagram XML tag that is required to build diagram"
+            return "Unable to parse, missing <b>BPMNDiagram</b> XML tag that is required to build diagram<br>" +
+                    "For details see:<br>" +
+                    "<a href=\"https://github.com/valb3r/flowable-bpmn-intellij-plugin/issues/225#issuecomment-834159029\">https://github.com/valb3r/flowable-bpmn-intellij-plugin/issues/225</a>"
         }
         if (!input.contains("BPMNPlane")) {
-            return "Unable to parse, missing BPMNPlane XML tag that is required to build diagram"
+            return "Unable to parse, missing <b>BPMNPlane</b> XML tag that is required to build diagram<br>" +
+                    "For details see:<br>" +
+                    "<a href=\"https://github.com/valb3r/flowable-bpmn-intellij-plugin/issues/225#issuecomment-834159029\">https://github.com/valb3r/flowable-bpmn-intellij-plugin/issues/225</a>"
         }
 
         return null
