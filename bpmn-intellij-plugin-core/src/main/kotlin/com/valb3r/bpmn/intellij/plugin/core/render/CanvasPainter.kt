@@ -32,6 +32,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
     private val font = Font(currentSettings().uiFontName, Font.PLAIN, currentSettings().uiFontSize)
     private val arrowWidth = 10
     private val arrowStyle = Polygon(intArrayOf(0, -arrowWidth, -arrowWidth), intArrayOf(0, 5, -5), 3)
+    private val arrowArea = Area(arrowStyle)
     private val regularLineWidth = currentSettings().lineThickness
     private val nodeRadius = 25f
 
@@ -75,7 +76,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         graphics2D.color = color
         val transform = getTranslateInstance(en.x.toDouble(), en.y.toDouble())
         transform.rotate(en.x.toDouble() - st.x.toDouble(), en.y.toDouble() - st.y.toDouble())
-        val arrow = Area(arrowStyle)
+        val arrow = arrowArea.clone() as Area
         val lineLen = en.distance(st).toFloat()
         val line = Area(Rectangle2D.Float(
                 -lineLen,

@@ -36,6 +36,7 @@ data class CurrentState(
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
         val elementByBpmnId: Map<BpmnElementId, WithParentId>,
         val elemPropertiesByStaticElementId: Map<BpmnElementId, Map<PropertyType, Property>>,
+        val propertyWithElementByPropertyType: Map<PropertyType, Map<BpmnElementId, Property>>,
         val elemUiOnlyPropertiesByStaticElementId: Map<BpmnElementId, Map<UiOnlyPropertyType, Property>>,
         val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>,
         val version: Long,
@@ -54,8 +55,8 @@ data class CurrentState(
 
 // Global singleton
 class CurrentStateProvider(private val project: Project) {
-    private var fileState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet(), 0L)
-    private var currentState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet(), 0L)
+    private var fileState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet(), 0L)
+    private var currentState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet(), 0L)
     private val version = AtomicLong(0L)
 
     fun resetStateTo(fileContent: String, processObject: BpmnProcessObjectView) {
@@ -67,6 +68,7 @@ class CurrentStateProvider(private val project: Project) {
                 processObject.elementByDiagramId,
                 processObject.elementByStaticId,
                 processObject.elemPropertiesByElementId,
+                emptyMap(),
                 emptyMap(),
                 emptySet(),
                 0L
@@ -85,6 +87,7 @@ class CurrentStateProvider(private val project: Project) {
         val updatedElementByDiagramId = state.elementByDiagramId.toMutableMap()
         val updatedElementByStaticId = state.elementByBpmnId.toMutableMap()
         val updatedElemPropertiesByStaticElementId = state.elemPropertiesByStaticElementId.toMutableMap()
+        val updatedPropertyWithElementByPropertyType = mutableMapOf<PropertyType, MutableMap<BpmnElementId, Property>>()
         val updatedElemUiOnlyPropertiesByStaticElementId = state.elemUiOnlyPropertiesByStaticElementId.toMutableMap()
         var updatedProcessId = state.processId
 
@@ -144,6 +147,12 @@ class CurrentStateProvider(private val project: Project) {
             }
         }
 
+        updatedElemPropertiesByStaticElementId.forEach {(elemId, props) ->
+            props.forEach {(type, value) ->
+                updatedPropertyWithElementByPropertyType.computeIfAbsent(type) { mutableMapOf() }[elemId] = value
+            }
+        }
+
         return CurrentState(
                 updatedProcessId,
                 updatedShapes,
@@ -151,6 +160,7 @@ class CurrentStateProvider(private val project: Project) {
                 updatedElementByDiagramId,
                 updatedElementByStaticId,
                 updatedElemPropertiesByStaticElementId,
+                updatedPropertyWithElementByPropertyType,
                 updatedElemUiOnlyPropertiesByStaticElementId,
                 undoRedoStatus,
                 version.toLong()

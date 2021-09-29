@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.render.elements.edges
 
+import com.jetbrains.rd.util.firstOrNull
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
@@ -128,8 +129,8 @@ abstract class BaseEdgeRenderElement(
     }
 
     private fun renderDefaultMarkIfNeeded(ctx: RenderContext, anchors: List<Point2D.Float>): Area {
-        val sourceRefOf = state().currentState.elemPropertiesByStaticElementId.filter { it.value[PropertyType.DEFAULT_FLOW]?.value == bpmnElementId.id }
-        if (sourceRefOf.isEmpty()) {
+        val sourceRefOfExists = state().currentState.propertyWithElementByPropertyType[PropertyType.DEFAULT_FLOW]?.any { it.value.value == bpmnElementId.id } ?: false
+        if (!sourceRefOfExists) {
             return Area()
         }
 
