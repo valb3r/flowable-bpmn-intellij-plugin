@@ -77,7 +77,7 @@ abstract class ResizeableShapeRenderElement(
     }
 
     override fun doComputeLocationChangesBasedOnTransformationWithCascade(): MutableList<Event> {
-        val transform = viewTransform
+        val transform = state().viewTransform(elementId)
         if (transform !is ResizeViewTransform) {
             return mutableListOf()
         }
@@ -110,22 +110,22 @@ abstract class ResizeableShapeRenderElement(
     private fun handleResize(widthOrig: Float, heightOrig: Float, widthNew: Float, heightNew: Float) {
         when {
             anchors.first.location.distance(anchors.first.transformedLocation) < EPSILON -> {
-                viewTransform = ResizeViewTransform(
+                state().viewTransforms[elementId] = ResizeViewTransform(
                         anchors.first.location.x,
                         anchors.first.location.y,
                         widthNew / widthOrig,
                         heightNew / heightOrig,
-                        PreTransformHandler(mutableListOf(viewTransform))
+                        PreTransformHandler(mutableListOf(state().viewTransform(elementId)))
                 )
             }
 
             anchors.second.location.distance(anchors.second.transformedLocation) < EPSILON -> {
-                viewTransform = ResizeViewTransform(
+                state().viewTransforms[elementId] = ResizeViewTransform(
                         anchors.second.location.x,
                         anchors.second.location.y,
                         widthNew / widthOrig,
                         heightNew / heightOrig,
-                        PreTransformHandler(mutableListOf(viewTransform))
+                        PreTransformHandler(mutableListOf(state().viewTransform(elementId)))
                 )
 
             }

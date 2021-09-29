@@ -115,6 +115,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         val history = currentDebugger(project)?.executionSequence(project, currentState.processId.id)?.history ?: emptyList()
         val state = RenderState(
             elementsByDiagramId,
+            mutableMapOf(),
             currentState,
             history,
             ctx,

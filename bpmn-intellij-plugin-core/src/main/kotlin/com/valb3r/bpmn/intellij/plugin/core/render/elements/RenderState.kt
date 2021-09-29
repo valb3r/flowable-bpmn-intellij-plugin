@@ -9,10 +9,15 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.ViewTr
 import com.valb3r.bpmn.intellij.plugin.core.state.CurrentState
 
 data class RenderState(
-        val elemMap: Map<DiagramElementId, BaseDiagramRenderElement>,
-        val currentState: CurrentState,
-        val history: List<BpmnElementId>,
-        val ctx: RenderContext,
-        val icons: IconProvider,
-        val baseTransform: ViewTransform = NullViewTransform()
-)
+    val elemMap: Map<DiagramElementId, BaseDiagramRenderElement>,
+    val viewTransforms: MutableMap<DiagramElementId, ViewTransform>,
+    val currentState: CurrentState,
+    val history: List<BpmnElementId>,
+    val ctx: RenderContext,
+    val icons: IconProvider,
+    val baseTransform: ViewTransform = NullViewTransform()
+) {
+    fun viewTransform(elem: DiagramElementId): ViewTransform {
+        return viewTransforms.getOrDefault(elem, baseTransform)
+    }
+}

@@ -79,7 +79,7 @@ class PhysicalWaypoint(
     }
 
     override fun doComputeLocationChangesBasedOnTransformationWithCascade(): MutableList<Event> {
-        val transform = viewTransform
+        val transform = state().viewTransform(elementId)
         if (transform !is ResizeViewTransform) {
             return mutableListOf()
         }

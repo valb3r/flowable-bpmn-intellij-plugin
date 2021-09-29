@@ -102,7 +102,7 @@ abstract class ShapeRenderElement(
             }
         }
 
-        viewTransform = state().baseTransform
+        state().viewTransforms[elementId] = state().baseTransform
         return result
     }
 
@@ -131,12 +131,12 @@ abstract class ShapeRenderElement(
     }
 
     override fun afterStateChangesAppliedNoChildren() {
-        if (viewTransform is NullViewTransform) {
+        if (state().viewTransform(elementId) is NullViewTransform) {
             return
         }
 
         cascadeTo.mapNotNull { state().elemMap[it.waypointId] }.forEach {
-            it.viewTransform = viewTransform
+            state().viewTransforms[it.elementId] = state().viewTransform(elementId)
         }
     }
 
@@ -173,7 +173,7 @@ abstract class ShapeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        return viewTransform.transform(elementId, RectangleTransformationIntrospection(shape.rectBounds(), AreaType.SHAPE))
+        return state().viewTransform(elementId).transform(elementId, RectangleTransformationIntrospection(shape.rectBounds(), AreaType.SHAPE))
     }
 
     override fun currentRect(): Rectangle2D.Float {
@@ -236,7 +236,7 @@ abstract class ShapeRenderElement(
     }
 
     private fun detectAndRenderNewSequenceAnchorMove() {
-        val expected = viewTransform.transform(elementId, edgeExtractionAnchor.location)
+        val expected = state().viewTransform(elementId).transform(elementId, edgeExtractionAnchor.location)
         if (expected.distance(edgeExtractionAnchor.transformedLocation) > EPSILON && edgeExtractionAnchor.isActiveOrDragged()) {
             renderNewSequenceAnchorMove()
         }

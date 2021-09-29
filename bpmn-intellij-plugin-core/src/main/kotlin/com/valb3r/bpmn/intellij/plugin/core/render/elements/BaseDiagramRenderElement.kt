@@ -25,8 +25,7 @@ fun DiagramElementId.elemIdToRemove(): DiagramElementId {
 
 abstract class BaseDiagramRenderElement(
         open val elementId: DiagramElementId,
-        protected open val state: () -> RenderState,
-        internal open var viewTransform: ViewTransform = state().baseTransform
+        protected open val state: () -> RenderState
 ) {
 
     var isVisible: Boolean? = null
@@ -97,7 +96,7 @@ abstract class BaseDiagramRenderElement(
         val compensated = compensateExpansionViewForDrag(dx, dy)
         val result = doOnDragEndWithoutChildren(compensated.x, compensated.y, droppedOn, allDroppedOnAreas)
         children.forEach { result += it.onDragEnd(compensated.x, compensated.y, droppedOn, allDroppedOnAreas) }
-        viewTransform = state().baseTransform
+        state().viewTransforms[elementId] = state().baseTransform
         return result
     }
 
@@ -153,7 +152,7 @@ abstract class BaseDiagramRenderElement(
     }
 
     protected open fun dragTo(dx: Float, dy: Float) {
-        viewTransform = DragViewTransform(dx, dy, PreTransformHandler(mutableListOf(viewTransform)))
+        state().viewTransforms[elementId] = DragViewTransform(dx, dy, PreTransformHandler(mutableListOf(state().viewTransform(elementId))))
         doDragToWithoutChildren(dx, dy)
         children.forEach { it.dragTo(dx, dy) }
     }
@@ -267,12 +266,12 @@ abstract class BaseDiagramRenderElement(
 
     private fun findExpansionViewTransformationsToCompensate(): ViewTransformBatch {
         val toUndo = mutableListOf<ExpandViewTransform>()
-        val transform = viewTransform
+        val transform = state().viewTransform(elementId)
         if (transform is ExpandViewTransform) {
             toUndo += transform
         }
 
-        toUndo += viewTransform.listTransformsOfType(ExpandViewTransform::class.java)
+        toUndo += transform.listTransformsOfType(ExpandViewTransform::class.java)
         return ViewTransformBatch(toUndo)
     }
 

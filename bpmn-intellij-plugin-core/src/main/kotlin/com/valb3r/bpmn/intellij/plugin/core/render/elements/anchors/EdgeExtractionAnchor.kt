@@ -29,7 +29,7 @@ class EdgeExtractionAnchor(
         val imageWidth = right.x - left.x
         val imageHeight = right.y - left.y
 
-        return viewTransform.transform(
+        return state().viewTransform(elementId).transform(
                 elementId,
                 RectangleTransformationIntrospection(
                         Rectangle2D.Float(

@@ -21,7 +21,7 @@ class ShapeResizeAnchorBottom(
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         val icon = icon()
 
-        return viewTransform.transform(
+        return state().viewTransform(elementId).transform(
                 elementId,
                 RectangleTransformationIntrospection(
                         Rectangle2D.Float(

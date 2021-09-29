@@ -27,7 +27,7 @@ abstract class CircleAnchorElement(
         get() = AreaType.POINT
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        return viewTransform.transform(
+        return state().viewTransform(elementId).transform(
                 elementId,
                 RectangleTransformationIntrospection(
                         Rectangle2D.Float(
