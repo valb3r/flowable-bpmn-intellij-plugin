@@ -82,7 +82,7 @@ fun lastRenderedState(project: Project): RenderedState? {
 }
 
 class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconProvider) : BpmnProcessRenderer {
-    private val cachedRenderCtx = AtomicReference<CachedRenderTreeWithState?>()
+    private val cachedRenderCtx = Collections.synchronizedMap(WeakHashMap<Project, CachedRenderTreeWithState?>())
 
     private val undoRedoStartMargin = 20.0f
     private val iconMargin = 10.0f
@@ -124,7 +124,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
         val elements = mutableListOf<BaseBpmnRenderElement>()
         val elementsById = mutableMapOf<BpmnElementId, BaseDiagramRenderElement>()
-        val root = buildRenderTree(state, elements, elementsById, elementsByDiagramId)
+        val root = buildRenderTree(project, state, elements, elementsById, elementsByDiagramId)
 
         root.applyContextChangesAndPrecomputeExpandViewTransform()
         val rendered = root.render()
@@ -146,19 +146,22 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     }
 
     private fun buildRenderTree(
+        project: Project,
         state: RenderState,
         elements: MutableList<BaseBpmnRenderElement>,
         elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>,
         elementsByDiagramId: MutableMap<DiagramElementId, BaseDiagramRenderElement>
     ): BaseBpmnRenderElement {
-        val cached = cachedRenderCtx.get()
+        val cached = cachedRenderCtx.get(project)
         val version = state.currentState.version
         if (version == cached?.version) {
             cached.state = state
+            elementsById.putAll(cached.elementsById)
+            elementsByDiagramId.putAll(cached.elementsByDiagramId)
             return cached.cachedElem!!
         }
 
-        val cachedRenderState = CachedRenderTreeWithState(state, version)
+        val cachedRenderState = CachedRenderTreeWithState(state, version, elementsById, elementsByDiagramId)
         val root = createRootProcessElem({ cachedRenderState.state }, elements, elementsById)
         createShapes({ cachedRenderState.state }, elements, elementsById)
         createEdges({ cachedRenderState.state }, elements, elementsById)
@@ -166,7 +169,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         // Not all elements have BpmnElementId, but they have DiagramElementId
         linkDiagramElementId(root, elementsByDiagramId)
         cachedRenderState.cachedElem = root
-        cachedRenderCtx.set(cachedRenderState)
+        cachedRenderCtx[project] = cachedRenderState
         return root
     }
 
@@ -389,5 +392,11 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         return Rectangle2D.Float(cx - width / 2.0f, cy - height / 2.0f, width, height)
     }
 
-    private class CachedRenderTreeWithState(var state: RenderState, val version: Long, var cachedElem: BaseBpmnRenderElement? = null)
+    private class CachedRenderTreeWithState(
+        var state: RenderState,
+        val version: Long,
+        val elementsById: Map<BpmnElementId, BaseDiagramRenderElement>,
+        val elementsByDiagramId: Map<DiagramElementId, BaseDiagramRenderElement>,
+        var cachedElem: BaseBpmnRenderElement? = null
+    )
 }

@@ -600,8 +600,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
     private fun cameraOriginToPinCenter(modelRect: Rectangle2D.Float, zoom: Point2D.Float = camera.zoom): Point2D.Float {
         val modelCenter = camera.fromCameraView(Point2D.Float(modelRect.x + modelRect.width / 2.0f, modelRect.y + modelRect.height / 2.0f))
         val screenCenter = Point2D.Float(width / 2.0f, height / 2.0f)
-        val camOriginPin = Point2D.Float(zoom.x * modelCenter.x - screenCenter.x, zoom.y * modelCenter.y - screenCenter.y)
-        return camOriginPin
+        return Point2D.Float(zoom.x * modelCenter.x - screenCenter.x, zoom.y * modelCenter.y - screenCenter.y)
     }
 
     private fun withFps(graphics: Graphics, frameProducer: () -> Unit) {
