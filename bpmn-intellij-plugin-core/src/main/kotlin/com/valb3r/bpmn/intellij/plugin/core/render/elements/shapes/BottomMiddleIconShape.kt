@@ -15,7 +15,7 @@ class BottomMiddleIconShape(
         bpmnElementId: BpmnElementId,
         private val icon: Icon,
         shape: ShapeElement,
-        state: RenderState,
+        state: () -> RenderState,
         private val backgroundColor: Colors = Colors.TRANSACTION_COLOR,
         private val borderColor: Colors =  Colors.TRANSACTION_ELEMENT_BORDER_COLOR,
         private val textColor: Colors = Colors.INNER_TEXT_COLOR,

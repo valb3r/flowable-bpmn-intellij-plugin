@@ -41,6 +41,7 @@ import java.awt.BasicStroke
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.util.*
+import java.util.concurrent.atomic.AtomicReference
 import javax.swing.Icon
 
 interface BpmnProcessRenderer {
@@ -81,6 +82,8 @@ fun lastRenderedState(project: Project): RenderedState? {
 }
 
 class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconProvider) : BpmnProcessRenderer {
+    private val cachedRenderCtx = AtomicReference<CachedRenderTreeWithState?>()
+
     private val undoRedoStartMargin = 20.0f
     private val iconMargin = 10.0f
     private val closeAnchorRadius = 2f
@@ -120,12 +123,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
         val elements = mutableListOf<BaseBpmnRenderElement>()
         val elementsById = mutableMapOf<BpmnElementId, BaseDiagramRenderElement>()
-        val root = createRootProcessElem(state, elements, elementsById)
-        createShapes(state, elements, elementsById)
-        createEdges(state, elements, elementsById)
-        linkChildrenToParent(state, elementsById)
-        // Not all elements have BpmnElementId, but they have DiagramElementId
-        linkDiagramElementId(root, elementsByDiagramId)
+        val root = buildRenderTree(state, elements, elementsById, elementsByDiagramId)
 
         root.applyContextChangesAndPrecomputeExpandViewTransform()
         val rendered = root.render()
@@ -146,16 +144,41 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         return rendered
     }
 
-    private fun createRootProcessElem(state: RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>): BaseBpmnRenderElement {
-        val processElem = PlaneRenderElement(state.currentState.processDiagramId(), state.currentState.processId, state, mutableListOf())
+    private fun buildRenderTree(
+        state: RenderState,
+        elements: MutableList<BaseBpmnRenderElement>,
+        elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>,
+        elementsByDiagramId: MutableMap<DiagramElementId, BaseDiagramRenderElement>
+    ): BaseBpmnRenderElement {
+        val cached = cachedRenderCtx.get()
+        val version = state.currentState.version
+        if (version == cached?.version) {
+            cached.state = state
+            return cached.cachedElem!!
+        }
+
+        val cachedRenderState = CachedRenderTreeWithState(state, version)
+        val root = createRootProcessElem({ cachedRenderState.state }, elements, elementsById)
+        createShapes({ cachedRenderState.state }, elements, elementsById)
+        createEdges({ cachedRenderState.state }, elements, elementsById)
+        linkChildrenToParent({ cachedRenderState.state }, elementsById)
+        // Not all elements have BpmnElementId, but they have DiagramElementId
+        linkDiagramElementId(root, elementsByDiagramId)
+        cachedRenderState.cachedElem = root
+        cachedRenderCtx.set(cachedRenderState)
+        return root
+    }
+
+    private fun createRootProcessElem(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>): BaseBpmnRenderElement {
+        val processElem = PlaneRenderElement(state().currentState.processDiagramId(), state().currentState.processId, state, mutableListOf())
         elements += processElem
-        elementsById[state.currentState.processId] = processElem
+        elementsById[state().currentState.processId] = processElem
         return processElem
     }
 
-    private fun createShapes(state: RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
-        state.currentState.shapes.forEach {
-            val elem = state.currentState.elementByBpmnId[it.bpmnElement]
+    private fun createShapes(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+        state().currentState.shapes.forEach {
+            val elem = state().currentState.elementByBpmnId[it.bpmnElement]
             elem?.let { bpmn ->
                 mapFromShape(state, it.id, it, bpmn.element).let { shape ->
                     elements += shape
@@ -165,17 +188,17 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         }
     }
 
-    private fun createEdges(state: RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
-        state.currentState.edges.forEach {
+    private fun createEdges(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+        state().currentState.edges.forEach {
             val edge = EdgeRenderElement(it.id, it.bpmnElement!!, it, state)
             elements += edge
             elementsById[it.bpmnElement!!] = edge
         }
     }
 
-    private fun linkChildrenToParent(state: RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+    private fun linkChildrenToParent(state: () -> RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
         elementsById.forEach { (id, renderElem) ->
-            val elem = state.currentState.elementByBpmnId[id]
+            val elem = state().currentState.elementByBpmnId[id]
             elem?.parent?.let {elementsById[it]}?.let { if (it is BaseBpmnRenderElement) it else null }?.let { parent ->
                 parent.children.add(renderElem)
                 parent.let { renderElem.parents.add(it) }
@@ -188,8 +211,8 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         root.children.forEach { linkDiagramElementId(it, elementsByDiagramId)}
     }
 
-    private fun mapFromShape(state: RenderState, id: DiagramElementId, shape: ShapeElement, bpmn: WithBpmnId): BaseBpmnRenderElement {
-        val icons = state.icons
+    private fun mapFromShape(state: () -> RenderState, id: DiagramElementId, shape: ShapeElement, bpmn: WithBpmnId): BaseBpmnRenderElement {
+        val icons = state().icons
         return when (bpmn) {
             is BpmnStartEvent -> EllipticIconOnLayerShape(id, bpmn.id, icons.startEvent, shape, state, Colors.START_EVENT)
             is BpmnStartEscalationEvent -> EllipticIconOnLayerShape(id, bpmn.id, icons.escalationStartEvent, shape, state, Colors.START_EVENT)
@@ -245,8 +268,8 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         }
     }
 
-    private fun isCollapsed(id: BpmnElementId, state: RenderState): Boolean {
-        return !(state.currentState.elemUiOnlyPropertiesByStaticElementId[id]?.get(UiOnlyPropertyType.EXPANDED)?.value as Boolean? ?: false)
+    private fun isCollapsed(id: BpmnElementId, state: () -> RenderState): Boolean {
+        return !(state().currentState.elemUiOnlyPropertiesByStaticElementId[id]?.get(UiOnlyPropertyType.EXPANDED)?.value as Boolean? ?: false)
     }
 
     private fun drawSelectionRect(state: RenderContext) {
@@ -364,4 +387,6 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         val height = (maxY - minY).toFloat() * fitScaleModelFactor
         return Rectangle2D.Float(cx - width / 2.0f, cy - height / 2.0f, width, height)
     }
+
+    private class CachedRenderTreeWithState(var state: RenderState, val version: Long, var cachedElem: BaseBpmnRenderElement? = null)
 }

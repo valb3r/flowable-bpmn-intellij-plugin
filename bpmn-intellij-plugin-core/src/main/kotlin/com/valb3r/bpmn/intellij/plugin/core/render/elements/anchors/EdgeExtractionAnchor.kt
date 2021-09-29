@@ -16,7 +16,7 @@ class EdgeExtractionAnchor(
         private val parent: DiagramElementId,
         private val bottomPoint: Point2D.Float,
         private val onDragEndCallback: ((droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>) -> MutableList<Event>),
-        state: RenderState
+        state: () -> RenderState
 ) : IconAnchorElement(elementId, parent, bottomPoint, state) {
 
     override val areaType: AreaType
@@ -64,7 +64,7 @@ class EdgeExtractionAnchor(
     }
 
     override fun icon(): Icon {
-        return state.icons.sequence
+        return state().icons.sequence
     }
 
     override fun acceptsInternalEvents(): Boolean {

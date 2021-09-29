@@ -19,7 +19,7 @@ import java.awt.geom.Rectangle2D
 class PlaneRenderElement(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
-        state: RenderState,
+        state: () -> RenderState,
         override val children: MutableList<BaseDiagramRenderElement> = mutableListOf()
 ): BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 

@@ -18,7 +18,7 @@ abstract class AnchorElement(
         elementId: DiagramElementId,
         private val attachedTo: DiagramElementId?,
         protected val currentLocation: Point2D.Float,
-        state: RenderState
+        state: () -> RenderState
 ): BaseDiagramRenderElement(elementId, state) {
 
     val location: Point2D.Float

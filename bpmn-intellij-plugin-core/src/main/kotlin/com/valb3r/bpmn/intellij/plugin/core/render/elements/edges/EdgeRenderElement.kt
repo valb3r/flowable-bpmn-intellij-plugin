@@ -18,7 +18,7 @@ class EdgeRenderElement(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
         edge: EdgeWithIdentifiableWaypoints,
-        state: RenderState
+        state: () -> RenderState
 ): BaseEdgeRenderElement(elementId, bpmnElementId, edge, Colors.ARROW_COLOR, state) {
 
     override val areaType: AreaType
@@ -26,8 +26,8 @@ class EdgeRenderElement(
 
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         val delId = elementId.elemIdToRemove()
-        val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
-        state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
+        val deleteIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.recycleBin)
+        state().ctx.interactionContext.clickCallbacks[delId] = { dest ->
             val bpmnRemoves = mutableListOf<BpmnElementRemovedEvent>()
             val diagramRemoves = mutableListOf<DiagramElementRemovedEvent>()
             edge.bpmnElement?.let { bpmnRemoves += BpmnElementRemovedEvent(it) }

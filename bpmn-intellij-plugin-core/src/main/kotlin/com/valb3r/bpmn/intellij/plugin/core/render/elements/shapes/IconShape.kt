@@ -16,7 +16,7 @@ open class IconShape(
         bpmnElementId: BpmnElementId,
         private val icon: String,
         shape: ShapeElement,
-        state: RenderState
+        state: () -> RenderState
 ) : ShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
     override val areaType: AreaType

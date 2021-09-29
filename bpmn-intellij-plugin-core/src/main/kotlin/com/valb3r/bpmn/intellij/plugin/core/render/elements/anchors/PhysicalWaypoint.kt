@@ -28,7 +28,7 @@ class PhysicalWaypoint(
         private val physicalPos: Int,
         private val edgePhysicalSize: Int,
         location: Point2D.Float,
-        state: RenderState
+        state: () -> RenderState
 ): CircleAnchorElement(elementId, attachedTo, location, 3.0f, Colors.WAYPOINT_COLOR, state) {
 
     val owningEdgeId: DiagramElementId
@@ -43,8 +43,8 @@ class PhysicalWaypoint(
         }
 
         val delId = elementId.elemIdToRemove()
-        val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
-        state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
+        val deleteIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.recycleBin)
+        state().ctx.interactionContext.clickCallbacks[delId] = { dest ->
             dest.addEvents(listOf(NewWaypointsEvent(
                     parentElementId,
                     edge.waypoint
@@ -110,7 +110,7 @@ class PhysicalWaypoint(
 
     private fun isEdgeBegin() = 0 == physicalPos
     private fun isEdgeEnd() = edgePhysicalSize - 1 == physicalPos
-    private fun isSourceRefAttached() = null != state.currentState.elemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.SOURCE_REF)?.value
-    private fun isTargetRefAttached() = null != state.currentState.elemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.TARGET_REF)?.value
+    private fun isSourceRefAttached() = null != state().currentState.elemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.SOURCE_REF)?.value
+    private fun isTargetRefAttached() = null != state().currentState.elemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.TARGET_REF)?.value
     private fun isEdgeBeginOrEnd() = edgePhysicalSize - 1 == physicalPos || 0 == physicalPos
 }
