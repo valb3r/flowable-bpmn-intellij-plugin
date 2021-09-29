@@ -2,6 +2,8 @@ package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.cache.CacheBuilder
+import com.google.common.collect.EvictingQueue
+import com.google.common.math.Quantiles.percentiles
 import com.intellij.openapi.project.Project
 import com.intellij.util.ui.UIUtil
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
@@ -16,7 +18,9 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElemen
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.BaseEdgeRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsState
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
+import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
@@ -26,10 +30,7 @@ import java.awt.image.BufferedImage
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.swing.JPanel
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
+import kotlin.math.*
 
 private val currentCanvas = Collections.synchronizedMap(WeakHashMap<Project,  Canvas>())
 
@@ -50,6 +51,8 @@ fun setCanvas(project: Project, canvas: Canvas): Canvas {
 }
 
 class Canvas(private val project: Project, private val settings: CanvasConstants) : JPanel() {
+    private val fpsCircularBuffer = EvictingQueue.create<Int>(30)
+
     private val stateProvider = currentStateProvider(project)
     private val closeAnchorRadius = 100.0f
 
@@ -105,21 +108,23 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
 
     @VisibleForTesting
     public override fun paintComponent(graphics: Graphics) {
-        super.paintComponent(graphics)
+        withFps(graphics) {
+            super.paintComponent(graphics)
 
-        val graphics2D = setupGraphics(graphics)
-        // TODO: make immutable and not shallow:
-        interactionCtx = interactionCtx.copy(dragEndCallbacks = mutableMapOf(), clickCallbacks = mutableMapOf())
-        val shallowCopyOfCtx = interactionCtx.copy()
-        areaByElement = renderer?.render(
+            val graphics2D = setupGraphics(graphics)
+            // TODO: make immutable and not shallow:
+            interactionCtx = interactionCtx.copy(dragEndCallbacks = mutableMapOf(), clickCallbacks = mutableMapOf())
+            val shallowCopyOfCtx = interactionCtx.copy()
+            areaByElement = renderer?.render(
                 RenderContext(
-                        project,
-                        CanvasPainter(graphics2D, camera.copy(), cachedIcons),
-                        selectedElements.toSet(),
-                        shallowCopyOfCtx,
-                        stateProvider
+                    project,
+                    CanvasPainter(graphics2D, camera.copy(), cachedIcons),
+                    selectedElements.toSet(),
+                    shallowCopyOfCtx,
+                    stateProvider
                 )
-        )
+            )
+        }
     }
 
     fun renderToBitmap() : BufferedImage? {
@@ -597,6 +602,24 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         val screenCenter = Point2D.Float(width / 2.0f, height / 2.0f)
         val camOriginPin = Point2D.Float(zoom.x * modelCenter.x - screenCenter.x, zoom.y * modelCenter.y - screenCenter.y)
         return camOriginPin
+    }
+
+    private fun withFps(graphics: Graphics, frameProducer: () -> Unit) {
+        if (!currentSettings().enableFps) {
+            frameProducer()
+            return
+        }
+
+        val startTime = System.nanoTime()
+        frameProducer()
+        val endTime = System.nanoTime()
+
+        val oldColor = graphics.color
+        graphics.color = Color.BLACK
+        fpsCircularBuffer.add(round(1.0e9f / (endTime - startTime).toFloat()).toInt())
+        val stats = percentiles().indexes(50, 90, 95).compute(fpsCircularBuffer)
+        graphics.drawString("FPS: ${stats[50]}/${stats[90]}/${stats[95]}", 0, this.height - 20)
+        graphics.color = oldColor
     }
 
     private data class AnchorDetails(

@@ -49,6 +49,8 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
         var dataFontName = "Consolas"
         var openExtensions = setOf("bpmn20.xml")
 
+        var enableFps = false
+
         fun stateEquals(other: PluginStateData): Boolean {
             if (zoomMin != other.zoomMin) return false
             if (zoomMax != other.zoomMax) return false
@@ -61,6 +63,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             if (dataFontSize != other.dataFontSize) return false
             if (dataFontName != other.dataFontName) return false
             if (openExtensions != other.openExtensions) return false
+            if (enableFps != other.enableFps) return false
 
             return true
         }
@@ -78,6 +81,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             data.dataFontSize = dataFontSize
             data.dataFontName = dataFontName
             data.openExtensions = openExtensions
+            data.enableFps = enableFps
             return data
         }
     }
