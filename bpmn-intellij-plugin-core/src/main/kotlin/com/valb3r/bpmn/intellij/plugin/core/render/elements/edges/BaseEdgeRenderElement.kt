@@ -130,7 +130,7 @@ abstract class BaseEdgeRenderElement(
 
     private fun renderDefaultMarkIfNeeded(ctx: RenderContext, anchors: List<Point2D.Float>): Area {
         val sourceRefOfExists = state().currentState.propertyWithElementByPropertyType[PropertyType.DEFAULT_FLOW]?.any { it.value.value == bpmnElementId.id } ?: false
-        if (sourceRefOfExists) {
+        if (!sourceRefOfExists) {
             return Area()
         }
 
