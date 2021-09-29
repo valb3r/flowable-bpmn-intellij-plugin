@@ -21,7 +21,7 @@ class AnyShapeNestableIconShape(
         bpmnElementId: BpmnElementId,
         val icon: String,
         shape: ShapeElement,
-        state: RenderState
+        state: () -> RenderState
 ) : IconShape(elementId, bpmnElementId, icon, shape, state) {
 
     override val areaType: AreaType

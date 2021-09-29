@@ -16,7 +16,7 @@ class ShapeResizeAnchorTop(
         private val parent: DiagramElementId,
         private val bottomPoint: Point2D.Float,
         private val onDragEndCallback: (() -> MutableList<Event>),
-        state: RenderState
+        state: () -> RenderState
 ) : IconAnchorElement(elementId, parent, bottomPoint, state) {
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
@@ -26,7 +26,7 @@ class ShapeResizeAnchorTop(
         val width = iconRight.x - iconLeft.x
         val height = iconRight.y - iconLeft.y
 
-        return viewTransform.transform(
+        return state().viewTransform(elementId).transform(
                 elementId,
                 RectangleTransformationIntrospection(
                         Rectangle2D.Float(
@@ -57,7 +57,7 @@ class ShapeResizeAnchorTop(
     }
 
     override fun icon(): Icon {
-        return state.icons.dragToResizeTop
+        return state().icons.dragToResizeTop
     }
 
     override fun acceptsInternalEvents(): Boolean {

@@ -52,6 +52,7 @@ fun setCanvas(project: Project, canvas: Canvas): Canvas {
 
 class Canvas(private val project: Project, private val settings: CanvasConstants) : JPanel() {
     private val fpsCircularBuffer = EvictingQueue.create<Int>(30)
+    private var cachedTreeState: TreeState? = null
 
     private val stateProvider = currentStateProvider(project)
     private val closeAnchorRadius = 100.0f
@@ -115,15 +116,18 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
             // TODO: make immutable and not shallow:
             interactionCtx = interactionCtx.copy(dragEndCallbacks = mutableMapOf(), clickCallbacks = mutableMapOf())
             val shallowCopyOfCtx = interactionCtx.copy()
-            areaByElement = renderer?.render(
+            val result = renderer?.render(
                 RenderContext(
                     project,
                     CanvasPainter(graphics2D, camera.copy(), cachedIcons),
                     selectedElements.toSet(),
                     shallowCopyOfCtx,
-                    stateProvider
+                    stateProvider,
+                    cachedTreeState
                 )
             )
+            cachedTreeState = result?.state
+            areaByElement = result?.areas
         }
     }
 
@@ -145,7 +149,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         }
         val interactionContext = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
         val dummyImage = UIUtil.createImage(1, 1, BufferedImage.TYPE_INT_RGB)
-        val dimensions = doRender(dummyImage, interactionContext, Camera(Point2D.Float(0.0f, 0.0f), Point2D.Float(1.0f, 1.0f))) ?: return null
+        val dimensions = doRender(dummyImage, interactionContext, Camera(Point2D.Float(0.0f, 0.0f), Point2D.Float(1.0f, 1.0f)))?.areas ?: return null
         val maxX = dimensions.map { it.value.area.bounds2D.maxX }.max()?.toInt() ?: return null
         val minX = dimensions.map { it.value.area.bounds2D.minX }.min()?.toInt() ?: return null
         val maxY = dimensions.map { it.value.area.bounds2D.maxY }.max()?.toInt() ?: return null
@@ -171,6 +175,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
     }
 
     fun reset(fileContent: String, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
+        this.cachedTreeState = null
         this.renderer = renderer
         this.latestOnScreenModelDimensions = null
         this.camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
@@ -600,8 +605,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
     private fun cameraOriginToPinCenter(modelRect: Rectangle2D.Float, zoom: Point2D.Float = camera.zoom): Point2D.Float {
         val modelCenter = camera.fromCameraView(Point2D.Float(modelRect.x + modelRect.width / 2.0f, modelRect.y + modelRect.height / 2.0f))
         val screenCenter = Point2D.Float(width / 2.0f, height / 2.0f)
-        val camOriginPin = Point2D.Float(zoom.x * modelCenter.x - screenCenter.x, zoom.y * modelCenter.y - screenCenter.y)
-        return camOriginPin
+        return Point2D.Float(zoom.x * modelCenter.x - screenCenter.x, zoom.y * modelCenter.y - screenCenter.y)
     }
 
     private fun withFps(graphics: Graphics, frameProducer: () -> Unit) {
@@ -617,8 +621,8 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         val oldColor = graphics.color
         graphics.color = Color.BLACK
         fpsCircularBuffer.add(round(1.0e9f / (endTime - startTime).toFloat()).toInt())
-        val stats = percentiles().indexes(50, 90, 95).compute(fpsCircularBuffer)
-        graphics.drawString("FPS: ${stats[50]}/${stats[90]}/${stats[95]}", 0, this.height - 20)
+        val stats = percentiles().indexes(10, 50, 90).compute(fpsCircularBuffer)
+        graphics.drawString("FPS: ${stats[10]}/${stats[50]}/${stats[90]}", 0, this.height - 20)
         graphics.color = oldColor
     }
 

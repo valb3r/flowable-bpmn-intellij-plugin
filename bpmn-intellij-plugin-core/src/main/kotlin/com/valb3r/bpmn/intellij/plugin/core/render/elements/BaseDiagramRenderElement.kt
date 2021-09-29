@@ -25,8 +25,7 @@ fun DiagramElementId.elemIdToRemove(): DiagramElementId {
 
 abstract class BaseDiagramRenderElement(
         open val elementId: DiagramElementId,
-        protected open val state: RenderState,
-        internal open var viewTransform: ViewTransform = state.baseTransform
+        protected open val state: () -> RenderState
 ) {
 
     var isVisible: Boolean? = null
@@ -41,11 +40,11 @@ abstract class BaseDiagramRenderElement(
     open val parents: MutableList<BaseBpmnRenderElement> = mutableListOf()
 
     open fun multipleElementsSelected(): Boolean {
-        return state.ctx.selectedIds.size > 1
+        return state().ctx.selectedIds.size > 1
     }
 
     open fun multipleElementsDragged(): Boolean {
-        return state.ctx.interactionContext.draggedIds.size > 1
+        return state().ctx.interactionContext.draggedIds.size > 1
     }
 
     open fun isVisible(): Boolean {
@@ -53,15 +52,15 @@ abstract class BaseDiagramRenderElement(
     }
 
     open fun isActive(): Boolean {
-        return state.ctx.selectedIds.contains(elementId)
+        return state().ctx.selectedIds.contains(elementId)
     }
 
     open fun isTargetedByDrag(): Boolean {
-        return state.ctx.interactionContext.dragTargetedIds.contains(elementId)
+        return state().ctx.interactionContext.dragTargetedIds.contains(elementId)
     }
 
     open fun isDragged(): Boolean {
-        return state.ctx.interactionContext.draggedIds.contains(elementId)
+        return state().ctx.interactionContext.draggedIds.contains(elementId)
     }
 
     open fun isActiveOrDragged(): Boolean {
@@ -71,11 +70,11 @@ abstract class BaseDiagramRenderElement(
     open fun applyContextChangesAndPrecomputeExpandViewTransform() {
         propagateActivityStateToChildren()
 
-        val dx = state.ctx.interactionContext.dragCurrent.x - state.ctx.interactionContext.dragStart.x
-        val dy = state.ctx.interactionContext.dragCurrent.y - state.ctx.interactionContext.dragStart.y
+        val dx = state().ctx.interactionContext.dragCurrent.x - state().ctx.interactionContext.dragStart.x
+        val dy = state().ctx.interactionContext.dragCurrent.y - state().ctx.interactionContext.dragStart.y
 
         if (abs(dx) + abs(dy) > EPSILON) {
-            propagateDragging(state.ctx, dx, dy)
+            propagateDragging(state().ctx, dx, dy)
         }
 
         propagateStateChangesApplied()
@@ -84,7 +83,7 @@ abstract class BaseDiagramRenderElement(
     }
 
     open fun render(): MutableMap<DiagramElementId, AreaWithZindex> {
-        val result = doRenderWithoutChildren(state.ctx).toMutableMap()
+        val result = doRenderWithoutChildren(state().ctx).toMutableMap()
         children.sortedBy { it.zIndex() }.forEach { result += it.render() }
         if (isActive() && !multipleElementsSelected()) {
             result += drawActionsElement()
@@ -97,7 +96,7 @@ abstract class BaseDiagramRenderElement(
         val compensated = compensateExpansionViewForDrag(dx, dy)
         val result = doOnDragEndWithoutChildren(compensated.x, compensated.y, droppedOn, allDroppedOnAreas)
         children.forEach { result += it.onDragEnd(compensated.x, compensated.y, droppedOn, allDroppedOnAreas) }
-        viewTransform = state.baseTransform
+        state().viewTransforms[elementId] = state().baseTransform
         return result
     }
 
@@ -134,8 +133,8 @@ abstract class BaseDiagramRenderElement(
     }
 
     protected open fun drawActionsElement(): Map<DiagramElementId, AreaWithZindex> {
-        val rect = actionsRect(currentOnScreenRect(state.ctx.canvas.camera))
-        state.ctx.canvas.drawRectNoFill(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
+        val rect = actionsRect(currentOnScreenRect(state().ctx.canvas.camera))
+        state().ctx.canvas.drawRectNoFill(Point2D.Float(rect.x, rect.y), rect.width, rect.height, ACTION_AREA_STROKE, Colors.ACTIONS_BORDER_COLOR.color)
         val rightActionsLocation = actionsAnchorRight(rect)
         return drawActionsRight(rightActionsLocation.x, rightActionsLocation.y).toMutableMap()
     }
@@ -153,7 +152,7 @@ abstract class BaseDiagramRenderElement(
     }
 
     protected open fun dragTo(dx: Float, dy: Float) {
-        viewTransform = DragViewTransform(dx, dy, PreTransformHandler(mutableListOf(viewTransform)))
+        state().viewTransforms[elementId] = DragViewTransform(dx, dy, PreTransformHandler(mutableListOf(state().viewTransform(elementId))))
         doDragToWithoutChildren(dx, dy)
         children.forEach { it.dragTo(dx, dy) }
     }
@@ -163,6 +162,7 @@ abstract class BaseDiagramRenderElement(
             isVisible = true
             children.forEach { it.isVisible = true }
         } else {
+            children.forEach { it.isVisible = false }
             children.forEach { it.propagateActivityStateToChildren() }
         }
     }
@@ -267,12 +267,12 @@ abstract class BaseDiagramRenderElement(
 
     private fun findExpansionViewTransformationsToCompensate(): ViewTransformBatch {
         val toUndo = mutableListOf<ExpandViewTransform>()
-        val transform = viewTransform
+        val transform = state().viewTransform(elementId)
         if (transform is ExpandViewTransform) {
             toUndo += transform
         }
 
-        toUndo += viewTransform.listTransformsOfType(ExpandViewTransform::class.java)
+        toUndo += transform.listTransformsOfType(ExpandViewTransform::class.java)
         return ViewTransformBatch(toUndo)
     }
 
@@ -280,7 +280,7 @@ abstract class BaseDiagramRenderElement(
      * Causes expand view transform to cache service task quirks (they do not change their size, only position)
      */
     private fun prepareExpandViewTransform() {
-        currentOnScreenRect(state.ctx.canvas.camera)
-        children.forEach {it.currentOnScreenRect(state.ctx.canvas.camera)}
+        currentOnScreenRect(state().ctx.canvas.camera)
+        children.forEach {it.currentOnScreenRect(state().ctx.canvas.camera)}
     }
 }

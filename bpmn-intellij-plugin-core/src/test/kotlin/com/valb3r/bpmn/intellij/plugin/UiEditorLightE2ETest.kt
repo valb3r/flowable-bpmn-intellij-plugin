@@ -57,10 +57,10 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         val deleteElem = findExactlyOneDeleteElem().shouldNotBeNull()
         clickOnId(deleteElem)
 
-        renderResult.shouldNotBeNull().shouldNotHaveKey(serviceTaskStartDiagramId)
+        renderResult.shouldNotBeNull().areas.shouldNotHaveKey(serviceTaskStartDiagramId)
         findFirstNewLinkElem().shouldBeNull()
         findFirstDeleteElem().shouldBeNull()
-        renderResult.shouldNotBeNull().shouldHaveKey(serviceTaskEndDiagramId)
+        renderResult.shouldNotBeNull().areas.shouldHaveKey(serviceTaskEndDiagramId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
@@ -748,10 +748,10 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         val deleteElem = findExactlyOneDeleteElem().shouldNotBeNull()
         clickOnId(deleteElem)
 
-        renderResult.shouldNotBeNull().shouldNotHaveKey(serviceTaskStartDiagramId)
+        renderResult.shouldNotBeNull().areas.shouldNotHaveKey(serviceTaskStartDiagramId)
         findFirstNewLinkElem().shouldBeNull()
         findFirstDeleteElem().shouldBeNull()
-        renderResult.shouldNotBeNull().shouldHaveKey(serviceTaskEndDiagramId)
+        renderResult.shouldNotBeNull().areas.shouldHaveKey(serviceTaskEndDiagramId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())

@@ -14,7 +14,7 @@ class NoIconShape(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
         shape: ShapeElement,
-        state: RenderState,
+        state: () -> RenderState,
         private val backgroundColor: Colors = Colors.CALL_ACTIVITY_COLOR,
         private val borderColor: Colors =  Colors.ELEMENT_BORDER_COLOR,
         private val textColor: Colors = Colors.INNER_TEXT_COLOR,

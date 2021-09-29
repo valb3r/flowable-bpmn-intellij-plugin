@@ -1,7 +1,11 @@
 package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.intellij.openapi.project.Project
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElement
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseDiagramRenderElement
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.state.CurrentStateProvider
 
 data class RenderContext(
@@ -9,5 +13,6 @@ data class RenderContext(
         val canvas: CanvasPainter,
         val selectedIds: Set<DiagramElementId>,
         val interactionContext: ElementInteractionContext,
-        val stateProvider: CurrentStateProvider
+        val stateProvider: CurrentStateProvider,
+        var cachedDom: TreeState? = null
 )

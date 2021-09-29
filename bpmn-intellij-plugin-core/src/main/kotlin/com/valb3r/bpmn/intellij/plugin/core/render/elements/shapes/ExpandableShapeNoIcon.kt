@@ -23,7 +23,7 @@ class ExpandableShapeNoIcon(
         plusIcon: Icon,
         minusIcon: Icon,
         shape: ShapeElement,
-        state: RenderState,
+        state: () -> RenderState,
         private val backgroundColor: Colors = Colors.TRANSACTION_COLOR,
         private val borderColor: Colors =  Colors.TRANSACTION_ELEMENT_BORDER_COLOR,
         private val textColor: Colors = Colors.INNER_TEXT_COLOR,
@@ -61,7 +61,7 @@ class ExpandableShapeNoIcon(
             return
         }
 
-        state.baseTransform.addPreTransform(ExpandViewTransform(
+        state().baseTransform.addPreTransform(ExpandViewTransform(
                 elementId,
                 shape.rectBounds(),
                 shape.rectBounds().centerX.toFloat(),

@@ -53,8 +53,10 @@ class IntelliJFileCommitter(private val parser: BpmnParser, private val project:
  */
 class ProcessModelUpdateEvents(private val committer: FileCommitter, private val updates: MutableList<Order<out Event>>) {
 
+    var allBeforeThis: Int = 0
+        private set
+
     private var baseFileContent: String? = null
-    private var allBeforeThis: Int = 0
     private var expectedFileHash: String = ""
 
     private val fileCommitListeners: MutableList<Any> = ArrayList()

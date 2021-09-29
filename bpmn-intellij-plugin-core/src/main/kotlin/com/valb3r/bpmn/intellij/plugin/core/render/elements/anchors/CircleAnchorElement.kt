@@ -20,14 +20,14 @@ abstract class CircleAnchorElement(
         currentLocation: Point2D.Float,
         private val radius: Float,
         private val bodyColor: Colors,
-        state: RenderState
+        state: () -> RenderState
 ) : AnchorElement(elementId, attachedTo, currentLocation, state) {
 
     override val areaType: AreaType
         get() = AreaType.POINT
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        return viewTransform.transform(
+        return state().viewTransform(elementId).transform(
                 elementId,
                 RectangleTransformationIntrospection(
                         Rectangle2D.Float(
@@ -61,7 +61,7 @@ abstract class CircleAnchorElement(
                 currentColor
         )
 
-        state.ctx.interactionContext.dragEndCallbacks[elementId] = {
+        state().ctx.interactionContext.dragEndCallbacks[elementId] = {
             dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: Map<BpmnElementId, AreaWithZindex> -> onDragEnd(dx, dy, droppedOn, allDroppedOn)
         }
         return mutableMapOf(elementId to AreaWithZindex(area, areaType, waypointAnchors(ctx.canvas.camera), index = zIndex()))
