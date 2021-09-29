@@ -119,7 +119,7 @@ abstract class BaseUiTest {
     protected val canvasBuilder = CanvasBuilder(renderer)
     protected val canvas = setCanvas(project, Canvas(project, DefaultCanvasConstants().copy(baseCursorSize = 3.0f))) // Using small cursor size for clarity
     protected val uiEventBus = setUiEventBus(project, UiEventBus())
-    protected var renderResult: Map<DiagramElementId, AreaWithZindex>? = null
+    protected var renderResult: RenderResult? = null
 
     protected val basicProcess = BpmnProcessObject(
             BpmnProcess(
@@ -192,7 +192,7 @@ abstract class BaseUiTest {
         whenever(icons.centerImage).thenReturn(mock())
 
         doAnswer {
-            val result = it.callRealMethod()!! as Map<DiagramElementId, AreaWithZindex>
+            val result = it.callRealMethod()!! as RenderResult
             renderResult = result
             return@doAnswer result
         }.whenever(renderer).render(any())
@@ -304,7 +304,7 @@ abstract class BaseUiTest {
     }
 
     protected fun elementCenter(elemId: DiagramElementId): Point2D.Float {
-        val area = renderResult?.get(elemId).shouldNotBeNull()
+        val area = renderResult?.areas?.get(elemId).shouldNotBeNull()
         val bounds = area.area.bounds2D.shouldNotBeNull()
         return Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat())
     }
@@ -315,10 +315,10 @@ abstract class BaseUiTest {
     }
 
     protected fun verifyServiceTasksAreDrawn() {
-        renderResult.shouldNotBeNull().shouldHaveKey(serviceTaskStartDiagramId)
-        renderResult.shouldNotBeNull().shouldHaveKey(serviceTaskEndDiagramId)
-        renderResult?.get(serviceTaskStartDiagramId)!!.area.bounds2D.shouldBeEqualTo(Rectangle2D.Float(startElemX, startElemY, serviceTaskSize, serviceTaskSize))
-        renderResult?.get(serviceTaskEndDiagramId)!!.area.bounds2D.shouldBeEqualTo(Rectangle2D.Float(endElemX, endElemY, serviceTaskSize, serviceTaskSize))
+        renderResult.shouldNotBeNull().areas.shouldHaveKey(serviceTaskStartDiagramId)
+        renderResult.shouldNotBeNull().areas.shouldHaveKey(serviceTaskEndDiagramId)
+        renderResult?.areas?.get(serviceTaskStartDiagramId)!!.area.bounds2D.shouldBeEqualTo(Rectangle2D.Float(startElemX, startElemY, serviceTaskSize, serviceTaskSize))
+        renderResult?.areas?.get(serviceTaskEndDiagramId)!!.area.bounds2D.shouldBeEqualTo(Rectangle2D.Float(endElemX, endElemY, serviceTaskSize, serviceTaskSize))
     }
 
     protected fun prepareOneSubProcessView() {
@@ -583,13 +583,13 @@ abstract class BaseUiTest {
         initializeCanvas()
     }
 
-    protected fun elemAreaById(id: DiagramElementId) = renderResult?.get(id)!!
+    protected fun elemAreaById(id: DiagramElementId) = renderResult?.areas?.get(id)!!
 
-    protected fun findFirstNewLinkElem() = renderResult?.keys?.firstOrNull { it.id.contains(newLink) }
-    protected fun findFirstDeleteElem() = renderResult?.keys?.firstOrNull { it.id.contains(doDel) }
+    protected fun findFirstNewLinkElem() = renderResult?.areas?.keys?.firstOrNull { it.id.contains(newLink) }
+    protected fun findFirstDeleteElem() = renderResult?.areas?.keys?.firstOrNull { it.id.contains(doDel) }
 
-    protected fun findExactlyOneNewLinkElem() = renderResult?.keys?.filter { it.id.contains(newLink) }?.shouldHaveSize(1)?.first()
-    protected fun findExactlyOneDeleteElem() = renderResult?.keys?.filter { it.id.contains(doDel) }?.shouldHaveSize(1)?.first()
+    protected fun findExactlyOneNewLinkElem() = renderResult?.areas?.keys?.filter { it.id.contains(newLink) }?.shouldHaveSize(1)?.first()
+    protected fun findExactlyOneDeleteElem() = renderResult?.areas?.keys?.filter { it.id.contains(doDel) }?.shouldHaveSize(1)?.first()
 
     protected fun String.asResource(): String? = BaseUiTest::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
 }
