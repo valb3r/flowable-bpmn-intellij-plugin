@@ -162,6 +162,7 @@ abstract class BaseDiagramRenderElement(
             isVisible = true
             children.forEach { it.isVisible = true }
         } else {
+            children.forEach { it.isVisible = false }
             children.forEach { it.propagateActivityStateToChildren() }
         }
     }

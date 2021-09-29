@@ -41,12 +41,11 @@ import java.awt.BasicStroke
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.util.*
-import java.util.concurrent.atomic.AtomicReference
 import javax.swing.Icon
 
 interface BpmnProcessRenderer {
-    fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
-    fun renderOnlyDiagram(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex>
+    fun render(ctx: RenderContext): RenderResult
+    fun renderOnlyDiagram(ctx: RenderContext): RenderResult
 }
 
 private val lastState = Collections.synchronizedMap(WeakHashMap<Project,  RenderedState>())
@@ -82,8 +81,6 @@ fun lastRenderedState(project: Project): RenderedState? {
 }
 
 class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconProvider) : BpmnProcessRenderer {
-    private val cachedRenderCtx = Collections.synchronizedMap(WeakHashMap<Project, CachedRenderTreeWithState?>())
-
     private val undoRedoStartMargin = 20.0f
     private val iconMargin = 10.0f
     private val closeAnchorRadius = 2f
@@ -101,15 +98,15 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     private val DASHED_STROKE = BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(5.0f), 0.0f)
     private val ACTION_AREA_STROKE = BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0.0f, floatArrayOf(2.0f), 0.0f)
 
-    override fun render(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+    override fun render(ctx: RenderContext): RenderResult {
         return doRender(ctx)
     }
 
-    override fun renderOnlyDiagram(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
+    override fun renderOnlyDiagram(ctx: RenderContext): RenderResult {
         return doRender(ctx, true)
     }
 
-    private fun doRender(ctx: RenderContext, onlyDiagram: Boolean = false): MutableMap<DiagramElementId, AreaWithZindex> {
+    private fun doRender(ctx: RenderContext, onlyDiagram: Boolean = false): RenderResult {
         val elementsByDiagramId = mutableMapOf<DiagramElementId, BaseDiagramRenderElement>()
         val currentState = ctx.stateProvider.currentState()
         val history = currentDebugger(project)?.executionSequence(project, currentState.processId.id)?.history ?: emptyList()
@@ -124,14 +121,14 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
         val elements = mutableListOf<BaseBpmnRenderElement>()
         val elementsById = mutableMapOf<BpmnElementId, BaseDiagramRenderElement>()
-        val root = buildRenderTree(project, state, elements, elementsById, elementsByDiagramId)
+        val tree = buildRenderTree(state, elements, elementsById, elementsByDiagramId)
 
-        root.applyContextChangesAndPrecomputeExpandViewTransform()
-        val rendered = root.render()
+        tree.domRoot.applyContextChangesAndPrecomputeExpandViewTransform()
+        val rendered = tree.domRoot.render()
         val modelRect = computeModelRect(rendered.values)
 
         if (onlyDiagram) {
-            return rendered
+            return RenderResult(rendered, tree)
         }
 
         // Overlay system elements on top of rendered BPMN diagram
@@ -142,35 +139,35 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
         lastState[ctx.project] = RenderedState(state, elementsById)
         currentUiEventBus(ctx.project).publish(ViewRectangleChangeEvent(modelRect))
-        return rendered
+        return RenderResult(rendered, tree)
     }
 
     private fun buildRenderTree(
-        project: Project,
         state: RenderState,
         elements: MutableList<BaseBpmnRenderElement>,
         elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>,
         elementsByDiagramId: MutableMap<DiagramElementId, BaseDiagramRenderElement>
-    ): BaseBpmnRenderElement {
-        val cached = cachedRenderCtx.get(project)
+    ): TreeState {
+        val cached = state.ctx.cachedDom
         val version = state.currentState.version
         if (version == cached?.version) {
-            cached.state = state
             elementsById.putAll(cached.elementsById)
             elementsByDiagramId.putAll(cached.elementsByDiagramId)
-            return cached.cachedElem!!
+            cached.state = state
+            return cached
         }
 
-        val cachedRenderState = CachedRenderTreeWithState(state, version, elementsById, elementsByDiagramId)
-        val root = createRootProcessElem({ cachedRenderState.state }, elements, elementsById)
-        createShapes({ cachedRenderState.state }, elements, elementsById)
-        createEdges({ cachedRenderState.state }, elements, elementsById)
-        linkChildrenToParent({ cachedRenderState.state }, elementsById)
+        val result = TreeState(state, elementsById, elementsByDiagramId, version)
+
+        val root = createRootProcessElem({ result.state }, elements, elementsById)
+        createShapes({ result.state }, elements, elementsById)
+        createEdges({ result.state }, elements, elementsById)
+        linkChildrenToParent({ result.state }, elementsById)
         // Not all elements have BpmnElementId, but they have DiagramElementId
         linkDiagramElementId(root, elementsByDiagramId)
-        cachedRenderState.cachedElem = root
-        cachedRenderCtx[project] = cachedRenderState
-        return root
+        result.domRoot = root
+
+        return result
     }
 
     private fun createRootProcessElem(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>): BaseBpmnRenderElement {
@@ -391,12 +388,18 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         val height = (maxY - minY).toFloat() * fitScaleModelFactor
         return Rectangle2D.Float(cx - width / 2.0f, cy - height / 2.0f, width, height)
     }
+}
 
-    private class CachedRenderTreeWithState(
-        var state: RenderState,
-        val version: Long,
-        val elementsById: Map<BpmnElementId, BaseDiagramRenderElement>,
-        val elementsByDiagramId: Map<DiagramElementId, BaseDiagramRenderElement>,
-        var cachedElem: BaseBpmnRenderElement? = null
-    )
+data class RenderResult(
+    val areas: Map<DiagramElementId, AreaWithZindex>,
+    val state: TreeState
+)
+
+data class TreeState (
+    internal var state: RenderState,
+    internal val elementsById: Map<BpmnElementId, BaseDiagramRenderElement>,
+    internal val elementsByDiagramId: Map<DiagramElementId, BaseDiagramRenderElement>,
+    internal val version: Long,
+) {
+    internal lateinit var domRoot: BaseBpmnRenderElement
 }
