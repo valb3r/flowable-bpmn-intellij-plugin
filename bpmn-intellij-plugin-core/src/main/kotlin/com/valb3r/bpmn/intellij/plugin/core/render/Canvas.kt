@@ -617,8 +617,8 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         val oldColor = graphics.color
         graphics.color = Color.BLACK
         fpsCircularBuffer.add(round(1.0e9f / (endTime - startTime).toFloat()).toInt())
-        val stats = percentiles().indexes(50, 90, 95).compute(fpsCircularBuffer)
-        graphics.drawString("FPS: ${stats[50]}/${stats[90]}/${stats[95]}", 0, this.height - 20)
+        val stats = percentiles().indexes(10, 50, 90).compute(fpsCircularBuffer)
+        graphics.drawString("FPS: ${stats[10]}/${stats[50]}/${stats[90]}", 0, this.height - 20)
         graphics.color = oldColor
     }
 
