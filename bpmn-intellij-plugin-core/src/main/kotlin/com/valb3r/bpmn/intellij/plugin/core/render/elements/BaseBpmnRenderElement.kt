@@ -7,7 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementRemovedEvent
 abstract class BaseBpmnRenderElement(
         elementId: DiagramElementId,
         open val bpmnElementId: BpmnElementId,
-        override val state: RenderState
+        override val state: () -> RenderState,
 ): BaseDiagramRenderElement(elementId, state) {
 
     override fun getEventsToDeleteElement(): List<BpmnElementRemovedEvent> {

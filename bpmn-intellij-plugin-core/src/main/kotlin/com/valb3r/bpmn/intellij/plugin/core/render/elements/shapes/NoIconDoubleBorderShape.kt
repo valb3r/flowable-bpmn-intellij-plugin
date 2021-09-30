@@ -14,7 +14,7 @@ class NoIconDoubleBorderShape(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
         shape: ShapeElement,
-        state: RenderState,
+        state: () -> RenderState,
         private val backgroundColor: Colors = Colors.PROCESS_COLOR,
         private val borderColor: Colors =  Colors.ELEMENT_BORDER_COLOR,
         private val innerBorderColor: Colors =  Colors.TRANSACTION_ELEMENT_BORDER_COLOR,

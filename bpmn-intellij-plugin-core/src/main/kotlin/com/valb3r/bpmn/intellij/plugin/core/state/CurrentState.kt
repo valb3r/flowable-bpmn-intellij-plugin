@@ -19,6 +19,7 @@ import com.valb3r.bpmn.intellij.plugin.core.properties.uionly.UiOnlyPropertyType
 import com.valb3r.bpmn.intellij.plugin.core.render.EdgeElementState
 import org.mapstruct.factory.Mappers
 import java.util.*
+import java.util.concurrent.atomic.AtomicLong
 
 private val currentStateProvider = Collections.synchronizedMap(WeakHashMap<Project,  CurrentStateProvider>())
 
@@ -35,9 +36,11 @@ data class CurrentState(
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
         val elementByBpmnId: Map<BpmnElementId, WithParentId>,
         val elemPropertiesByStaticElementId: Map<BpmnElementId, Map<PropertyType, Property>>,
+        val propertyWithElementByPropertyType: Map<PropertyType, Map<BpmnElementId, Property>>,
         val elemUiOnlyPropertiesByStaticElementId: Map<BpmnElementId, Map<UiOnlyPropertyType, Property>>,
         val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>,
-        val diagramByElementId: Map<BpmnElementId, DiagramElementId> = elementByDiagramId.map { Pair(it.value, it.key) }.toMap()
+        val version: Long,
+        val diagramByElementId: Map<BpmnElementId, DiagramElementId> = elementByDiagramId.map { Pair(it.value, it.key) }.toMap(),
 ) {
     fun processDiagramId(): DiagramElementId {
         return processDiagramId(processId)
@@ -52,10 +55,12 @@ data class CurrentState(
 
 // Global singleton
 class CurrentStateProvider(private val project: Project) {
-    private var fileState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet())
-    private var currentState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet())
+    private var fileState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet(), 0L)
+    private var currentState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet(), 0L)
+    private val version = AtomicLong(0L)
 
     fun resetStateTo(fileContent: String, processObject: BpmnProcessObjectView) {
+        version.set(0L)
         fileState = CurrentState(
                 processObject.processId,
                 processObject.diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() },
@@ -64,7 +69,9 @@ class CurrentStateProvider(private val project: Project) {
                 processObject.elementByStaticId,
                 processObject.elemPropertiesByElementId,
                 emptyMap(),
-                emptySet()
+                emptyMap(),
+                emptySet(),
+                0L
         )
         currentState = fileState
         updateEventsRegistry(project).reset(fileContent)
@@ -80,11 +87,14 @@ class CurrentStateProvider(private val project: Project) {
         val updatedElementByDiagramId = state.elementByDiagramId.toMutableMap()
         val updatedElementByStaticId = state.elementByBpmnId.toMutableMap()
         val updatedElemPropertiesByStaticElementId = state.elemPropertiesByStaticElementId.toMutableMap()
+        val updatedPropertyWithElementByPropertyType = mutableMapOf<PropertyType, MutableMap<BpmnElementId, Property>>()
         val updatedElemUiOnlyPropertiesByStaticElementId = state.elemUiOnlyPropertiesByStaticElementId.toMutableMap()
         var updatedProcessId = state.processId
 
-        val undoRedoStatus = updateEventsRegistry(project).undoRedoStatus()
-        val updates = updateEventsRegistry(project).getUpdateEventList()
+        val updateEventsRegistry: ProcessModelUpdateEvents = updateEventsRegistry(project)
+        val undoRedoStatus = updateEventsRegistry.undoRedoStatus()
+        val updates = updateEventsRegistry.getUpdateEventList()
+        val version = updateEventsRegistry.allBeforeThis
 
         updates.map { it.event }.forEach { event ->
             when (event) {
@@ -137,6 +147,12 @@ class CurrentStateProvider(private val project: Project) {
             }
         }
 
+        updatedElemPropertiesByStaticElementId.forEach {(elemId, props) ->
+            props.forEach {(type, value) ->
+                updatedPropertyWithElementByPropertyType.computeIfAbsent(type) { mutableMapOf() }[elemId] = value
+            }
+        }
+
         return CurrentState(
                 updatedProcessId,
                 updatedShapes,
@@ -144,8 +160,10 @@ class CurrentStateProvider(private val project: Project) {
                 updatedElementByDiagramId,
                 updatedElementByStaticId,
                 updatedElemPropertiesByStaticElementId,
+                updatedPropertyWithElementByPropertyType,
                 updatedElemUiOnlyPropertiesByStaticElementId,
-                undoRedoStatus
+                undoRedoStatus,
+                version.toLong()
         )
     }
 

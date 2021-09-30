@@ -1,8 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin
 
 import com.nhaarman.mockitokotlin2.*
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.mock
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
@@ -59,10 +57,10 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         val deleteElem = findExactlyOneDeleteElem().shouldNotBeNull()
         clickOnId(deleteElem)
 
-        renderResult.shouldNotBeNull().shouldNotHaveKey(serviceTaskStartDiagramId)
+        renderResult.shouldNotBeNull().areas.shouldNotHaveKey(serviceTaskStartDiagramId)
         findFirstNewLinkElem().shouldBeNull()
         findFirstDeleteElem().shouldBeNull()
-        renderResult.shouldNotBeNull().shouldHaveKey(serviceTaskEndDiagramId)
+        renderResult.shouldNotBeNull().areas.shouldHaveKey(serviceTaskEndDiagramId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
@@ -750,10 +748,10 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         val deleteElem = findExactlyOneDeleteElem().shouldNotBeNull()
         clickOnId(deleteElem)
 
-        renderResult.shouldNotBeNull().shouldNotHaveKey(serviceTaskStartDiagramId)
+        renderResult.shouldNotBeNull().areas.shouldNotHaveKey(serviceTaskStartDiagramId)
         findFirstNewLinkElem().shouldBeNull()
         findFirstDeleteElem().shouldBeNull()
-        renderResult.shouldNotBeNull().shouldHaveKey(serviceTaskEndDiagramId)
+        renderResult.shouldNotBeNull().areas.shouldHaveKey(serviceTaskEndDiagramId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())

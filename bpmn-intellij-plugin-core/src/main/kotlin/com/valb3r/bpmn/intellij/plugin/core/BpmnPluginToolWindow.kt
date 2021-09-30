@@ -36,7 +36,12 @@ import javax.swing.table.DefaultTableModel
 import kotlin.math.abs
 
 
-class BpmnPluginToolWindow(private val project: Project, private val bpmnParser: BpmnParser, private val onFileOpenCallback: (PsiFile) -> Unit) {
+class BpmnPluginToolWindow(
+    private val project: Project,
+    private val bpmnParser: BpmnParser,
+    private val onBadContentCallback: ((String) -> Unit)? = null,
+    private val onFileOpenCallback: (PsiFile) -> Unit
+) {
 
     private val log = Logger.getInstance(BpmnPluginToolWindow::class.java)
 
@@ -47,7 +52,7 @@ class BpmnPluginToolWindow(private val project: Project, private val bpmnParser:
     private lateinit var canvasVScroll: JScrollBar
     private lateinit var canvasHScroll: JScrollBar
 
-    private val canvasBuilder = CanvasBuilder(DefaultBpmnProcessRenderer(project, currentIconProvider()))
+    private val canvasBuilder = CanvasBuilder(DefaultBpmnProcessRenderer(project, currentIconProvider()), onBadContentCallback)
     private val canvas: Canvas = currentCanvas(project)
     private lateinit var scrollHandler: ScrollBarInteractionHandler
 
@@ -67,6 +72,8 @@ class BpmnPluginToolWindow(private val project: Project, private val bpmnParser:
     fun getContent() = this.mainToolWindowForm
 
     fun run(bpmnFile: PsiFile, context: BpmnActionContext) {
+        if (this.canvasBuilder.assertFileContentAndShowError(bpmnParser, bpmnFile.virtualFile, onBadContentCallback)) return
+
         val table = MultiEditJTable(DefaultTableModel())
         table.autoResizeMode = JTable.AUTO_RESIZE_OFF
         table.rowHeight = 24

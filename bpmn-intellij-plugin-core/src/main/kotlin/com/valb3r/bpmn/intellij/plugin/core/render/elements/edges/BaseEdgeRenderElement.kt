@@ -1,9 +1,11 @@
 package com.valb3r.bpmn.intellij.plugin.core.render.elements.edges
 
+import com.jetbrains.rd.util.firstOrNull
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.IdentifiableWaypoint
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
@@ -27,7 +29,7 @@ abstract class BaseEdgeRenderElement(
         bpmnElementId: BpmnElementId,
         protected val edge: EdgeWithIdentifiableWaypoints,
         private val edgeColor: Colors,
-        state: RenderState
+        state: () -> RenderState
 ): BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 
     private val anchors = computeAnchors()
@@ -82,7 +84,7 @@ abstract class BaseEdgeRenderElement(
     }
 
     override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
-        return edge.waypoint.filter { it.physical && !state.ctx.selectedIds.contains(it.id) }.map { Anchor(Point2D.Float(it.x, it.y)) }.toMutableSet()
+        return edge.waypoint.filter { it.physical && !state().ctx.selectedIds.contains(it.id) }.map { Anchor(Point2D.Float(it.x, it.y)) }.toMutableSet()
     }
 
     override fun shapeAnchors(camera: Camera): MutableSet<Anchor> {
@@ -90,10 +92,10 @@ abstract class BaseEdgeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        val minX = edge.waypoint.minBy { it.x }?.x ?: 0.0f
-        val minY = edge.waypoint.minBy { it.y }?.y ?: 0.0f
-        val maxX = edge.waypoint.maxBy { it.x }?.x ?: 0.0f
-        val maxY = edge.waypoint.maxBy { it.y }?.y ?: 0.0f
+        val minX = edge.waypoint.minBy { it: IdentifiableWaypoint -> it.x }?.x ?: 0.0f
+        val minY = edge.waypoint.minBy { it: IdentifiableWaypoint -> it.y }?.y ?: 0.0f
+        val maxX = edge.waypoint.maxBy { it: IdentifiableWaypoint -> it.x }?.x ?: 0.0f
+        val maxY = edge.waypoint.maxBy { it: IdentifiableWaypoint -> it.y }?.y ?: 0.0f
 
         // Edge itself can't be translated, so no viewTransform
         return Rectangle2D.Float(
@@ -109,26 +111,26 @@ abstract class BaseEdgeRenderElement(
     }
 
     private fun drawNameIfAvailable(waypoints: List<Point2D.Float>, color: Color) {
-        val name = state.currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.NAME)?.value as String? ?: return
+        val name = state().currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.NAME)?.value as String? ?: return
         val longestSegment = waypoints
                 .mapIndexedNotNull {pos, it -> if (0 == pos) null else Pair(waypoints[pos - 1], it)}
-                .maxBy { it.first.distance(it.second) } ?: return
-        state.ctx.canvas.drawWrappedSingleLine(longestSegment.first, longestSegment.second, name, color)
+            .maxBy { it: Pair<Point2D.Float, Point2D.Float> -> it.first.distance(it.second) } ?: return
+        state().ctx.canvas.drawWrappedSingleLine(longestSegment.first, longestSegment.second, name, color)
     }
 
     private fun drawHistoricalLabel() {
-        if (!state.history.contains(bpmnElementId)) {
+        if (!state().history.contains(bpmnElementId)) {
             return
         }
 
-        val indexes = state.history.mapIndexed { pos, id -> if (id == bpmnElementId) pos else null }.filterNotNull()
+        val indexes = state().history.mapIndexed { pos, id -> if (id == bpmnElementId) pos else null }.filterNotNull()
         val midPoints = anchors.filterIsInstance<VirtualWaypoint>().map { it.transformedLocation }
-        state.ctx.canvas.drawTextNoCameraTransform(midPoints[midPoints.size / 2], indexes.toString(), Colors.INNER_TEXT_COLOR.color, Colors.DEBUG_ELEMENT_COLOR.color)
+        state().ctx.canvas.drawTextNoCameraTransform(midPoints[midPoints.size / 2], indexes.toString(), Colors.INNER_TEXT_COLOR.color, Colors.DEBUG_ELEMENT_COLOR.color)
     }
 
     private fun renderDefaultMarkIfNeeded(ctx: RenderContext, anchors: List<Point2D.Float>): Area {
-        val sourceRefOf = state.currentState.elemPropertiesByStaticElementId.filter { it.value[PropertyType.DEFAULT_FLOW]?.value == bpmnElementId.id }
-        if (sourceRefOf.isEmpty()) {
+        val sourceRefOfExists = state().currentState.propertyWithElementByPropertyType[PropertyType.DEFAULT_FLOW]?.any { it.value.value == bpmnElementId.id } ?: false
+        if (!sourceRefOfExists) {
             return Area()
         }
 
@@ -162,12 +164,12 @@ abstract class BaseEdgeRenderElement(
     private fun findAttachedToElement(physicalPos: Int, numPhysicals: Int): DiagramElementId? {
         return when (physicalPos) {
             0 -> {
-                val bpmnElemId = state.currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.SOURCE_REF)?.value as String?
-                bpmnElemId?.let {state.currentState.diagramByElementId[BpmnElementId(it)] }
+                val bpmnElemId = state().currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.SOURCE_REF)?.value as String?
+                bpmnElemId?.let {state().currentState.diagramByElementId[BpmnElementId(it)] }
             }
             numPhysicals - 1 -> {
-                val bpmnElemId = state.currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.TARGET_REF)?.value as String?
-                bpmnElemId?.let {state.currentState.diagramByElementId[BpmnElementId(it)] }
+                val bpmnElemId = state().currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.TARGET_REF)?.value as String?
+                bpmnElemId?.let {state().currentState.diagramByElementId[BpmnElementId(it)] }
             }
             else -> null
         }

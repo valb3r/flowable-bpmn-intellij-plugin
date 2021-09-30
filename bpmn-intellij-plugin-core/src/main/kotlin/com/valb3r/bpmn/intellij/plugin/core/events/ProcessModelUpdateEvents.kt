@@ -12,8 +12,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 
 private val updateEvents = Collections.synchronizedMap(WeakHashMap<Project,  ProcessModelUpdateEvents>())
@@ -55,8 +53,10 @@ class IntelliJFileCommitter(private val parser: BpmnParser, private val project:
  */
 class ProcessModelUpdateEvents(private val committer: FileCommitter, private val updates: MutableList<Order<out Event>>) {
 
+    var allBeforeThis: Int = 0
+        private set
+
     private var baseFileContent: String? = null
-    private var allBeforeThis: Int = 0
     private var expectedFileHash: String = ""
 
     private val fileCommitListeners: MutableList<Any> = ArrayList()
@@ -233,7 +233,9 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
 
     private fun lastDeletion(elementId: BpmnElementId): Order<out Event> {
         val cursorValue = allBeforeThis
-        return deletionsByStaticBpmnId[elementId]?.filter { it.order < cursorValue }?.maxBy { it.order } ?: Order(-1, NullEvent(elementId.id))
+        return deletionsByStaticBpmnId[elementId]?.filter { it.order < cursorValue }
+            ?.maxBy { it: Order<out Event> -> it.order }
+            ?: Order(-1, NullEvent(elementId.id))
     }
 
     data class Order<T: Event>(override val order: Int, override val event: T, override val block: EventBlock? = null): EventOrder<T>

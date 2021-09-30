@@ -1,15 +1,6 @@
-buildscript {
-    ext.kotlin_version = '1.3.72'
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
 plugins {
     id 'java'
+    id 'org.jetbrains.intellij'
     id 'org.jetbrains.kotlin.jvm'
 }
 
@@ -19,30 +10,26 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
-apply plugin: 'idea'
-apply plugin: 'org.jetbrains.intellij'
-apply plugin: 'kotlin'
-apply plugin: 'kotlin-kapt'
-
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-
     implementation project(":xml-parser-api")
 
-    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.10.1'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+    implementation "com.fasterxml.jackson.core:jackson-databind:$jackson"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson"
 
     // Tests
     testImplementation project(':flowable-xml-parser')
+    testImplementation project(":xml-parser-core")
     testImplementation project(':bpmn-intellij-plugin-common-tests')
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
-    testImplementation 'org.junit.platform:junit-platform-runner:1.6.2'
-    testImplementation 'org.amshove.kluent:kluent:1.61'
-    testImplementation 'org.mockito:mockito-inline:3.3.3'
-    testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiter"
+    testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformRunner"
+    testImplementation "org.amshove.kluent:kluent:$kluent"
+    testImplementation "org.mockito:mockito-inline:$mockitoInline"
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlin"
 }
 
 sourceSets {
@@ -50,18 +37,21 @@ sourceSets {
 }
 
 intellij {
-    version 'IU-2018.3'
-    intellij.updateSinceUntilBuild false
+    version = intellijPlatform
+    updateSinceUntilBuild = false
+    plugins = intellijPlatformPlugins
 }
 
 compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
+        apiVersion = kotlinApiVersion
     }
 }
 compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
+        apiVersion = kotlinApiVersion
     }
 }
 
@@ -80,10 +70,7 @@ test {
     }
 }
 
-jacoco {
-    // You may modify the Jacoco version here
-    toolVersion = "0.8.5"
-}
+
 
 jacocoTestReport {
     // Adjust the output of the test report

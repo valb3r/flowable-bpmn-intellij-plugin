@@ -15,7 +15,7 @@ class EllipticIconOnLayerShape(
         bpmnElementId: BpmnElementId,
         private val icon: String,
         shape: ShapeElement,
-        state: RenderState,
+        state: () -> RenderState,
         private val layerColor: Colors
 ) : ShapeRenderElement(elementId, bpmnElementId, shape, state) {
 

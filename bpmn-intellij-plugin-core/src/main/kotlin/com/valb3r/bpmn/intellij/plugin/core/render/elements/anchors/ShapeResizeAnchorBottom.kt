@@ -15,13 +15,13 @@ class ShapeResizeAnchorBottom(
         private val parent: DiagramElementId,
         private val topPoint: Point2D.Float,
         private val onDragEndCallback: (() -> MutableList<Event>),
-        state: RenderState
+        state: () -> RenderState
 ) : IconAnchorElement(elementId, parent, topPoint, state) {
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         val icon = icon()
 
-        return viewTransform.transform(
+        return state().viewTransform(elementId).transform(
                 elementId,
                 RectangleTransformationIntrospection(
                         Rectangle2D.Float(
@@ -52,7 +52,7 @@ class ShapeResizeAnchorBottom(
     }
 
     override fun icon(): Icon {
-        return state.icons.dragToResizeBottom
+        return state().icons.dragToResizeBottom
     }
 
     override fun acceptsInternalEvents(): Boolean {

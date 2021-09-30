@@ -1,12 +1,10 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements
 
-import com.github.pozo.KotlinBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
-@KotlinBuilder
 data class ShapeElement(
         override val id: DiagramElementId,
         val bpmnElement: BpmnElementId,
@@ -43,7 +41,6 @@ data class ShapeElement(
     }
 }
 
-@KotlinBuilder
 data class BoundsElement(
         val x: Float,
         val y: Float,
@@ -51,7 +48,6 @@ data class BoundsElement(
         val height: Float
 )
 
-@KotlinBuilder
 data class ShapeBoundsAnchorElement(
         val parentId: DiagramElementId,
         val bpmnElement: BpmnElementId,

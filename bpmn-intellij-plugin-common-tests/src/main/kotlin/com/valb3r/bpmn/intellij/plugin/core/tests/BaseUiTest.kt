@@ -5,13 +5,11 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.messages.MessageBus
 import com.intellij.util.messages.MessageBusConnection
 import com.nhaarman.mockitokotlin2.*
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.mock
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBodyBuilder
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryErrorEvent
@@ -121,7 +119,7 @@ abstract class BaseUiTest {
     protected val canvasBuilder = CanvasBuilder(renderer)
     protected val canvas = setCanvas(project, Canvas(project, DefaultCanvasConstants().copy(baseCursorSize = 3.0f))) // Using small cursor size for clarity
     protected val uiEventBus = setUiEventBus(project, UiEventBus())
-    protected var renderResult: Map<DiagramElementId, AreaWithZindex>? = null
+    protected var renderResult: RenderResult? = null
 
     protected val basicProcess = BpmnProcessObject(
             BpmnProcess(
@@ -133,6 +131,17 @@ abstract class BaseUiTest {
                     null
             ),
             mutableListOf()
+    )
+
+    protected val basicProcessBody = BpmnProcessBody(null, null, null, null,
+        null, null, null, null, null, null,
+        null, null, null, null, null, null,
+        null, null, null, null, null, null,
+        null, null, null, null, null,
+        null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null,
+        null, null, null, null, null
     )
 
     protected val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
@@ -183,7 +192,7 @@ abstract class BaseUiTest {
         whenever(icons.centerImage).thenReturn(mock())
 
         doAnswer {
-            val result = it.callRealMethod()!! as Map<DiagramElementId, AreaWithZindex>
+            val result = it.callRealMethod()!! as RenderResult
             renderResult = result
             return@doAnswer result
         }.whenever(renderer).render(any())
@@ -295,7 +304,7 @@ abstract class BaseUiTest {
     }
 
     protected fun elementCenter(elemId: DiagramElementId): Point2D.Float {
-        val area = renderResult?.get(elemId).shouldNotBeNull()
+        val area = renderResult?.areas?.get(elemId).shouldNotBeNull()
         val bounds = area.area.bounds2D.shouldNotBeNull()
         return Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat())
     }
@@ -306,18 +315,16 @@ abstract class BaseUiTest {
     }
 
     protected fun verifyServiceTasksAreDrawn() {
-        renderResult.shouldNotBeNull().shouldHaveKey(serviceTaskStartDiagramId)
-        renderResult.shouldNotBeNull().shouldHaveKey(serviceTaskEndDiagramId)
-        renderResult?.get(serviceTaskStartDiagramId)!!.area.bounds2D.shouldBeEqualTo(Rectangle2D.Float(startElemX, startElemY, serviceTaskSize, serviceTaskSize))
-        renderResult?.get(serviceTaskEndDiagramId)!!.area.bounds2D.shouldBeEqualTo(Rectangle2D.Float(endElemX, endElemY, serviceTaskSize, serviceTaskSize))
+        renderResult.shouldNotBeNull().areas.shouldHaveKey(serviceTaskStartDiagramId)
+        renderResult.shouldNotBeNull().areas.shouldHaveKey(serviceTaskEndDiagramId)
+        renderResult?.areas?.get(serviceTaskStartDiagramId)!!.area.bounds2D.shouldBeEqualTo(Rectangle2D.Float(startElemX, startElemY, serviceTaskSize, serviceTaskSize))
+        renderResult?.areas?.get(serviceTaskEndDiagramId)!!.area.bounds2D.shouldBeEqualTo(Rectangle2D.Float(endElemX, endElemY, serviceTaskSize, serviceTaskSize))
     }
 
     protected fun prepareOneSubProcessView() {
         val process = basicProcess.copy(
                 basicProcess.process.copy(
-                        body = BpmnProcessBodyBuilder.builder()
-                                .setSubProcess(listOf(bpmnSubProcess))
-                                .create()
+                        body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess))
                 ),
                 listOf(DiagramElement(
                         diagramMainElementId,
@@ -331,14 +338,9 @@ abstract class BaseUiTest {
     protected fun prepareOneSubProcessWithTwoServiceTasksView() {
         val process = basicProcess.copy(
                 basicProcess.process.copy(
-                        body = BpmnProcessBodyBuilder.builder()
-                                .setServiceTask(listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
-                                .setSubProcess(listOf(bpmnSubProcess))
-                                .create(),
+                        body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd), subProcess = listOf(bpmnSubProcess)),
                         children = mapOf(
-                                subprocessBpmnId to BpmnProcessBodyBuilder.builder()
-                                        .setServiceTask(listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
-                                        .create()
+                                subprocessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
                         )
                 ),
                 listOf(
@@ -360,13 +362,9 @@ abstract class BaseUiTest {
     protected fun prepareOneSubProcessWithTwoLinkedServiceTasksView() {
         val process = basicProcess.copy(
                 basicProcess.process.copy(
-                        body = BpmnProcessBodyBuilder.builder()
-                                .setSubProcess(listOf(bpmnSubProcess))
-                                .create(),
+                        body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess)),
                         children = mapOf(
-                                subprocessBpmnId to BpmnProcessBodyBuilder.builder()
-                                        .setServiceTask(listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
-                                        .create()
+                                subprocessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
                         )
                 ),
                 listOf(
@@ -390,17 +388,10 @@ abstract class BaseUiTest {
     protected fun prepareOneSubProcessThenNestedSubProcessWithOneServiceTaskView() {
         val process = basicProcess.copy(
                 basicProcess.process.copy(
-                        body = BpmnProcessBodyBuilder.builder()
-                                .setServiceTask(listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
-                                .setSubProcess(listOf(bpmnSubProcess))
-                                .create(),
+                        body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd), subProcess = listOf(bpmnSubProcess)),
                         children = mapOf(
-                                subprocessBpmnId to BpmnProcessBodyBuilder.builder()
-                                        .setSubProcess(listOf(bpmnNestedSubProcess))
-                                        .create(),
-                                subprocessInSubProcessBpmnId to BpmnProcessBodyBuilder.builder()
-                                        .setServiceTask(listOf(bpmnServiceTaskStart))
-                                        .create()
+                                subprocessBpmnId to basicProcessBody.copy(subProcess = listOf(bpmnNestedSubProcess)),
+                                subprocessInSubProcessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart))
                         )
                 ),
                 listOf(
@@ -422,15 +413,10 @@ abstract class BaseUiTest {
     protected fun prepareOneSubProcessThenNestedSubProcessWithReversedChildParentOrder() {
         val process = basicProcess.copy(
                 basicProcess.process.copy(
-                        body = BpmnProcessBodyBuilder.builder()
-                                .setSubProcess(listOf(bpmnSubProcess))
-                                .create(),
+                        body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess)),
                         children = mapOf(
-                                subprocessBpmnId to BpmnProcessBodyBuilder.builder()
-                                        .setSubProcess(listOf(bpmnNestedSubProcess))
-                                        .create(),
-                                subprocessInSubProcessBpmnId to BpmnProcessBodyBuilder.builder()
-                                        .create()
+                                subprocessBpmnId to basicProcessBody.copy(subProcess = listOf(bpmnNestedSubProcess)),
+                                subprocessInSubProcessBpmnId to basicProcessBody.copy()
                         )
                 ),
                 listOf(
@@ -451,16 +437,18 @@ abstract class BaseUiTest {
 
 
     protected fun prepareTwoServiceTaskView() {
+        prepareTwoServiceTaskView(bpmnServiceTaskStart, bpmnServiceTaskEnd)
+    }
+
+    protected fun prepareTwoServiceTaskView(one: BpmnServiceTask, two: BpmnServiceTask) {
         val process = basicProcess.copy(
-                basicProcess.process.copy(
-                        body = BpmnProcessBodyBuilder.builder()
-                                .setServiceTask(listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
-                                .create()
-                ),
-                listOf(DiagramElement(
-                        diagramMainElementId,
-                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, diagramServiceTaskEnd), listOf()))
-                )
+            basicProcess.process.copy(
+                body = basicProcessBody.copy(serviceTask = listOf(one, two))
+            ),
+            listOf(DiagramElement(
+                diagramMainElementId,
+                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, diagramServiceTaskEnd), listOf()))
+            )
         )
         whenever(parser.parse("")).thenReturn(process)
         initializeCanvas()
@@ -476,10 +464,7 @@ abstract class BaseUiTest {
 
         val process = basicProcess.copy(
                 basicProcess.process.copy(
-                        body = BpmnProcessBodyBuilder.builder()
-                                .setServiceTask(listOf(bpmnServiceTaskStart))
-                                .setBoundaryErrorEvent(listOf(boundaryEventOnServiceTask))
-                                .create()
+                    body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart), boundaryErrorEvent = listOf(boundaryEventOnServiceTask))
                 ),
                 listOf(DiagramElement(
                         diagramMainElementId,
@@ -500,10 +485,7 @@ abstract class BaseUiTest {
 
         val process = basicProcess.copy(
                 basicProcess.process.copy(
-                        body = BpmnProcessBodyBuilder.builder()
-                                .setServiceTask(listOf(bpmnServiceTaskStart))
-                                .setBoundaryErrorEvent(listOf(boundaryEventOnRoot))
-                                .create()
+                        body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart), boundaryErrorEvent = listOf(boundaryEventOnRoot))
                 ),
                 listOf(DiagramElement(
                         diagramMainElementId,
@@ -524,14 +506,9 @@ abstract class BaseUiTest {
 
         val process = basicProcess.copy(
                 basicProcess.process.copy(
-                        body = BpmnProcessBodyBuilder.builder()
-                                .setSubProcess(listOf(bpmnSubProcess))
-                                .setBoundaryErrorEvent(listOf(boundaryEventOnRoot))
-                                .create(),
+                        body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess), boundaryErrorEvent = listOf(boundaryEventOnRoot)),
                         children = mapOf(
-                                subprocessBpmnId to BpmnProcessBodyBuilder.builder()
-                                        .setServiceTask(listOf(bpmnServiceTaskStart))
-                                        .create()
+                                subprocessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart))
                         )
                 ),
                 listOf(DiagramElement(
@@ -553,14 +530,9 @@ abstract class BaseUiTest {
 
         val process = basicProcess.copy(
                 basicProcess.process.copy(
-                        body = BpmnProcessBodyBuilder.builder()
-                                .setSubProcess(listOf(bpmnSubProcess))
-                                .create(),
+                        body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess)),
                         children = mapOf(
-                                subprocessBpmnId to BpmnProcessBodyBuilder.builder()
-                                        .setServiceTask(listOf(bpmnServiceTaskStart))
-                                        .setBoundaryErrorEvent(listOf(boundaryEventOnServiceTask))
-                                        .create()
+                                subprocessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart), boundaryErrorEvent = listOf(boundaryEventOnServiceTask))
                         )
                 ),
                 listOf(DiagramElement(
@@ -582,19 +554,17 @@ abstract class BaseUiTest {
 
         val process = basicProcess.copy(
                 basicProcess.process.copy(
-                        body = BpmnProcessBodyBuilder.builder()
-                                .setSubProcess(listOf(bpmnSubProcess))
-                                .create(),
+                        body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess)),
                         children = mapOf(
-                                subprocessBpmnId to BpmnProcessBodyBuilder.builder()
-                                        .setSubProcess(listOf(bpmnNestedSubProcess))
-                                        .setServiceTask(listOf(bpmnServiceTaskStart))
-                                        .setBoundaryErrorEvent(listOf(boundaryEventOnServiceTask))
-                                        .create(),
-                                subprocessInSubProcessBpmnId to BpmnProcessBodyBuilder.builder()
-                                        .setServiceTask(listOf(bpmnServiceTaskEnd))
-                                        .setSequenceFlow(listOf(bpmnSequenceFlow))
-                                        .create()
+                                subprocessBpmnId to basicProcessBody.copy(
+                                    subProcess = listOf(bpmnNestedSubProcess),
+                                    serviceTask = listOf(bpmnServiceTaskStart),
+                                    boundaryErrorEvent = listOf(boundaryEventOnServiceTask)
+                                ),
+                                subprocessInSubProcessBpmnId to basicProcessBody.copy(
+                                    serviceTask = listOf(bpmnServiceTaskEnd),
+                                    sequenceFlow = listOf(bpmnSequenceFlow)
+                                )
                         )
                 ),
                 listOf(
@@ -613,13 +583,13 @@ abstract class BaseUiTest {
         initializeCanvas()
     }
 
-    protected fun elemAreaById(id: DiagramElementId) = renderResult?.get(id)!!
+    protected fun elemAreaById(id: DiagramElementId) = renderResult?.areas?.get(id)!!
 
-    protected fun findFirstNewLinkElem() = renderResult?.keys?.firstOrNull { it.id.contains(newLink) }
-    protected fun findFirstDeleteElem() = renderResult?.keys?.firstOrNull { it.id.contains(doDel) }
+    protected fun findFirstNewLinkElem() = renderResult?.areas?.keys?.firstOrNull { it.id.contains(newLink) }
+    protected fun findFirstDeleteElem() = renderResult?.areas?.keys?.firstOrNull { it.id.contains(doDel) }
 
-    protected fun findExactlyOneNewLinkElem() = renderResult?.keys?.filter { it.id.contains(newLink) }?.shouldHaveSize(1)?.first()
-    protected fun findExactlyOneDeleteElem() = renderResult?.keys?.filter { it.id.contains(doDel) }?.shouldHaveSize(1)?.first()
+    protected fun findExactlyOneNewLinkElem() = renderResult?.areas?.keys?.filter { it.id.contains(newLink) }?.shouldHaveSize(1)?.first()
+    protected fun findExactlyOneDeleteElem() = renderResult?.areas?.keys?.filter { it.id.contains(doDel) }?.shouldHaveSize(1)?.first()
 
     protected fun String.asResource(): String? = BaseUiTest::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
 }

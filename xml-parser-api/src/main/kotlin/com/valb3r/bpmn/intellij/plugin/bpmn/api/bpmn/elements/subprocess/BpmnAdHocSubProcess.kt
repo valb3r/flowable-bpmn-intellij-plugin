@@ -1,10 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess
 
-import com.github.pozo.KotlinBuilder
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
-@KotlinBuilder
 data class BpmnAdHocSubProcess(
         override val id: BpmnElementId,
         val name: String?,
@@ -17,7 +15,6 @@ data class BpmnAdHocSubProcess(
     }
 }
 
-@KotlinBuilder
 data class CompletionCondition(
         val condition: String?
 )

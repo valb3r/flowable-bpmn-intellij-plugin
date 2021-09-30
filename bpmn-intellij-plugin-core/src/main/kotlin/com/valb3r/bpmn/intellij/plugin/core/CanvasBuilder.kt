@@ -28,9 +28,9 @@ interface PaintTopicListener: EventListener {
     fun repaint()
 }
 
-val CANVAS_PAINT_TOPIC = Topic<PaintTopicListener>("BPMN Flowable (plugin family) plugin repaint topic", PaintTopicListener::class.java)
+val CANVAS_PAINT_TOPIC = Topic("BPMN Flowable (plugin family) plugin repaint topic", PaintTopicListener::class.java)
 
-class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer) {
+class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer, private val onBadContentCallback: ((String) -> Unit)? = null) {
 
     private var currentVfsConnection: MessageBusConnection? = null
     private var currentPaintConnection: MessageBusConnection? = null
@@ -44,10 +44,11 @@ class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer) {
             checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor,
             canvas: Canvas,
             project: Project,
-            bpmnFile: VirtualFile) {
+            bpmnFile: VirtualFile
+    ) {
+        if (assertFileContentAndShowError(parser, bpmnFile, onBadContentCallback)) return
 
         initializeUpdateEventsRegistry(project, committerFactory.invoke(parser))
-
         val data = readFile(bpmnFile)
         val process = parser.parse(data)
         newPropertiesVisualizer(project, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
@@ -59,6 +60,23 @@ class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer) {
             build(committerFactory, parser, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory, canvas, project, it)
         }
         currentPaintConnection = attachPaintListener(project, canvas)
+    }
+
+    fun assertFileContentAndShowError(
+        parser: BpmnParser,
+        bpmnFile: VirtualFile,
+        onBadContentCallback: ((String) -> Unit)?
+    ): Boolean {
+        val errors = validate(parser, bpmnFile)
+        if (null != errors) {
+            onBadContentCallback?.invoke(errors)
+            return true
+        }
+        return false
+    }
+
+    private fun validate(parser: BpmnParser, bpmnFile: VirtualFile): String? {
+        return parser.validate(readFile(bpmnFile))
     }
 
     private fun attachFileChangeListener(project: Project, bpmnFile: VirtualFile, onUpdate: ((bpmnFile: VirtualFile) -> Unit)): MessageBusConnection {

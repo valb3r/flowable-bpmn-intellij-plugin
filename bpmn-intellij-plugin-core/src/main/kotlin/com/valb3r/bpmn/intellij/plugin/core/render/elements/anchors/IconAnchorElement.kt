@@ -14,7 +14,7 @@ abstract class IconAnchorElement(
         elementId: DiagramElementId,
         attachedTo: DiagramElementId?,
         currentLocation: Point2D.Float,
-        state: RenderState
+        state: () -> RenderState
 ): AnchorElement(elementId, attachedTo, currentLocation, state) {
 
     override val areaType: AreaType
@@ -26,7 +26,7 @@ abstract class IconAnchorElement(
         val rect = currentOnScreenRect(ctx.canvas.camera)
         val area = ctx.canvas.drawIcon(Point2D.Float(rect.x, rect.y), icon, if (active) Colors.SELECTED_COLOR.color else null)
 
-        state.ctx.interactionContext.dragEndCallbacks[elementId] = {
+        state().ctx.interactionContext.dragEndCallbacks[elementId] = {
             dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOn: Map<BpmnElementId, AreaWithZindex> -> onDragEnd(dx, dy, droppedOn, allDroppedOn)
         }
 

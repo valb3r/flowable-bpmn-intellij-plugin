@@ -25,6 +25,7 @@ class BpmnPluginSettingsComponent() {
     private lateinit var dataFontName: JComboBox<String>
     private lateinit var dataFontSize: JSpinner
     private lateinit var openExtensions: JTextField
+    private lateinit var enableFps: JCheckBox
 
     init {
         AutoCompleteDecorator.decorate(uiFontName)
@@ -63,6 +64,7 @@ class BpmnPluginSettingsComponent() {
         uiFontSize.value = state.uiFontSize
         dataFontSize.value = state.dataFontSize
         openExtensions.text = state.openExtensions.joinToString(DELIMITER)
+        enableFps.isSelected = state.enableFps
     }
 
     private fun populateFontComboboxes(actualUiFont: Font, actualDataFont: Font) {
@@ -107,6 +109,7 @@ class BpmnPluginSettingsComponent() {
             override fun focusLost(e: FocusEvent?) { state.openExtensions = extensions()
             }
         })
+        enableFps.addChangeListener { state.enableFps = enableFps.isSelected }
     }
 
     private fun extensions() = openExtensions.text.split(DELIMITER).toSet()

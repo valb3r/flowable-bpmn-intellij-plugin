@@ -34,7 +34,7 @@ abstract class ShapeRenderElement(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
         protected val shape: ShapeElement,
-        state: RenderState
+        state: () -> RenderState
 ) : BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 
     protected val cascadeTo: Set<CascadeTranslationOrChangesToWaypoint>
@@ -51,18 +51,18 @@ abstract class ShapeRenderElement(
         get() = shape
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
-        val elem = state.currentState.elementByDiagramId[shape.id]
-        val props = state.currentState.elemPropertiesByStaticElementId[elem]
+        val elem = state().currentState.elementByDiagramId[shape.id]
+        val props = state().currentState.elemPropertiesByStaticElementId[elem]
         val name = props?.get(PropertyType.NAME)?.value as String?
 
-        state.ctx.interactionContext.dragEndCallbacks[elementId] = {
+        state().ctx.interactionContext.dragEndCallbacks[elementId] = {
             dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex> -> onDragEnd(dx, dy, droppedOn, allDroppedOnAreas)
         }
 
         val shapeCtx = ShapeCtx(shape.id, elem, currentOnScreenRect(ctx.canvas.camera), props, name)
-        if (state.history.contains(bpmnElementId)) {
-            val indexes = state.history.mapIndexed {pos, id -> if (id == bpmnElementId) pos else null}.filterNotNull()
-            state.ctx.canvas.drawTextNoCameraTransform(
+        if (state().history.contains(bpmnElementId)) {
+            val indexes = state().history.mapIndexed {pos, id -> if (id == bpmnElementId) pos else null}.filterNotNull()
+            state().ctx.canvas.drawTextNoCameraTransform(
                     Point2D.Float(shapeCtx.shape.x, shapeCtx.shape.y), indexes.toString(), Colors.INNER_TEXT_COLOR.color, Colors.DEBUG_ELEMENT_COLOR.color
             )
         }
@@ -73,8 +73,8 @@ abstract class ShapeRenderElement(
 
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         val delId = elementId.elemIdToRemove()
-        val deleteIconArea = state.ctx.canvas.drawIcon(BoundsElement(x, y, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state.icons.recycleBin)
-        state.ctx.interactionContext.clickCallbacks[delId] = { dest ->
+        val deleteIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, y, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.recycleBin)
+        state().ctx.interactionContext.clickCallbacks[delId] = { dest ->
             dest.addElementRemovedEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement())
         }
 
@@ -102,7 +102,7 @@ abstract class ShapeRenderElement(
             }
         }
 
-        viewTransform = state.baseTransform
+        state().viewTransforms[elementId] = state().baseTransform
         return result
     }
 
@@ -131,12 +131,12 @@ abstract class ShapeRenderElement(
     }
 
     override fun afterStateChangesAppliedNoChildren() {
-        if (viewTransform is NullViewTransform) {
+        if (state().viewTransform(elementId) is NullViewTransform) {
             return
         }
 
-        cascadeTo.mapNotNull { state.elemMap[it.waypointId] }.forEach {
-            it.viewTransform = viewTransform
+        cascadeTo.mapNotNull { state().elemMap[it.waypointId] }.forEach {
+            state().viewTransforms[it.elementId] = state().viewTransform(elementId)
         }
     }
 
@@ -173,7 +173,7 @@ abstract class ShapeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        return viewTransform.transform(elementId, RectangleTransformationIntrospection(shape.rectBounds(), AreaType.SHAPE))
+        return state().viewTransform(elementId).transform(elementId, RectangleTransformationIntrospection(shape.rectBounds(), AreaType.SHAPE))
     }
 
     override fun currentRect(): Rectangle2D.Float {
@@ -195,12 +195,12 @@ abstract class ShapeRenderElement(
         if (null != nests && nests != currentParent?.bpmnElementId) {
             newEvents += BpmnParentChangedEvent(shape.bpmnElement, nests)
             // Cascade parent change to waypoint owning edge
-            newEvents += cascadeTargets.mapNotNull { state.currentState.elementByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, nests) }
+            newEvents += cascadeTargets.mapNotNull { state().currentState.elementByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, nests) }
 
         } else if (null != parentProcess && parentProcess != parents.firstOrNull()?.bpmnElementId) {
             newEvents += BpmnParentChangedEvent(shape.bpmnElement, parentProcess)
             // Cascade parent change to waypoint owning edge
-            newEvents += cascadeTargets.mapNotNull { state.currentState.elementByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, parentProcess) }
+            newEvents += cascadeTargets.mapNotNull { state().currentState.elementByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, parentProcess) }
         }
         return newEvents
     }
@@ -209,11 +209,11 @@ abstract class ShapeRenderElement(
         val idCascadesTo = setOf(PropertyType.SOURCE_REF, PropertyType.TARGET_REF)
         val result = mutableSetOf<CascadeTranslationOrChangesToWaypoint>()
         val elemToDiagramId = mutableMapOf<BpmnElementId, MutableSet<DiagramElementId>>()
-        state.currentState.elementByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
-        state.currentState.elemPropertiesByStaticElementId.forEach { (owner, props) ->
+        state().currentState.elementByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
+        state().currentState.elemPropertiesByStaticElementId.forEach { (owner, props) ->
             idCascadesTo.intersect(props.keys).filter { props[it]?.value == shape.bpmnElement.id }.forEach { type ->
-                when (state.currentState.elementByBpmnId[owner]?.element) {
-                    is BpmnSequenceFlow -> { result += computeCascadeToWaypoint(state.currentState, shape.bpmnElement, owner, type) }
+                when (state().currentState.elementByBpmnId[owner]?.element) {
+                    is BpmnSequenceFlow -> { result += computeCascadeToWaypoint(state().currentState, shape.bpmnElement, owner, type) }
                 }
             }
 
@@ -236,15 +236,15 @@ abstract class ShapeRenderElement(
     }
 
     private fun detectAndRenderNewSequenceAnchorMove() {
-        val expected = viewTransform.transform(elementId, edgeExtractionAnchor.location)
+        val expected = state().viewTransform(elementId).transform(elementId, edgeExtractionAnchor.location)
         if (expected.distance(edgeExtractionAnchor.transformedLocation) > EPSILON && edgeExtractionAnchor.isActiveOrDragged()) {
             renderNewSequenceAnchorMove()
         }
     }
 
     private fun renderNewSequenceAnchorMove() {
-        val bounds = currentOnScreenRect(state.ctx.canvas.camera)
-        state.ctx.canvas.drawLineWithArrow(
+        val bounds = currentOnScreenRect(state().ctx.canvas.camera)
+        state().ctx.canvas.drawLineWithArrow(
                 Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat()),
                 edgeExtractionAnchor.transformedLocation,
                 Colors.ARROW_COLOR.color
@@ -265,7 +265,7 @@ abstract class ShapeRenderElement(
         result += event
     }
 
-    private fun computeAnchorLocation(currentElementId: DiagramElementId, state: RenderState): EdgeExtractionAnchor {
+    private fun computeAnchorLocation(currentElementId: DiagramElementId, state: () -> RenderState): EdgeExtractionAnchor {
         return EdgeExtractionAnchor(
                 DiagramElementId("NEW-SEQUENCE:" + shape.id.id),
                 currentElementId,
@@ -286,21 +286,21 @@ abstract class ShapeRenderElement(
             return mutableListOf()
         }
 
-        val elem = state.currentState.elementByBpmnId[bpmnElementId] ?: return mutableListOf()
+        val elem = state().currentState.elementByBpmnId[bpmnElementId] ?: return mutableListOf()
 
-        val newSequenceBpmn = newElementsFactory(state.ctx.project).newOutgoingSequence(elem.element)
+        val newSequenceBpmn = newElementsFactory(state().ctx.project).newOutgoingSequence(elem.element)
         val anchors = findSequenceAnchors(targetArea) ?: return mutableListOf()
         val notYetExistingDiagramId = DiagramElementId("")
         val sourceBounds = shape.rectBounds()
         val firstAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.first, Point2D.Float(sourceBounds.centerX.toFloat(), sourceBounds.centerY.toFloat()))
         val secondAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.second, anchors.second)
-        val newSequenceDiagram = newElementsFactory(state.ctx.project).newDiagramObject(EdgeElement::class, newSequenceBpmn)
+        val newSequenceDiagram = newElementsFactory(state().ctx.project).newDiagramObject(EdgeElement::class, newSequenceBpmn)
                 .copy(waypoint = listOf(
                         WaypointElement(firstAnchorCompensated.x, firstAnchorCompensated.y),
                         WaypointElement(secondAnchorCompensated.x, secondAnchorCompensated.y)
                 ))
 
-        val props = newElementsFactory(state.ctx.project).propertiesOf(newSequenceBpmn).toMutableMap()
+        val props = newElementsFactory(state().ctx.project).propertiesOf(newSequenceBpmn).toMutableMap()
         props[PropertyType.TARGET_REF] = Property(droppedOn.id)
 
         return mutableListOf(
@@ -313,7 +313,7 @@ abstract class ShapeRenderElement(
     }
 
     private fun findSequenceAnchors(droppedOnTarget: AreaWithZindex): Pair<Point2D.Float, Point2D.Float>? {
-        val allStartWaypointsAnchors = waypointAnchors(state.ctx.canvas.camera)
+        val allStartWaypointsAnchors = waypointAnchors(state().ctx.canvas.camera)
         val allEndWaypointsAnchors = droppedOnTarget.anchorsForWaypoints
 
         val fromCenters = findBestSequenceElement(
@@ -352,19 +352,19 @@ abstract class ShapeRenderElement(
         }
 
         val doesNotIntersectArea = { anchor: Pair<Anchor, Anchor> -> Boolean
-            val current = currentOnScreenRect(state.ctx.canvas.camera)
+            val current = currentOnScreenRect(state().ctx.canvas.camera)
             val line = Line2D.Float(anchor.first.point, anchor.second.point)
             !line.intersects(current) && !line.intersects(droppedOnTarget.area.bounds2D)
         }
 
         return cartesianProduct(startAvailable, endAvailable)
-                .filter { if (allowShapeIntersection) true else doesNotIntersectArea(it) }
-                .minBy { it.first.point.distance(it.second.point) }
-                ?.let { Pair(it.first.point, it.second.point) }
+            .filter { if (allowShapeIntersection) true else doesNotIntersectArea(it) }
+            .minBy { it: Pair<Anchor, Anchor> -> it.first.point.distance(it.second.point) }
+            ?.let { Pair(it.first.point, it.second.point) }
     }
 
     private fun isAnchorOccupated(anchor: Point2D.Float): Boolean {
-        state.currentState.edges.forEach {
+        state().currentState.edges.forEach {
             if (anchor.distance(Point2D.Float(it.waypoint[0].x, it.waypoint[0].y)) < WAYPOINT_OCCUPY_EPSILON) {
                 return true
             }

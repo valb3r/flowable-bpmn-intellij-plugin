@@ -9,7 +9,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.nhaarman.mockitokotlin2.*
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
-import org.amshove.kluent.any
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

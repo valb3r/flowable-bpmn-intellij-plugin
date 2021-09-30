@@ -18,14 +18,14 @@ abstract class AnchorElement(
         elementId: DiagramElementId,
         private val attachedTo: DiagramElementId?,
         protected val currentLocation: Point2D.Float,
-        state: RenderState
+        state: () -> RenderState
 ): BaseDiagramRenderElement(elementId, state) {
 
     val location: Point2D.Float
         get() = currentLocation
 
     val transformedLocation: Point2D.Float
-        get() = viewTransform.transform(elementId, currentLocation, PointTransformationIntrospection(attachedTo))
+        get() = state().viewTransform(elementId).transform(elementId, currentLocation, PointTransformationIntrospection(attachedTo))
 
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         // NOP

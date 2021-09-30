@@ -15,7 +15,7 @@ class TopLeftIconShape(
         bpmnElementId: BpmnElementId,
         private val icon: Icon,
         shape: ShapeElement,
-        state: RenderState,
+        state: () -> RenderState,
         private val backgroundColor: Colors = Colors.SERVICE_TASK_COLOR,
         private val borderColor: Colors =  Colors.ELEMENT_BORDER_COLOR,
         private val textColor: Colors = Colors.INNER_TEXT_COLOR

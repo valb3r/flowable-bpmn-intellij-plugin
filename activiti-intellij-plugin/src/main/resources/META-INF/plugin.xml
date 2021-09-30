@@ -4,7 +4,7 @@
     <name>Activiti BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.4.6.2</version>
+    <version>0.4.6.3</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -36,6 +36,24 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+      <p>0.4.6.3:</p>
+        <ul>
+          <li>
+            Minimum IntelliJ version is now 2019.3 due to build pipeline upgrade
+          </li>
+          <li>
+            Initial support for Activiti 7 (very basic)
+          </li>
+          <li>
+            Allow to configure BPMN file extension in settings
+          </li>
+          <li>
+            Fixed save to PNG functionality with negative coordinates
+          </li>
+          <li>
+            Added BPMN file validity check
+          </li>
+        </ul>
       <p>0.4.6.2:</p>
         <ul>
           <li>
@@ -49,21 +67,6 @@
         <ul>
           <li>
             Preserve &lt;documentation&gt; element formatting
-          </li>
-        </ul>
-      <p>0.4.6:</p>
-        <ul>
-          <li>
-            Fixed multiple opened projects bug - empty gray canvas shown
-          </li>
-          <li>
-            UI/UX improvements - support for undo/redo keyboard shortcuts
-          </li>
-          <li>
-            Fixed keyboard shortcuts handling - after some actions shortcuts stopped working
-          </li>
-          <li>
-            Added settings screen
           </li>
         </ul>
     ]]></change-notes>
@@ -295,6 +298,12 @@
     <extensions defaultExtensionNs="com.intellij">
         <preloadingActivity implementation="com.valb3r.bpmn.intellij.activiti.plugin.ActivitiPluginPreloaded"/>
     </extensions>
+
+    <!-- Notification balloons TODO: Not clear if it may cause any issues with 2018-2020.2 as extension is supported with 2020.3+ -->
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Activiti BPMN Editor Notification group" displayType="BALLOON" key="com.valb3r.bpmn.intellij.activiti.plugin"/>
+    </extensions>
+
     <!-- Extensions which the plugin adds to extension points defined by the IntelliJ Platform or by other plugins.
          The "defaultExtensionNs " attribute must be set to the ID of the plugin defining the extension point,
          or to "com.intellij" if the extension point is defined by the IntelliJ Platform. The name of the tag

@@ -2,8 +2,9 @@ package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.cache.CacheBuilder
+import com.google.common.collect.EvictingQueue
+import com.google.common.math.Quantiles.percentiles
 import com.intellij.openapi.project.Project
-import com.intellij.ui.JBColor
 import com.intellij.util.ui.UIUtil
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -13,9 +14,11 @@ import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.properties.PropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.BaseEdgeRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsState
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import java.awt.Color
 import java.awt.Graphics
@@ -27,10 +30,7 @@ import java.awt.image.BufferedImage
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.swing.JPanel
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
+import kotlin.math.*
 
 private val currentCanvas = Collections.synchronizedMap(WeakHashMap<Project,  Canvas>())
 
@@ -51,6 +51,9 @@ fun setCanvas(project: Project, canvas: Canvas): Canvas {
 }
 
 class Canvas(private val project: Project, private val settings: CanvasConstants) : JPanel() {
+    private val fpsCircularBuffer = EvictingQueue.create<Int>(30)
+    private var cachedTreeState: TreeState? = null
+
     private val stateProvider = currentStateProvider(project)
     private val closeAnchorRadius = 100.0f
 
@@ -106,21 +109,26 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
 
     @VisibleForTesting
     public override fun paintComponent(graphics: Graphics) {
-        super.paintComponent(graphics)
+        withFps(graphics) {
+            super.paintComponent(graphics)
 
-        val graphics2D = setupGraphics(graphics)
-        // TODO: make immutable and not shallow:
-        interactionCtx = interactionCtx.copy(dragEndCallbacks = mutableMapOf(), clickCallbacks = mutableMapOf())
-        val shallowCopyOfCtx = interactionCtx.copy()
-        areaByElement = renderer?.render(
+            val graphics2D = setupGraphics(graphics)
+            // TODO: make immutable and not shallow:
+            interactionCtx = interactionCtx.copy(dragEndCallbacks = mutableMapOf(), clickCallbacks = mutableMapOf())
+            val shallowCopyOfCtx = interactionCtx.copy()
+            val result = renderer?.render(
                 RenderContext(
-                        project,
-                        CanvasPainter(graphics2D, camera.copy(), cachedIcons),
-                        selectedElements.toSet(),
-                        shallowCopyOfCtx,
-                        stateProvider
+                    project,
+                    CanvasPainter(graphics2D, camera.copy(), cachedIcons),
+                    selectedElements.toSet(),
+                    shallowCopyOfCtx,
+                    stateProvider,
+                    cachedTreeState
                 )
-        )
+            )
+            cachedTreeState = result?.state
+            areaByElement = result?.areas
+        }
     }
 
     fun renderToBitmap() : BufferedImage? {
@@ -141,7 +149,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         }
         val interactionContext = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
         val dummyImage = UIUtil.createImage(1, 1, BufferedImage.TYPE_INT_RGB)
-        val dimensions = doRender(dummyImage, interactionContext, Camera(Point2D.Float(0.0f, 0.0f), Point2D.Float(1.0f, 1.0f))) ?: return null
+        val dimensions = doRender(dummyImage, interactionContext, Camera(Point2D.Float(0.0f, 0.0f), Point2D.Float(1.0f, 1.0f)))?.areas ?: return null
         val maxX = dimensions.map { it.value.area.bounds2D.maxX }.max()?.toInt() ?: return null
         val minX = dimensions.map { it.value.area.bounds2D.minX }.min()?.toInt() ?: return null
         val maxY = dimensions.map { it.value.area.bounds2D.maxY }.max()?.toInt() ?: return null
@@ -159,7 +167,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
             renderedImage,
             interactionContext,
             Camera(
-                Point2D.Float(width * (1.0f - borderSpaceCoeff) / 2.0f, height * (1.0f - borderSpaceCoeff) / 2.0f),
+                Point2D.Float(width * (1.0f - borderSpaceCoeff) / 2.0f + minX, height * (1.0f - borderSpaceCoeff) / 2.0f + minY),
                 Point2D.Float(1.0f, 1.0f)
             )
         )
@@ -167,6 +175,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
     }
 
     fun reset(fileContent: String, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
+        this.cachedTreeState = null
         this.renderer = renderer
         this.latestOnScreenModelDimensions = null
         this.camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
@@ -286,9 +295,12 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
             }
         }
 
-        val pointAnchor = anchors.filter { it.type == AnchorType.POINT }.minBy { it.anchor.distance(it.objectAnchor) }
-        val anchorX = anchors.filter { it.type == AnchorType.HORIZONTAL }.minBy { it.anchor.distance(it.objectAnchor) }
-        val anchorY = anchors.filter { it.type == AnchorType.VERTICAL }.minBy { it.anchor.distance(it.objectAnchor) }
+        val pointAnchor = anchors.filter { it.type == AnchorType.POINT }
+            .minBy { it.anchor.distance(it.objectAnchor) }
+        val anchorX = anchors.filter { it.type == AnchorType.HORIZONTAL }
+            .minBy { it.anchor.distance(it.objectAnchor) }
+        val anchorY = anchors.filter { it.type == AnchorType.VERTICAL }
+            .minBy { it.anchor.distance(it.objectAnchor) }
 
         val selectedAnchors: AnchorHit = if (null == pointAnchor) applyOrthoAnchors(anchorX, anchorY, ctx) else applyPointAnchor(pointAnchor, ctx)
         val allAnchors = selectedAnchors.copy(closeAnchors = closeAnchors.toList())
@@ -314,9 +326,9 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         val area = areas[dragged]!!.area
         val point = Point2D.Float(area.bounds2D.centerX.toFloat(), area.bounds2D.centerY.toFloat())
         val target = dragTargettableElements(cursorRect(point))
-                .filter { !ctx.draggedIds.contains(it) }
-                .filter { areas[it]?.areaType == AreaType.SHAPE || areas[it]?.areaType == AreaType.SHAPE_THAT_NESTS }
-                .maxBy { areas[it]?.index ?: ICON_Z_INDEX }
+            .filter { !ctx.draggedIds.contains(it) }
+            .filter { areas[it]?.areaType == AreaType.SHAPE || areas[it]?.areaType == AreaType.SHAPE_THAT_NESTS }
+            .maxBy { it: DiagramElementId -> areas[it]?.index ?: ICON_Z_INDEX }
 
         return ctx.copy(dragTargetedIds = if (null != target) setOf(target) else emptySet())
     }
@@ -461,14 +473,19 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
     private fun elemUnderCursor(cursorPoint: Point2D.Float, excludeAreas: Set<AreaType> = setOf(AreaType.PARENT_PROCESS_SHAPE)): List<DiagramElementId> {
         val withinRect = cursorRect(cursorPoint)
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
-        val maxZindex = intersection?.maxBy { it.value.index }
+        val maxZindex = intersection?.maxBy { it: Map.Entry<DiagramElementId, AreaWithZindex> -> it.value.index }
         val result = mutableListOf<DiagramElementId>()
         val centerRect = Point2D.Float(withinRect.centerX.toFloat(), withinRect.centerY.toFloat())
         intersection
-                ?.filter { !excludeAreas.contains(it.value.areaType) }
-                ?.filter { it.value.index == maxZindex?.value?.index }
-                ?.minBy { Point2D.Float(it.value.area.bounds2D.centerX.toFloat(), it.value.area.bounds2D.centerY.toFloat()).distance(centerRect) }
-                ?.let { result += it.key; it.value.parentToSelect?.apply { result += this } }
+            ?.filter { !excludeAreas.contains(it.value.areaType) }
+            ?.filter { it.value.index == maxZindex?.value?.index }
+            ?.minBy { it: Map.Entry<DiagramElementId, AreaWithZindex> ->
+                Point2D.Float(
+                    it.value.area.bounds2D.centerX.toFloat(),
+                    it.value.area.bounds2D.centerY.toFloat()
+                ).distance(centerRect)
+            }
+            ?.let { result += it.key; it.value.parentToSelect?.apply { result += this } }
         return result
     }
 
@@ -500,7 +517,8 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
 
                 return@groupBy parent
             }
-            val maxSize = groupedByParent.maxBy { it.value.size }
+            val maxSize =
+                groupedByParent.maxBy { it: Map.Entry<BaseBpmnRenderElement?, List<DiagramElementId>> -> it.value.size }
             result.clear()
             result.addAll(maxSize?.value ?: emptyList())
         }
@@ -587,8 +605,25 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
     private fun cameraOriginToPinCenter(modelRect: Rectangle2D.Float, zoom: Point2D.Float = camera.zoom): Point2D.Float {
         val modelCenter = camera.fromCameraView(Point2D.Float(modelRect.x + modelRect.width / 2.0f, modelRect.y + modelRect.height / 2.0f))
         val screenCenter = Point2D.Float(width / 2.0f, height / 2.0f)
-        val camOriginPin = Point2D.Float(zoom.x * modelCenter.x - screenCenter.x, zoom.y * modelCenter.y - screenCenter.y)
-        return camOriginPin
+        return Point2D.Float(zoom.x * modelCenter.x - screenCenter.x, zoom.y * modelCenter.y - screenCenter.y)
+    }
+
+    private fun withFps(graphics: Graphics, frameProducer: () -> Unit) {
+        if (!currentSettings().enableFps) {
+            frameProducer()
+            return
+        }
+
+        val startTime = System.nanoTime()
+        frameProducer()
+        val endTime = System.nanoTime()
+
+        val oldColor = graphics.color
+        graphics.color = Color.BLACK
+        fpsCircularBuffer.add(round(1.0e9f / (endTime - startTime).toFloat()).toInt())
+        val stats = percentiles().indexes(10, 50, 90).compute(fpsCircularBuffer)
+        graphics.drawString("FPS: ${stats[10]}/${stats[50]}/${stats[90]}", 0, this.height - 20)
+        graphics.color = oldColor
     }
 
     private data class AnchorDetails(
