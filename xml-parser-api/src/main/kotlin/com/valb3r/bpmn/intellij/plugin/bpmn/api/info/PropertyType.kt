@@ -1,7 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.info
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.BOOLEAN
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.STRING
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 
 enum class PropertyType(
         val id: String,
@@ -96,5 +95,6 @@ enum class PropertyType(
     ERROR_CODE_VARIABLE("errorCodeVariable", "Error code variable", STRING),
     OUTPUT_VARIABLE("outputVariable", "Output variable", STRING),
     DIRECTORY("directory", "Working directory", STRING),
-    FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycleExtension", "Failed job retry cycle", STRING)
+    FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
+    FIELDS("fieldsExtension", "Fields", PROPERTY_LIST)
 }

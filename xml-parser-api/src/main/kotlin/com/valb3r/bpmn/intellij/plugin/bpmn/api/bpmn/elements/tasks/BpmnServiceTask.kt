@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
 data class BpmnServiceTask(
@@ -20,8 +21,11 @@ data class BpmnServiceTask(
         val useLocalScopeForResultVariable: Boolean?,
         // Customizations (Flowable) - http task, camel task,...:
         val type: String?  = null,
+        /* BPMN engine specific extensions (intermediate storage) */
         val extensionElements: List<ExtensionElement>? = null,
-        val failedJobRetryTimeCycleExtension: String? = null
+        /* Flattened extensionElements, for explicitness - these are the target of binding */
+        val failedJobRetryTimeCycle: String? = null,
+        val fieldsExtension: List<ExtensionField>? = null
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

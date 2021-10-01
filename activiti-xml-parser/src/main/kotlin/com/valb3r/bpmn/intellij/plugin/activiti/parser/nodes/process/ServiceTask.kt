@@ -47,7 +47,7 @@ data class ServiceTask(
         fun convertToDto(input: ServiceTask) : BpmnServiceTask {
             val task = doConvertToDto(input)
             return task.copy(
-                    failedJobRetryTimeCycleExtension = input.extensionElements?.filter { null != it.failedJobRetryTimeCycle }?.map { it.failedJobRetryTimeCycle }?.firstOrNull()
+                    failedJobRetryTimeCycle = input.extensionElements?.filter { null != it.failedJobRetryTimeCycle }?.map { it.failedJobRetryTimeCycle }?.firstOrNull()
             )
         }
 

@@ -26,15 +26,15 @@ internal class ActivityServiceTaskWithExtensionElementsTest {
         val task = processObject.process.body!!.serviceTask!![0]
 
         task.id.shouldBeEqualTo(elementId)
-        task.failedJobRetryTimeCycleExtension.shouldBeEqualTo("R10/PT5M")
+        task.failedJobRetryTimeCycle.shouldBeEqualTo("R10/PT5M")
 
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
-        props[PropertyType.FAILED_JOB_RETRY_CYCLE]!!.value.shouldBeEqualTo(task.failedJobRetryTimeCycleExtension)
+        props[PropertyType.FAILED_JOB_RETRY_CYCLE]!!.value.shouldBeEqualTo(task.failedJobRetryTimeCycle)
     }
 
     @Test
     fun `Service task failedJobRetryTimeCycle is updatable`() {
-        {value: String -> readAndUpdate(PropertyType.FAILED_JOB_RETRY_CYCLE, value).failedJobRetryTimeCycleExtension.shouldBeEqualTo(value)} ("PT999/12");
+        {value: String -> readAndUpdate(PropertyType.FAILED_JOB_RETRY_CYCLE, value).failedJobRetryTimeCycle.shouldBeEqualTo(value)} ("PT999/12");
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: String): BpmnServiceTask {
