@@ -113,4 +113,4 @@ enum class PropertyGroupEntryType(
     FIELD_STRING("string", "String value", STRING)
 }
 
-data class PropertyGroupEntry(val type: PropertyGroupEntryType, val value: Any?)
+data class PropertyGroupEntry(val index: Int, val type: PropertyGroupEntryType, val value: Any?)

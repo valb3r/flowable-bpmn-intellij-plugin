@@ -236,11 +236,11 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         }
         val parsed = mutableListOf<PropertyGroupEntry>()
 
-        for (targetNode in rootNode) {
+        for ((index, targetNode) in rootNode.withIndex()) {
             for (grpType in type.groupBinding!!) {
                 val node = targetNode[grpType.path]
                 if (null == node || node.isNull) {
-                    parsed.add(PropertyGroupEntry(grpType, grpType.defaultValueIfNull))
+                    parsed.add(PropertyGroupEntry(index, grpType, grpType.defaultValueIfNull))
                     continue
                 }
 
@@ -248,7 +248,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
                     PropertyValueType.STRING, PropertyValueType.EXPRESSION -> if (node.isNull) Property(null) else Property(node.asText())
                     else -> throw IllegalStateException("Unknown binding type: ${grpType.valueType}")
                 }
-                parsed.add(PropertyGroupEntry(grpType, value))
+                parsed.add(PropertyGroupEntry(index, grpType, value))
             }
         }
         return Property(parsed)

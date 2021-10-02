@@ -6,10 +6,11 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyGroupEntry
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyGroupEntryType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldHaveSingleItem
+import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 
 private const val FILE = "custom-service-tasks/service-task-with-nested-extensions.bpmn20.xml"
@@ -34,7 +35,23 @@ internal class ActivitiServiceTaskWithNestedExtensionTest {
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
         props[PropertyType.FAILED_JOB_RETRY_CYCLE]!!.value.shouldBeEqualTo(task.failedJobRetryTimeCycle)
+        val entries = (props[PropertyType.FIELDS]!!.value as List<PropertyGroupEntry>).shouldHaveSize(6)
+
+        val recipient = fieldByIndex(entries, 0)
+        recipient[PropertyGroupEntryType.FIELD_NAME]!!.value.shouldBeEqualTo("recipient")
+        recipient[PropertyGroupEntryType.FIELD_EXPRESSION]!!.value.shouldBeEqualTo("userId:\${accountId}")
+
+        val multiline = fieldByIndex(entries, 1)
+        multiline[PropertyGroupEntryType.FIELD_NAME]!!.value.shouldBeEqualTo("multiline")
+        multiline[PropertyGroupEntryType.FIELD_STRING]!!.value.shouldBeEqualTo("This\n" +
+                "                is\n" +
+                "                multiline\n" +
+                "                text\n" +
+                "                ")
     }
+
+    private fun fieldByIndex(entries: List<PropertyGroupEntry>, index: Int) =
+        entries.filter { it.index == index }.associateBy({ it.type }, { it.value as Property? })
 
     private fun readServiceTask(processObject: BpmnProcessObject): BpmnServiceTask {
         return processObject.process.body!!.serviceTask!!.shouldHaveSingleItem()
