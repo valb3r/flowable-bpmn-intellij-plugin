@@ -98,7 +98,7 @@ enum class PropertyType(
     OUTPUT_VARIABLE("outputVariable", "Output variable", STRING),
     DIRECTORY("directory", "Working directory", STRING),
     FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
-    FIELDS("fieldsExtension", "Fields", PROPERTY_GROUP, groupBinding = listOf(PropertyGroupEntryType.FIELD_NAME, PropertyGroupEntryType.FIELD_STRING, PropertyGroupEntryType.FIELD_EXPRESSION))
+    GENERIC_FIELDS("fieldsExtension", "Fields", PROPERTY_GROUP, groupBinding = listOf(PropertyGroupEntryType.FIELD_NAME, PropertyGroupEntryType.FIELD_STRING, PropertyGroupEntryType.FIELD_EXPRESSION))
 }
 
 enum class PropertyGroupEntryType(
@@ -106,11 +106,12 @@ enum class PropertyGroupEntryType(
     val caption: String,
     val valueType: PropertyValueType,
     val path: String = id,
+    val exclusiveGroupId: String? = null,
     val defaultValueIfNull: Any? = null,
 ) {
     FIELD_NAME("name", "Field name", STRING),
-    FIELD_EXPRESSION("expression", "Expression", STRING),
-    FIELD_STRING("string", "String value", STRING)
+    FIELD_EXPRESSION("expression", "Expression", STRING, exclusiveGroupId = "fieldValue"),
+    FIELD_STRING("string", "String value", STRING, exclusiveGroupId = "fieldValue")
 }
 
 data class PropertyGroupEntry(val index: Int, val type: PropertyGroupEntryType, val value: Any?)

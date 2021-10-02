@@ -31,6 +31,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSub
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
@@ -465,7 +466,7 @@ abstract class BaseBpmnParser: BpmnParser {
                 node,
                 details.xmlPath,
                 details,
-                asString(type.valueType, value)
+                value
             )
         }
     }
@@ -541,16 +542,33 @@ abstract class BaseBpmnParser: BpmnParser {
         node: Element,
         name: String,
         details: PropertyTypeDetails,
-        value: String?
+        type: PropertyType,
+        value: Any?
     ) {
         when (details.type) {
-            XmlType.ATTRIBUTE -> setAttribute(node, name, value)
-            XmlType.CDATA -> setCdata(node, name, value)
-            XmlType.ELEMENT -> changeElementType(node, name, details, value)
+            XmlType.ATTRIBUTE -> setAttribute(node, name, asString(type.valueType, value))
+            XmlType.CDATA -> setCdata(node, name, asString(type.valueType, value))
+            XmlType.ELEMENT -> changeElementType(node, name, details, asString(type.valueType, value))
+            XmlType.PROPERTY_GROUP -> setPropertyGroup(node, details, value)
+            else -> throw IllegalArgumentException("Unable to handle $name: ${details.type}}")
         }
     }
 
     private fun setAttribute(node: Element, name: String, value: String?) {
+        val qname = qname(name)
+
+        if (value.isNullOrEmpty()) {
+            val attr = node.attribute(qname)
+            if (null != attr) {
+                node.remove(attr)
+            }
+            return
+        }
+
+        node.addAttribute(qname, value)
+    }
+
+    private fun setPropertyGroup(node: Element, name: String, value: Property?) {
         val qname = qname(name)
 
         if (value.isNullOrEmpty()) {
@@ -613,5 +631,6 @@ enum class XmlType {
 
     CDATA,
     ATTRIBUTE,
-    ELEMENT
+    ELEMENT,
+    PROPERTY_GROUP
 }

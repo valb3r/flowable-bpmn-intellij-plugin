@@ -35,7 +35,7 @@ internal class ActivitiServiceTaskWithNestedExtensionTest {
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
         props[PropertyType.FAILED_JOB_RETRY_CYCLE]!!.value.shouldBeEqualTo(task.failedJobRetryTimeCycle)
-        val entries = (props[PropertyType.FIELDS]!!.value as List<PropertyGroupEntry>).shouldHaveSize(6)
+        val entries = (props[PropertyType.GENERIC_FIELDS]!!.value as List<PropertyGroupEntry>).shouldHaveSize(6)
 
         val recipient = fieldByIndex(entries, 0)
         recipient[PropertyGroupEntryType.FIELD_NAME]!!.value.shouldBeEqualTo("recipient")
