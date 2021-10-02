@@ -594,6 +594,7 @@ abstract class BaseBpmnParser: BpmnParser {
         return when (type) {
             STRING, CLASS, EXPRESSION, ATTACHED_SEQUENCE_SELECT -> value as String
             BOOLEAN -> (value as Boolean).toString()
+            PROPERTY_GROUP -> throw IllegalStateException("Parsing $type is not supported")
         }
     }
 

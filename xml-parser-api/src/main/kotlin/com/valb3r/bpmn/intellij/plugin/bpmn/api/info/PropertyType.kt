@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.info
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.EXPRESSION as T_EXPRESSION
 
 enum class PropertyType(
         val id: String,
@@ -11,7 +12,8 @@ enum class PropertyType(
         val updatedBy: PropertyType? = null,
         val updateOrder: Int = 0,
         val elementUpdateChangesClass: Boolean = false,
-        val defaultValueIfNull: Any? = null
+        val defaultValueIfNull: Any? = null,
+        val groupBinding: List<PropertyGroupEntryType>? = null
 ) {
     ID("id", "ID", STRING, "id.id", true, null, 1000), // ID should fire last
     NAME("name", "Name", STRING),
@@ -19,15 +21,15 @@ enum class PropertyType(
     IS_FOR_COMPENSATION("forCompensation", "Is for compensation", BOOLEAN),
     ASYNC("async", "Asynchronous", BOOLEAN),
     ASSIGNEE("assignee", "Assignee", STRING),
-    CALLED_ELEM("calledElement", "Called element", PropertyValueType.EXPRESSION),
+    CALLED_ELEM("calledElement", "Called element", T_EXPRESSION),
     CALLED_ELEM_TYPE("calledElementType", "Called element type", STRING),
     INHERIT_VARS("inheritVariables", "Inherit parent variables", BOOLEAN),
     FALLBACK_TO_DEF_TENANT("fallbackToDefaultTenant", "Fallback to default tenant", BOOLEAN),
     EXCLUSIVE("exclusive", "Exclusive", BOOLEAN, defaultValueIfNull = true),
-    EXPRESSION("expression", "Expression", PropertyValueType.EXPRESSION),
-    DELEGATE_EXPRESSION("delegateExpression", "Delegate expression", PropertyValueType.EXPRESSION),
+    EXPRESSION("expression", "Expression", T_EXPRESSION),
+    DELEGATE_EXPRESSION("delegateExpression", "Delegate expression", T_EXPRESSION),
     CLASS("clazz", "Class", PropertyValueType.CLASS),
-    SKIP_EXPRESSION("skipExpression", "Skip expression", PropertyValueType.EXPRESSION),
+    SKIP_EXPRESSION("skipExpression", "Skip expression", T_EXPRESSION),
     IS_TRIGGERABLE("triggerable", "Is activity triggerable?", BOOLEAN),
     DUE_DATE("dueDate", "Due date", STRING),
     CATEGORY("category", "Category", STRING),
@@ -45,10 +47,10 @@ enum class PropertyType(
     SOURCE_REF("sourceRef","Source reference", STRING, "sourceRef", false, ID),
     TARGET_REF("targetRef", "Target reference", STRING, "targetRef", false, ID),
     ATTACHED_TO_REF("attachedToRef", "Attached to", STRING, "attachedToRef.id", false, ID),
-    CONDITION_EXPR_VALUE("conditionExpression.text", "Condition expression", PropertyValueType.EXPRESSION, "conditionExpression.text"),
+    CONDITION_EXPR_VALUE("conditionExpression.text", "Condition expression", T_EXPRESSION, "conditionExpression.text"),
     CONDITION_EXPR_TYPE("conditionExpression.type", "Condition expression type", STRING, "conditionExpression.type"),
-    COMPLETION_CONDITION("completionCondition.condition", "Completion condition", PropertyValueType.EXPRESSION, "completionCondition.condition"),
-    DEFAULT_FLOW("defaultElement", "Default flow element", PropertyValueType.ATTACHED_SEQUENCE_SELECT, "defaultElement", false, ID),
+    COMPLETION_CONDITION("completionCondition.condition", "Completion condition", T_EXPRESSION, "completionCondition.condition"),
+    DEFAULT_FLOW("defaultElement", "Default flow element", ATTACHED_SEQUENCE_SELECT, "defaultElement", false, ID),
     IS_TRANSACTIONAL_SUBPROCESS("transactionalSubprocess", "Is transactional subprocess", BOOLEAN, "transactionalSubprocess", elementUpdateChangesClass = true),
     IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE("useLocalScopeForResultVariable", "Use local scope for result varaible", BOOLEAN),
     CAMEL_CONTEXT("camelContext", "Camel context", STRING),
@@ -96,5 +98,19 @@ enum class PropertyType(
     OUTPUT_VARIABLE("outputVariable", "Output variable", STRING),
     DIRECTORY("directory", "Working directory", STRING),
     FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
-    FIELDS("fieldsExtension", "Fields", PROPERTY_LIST)
+    FIELDS("fieldsExtension", "Fields", PROPERTY_GROUP, groupBinding = listOf(PropertyGroupEntryType.FIELD_NAME, PropertyGroupEntryType.FIELD_STRING, PropertyGroupEntryType.FIELD_EXPRESSION))
 }
+
+enum class PropertyGroupEntryType(
+    val id: String,
+    val caption: String,
+    val valueType: PropertyValueType,
+    val path: String = id,
+    val defaultValueIfNull: Any? = null,
+) {
+    FIELD_NAME("name", "Field name", STRING),
+    FIELD_EXPRESSION("expression", "Expression", STRING),
+    FIELD_STRING("string", "String value", STRING)
+}
+
+data class PropertyGroupEntry(val type: PropertyGroupEntryType, val value: Any?)

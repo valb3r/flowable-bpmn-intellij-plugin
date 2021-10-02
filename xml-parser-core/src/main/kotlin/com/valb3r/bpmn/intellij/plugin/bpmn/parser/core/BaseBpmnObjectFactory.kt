@@ -30,9 +30,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.*
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -227,8 +225,33 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         result[type] = when (type.valueType) {
             PropertyValueType.STRING, PropertyValueType.CLASS, PropertyValueType.EXPRESSION, PropertyValueType.ATTACHED_SEQUENCE_SELECT
             -> if (node.isNull) Property(null) else Property(node.asText())
+            PropertyValueType.PROPERTY_GROUP -> parsePropertyGroup(node, type)
             PropertyValueType.BOOLEAN -> Property(node.asBoolean())
         }
+    }
+
+    private fun parsePropertyGroup(rootNode: JsonNode, type: PropertyType): Property {
+        if (!rootNode.isArray) {
+            throw IllegalStateException("Node ${rootNode.nodeType} should be array")
+        }
+        val parsed = mutableListOf<PropertyGroupEntry>()
+
+        for (targetNode in rootNode) {
+            for (grpType in type.groupBinding!!) {
+                val node = targetNode[grpType.path]
+                if (null == node || node.isNull) {
+                    parsed.add(PropertyGroupEntry(grpType, grpType.defaultValueIfNull))
+                    continue
+                }
+
+                val value = when (grpType.valueType) {
+                    PropertyValueType.STRING, PropertyValueType.EXPRESSION -> if (node.isNull) Property(null) else Property(node.asText())
+                    else -> throw IllegalStateException("Unknown binding type: ${grpType.valueType}")
+                }
+                parsed.add(PropertyGroupEntry(grpType, value))
+            }
+        }
+        return Property(parsed)
     }
 
     private fun bounds(forBpmnObject: WithBpmnId): BoundsElement {

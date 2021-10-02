@@ -92,7 +92,8 @@ enum class ActivitiPropertyTypeDetails(val details: PropertyTypeDetails) {
     ERROR_CODE_VARIABLE(PropertyTypeDetails(PropertyType.ERROR_CODE_VARIABLE, "extensionElements.activiti:field?name=errorCodeVariable.activiti:string.text", XmlType.CDATA)),
     OUTPUT_VARIABLE(PropertyTypeDetails(PropertyType.OUTPUT_VARIABLE, "extensionElements.activiti:field?name=outputVariable.activiti:string.text", XmlType.CDATA)),
     DIRECTORY(PropertyTypeDetails(PropertyType.DIRECTORY, "extensionElements.activiti:field?name=directory.activiti:string.text", XmlType.CDATA)),
-    FAILED_JOB_RETRY_CYCLE(PropertyTypeDetails(PropertyType.FAILED_JOB_RETRY_CYCLE, "extensionElements.activiti:failedJobRetryTimeCycle.text", XmlType.CDATA))
+    FAILED_JOB_RETRY_CYCLE(PropertyTypeDetails(PropertyType.FAILED_JOB_RETRY_CYCLE, "extensionElements.activiti:failedJobRetryTimeCycle.text", XmlType.CDATA)),
+    FIELDS(PropertyTypeDetails(PropertyType.FIELDS, "extensionElements.activiti:failedJobRetryTimeCycle.text", XmlType.CDATA))
 }
 
 open class ActivitiParser : BaseBpmnParser() {

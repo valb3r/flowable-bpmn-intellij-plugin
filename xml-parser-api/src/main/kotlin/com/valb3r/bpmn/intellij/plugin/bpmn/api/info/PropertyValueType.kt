@@ -6,6 +6,6 @@ enum class PropertyValueType {
     BOOLEAN,
     CLASS,
     EXPRESSION,
-    PROPERTY_LIST,
+    PROPERTY_GROUP,
     ATTACHED_SEQUENCE_SELECT
 }
