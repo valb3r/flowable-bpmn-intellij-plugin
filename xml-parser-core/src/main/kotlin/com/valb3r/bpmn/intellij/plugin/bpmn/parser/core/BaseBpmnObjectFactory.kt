@@ -157,14 +157,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         val propertyTree = mapper.valueToTree<JsonNode>(dto)
 
         for (type in propertyTypes()) {
-            if (type.path.contains(".")) {
-                tryParseNestedValue(type, propertyTree, result)
-                continue
-            }
-
-            propertyTree[type.path]?.apply {
-                parseValue(result, type)
-            }
+            parseValue(type.path, type, propertyTree, result)
         }
 
         return result
@@ -187,38 +180,42 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         return properties
     }
 
-    private fun tryParseNestedValue(
+    private fun parseValue(
+        path: String,
         type: PropertyType,
         propertyTree: JsonNode,
-        result: MutableMap<PropertyType, MutableList<Property>>
+        result: MutableMap<PropertyType, MutableList<Property>>,
+        indexInArray: Int? = null
     ) {
-        val split = type.path.split(".", limit = 2)
+        val split = path.split(".", limit = 2)
         val targetId = split[0]
+
+        if (propertyTree.isArray) {
+            propertyTree.forEachIndexed { index, it -> parseValue(split[1], type, it, result, index) }
+            return
+        }
+
         propertyTree[targetId]?.apply {
+            if (split.size < 2) {
+                doParse(this, result, type)
+                return
+            }
+
             if (split[1].contains(".")) {
-                tryParseNestedValue(type, this, result)
+                parseValue(split[1], type, this, result, indexInArray)
+                return
             }
 
             val value = this[split[1]]
-            if (null != value) {
-                value.parseValue(result, type)
-            } else {
-                doParse(null, result, type)
-            }
+            doParse(value, result, type, indexInArray)
         }
-    }
-
-    private fun JsonNode.parseValue(
-        result: MutableMap<PropertyType, MutableList<Property>>,
-        type: PropertyType
-    ) {
-        doParse(this, result, type)
     }
 
     private fun doParse(
         node: JsonNode?,
         result: MutableMap<PropertyType, MutableList<Property>>,
-        type: PropertyType
+        type: PropertyType,
+        indexInArray: Int? = null
     ) {
         if (null == node || node.isNull) {
             result.computeIfAbsent(type) { mutableListOf() }.add(Property(type.defaultValueIfNull))

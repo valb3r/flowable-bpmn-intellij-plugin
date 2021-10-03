@@ -7,15 +7,13 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyGroupEntry
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyGroupEntryType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 
 private const val FILE = "custom-service-tasks/service-task-with-nested-extensions.bpmn20.xml"
 
-internal class ActivitiServiceTaskWithNestedExtensionTest {
+internal class ActivityServiceTaskWithNestedExtensionTest {
 
     private val parser = ActivitiParser()
     private val elementId = BpmnElementId("serviceTaskWithExtensionId")
@@ -49,9 +47,7 @@ internal class ActivitiServiceTaskWithNestedExtensionTest {
 //                "                text\n" +
 //                "                ")
     }
-
-    private fun fieldByIndex(entries: List<PropertyGroupEntry>, index: Int) =
-        entries.filter { it.index == index }.associateBy({ it.type }, { it.value as Property? })
+    
 
     private fun readServiceTask(processObject: BpmnProcessObject): BpmnServiceTask {
         return processObject.process.body!!.serviceTask!!.shouldHaveSingleItem()
