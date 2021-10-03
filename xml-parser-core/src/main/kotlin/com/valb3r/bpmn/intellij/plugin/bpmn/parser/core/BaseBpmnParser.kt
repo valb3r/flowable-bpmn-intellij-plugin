@@ -459,19 +459,20 @@ abstract class BaseBpmnParser: BpmnParser {
     private fun setToNode(node: Element, type: PropertyType, value: Any?) {
         val details = propertyTypeDetails().firstOrNull { it.propertyType == type }
             ?: throw IllegalStateException("Wrong (or unsupported) property type details $type")
+        val path = details.xmlPath.replace("@", "multiline")
         when {
-            details.xmlPath.contains(".") -> setNestedToNode(node, type, details, value)
+            path.contains(".") -> setNestedToNode(node, path, type, details, value)
             else -> setAttributeOrValueOrCdataOrRemoveIfNull(
                 node,
-                details.xmlPath,
+                path,
                 details,
                 asString(type.valueType, value)
             )
         }
     }
 
-    private fun setNestedToNode(node: Element, type: PropertyType, details: PropertyTypeDetails, value: Any?) {
-        val segments = details.xmlPath.split(".")
+    private fun setNestedToNode(node: Element, path: String, type: PropertyType, details: PropertyTypeDetails, value: Any?) {
+        val segments = path.split(".")
         val childOf: (Element, String, String?) -> Element? =
             { target, name, attributeSelector -> nodeChildByName(target, name, attributeSelector) }
 

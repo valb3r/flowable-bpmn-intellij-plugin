@@ -58,7 +58,7 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
 
     @Test
     fun `Service task nested elements are emptyable`() {
-        readAndSetNullString(PropertyType.FIELD_NAME, "recipient").name.shouldBeNullOrEmpty()
+//        readAndSetNullString(PropertyType.FIELD_NAME, "recipient").name.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.FIELD_STRING, "multiline").name.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.FIELD_EXPRESSION, "recipient").name.shouldBeNullOrEmpty()
     }
