@@ -10,7 +10,7 @@ open class ActivitiObjectFactory: BaseBpmnObjectFactory() {
         return ActivitiPropertyTypeDetails.values().map { it.details.propertyType }
     }
 
-    override fun processDtoToPropertyMap(dto: Any): MutableMap<PropertyType, Property> {
+    override fun processDtoToPropertyMap(dto: Any): MutableMap<PropertyType, MutableList<Property>> {
         val result = super.processDtoToPropertyMap(dto)
         result.remove(PropertyType.HEADERS)
         result.remove(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE)

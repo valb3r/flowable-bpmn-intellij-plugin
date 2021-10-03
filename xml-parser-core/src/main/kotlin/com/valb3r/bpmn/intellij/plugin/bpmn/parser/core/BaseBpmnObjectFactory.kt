@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.parser.core
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnObjectFactory
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
@@ -125,8 +126,8 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         }
     }
 
-    override fun <T : WithBpmnId> propertiesOf(obj: T): Map<PropertyType, Property> {
-        return when (obj) {
+    override fun <T : WithBpmnId> propertiesOf(obj: T): PropertyTable {
+        val table = when (obj) {
             is BpmnStartEvent, is BpmnStartTimerEvent, is BpmnStartSignalEvent, is BpmnStartMessageEvent,
             is BpmnStartErrorEvent, is BpmnStartEscalationEvent, is BpmnStartConditionalEvent, is BpmnEndEvent,
             is BpmnEndErrorEvent, is BpmnEndCancelEvent, is BpmnEndEscalationEvent,
@@ -145,12 +146,14 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
             else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
         }
+        
+        return PropertyTable(table)
     }
 
     protected abstract fun propertyTypes(): List<PropertyType>
 
-    protected open fun processDtoToPropertyMap(dto: Any): MutableMap<PropertyType, Property> {
-        val result: MutableMap<PropertyType, Property> = mutableMapOf()
+    protected open fun processDtoToPropertyMap(dto: Any): MutableMap<PropertyType, MutableList<Property>> {
+        val result: MutableMap<PropertyType, MutableList<Property>> = mutableMapOf()
         val propertyTree = mapper.valueToTree<JsonNode>(dto)
 
         for (type in propertyTypes()) {
@@ -167,7 +170,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         return result
     }
 
-    protected open fun fillForSequenceFlow(activity: BpmnSequenceFlow): Map<PropertyType, Property> {
+    protected open fun fillForSequenceFlow(activity: BpmnSequenceFlow): Map<PropertyType, MutableList<Property>> {
         verifyConditionalExpressionInSequenceFlow(activity)
         return processDtoToPropertyMap(activity)
     }
@@ -178,7 +181,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         }
     }
 
-    private fun fillForCallActivity(activity: BpmnCallActivity): Map<PropertyType, Property> {
+    private fun fillForCallActivity(activity: BpmnCallActivity): Map<PropertyType, MutableList<Property>> {
         val properties = processDtoToPropertyMap(activity)
         // TODO: handle extension elements
         return properties
@@ -187,7 +190,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
     private fun tryParseNestedValue(
         type: PropertyType,
         propertyTree: JsonNode,
-        result: MutableMap<PropertyType, Property>
+        result: MutableMap<PropertyType, MutableList<Property>>
     ) {
         val split = type.path.split(".", limit = 2)
         val targetId = split[0]
@@ -206,7 +209,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
     }
 
     private fun JsonNode.parseValue(
-        result: MutableMap<PropertyType, Property>,
+        result: MutableMap<PropertyType, MutableList<Property>>,
         type: PropertyType
     ) {
         doParse(this, result, type)
@@ -214,44 +217,20 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
 
     private fun doParse(
         node: JsonNode?,
-        result: MutableMap<PropertyType, Property>,
+        result: MutableMap<PropertyType, MutableList<Property>>,
         type: PropertyType
     ) {
         if (null == node || node.isNull) {
-            result[type] = Property(type.defaultValueIfNull)
+            result.computeIfAbsent(type) { mutableListOf() }.add(Property(type.defaultValueIfNull))
             return
         }
 
-        result[type] = when (type.valueType) {
+        val propVal = when (type.valueType) {
             PropertyValueType.STRING, PropertyValueType.CLASS, PropertyValueType.EXPRESSION, PropertyValueType.ATTACHED_SEQUENCE_SELECT
             -> if (node.isNull) Property(null) else Property(node.asText())
-            PropertyValueType.PROPERTY_GROUP -> parsePropertyGroup(node, type)
             PropertyValueType.BOOLEAN -> Property(node.asBoolean())
         }
-    }
-
-    private fun parsePropertyGroup(rootNode: JsonNode, type: PropertyType): Property {
-        if (!rootNode.isArray) {
-            throw IllegalStateException("Node ${rootNode.nodeType} should be array")
-        }
-        val parsed = mutableListOf<PropertyGroupEntry>()
-
-        for ((index, targetNode) in rootNode.withIndex()) {
-            for (grpType in type.groupBinding!!) {
-                val node = targetNode[grpType.path]
-                if (null == node || node.isNull) {
-                    parsed.add(PropertyGroupEntry(index, grpType, grpType.defaultValueIfNull))
-                    continue
-                }
-
-                val value = when (grpType.valueType) {
-                    PropertyValueType.STRING, PropertyValueType.EXPRESSION -> if (node.isNull) Property(null) else Property(node.asText())
-                    else -> throw IllegalStateException("Unknown binding type: ${grpType.valueType}")
-                }
-                parsed.add(PropertyGroupEntry(index, grpType, value))
-            }
-        }
-        return Property(parsed)
+        result.computeIfAbsent(type) { mutableListOf() }.add(propVal)
     }
 
     private fun bounds(forBpmnObject: WithBpmnId): BoundsElement {

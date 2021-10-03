@@ -31,7 +31,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSub
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
@@ -466,7 +465,7 @@ abstract class BaseBpmnParser: BpmnParser {
                 node,
                 details.xmlPath,
                 details,
-                value
+                asString(type.valueType, value)
             )
         }
     }
@@ -542,33 +541,16 @@ abstract class BaseBpmnParser: BpmnParser {
         node: Element,
         name: String,
         details: PropertyTypeDetails,
-        type: PropertyType,
-        value: Any?
+        value: String?
     ) {
         when (details.type) {
-            XmlType.ATTRIBUTE -> setAttribute(node, name, asString(type.valueType, value))
-            XmlType.CDATA -> setCdata(node, name, asString(type.valueType, value))
-            XmlType.ELEMENT -> changeElementType(node, name, details, asString(type.valueType, value))
-            XmlType.PROPERTY_GROUP -> setPropertyGroup(node, details, value)
-            else -> throw IllegalArgumentException("Unable to handle $name: ${details.type}}")
+            XmlType.ATTRIBUTE -> setAttribute(node, name, value)
+            XmlType.CDATA -> setCdata(node, name, value)
+            XmlType.ELEMENT -> changeElementType(node, name, details, value)
         }
     }
 
     private fun setAttribute(node: Element, name: String, value: String?) {
-        val qname = qname(name)
-
-        if (value.isNullOrEmpty()) {
-            val attr = node.attribute(qname)
-            if (null != attr) {
-                node.remove(attr)
-            }
-            return
-        }
-
-        node.addAttribute(qname, value)
-    }
-
-    private fun setPropertyGroup(node: Element, name: String, value: Property?) {
         val qname = qname(name)
 
         if (value.isNullOrEmpty()) {
@@ -612,7 +594,6 @@ abstract class BaseBpmnParser: BpmnParser {
         return when (type) {
             STRING, CLASS, EXPRESSION, ATTACHED_SEQUENCE_SELECT -> value as String
             BOOLEAN -> (value as Boolean).toString()
-            PROPERTY_GROUP -> throw IllegalStateException("Parsing $type is not supported")
         }
     }
 
@@ -631,6 +612,5 @@ enum class XmlType {
 
     CDATA,
     ATTRIBUTE,
-    ELEMENT,
-    PROPERTY_GROUP
+    ELEMENT
 }
