@@ -3,8 +3,11 @@ package com.valb3r.bpmn.intellij.plugin.activiti.parser.customservicetasks
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnMuleTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -48,6 +51,25 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
                 "                ")
     }
 
+    @Test
+    fun `Service task nested elements are updatable`() {
+        {value: String -> readAndUpdate(PropertyType.ID, value, "recipient").id.id.shouldBeEqualTo(value)} ("new Id")
+    }
+
+    @Test
+    fun `Service task nested elements are emptyable`() {
+        readAndSetNullString(PropertyType.FIELD_NAME, "recipient").name.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.FIELD_STRING, "multiline").name.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.FIELD_EXPRESSION, "recipient").name.shouldBeNullOrEmpty()
+    }
+
+    private fun readAndSetNullString(property: PropertyType, propertyIndex: String): BpmnServiceTask {
+        return readServiceTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "", propertyIndex = propertyIndex)))
+    }
+
+    private fun readAndUpdate(property: PropertyType, newValue: String, propertyIndex: String): BpmnServiceTask {
+        return readServiceTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue, propertyIndex = propertyIndex)))
+    }
 
     private fun readServiceTask(processObject: BpmnProcessObject): BpmnServiceTask {
         return processObject.process.body!!.serviceTask!!.shouldHaveSingleItem()
