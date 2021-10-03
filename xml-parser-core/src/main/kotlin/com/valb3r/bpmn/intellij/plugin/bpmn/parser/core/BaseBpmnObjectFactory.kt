@@ -188,16 +188,16 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         indexInArray: Int? = null
     ) {
         val split = path.split(".", limit = 2)
-        val targetId = split[0]
+        val targetId = if (null != indexInArray) split[0].substring(1) else split[0]
 
-        if (propertyTree.isArray) {
-            propertyTree.forEachIndexed { index, it -> parseValue(split[1], type, it, result, index) }
+        if (true == propertyTree[targetId]?.isArray) {
+            propertyTree[targetId].forEachIndexed { index, it -> parseValue(split[1], type, it, result, index) }
             return
         }
 
         propertyTree[targetId]?.apply {
             if (split.size < 2) {
-                doParse(this, result, type)
+                doParse(this, result, type, indexInArray)
                 return
             }
 
@@ -217,15 +217,19 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         type: PropertyType,
         indexInArray: Int? = null
     ) {
+        val makeProperty = {it: Any? ->
+            if (null != indexInArray) { Property(ValueInArray(indexInArray, it))} else Property(it)
+        }
+
         if (null == node || node.isNull) {
-            result.computeIfAbsent(type) { mutableListOf() }.add(Property(type.defaultValueIfNull))
+            result.computeIfAbsent(type) { mutableListOf() }.add(makeProperty(type.defaultValueIfNull))
             return
         }
 
         val propVal = when (type.valueType) {
             PropertyValueType.STRING, PropertyValueType.CLASS, PropertyValueType.EXPRESSION, PropertyValueType.ATTACHED_SEQUENCE_SELECT
-            -> if (node.isNull) Property(null) else Property(node.asText())
-            PropertyValueType.BOOLEAN -> Property(node.asBoolean())
+            -> if (node.isNull) makeProperty(null) else makeProperty(node.asText())
+            PropertyValueType.BOOLEAN -> makeProperty(node.asBoolean())
         }
         result.computeIfAbsent(type) { mutableListOf() }.add(propVal)
     }

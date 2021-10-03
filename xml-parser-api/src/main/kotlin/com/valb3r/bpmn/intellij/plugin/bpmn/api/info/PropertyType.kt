@@ -121,5 +121,3 @@ enum class PropertyType(
     FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", STRING, exclusiveGroupId = "fields"),
     FIELD_STRING("fieldsExtension.@string", "String value", STRING, exclusiveGroupId = "fields")
 }
-
-data class ValueInArray(val index: Int, val value: Any?)

@@ -8,6 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.ValueInArray
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 
@@ -33,23 +34,26 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
         props[PropertyType.FAILED_JOB_RETRY_CYCLE]!!.value.shouldBeEqualTo(task.failedJobRetryTimeCycle)
-//        val entries = (props[PropertyType.GENERIC_FIELDS]!!.value as List<PropertyGroupEntry>).shouldHaveSize(6)
-//
-//        val recipient = fieldByIndex(entries, 0)
-//        recipient[PropertyGroupEntryType.FIELD_NAME]!!.value.shouldBeEqualTo("recipient")
-//        recipient[PropertyGroupEntryType.FIELD_EXPRESSION]!!.value.shouldBeEqualTo("userId:\${accountId}")
-//
-//        val multiline = fieldByIndex(entries, 1)
-//        multiline[PropertyGroupEntryType.FIELD_NAME]!!.value.shouldBeEqualTo("multiline")
-//        multiline[PropertyGroupEntryType.FIELD_STRING]!!.value.shouldBeEqualTo("This\n" +
-//                "                is\n" +
-//                "                multiline\n" +
-//                "                text\n" +
-//                "                ")
+
+        props.getAll(PropertyType.FIELD_NAME)[0].grpVal().value.shouldBeEqualTo("recipient")
+        props.getAll(PropertyType.FIELD_EXPRESSION)[0].grpVal().value.shouldBeEqualTo("userId:\${accountId}")
+        props.getAll(PropertyType.FIELD_STRING)[0].grpVal().value.shouldBeNull()
+
+        props.getAll(PropertyType.FIELD_NAME)[1].grpVal().value.shouldBeEqualTo("multiline")
+        props.getAll(PropertyType.FIELD_EXPRESSION)[1].grpVal().value.shouldBeNull()
+        props.getAll(PropertyType.FIELD_STRING)[1].grpVal().value.shouldBeEqualTo("This\n" +
+                "                is\n" +
+                "                multiline\n" +
+                "                text\n" +
+                "                ")
     }
-    
+
 
     private fun readServiceTask(processObject: BpmnProcessObject): BpmnServiceTask {
         return processObject.process.body!!.serviceTask!!.shouldHaveSingleItem()
+    }
+
+    private fun Property.grpVal(): ValueInArray {
+        return this.value as ValueInArray
     }
 }
