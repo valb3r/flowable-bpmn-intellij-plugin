@@ -97,7 +97,10 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     ERROR_CODE_VARIABLE(PropertyTypeDetails(PropertyType.ERROR_CODE_VARIABLE, "extensionElements.flowable:field?name=errorCodeVariable.flowable:string.text", XmlType.CDATA)),
     OUTPUT_VARIABLE(PropertyTypeDetails(PropertyType.OUTPUT_VARIABLE, "extensionElements.flowable:field?name=outputVariable.flowable:string.text", XmlType.CDATA)),
     DIRECTORY(PropertyTypeDetails(PropertyType.DIRECTORY, "extensionElements.flowable:field?name=directory.flowable:string.text", XmlType.CDATA)),
-    FAILED_JOB_RETRY_CYCLE(PropertyTypeDetails(PropertyType.FAILED_JOB_RETRY_CYCLE, "extensionElements.flowable:failedJobRetryTimeCycle.text", XmlType.CDATA))
+    FAILED_JOB_RETRY_CYCLE(PropertyTypeDetails(PropertyType.FAILED_JOB_RETRY_CYCLE, "extensionElements.flowable:failedJobRetryTimeCycle.text", XmlType.CDATA)),
+    FIELD_NAME(PropertyTypeDetails(PropertyType.FIELD_NAME, "extensionElements.flowable:field?name=@.name", XmlType.ATTRIBUTE)),
+    FIELD_EXPRESSION(PropertyTypeDetails(PropertyType.FIELD_EXPRESSION, "extensionElements.flowable:field?name=@.flowable:expression.text", XmlType.CDATA)),
+    FIELD_STRING(PropertyTypeDetails(PropertyType.FIELD_STRING, "extensionElements.flowable:field?name=@.flowable:string.text", XmlType.CDATA))
 }
 
 class FlowableParser : BaseBpmnParser() {

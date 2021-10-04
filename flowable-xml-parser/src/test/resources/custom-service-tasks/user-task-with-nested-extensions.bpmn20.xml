@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.flowable.org/processdef">
+    <process id="custom-service-task" name="custom-service-task" isExecutable="true">
+        <startEvent id="startEvent1"></startEvent>
+        <userTask id="userTaskId" name="A user task" flowable:async="true" flowable:assignee="$INITIATOR" flowable:dueDate="2020-01-01" flowable:formKey="FORM_KEY" flowable:priority="1" isForCompensation="true">
+            <documentation>A user task to do</documentation>
+            <extensionElements>
+                <flowable:formProperty id="fooVariableName" type="string" variable="fooDefault" default="isFoo"></flowable:formProperty>
+                <flowable:formProperty id="isSkippable" type="boolean" expression="${userCanSkip}"></flowable:formProperty>
+                <flowable:formProperty id="fullProperty" name="Full Property" type="string" expression="${foo}" variable="fullProperty" default="aValue" datePattern="DD.MM.YYYY">
+                    <flowable:value id="value1" name="Foo"></flowable:value>
+                    <flowable:value id="value2" name="Bar"></flowable:value>
+                </flowable:formProperty>
+            </extensionElements>
+        </userTask>
+    </process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_custom-service-task">
+        <bpmndi:BPMNPlane bpmnElement="custom-service-task" id="BPMNPlane_custom-service-task">
+            <bpmndi:BPMNShape bpmnElement="startEvent1" id="BPMNShape_startEvent1">
+                <omgdc:Bounds height="30.0" width="30.0" x="100.0" y="163.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="userTaskId" id="BPMNShape_userTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="210.0" y="138.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</definitions>
