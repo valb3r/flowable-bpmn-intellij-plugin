@@ -21,6 +21,7 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
 
     private val parser = ActivitiParser()
     private val elementId = BpmnElementId("serviceTaskWithExtensionId")
+    private val emptyElementId = BpmnElementId("emptyServiceTaskId")
 
     @Test
     fun `Service task with nested extensions is parseable`() {
@@ -64,6 +65,14 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
         readAndSetNullString(PropertyType.FIELD_NAME, "recipient").fieldsExtension!![0].name.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.FIELD_EXPRESSION, "recipient").fieldsExtension!![0].expression.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.FIELD_STRING, "multiline").fieldsExtension!![1].string.shouldBeNullOrEmpty()
+    }
+
+    @Test
+    fun `Add and remove nested extension element`() {
+        val process = readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = ""))
+        val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
+        val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        props.shouldNotBeNull()
     }
 
     private fun readAndSetNullString(property: PropertyType, propertyIndex: String): BpmnServiceTask {

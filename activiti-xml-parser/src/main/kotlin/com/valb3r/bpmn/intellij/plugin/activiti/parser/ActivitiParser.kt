@@ -120,7 +120,7 @@ open class ActivitiParser : BaseBpmnParser() {
     }
 
     override fun bpmndiNs(): NS {
-        return NS("bpmdi", "http://www.omg.org/spec/BPMN/20100524/DI")
+        return NS("bpmndi", "http://www.omg.org/spec/BPMN/20100524/DI")
     }
 
     override fun omgdcNs(): NS {

@@ -18,6 +18,7 @@
             </activiti:field>
         </extensionElements>
     </serviceTask>
+    <serviceTask id="emptyServiceTaskId" name="Empty service task"/>
 </process>
 <bpmndi:BPMNDiagram id="BPMNDiagram_custom-service-task">
     <bpmndi:BPMNPlane bpmnElement="custom-service-task" id="BPMNPlane_custom-service-task">
@@ -26,6 +27,9 @@
         </bpmndi:BPMNShape>
         <bpmndi:BPMNShape bpmnElement="serviceTaskWithExtensionId" id="BPMNShape_serviceTaskId">
             <omgdc:Bounds height="80.0" width="100.0" x="208.70001220703125" y="138.0"></omgdc:Bounds>
+        </bpmndi:BPMNShape>
+        <bpmndi:BPMNShape bpmnElement="emptyServiceTaskId" id="BPMNShape_emptyServiceTaskId">
+            <omgdc:Bounds height="80.0" width="100.0" x="308.70001220703125" y="138.0"></omgdc:Bounds>
         </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
 </bpmndi:BPMNDiagram>

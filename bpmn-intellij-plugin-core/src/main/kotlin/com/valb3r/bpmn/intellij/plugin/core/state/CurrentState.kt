@@ -12,6 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.ValueInArray
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.mappers.MapTransactionalSubprocessToSubprocess
 import com.valb3r.bpmn.intellij.plugin.core.events.BooleanUiOnlyValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.ProcessModelUpdateEvents
@@ -212,7 +213,7 @@ class CurrentStateProvider(private val project: Project) {
 
     private fun updateProperty(event: PropertyUpdateWithId, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
-        updated[event.property] = Property(event.newValue)
+        updated[event.property] = if (null == event.propertyIndex) Property(event.newValue) else Property(ValueInArray(event.propertyIndex!!, event.newValue))
         updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
     }
 
