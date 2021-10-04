@@ -300,7 +300,7 @@ abstract class ShapeRenderElement(
                         WaypointElement(secondAnchorCompensated.x, secondAnchorCompensated.y)
                 ))
 
-        val props = newElementsFactory(state().ctx.project).propertiesOf(newSequenceBpmn).toMutableMap()
+        val props = newElementsFactory(state().ctx.project).propertiesOf(newSequenceBpmn)
         props[PropertyType.TARGET_REF] = Property(droppedOn.id)
 
         return mutableListOf(

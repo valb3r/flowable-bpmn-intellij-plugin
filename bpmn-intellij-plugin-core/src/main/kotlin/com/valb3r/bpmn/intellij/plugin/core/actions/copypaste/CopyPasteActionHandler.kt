@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.common.annotations.VisibleForTesting
 import com.intellij.openapi.project.Project
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -211,14 +212,14 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
         return EdgeElementState(EdgeElement(diagramId, bpmnElementId, edge.waypoint.filter { it.physical }.map { it.asWaypointElement().copyAndTranslate(delta.x, delta.y) }) )
     }
 
-    private fun copied(props: Map<PropertyType, Property>, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): Map<PropertyType, Property> {
-        val result = mutableMapOf<PropertyType, Property>()
-        props.forEach {
+    private fun copied(props: PropertyTable, updatedIds: MutableMap<BpmnElementId, BpmnElementId>): PropertyTable {
+        val result = PropertyTable(mutableMapOf())
+        props.forEach { k, v ->
             when {
-                it.value.value == null -> result[it.key] = it.value
-                PropertyType.ID == it.key -> result[it.key] = Property(copied(BpmnElementId(it.value.value as String), updatedIds).id)
-                PropertyType.ID == it.key.updatedBy -> result[it.key] = Property(copiedExistsOrEmpty(BpmnElementId(it.value.value as String), updatedIds))
-                else -> result[it.key] = it.value
+                v.value == null -> result[k] = v
+                PropertyType.ID == k -> result[k] = Property(copied(BpmnElementId(v.value as String), updatedIds).id)
+                PropertyType.ID == k.updatedBy -> result[k] = Property(copiedExistsOrEmpty(BpmnElementId(v.value as String), updatedIds))
+                else -> result[k] = v
             }
         }
         return result

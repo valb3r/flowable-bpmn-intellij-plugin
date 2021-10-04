@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
@@ -55,7 +56,7 @@ class XmlUpdateEventDocumentationFormatTest {
                         )
                     ),
                     ShapeElement(DiagramElementId("id"), testId, BoundsElement(0.0f, 0.0f, 0.0f, 0.0f)),
-                    emptyMap()
+                    PropertyTable(mutableMapOf())
                 )
             )
         )

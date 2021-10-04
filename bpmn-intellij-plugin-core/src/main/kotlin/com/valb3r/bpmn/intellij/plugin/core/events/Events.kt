@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.events
 
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -31,8 +32,8 @@ data class DiagramElementRemovedEvent(override val elementId: DiagramElementId):
 
 data class BpmnElementRemovedEvent(override val bpmnElementId: BpmnElementId): BpmnElementRemoved
 
-data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithParentId, override val shape: ShapeElement, override val props: Map<PropertyType, Property>): BpmnShapeObjectAdded
+data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithParentId, override val shape: ShapeElement, override val props: PropertyTable): BpmnShapeObjectAdded
 
-data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithParentId, override val edge: EdgeWithIdentifiableWaypoints, override val props: Map<PropertyType, Property>): BpmnEdgeObjectAdded
+data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithParentId, override val edge: EdgeWithIdentifiableWaypoints, override val props: PropertyTable): BpmnEdgeObjectAdded
 
 data class BooleanUiOnlyValueUpdatedEvent(val bpmnElementId: BpmnElementId, val property: UiOnlyPropertyType, val newValue: Boolean): EventUiOnly

@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.core.state
 
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
@@ -35,7 +36,7 @@ data class CurrentState(
         val edges: List<EdgeWithIdentifiableWaypoints>,
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
         val elementByBpmnId: Map<BpmnElementId, WithParentId>,
-        val elemPropertiesByStaticElementId: Map<BpmnElementId, Map<PropertyType, Property>>,
+        val elemPropertiesByStaticElementId: Map<BpmnElementId, PropertyTable>,
         val propertyWithElementByPropertyType: Map<PropertyType, Map<BpmnElementId, Property>>,
         val elemUiOnlyPropertiesByStaticElementId: Map<BpmnElementId, Map<UiOnlyPropertyType, Property>>,
         val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>,
@@ -148,7 +149,7 @@ class CurrentStateProvider(private val project: Project) {
         }
 
         updatedElemPropertiesByStaticElementId.forEach {(elemId, props) ->
-            props.forEach {(type, value) ->
+            props.forEach {type, value ->
                 updatedPropertyWithElementByPropertyType.computeIfAbsent(type) { mutableMapOf() }[elemId] = value
             }
         }
@@ -170,7 +171,7 @@ class CurrentStateProvider(private val project: Project) {
     private fun applyPropertyUpdate(
             processId: BpmnElementId,
             event: PropertyUpdateWithId,
-            updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>>,
+            updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>,
             updatedShapes: MutableList<ShapeElement>,
             updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>,
             updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>,
@@ -209,8 +210,8 @@ class CurrentStateProvider(private val project: Project) {
         }
     }
 
-    private fun updateProperty(event: PropertyUpdateWithId, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>>) {
-        val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId]?.toMutableMap() ?: mutableMapOf()
+    private fun updateProperty(event: PropertyUpdateWithId, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
+        val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
         updated[event.property] = Property(event.newValue)
         updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
     }
@@ -235,7 +236,7 @@ class CurrentStateProvider(private val project: Project) {
             updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>,
             updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>,
             updatedElementByStaticId: MutableMap<BpmnElementId, WithParentId>,
-            updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>>
+            updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>
     ) {
         val shape = updatedShapes.find { it.bpmnElement == elementId }
         val edge = updatedEdges.find { it.bpmnElement == elementId }
@@ -253,7 +254,7 @@ class CurrentStateProvider(private val project: Project) {
             updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>,
             updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>,
             updatedElementByStaticId: MutableMap<BpmnElementId, WithParentId>,
-            updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, Map<PropertyType, Property>>
+            updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>
     ): BpmnElementId {
         val shape = updatedShapes.find { it.bpmnElement == elementId }
         val edge = updatedEdges.find { it.bpmnElement == elementId }
@@ -276,7 +277,7 @@ class CurrentStateProvider(private val project: Project) {
                 updatedElementByStaticId[elemId] = WithParentId(newElementId, elem.element)
             }
         }
-        val elemPropUpdated = updatedElemPropertiesByStaticElementId.remove(elementId)?.toMutableMap() ?: mutableMapOf()
+        val elemPropUpdated = updatedElemPropertiesByStaticElementId.remove(elementId) ?: PropertyTable(mutableMapOf())
         elemPropUpdated[PropertyType.ID] = Property(newElementId.id)
         updatedElemPropertiesByStaticElementId[newElementId] = elemPropUpdated
 

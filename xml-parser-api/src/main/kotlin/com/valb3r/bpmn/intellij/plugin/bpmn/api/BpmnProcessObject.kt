@@ -172,10 +172,24 @@ data class BpmnProcessObjectView(
         val diagram: List<DiagramElement>
 )
 
-data class PropertyTable(private val properties: Map<PropertyType, List<Property>>) {
+data class PropertyTable(private val properties: MutableMap<PropertyType, MutableList<Property>>) {
+
+    val keys get() = properties.keys
 
     operator fun get(type: PropertyType): Property? {
         return properties[type]?.get(0)
+    }
+
+    operator fun set(type: PropertyType, value: Property) {
+        properties[type] = mutableListOf(value)
+    }
+
+    fun forEach(exec: (key: PropertyType, value: Property) -> Unit) {
+        properties.forEach {(k, vals) -> vals.forEach {exec(k, it)}}
+    }
+
+    fun filter(exec: (key: PropertyType, value: Property) -> Boolean): List<Pair<PropertyType, Property>> {
+        return properties.flatMap { it.value.map { v -> Pair(it.key, v) } }.filter {(k, v) -> exec(k, v)}
     }
 
     fun getAll(type: PropertyType): List<Property> {

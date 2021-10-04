@@ -163,7 +163,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         return result
     }
 
-    protected open fun fillForSequenceFlow(activity: BpmnSequenceFlow): Map<PropertyType, MutableList<Property>> {
+    protected open fun fillForSequenceFlow(activity: BpmnSequenceFlow): MutableMap<PropertyType, MutableList<Property>> {
         verifyConditionalExpressionInSequenceFlow(activity)
         return processDtoToPropertyMap(activity)
     }
@@ -174,7 +174,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         }
     }
 
-    private fun fillForCallActivity(activity: BpmnCallActivity): Map<PropertyType, MutableList<Property>> {
+    private fun fillForCallActivity(activity: BpmnCallActivity): MutableMap<PropertyType, MutableList<Property>> {
         val properties = processDtoToPropertyMap(activity)
         // TODO: handle extension elements
         return properties

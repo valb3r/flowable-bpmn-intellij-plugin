@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.events
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -49,7 +50,7 @@ interface BpmnElementRemoved: EventPropagatableToXml {
 interface BpmnShapeObjectAdded: EventPropagatableToXml {
     val bpmnObject: WithParentId
     val shape: ShapeElement
-    val props: Map<PropertyType, Property>
+    val props: PropertyTable
 }
 
 interface BpmnShapeResizedAndMoved: EventPropagatableToXml {
@@ -65,7 +66,7 @@ interface BpmnShapeResizedAndMoved: EventPropagatableToXml {
 interface BpmnEdgeObjectAdded: EventPropagatableToXml {
     val bpmnObject: WithParentId
     val edge: EdgeWithIdentifiableWaypoints
-    val props: Map<PropertyType, Property>
+    val props: PropertyTable
 }
 
 interface BpmnParentChanged: EventPropagatableToXml {

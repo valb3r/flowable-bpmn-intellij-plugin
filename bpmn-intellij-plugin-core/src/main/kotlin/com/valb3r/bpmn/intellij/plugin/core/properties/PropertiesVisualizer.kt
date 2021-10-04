@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.properties
 
 import com.intellij.openapi.project.Project
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
@@ -71,7 +72,7 @@ class PropertiesVisualizer(
     }
 
     @Synchronized
-    fun visualize(state: Map<BpmnElementId, Map<PropertyType, Property>>, bpmnElementId: BpmnElementId) {
+    fun visualize(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId) {
         notifyDeFocusElement()
 
         // drop and re-create table model
@@ -81,13 +82,13 @@ class PropertiesVisualizer(
         table.model = model
         table.columnModel.getColumn(1).preferredWidth = 500
 
-        state[bpmnElementId]?.forEach {
-            when(it.key.valueType) {
-                STRING -> model.addRow(arrayOf(it.key.caption, buildTextField(state, bpmnElementId, it.key, it.value)))
-                BOOLEAN -> model.addRow(arrayOf(it.key.caption, buildCheckboxField(bpmnElementId, it.key, it.value)))
-                CLASS -> model.addRow(arrayOf(it.key.caption, buildClassField(state, bpmnElementId, it.key, it.value)))
-                EXPRESSION -> model.addRow(arrayOf(it.key.caption, buildExpressionField(state, bpmnElementId, it.key, it.value)))
-                ATTACHED_SEQUENCE_SELECT -> model.addRow(arrayOf(it.key.caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, it.key, it.value)))
+        state[bpmnElementId]?.forEach { k,v ->
+            when(k.valueType) {
+                STRING -> model.addRow(arrayOf(k.caption, buildTextField(state, bpmnElementId, k, v)))
+                BOOLEAN -> model.addRow(arrayOf(k.caption, buildCheckboxField(bpmnElementId, k, v)))
+                CLASS -> model.addRow(arrayOf(k.caption, buildClassField(state, bpmnElementId, k, v)))
+                EXPRESSION -> model.addRow(arrayOf(k.caption, buildExpressionField(state, bpmnElementId, k, v)))
+                ATTACHED_SEQUENCE_SELECT -> model.addRow(arrayOf(k.caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, k, v)))
             }
         }
         model.fireTableDataChanged()
@@ -99,7 +100,7 @@ class PropertiesVisualizer(
         listenersForCurrentView.clear()
     }
 
-    private fun buildTextField(state: Map<BpmnElementId, Map<PropertyType, Property>>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
+    private fun buildTextField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
         val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
         val field = textFieldFactory.invoke(bpmnElementId, type, fieldValue)
         val initialValue = field.text
@@ -134,28 +135,28 @@ class PropertiesVisualizer(
         return field.component
     }
 
-    private fun buildClassField(state: Map<BpmnElementId, Map<PropertyType, Property>>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
+    private fun buildClassField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
         val fieldValue = lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
         val field = classEditorFactory(bpmnElementId, type, fieldValue)
         addEditorTextListener(state, field, bpmnElementId, type)
         return field.component
     }
 
-    private fun buildExpressionField(state: Map<BpmnElementId, Map<PropertyType, Property>>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
+    private fun buildExpressionField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
         val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
         val field = editorFactory(bpmnElementId, type, "\"${fieldValue}\"")
         addEditorTextListener(state, field, bpmnElementId, type)
         return field.component
     }
 
-    private fun buildDropDownSelectFieldForTargettedIds(state: Map<BpmnElementId, Map<PropertyType, Property>>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
+    private fun buildDropDownSelectFieldForTargettedIds(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
         val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
         val field = dropDownFactory(bpmnElementId, type, fieldValue, findCascadeTargetIds(bpmnElementId, type, state))
         addEditorTextListener(state, field, bpmnElementId, type)
         return field.component
     }
 
-    private fun findCascadeTargetIds(forId: BpmnElementId, type: PropertyType, state: Map<BpmnElementId, Map<PropertyType, Property>>): Set<String> {
+    private fun findCascadeTargetIds(forId: BpmnElementId, type: PropertyType, state: Map<BpmnElementId, PropertyTable>): Set<String> {
         if (null == type.updatedBy) {
             throw IllegalArgumentException("Type $type should be cascadable")
         }
@@ -163,8 +164,8 @@ class PropertiesVisualizer(
         val result = mutableSetOf("")
 
         state.forEach { (_, props) ->
-            props.forEach {property ->
-                if (property.key == type.updatedBy && props[PropertyType.SOURCE_REF]?.value == forId.id) {
+            props.forEach { k, v ->
+                if (k == type.updatedBy && props[PropertyType.SOURCE_REF]?.value == forId.id) {
                     props[PropertyType.ID]?.value?.let { result += it as String }
                 }
             }
@@ -173,7 +174,7 @@ class PropertiesVisualizer(
         return result
     }
 
-    private fun addEditorTextListener(state: Map<BpmnElementId, Map<PropertyType, Property>>, field: TextValueAccessor, bpmnElementId: BpmnElementId, type: PropertyType) {
+    private fun addEditorTextListener(state: Map<BpmnElementId, PropertyTable>, field: TextValueAccessor, bpmnElementId: BpmnElementId, type: PropertyType) {
         val initialValue = field.text
         listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
             if (initialValue != field.text) {
@@ -182,12 +183,12 @@ class PropertiesVisualizer(
         }
     }
 
-    private fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, Map<PropertyType, Property>>, event: StringValueUpdatedEvent) {
+    private fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, PropertyTable>, event: StringValueUpdatedEvent) {
         val cascades = mutableListOf<PropertyUpdateWithId>()
         if (null != event.referencedValue) {
             state.forEach { (id, props) ->
-                props.filter { it.key.updatedBy == event.property }.filter { it.value.value == event.referencedValue }.forEach {prop ->
-                    cascades += StringValueUpdatedEvent(id, prop.key, event.newValue, event.referencedValue, null)
+                props.filter { k, v -> k.updatedBy == event.property }.filter { it.second.value == event.referencedValue }.forEach {prop ->
+                    cascades += StringValueUpdatedEvent(id, prop.first, event.newValue, event.referencedValue, null)
                 }
             }
         }

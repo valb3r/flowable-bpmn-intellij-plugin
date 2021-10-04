@@ -333,7 +333,7 @@ abstract class BaseBpmnParser: BpmnParser {
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 
-        update.props.forEach { setToNode(newNode, it.key, it.value.value) }
+        update.props.forEach { k, v -> setToNode(newNode, k, v.value) }
         trimWhitespace(diagramParent, false)
 
         val shapeParent = doc.selectSingleNode(
@@ -408,7 +408,7 @@ abstract class BaseBpmnParser: BpmnParser {
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 
-        update.props.forEach { setToNode(newNode, it.key, it.value.value) }
+        update.props.forEach { k, v ->  setToNode(newNode, k, v.value) }
         trimWhitespace(diagramParent, false)
 
         val shapeParent = doc.selectSingleNode(

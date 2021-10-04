@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
@@ -149,10 +150,12 @@ internal class FlowableParserDumbTest {
                 listOf(BpmnShapeObjectAddedEvent(
                         WithParentId(parentElemId, BpmnExclusiveGateway(bmpnElemId, "Exclusive gateway", null, null)),
                         ShapeElement(diagramElementId, bmpnElemId, BoundsElement(0.0f, 0.0f, 30.0f, 40.0f)),
-                        mapOf(
-                                PropertyType.ID to Property(bmpnElemId.id),
-                                PropertyType.CONDITION_EXPR_VALUE to Property("condition 1"),
-                                PropertyType.CONDITION_EXPR_TYPE to Property("a type")
+                        PropertyTable(
+                            mutableMapOf(
+                                PropertyType.ID to mutableListOf(Property(bmpnElemId.id)),
+                                PropertyType.CONDITION_EXPR_VALUE to mutableListOf(Property("condition 1")),
+                                PropertyType.CONDITION_EXPR_TYPE to mutableListOf(Property("a type"))
+                            )
                         )
                 )
         ))
@@ -175,10 +178,12 @@ internal class FlowableParserDumbTest {
                                                 WaypointElementState(diagramElementId, 30.0f, 40.0f, 0.0f, 0.0f, true, 0)
                                         ),
                                         0),
-                                mapOf(
-                                        PropertyType.ID to Property(bmpnElemId.id),
-                                        PropertyType.CONDITION_EXPR_VALUE to Property("condition 1"),
-                                        PropertyType.CONDITION_EXPR_TYPE to Property("a type")
+                                PropertyTable(
+                                    mutableMapOf(
+                                        PropertyType.ID to mutableListOf(Property(bmpnElemId.id)),
+                                        PropertyType.CONDITION_EXPR_VALUE to mutableListOf(Property("condition 1")),
+                                        PropertyType.CONDITION_EXPR_TYPE to mutableListOf(Property("a type"))
+                                    )
                                 )
                         )
                 )
@@ -205,10 +210,12 @@ internal class FlowableParserDumbTest {
                                                 WaypointElementState(diagramElementId, 30.0f, 40.0f, 0.0f, 0.0f, true, 0)
                                         ),
                                         0),
-                                mapOf(
-                                        PropertyType.ID to Property(newId.id),
-                                        PropertyType.CONDITION_EXPR_VALUE to Property("condition 1"),
-                                        PropertyType.CONDITION_EXPR_TYPE to Property("a type")
+                                PropertyTable(
+                                    mutableMapOf(
+                                        PropertyType.ID to mutableListOf(Property(newId.id)),
+                                        PropertyType.CONDITION_EXPR_VALUE to mutableListOf(Property("condition 1")),
+                                        PropertyType.CONDITION_EXPR_TYPE to mutableListOf(Property("a type"))
+                                    )
                                 )
                         )
                 )
