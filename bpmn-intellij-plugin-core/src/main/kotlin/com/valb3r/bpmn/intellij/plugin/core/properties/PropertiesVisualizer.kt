@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.ValueInArray
 import com.valb3r.bpmn.intellij.plugin.core.events.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
@@ -82,15 +83,29 @@ class PropertiesVisualizer(
         table.model = model
         table.columnModel.getColumn(1).preferredWidth = 500
 
-        state[bpmnElementId]?.forEach { k,v ->
-            when(k.valueType) {
-                STRING -> model.addRow(arrayOf(k.caption, buildTextField(state, bpmnElementId, k, v)))
-                BOOLEAN -> model.addRow(arrayOf(k.caption, buildCheckboxField(bpmnElementId, k, v)))
-                CLASS -> model.addRow(arrayOf(k.caption, buildClassField(state, bpmnElementId, k, v)))
-                EXPRESSION -> model.addRow(arrayOf(k.caption, buildExpressionField(state, bpmnElementId, k, v)))
-                ATTACHED_SEQUENCE_SELECT -> model.addRow(arrayOf(k.caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, k, v)))
+        val groupedEntries = state[bpmnElementId]?.view()?.entries
+            ?.groupBy { it.key.controlInGroupCaption }
+            ?.toSortedMap(Comparator.comparingInt { it?.length ?: 0 }) ?: emptyMap()
+        
+        for ((groupId, entries) in groupedEntries) {
+            if (null != groupId) {
+                // todo add group caption
             }
+
+            entries
+                .flatMap { it.value.map { v -> Pair(it.key, v) } }
+                .sortedBy { extractIndex(it.second) }
+                .forEach {
+                    when(it.first.valueType) {
+                        STRING -> model.addRow(arrayOf(it.first.caption, buildTextField(state, bpmnElementId, it.first, it.second)))
+                        BOOLEAN -> model.addRow(arrayOf(it.first.caption, buildCheckboxField(bpmnElementId, it.first, it.second)))
+                        CLASS -> model.addRow(arrayOf(it.first.caption, buildClassField(state, bpmnElementId, it.first, it.second)))
+                        EXPRESSION -> model.addRow(arrayOf(it.first.caption, buildExpressionField(state, bpmnElementId, it.first, it.second)))
+                        ATTACHED_SEQUENCE_SELECT -> model.addRow(arrayOf(it.first.caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, it.first, it.second)))
+                    }
+                }
         }
+        
         model.fireTableDataChanged()
     }
 
@@ -101,7 +116,7 @@ class PropertiesVisualizer(
     }
 
     private fun buildTextField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
-        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
+        val fieldValue = lastStringValueFromRegistry(bpmnElementId, type) ?: extractString(value)
         val field = textFieldFactory.invoke(bpmnElementId, type, fieldValue)
         val initialValue = field.text
 
@@ -114,7 +129,8 @@ class PropertiesVisualizer(
                                 type,
                                 field.text,
                                 if (type.cascades) initialValue else null,
-                                if (type == PropertyType.ID) BpmnElementId(field.text) else null
+                                if (type == PropertyType.ID) BpmnElementId(field.text) else null,
+                                extractIndex(value)
                         )
                 )
             }
@@ -123,7 +139,7 @@ class PropertiesVisualizer(
     }
 
     private fun buildCheckboxField(bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
-        val fieldValue =  lastBooleanValueFromRegistry(bpmnElementId, type) ?: (value.value as Boolean? ?: false)
+        val fieldValue =  lastBooleanValueFromRegistry(bpmnElementId, type) ?: extractBoolean(value)
         val field = checkboxFieldFactory.invoke(bpmnElementId, type, fieldValue)
         val initialValue = field.isSelected
 
@@ -136,21 +152,21 @@ class PropertiesVisualizer(
     }
 
     private fun buildClassField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
-        val fieldValue = lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
+        val fieldValue = lastStringValueFromRegistry(bpmnElementId, type) ?: extractString(value)
         val field = classEditorFactory(bpmnElementId, type, fieldValue)
         addEditorTextListener(state, field, bpmnElementId, type)
         return field.component
     }
 
     private fun buildExpressionField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
-        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
+        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: extractString(value)
         val field = editorFactory(bpmnElementId, type, "\"${fieldValue}\"")
         addEditorTextListener(state, field, bpmnElementId, type)
         return field.component
     }
 
     private fun buildDropDownSelectFieldForTargettedIds(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
-        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: (value.value as String? ?: "")
+        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: extractString(value)
         val field = dropDownFactory(bpmnElementId, type, fieldValue, findCascadeTargetIds(bpmnElementId, type, state))
         addEditorTextListener(state, field, bpmnElementId, type)
         return field.component
@@ -203,9 +219,7 @@ class PropertiesVisualizer(
     private fun lastStringValueFromRegistry(bpmnElementId: BpmnElementId, type: PropertyType): String? {
         return (updateEventsRegistry(project).currentPropertyUpdateEventList(bpmnElementId)
                 .map { it.event }
-                .filter {
-                    bpmnElementId == it.bpmnElementId && it.property.id == type.id
-                }
+                .filter { bpmnElementId == it.bpmnElementId && it.property.id == type.id }
                 .lastOrNull { it is StringValueUpdatedEvent } as StringValueUpdatedEvent?)
                 ?.newValue
     }
@@ -217,5 +231,29 @@ class PropertiesVisualizer(
                 .filter { it.property.id == type.id }
                 .lastOrNull { it is BooleanValueUpdatedEvent } as BooleanValueUpdatedEvent?)
                 ?.newValue
+    }
+
+    private fun extractIndex(prop: Property?): String? {
+        return if (prop?.value is ValueInArray) (prop.value as ValueInArray).index else null
+    }
+
+    private fun extractString(prop: Property?): String {
+        return extractValue(prop, "")
+    }
+
+    private fun extractBoolean(prop: Property?): Boolean {
+        return extractValue(prop, false)
+    }
+
+    private fun <T> extractValue(prop: Property?, defaultValue: T): T {
+        if (prop == null) {
+            return defaultValue
+        }
+
+        return if (prop.value is ValueInArray) {
+            (prop.value as ValueInArray).value as T? ?: defaultValue
+        } else {
+            prop.value as T? ?: defaultValue
+        }
     }
 }

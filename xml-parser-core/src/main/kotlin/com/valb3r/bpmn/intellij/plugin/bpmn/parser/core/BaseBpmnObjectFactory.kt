@@ -191,7 +191,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         val targetId = if (null != indexInArray) split[0].substring(1) else split[0]
 
         if (true == propertyTree[targetId]?.isArray) {
-            propertyTree[targetId].forEachIndexed { index, it -> parseValue(split[1], type, it, result, it[type.indexInArrayName!!].asText()) }
+            propertyTree[targetId].forEachIndexed { index, it -> parseValue(split[1], type, it, result, it[type.indexInGroupArrayName!!].asText()) }
             return
         }
 

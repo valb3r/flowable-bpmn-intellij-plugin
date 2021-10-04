@@ -195,4 +195,8 @@ data class PropertyTable(private val properties: MutableMap<PropertyType, Mutabl
     fun getAll(type: PropertyType): List<Property> {
         return properties[type] ?: emptyList()
     }
+
+    fun view(): Map<PropertyType, List<Property>> {
+        return properties
+    }
 }
