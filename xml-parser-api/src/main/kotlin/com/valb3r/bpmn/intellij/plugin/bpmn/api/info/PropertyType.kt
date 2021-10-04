@@ -51,25 +51,10 @@ enum class PropertyType(
     ATTACHED_TO_REF("attachedToRef", "Attached to", STRING, "attachedToRef.id", false, ID),
     CONDITION_EXPR_VALUE("conditionExpression.text", "Condition expression", T_EXPRESSION, "conditionExpression.text"),
     CONDITION_EXPR_TYPE("conditionExpression.type", "Condition expression type", STRING, "conditionExpression.type"),
-    COMPLETION_CONDITION(
-        "completionCondition.condition",
-        "Completion condition",
-        T_EXPRESSION,
-        "completionCondition.condition"
-    ),
+    COMPLETION_CONDITION("completionCondition.condition", "Completion condition", T_EXPRESSION, "completionCondition.condition"),
     DEFAULT_FLOW("defaultElement", "Default flow element", ATTACHED_SEQUENCE_SELECT, "defaultElement", false, ID),
-    IS_TRANSACTIONAL_SUBPROCESS(
-        "transactionalSubprocess",
-        "Is transactional subprocess",
-        BOOLEAN,
-        "transactionalSubprocess",
-        elementUpdateChangesClass = true
-    ),
-    IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE(
-        "useLocalScopeForResultVariable",
-        "Use local scope for result varaible",
-        BOOLEAN
-    ),
+    IS_TRANSACTIONAL_SUBPROCESS("transactionalSubprocess", "Is transactional subprocess", BOOLEAN, "transactionalSubprocess", elementUpdateChangesClass = true),
+    IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE("useLocalScopeForResultVariable", "Use local scope for result varaible", BOOLEAN),
     CAMEL_CONTEXT("camelContext", "Camel context", STRING),
     DECISION_TABLE_REFERENCE_KEY("decisionTableReferenceKey", "Decision table reference key", STRING),
     DECISION_TASK_THROW_ERROR_ON_NO_HITS("decisionTaskThrowErrorOnNoHits", "Throw error if no rule hit", BOOLEAN),
@@ -88,11 +73,7 @@ enum class PropertyType(
     SAVE_REQUEST_VARIABLES("saveRequestVariables", "Save request variables to", STRING),
     SAVE_RESPONSE_PARAMETERS("saveResponseParameters", "Save response,status,headers to", STRING),
     RESULT_VARIABLE_PREFIX("resultVariablePrefix", "Result variable prefix", STRING),
-    SAVE_RESPONSE_PARAMETERS_TRANSIENT(
-        "saveResponseParametersTransient",
-        "Save response as transient variable",
-        STRING
-    ),
+    SAVE_RESPONSE_PARAMETERS_TRANSIENT("saveResponseParametersTransient", "Save response as transient variable", STRING),
     SAVE_RESPONSE_VARIABLE_AS_JSON("saveResponseVariableAsJson", "Save response as json", STRING),
     HEADERS("headers", "Headers", STRING),
     TO("to", "To", STRING),
@@ -119,7 +100,7 @@ enum class PropertyType(
     OUTPUT_VARIABLE("outputVariable", "Output variable", STRING),
     DIRECTORY("directory", "Working directory", STRING),
     FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
-    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", updateOrder = 100, addToGroupArrayIfEmpty = true), // Is sub-id
-    FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name"),
-    FIELD_STRING("fieldsExtension.@string", "String value", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name")
+    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", updateOrder = 100, addToGroupArrayIfEmpty = true, cascades = true), // Is sub-id
+    FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", updatedBy = FIELD_NAME),
+    FIELD_STRING("fieldsExtension.@string", "String value", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", updatedBy = FIELD_NAME)
 }
