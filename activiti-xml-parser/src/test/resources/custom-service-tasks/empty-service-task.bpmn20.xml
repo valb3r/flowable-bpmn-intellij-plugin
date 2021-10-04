@@ -3,28 +3,14 @@
 <process id="custom-service-task" name="custom-service-task" isExecutable="true">
     <documentation>Docs for custom service task</documentation>
     <startEvent id="startEvent1"></startEvent>
-    <serviceTask id="serviceTaskWithExtensionId" name="Service task with extension">
-        <extensionElements>
-            <activiti:failedJobRetryTimeCycle>R10/PT5M</activiti:failedJobRetryTimeCycle>
-            <activiti:field name="recipient">
-                <activiti:expression><![CDATA[userId:${accountId}]]></activiti:expression>
-            </activiti:field>
-            <activiti:field name="multiline">
-                <activiti:string><![CDATA[This
-                is
-                multiline
-                text]]>
-                </activiti:string>
-            </activiti:field>
-        </extensionElements>
-    </serviceTask>
+    <serviceTask id="emptyServiceTaskId" name="Service task with extension"/>
 </process>
 <bpmndi:BPMNDiagram id="BPMNDiagram_custom-service-task">
     <bpmndi:BPMNPlane bpmnElement="custom-service-task" id="BPMNPlane_custom-service-task">
         <bpmndi:BPMNShape bpmnElement="startEvent1" id="BPMNShape_startEvent1">
             <omgdc:Bounds height="30.0" width="30.0" x="100.0" y="163.0"></omgdc:Bounds>
         </bpmndi:BPMNShape>
-        <bpmndi:BPMNShape bpmnElement="serviceTaskWithExtensionId" id="BPMNShape_serviceTaskId">
+        <bpmndi:BPMNShape bpmnElement="emptyServiceTaskId" id="BPMNShape_emptyServiceTaskId">
             <omgdc:Bounds height="80.0" width="100.0" x="208.70001220703125" y="138.0"></omgdc:Bounds>
         </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
