@@ -68,11 +68,42 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
     }
 
     @Test
-    fun `Add and remove nested extension element`() {
+    fun `Add nested extension element`() {
         val process = readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = ""))
         val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
         val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
-        props.shouldNotBeNull()
+        props[PropertyType.FIELD_NAME]!!.value.shouldBeEqualTo(ValueInArray("new name", "new name"))
+    }
+
+    @Test
+    fun `Add and remove nested extension element`() {
+        val process = readAndUpdateProcess(
+            parser,
+            FILE,
+            listOf(
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = ""),
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "", propertyIndex = "new name")
+            )
+        )
+        val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
+        val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        props[PropertyType.FIELD_NAME]!!.value.shouldBeEqualTo(ValueInArray(null, null))
+    }
+
+    @Test
+    fun `Add and remove and add nested extension element`() {
+        val process = readAndUpdateProcess(
+            parser,
+            FILE,
+            listOf(
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = ""),
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "", propertyIndex = "new name"),
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "other new name", propertyIndex = ""),
+            )
+        )
+        val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
+        val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        props[PropertyType.FIELD_NAME]!!.value.shouldBeEqualTo(ValueInArray("other new name", "other new name"))
     }
 
     private fun readAndSetNullString(property: PropertyType, propertyIndex: String): BpmnServiceTask {

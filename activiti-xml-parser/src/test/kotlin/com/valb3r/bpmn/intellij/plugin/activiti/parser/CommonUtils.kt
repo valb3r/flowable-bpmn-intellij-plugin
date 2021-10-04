@@ -21,3 +21,14 @@ fun readAndUpdateProcess(parser: ActivitiParser, processName: String, event: Eve
 
     return parser.parse(updated)
 }
+
+fun readAndUpdateProcess(parser: ActivitiParser, processName: String, events: List<EventPropagatableToXml>): BpmnProcessObject {
+    val updated = parser.update(
+        processName.asResource()!!,
+        events
+    )
+
+    updated.shouldNotBeNull()
+
+    return parser.parse(updated)
+}
