@@ -36,4 +36,18 @@ internal class StateBasedPropertyUpdateTest: BaseUiTest() {
         currentStateProvider(project).currentState().elemPropertiesByStaticElementId[serviceTaskStartBpmnId]!![PropertyType.FIELD_NAME]
             ?.value?.shouldBeEqualTo(ValueInArray("", "1"))
     }
+
+    @Test
+    fun `Group based multiple update event updates state properly`() {
+        prepareTwoServiceTaskView()
+        currentStateProvider(project).currentState().elemPropertiesByStaticElementId[serviceTaskStartBpmnId]!![PropertyType.FIELD_NAME]
+            ?.value?.shouldBeNull()
+
+        updateEventsRegistry(project).addPropertyUpdateEvent(StringValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_NAME, "new name", propertyIndex = ""))
+        updateEventsRegistry(project).addPropertyUpdateEvent(StringValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_EXPRESSION, "expression 1", propertyIndex = ""))
+        currentStateProvider(project).currentState().elemPropertiesByStaticElementId[serviceTaskStartBpmnId]!![PropertyType.FIELD_NAME]
+            ?.value?.shouldBeEqualTo(ValueInArray("new name", "new name"))
+        currentStateProvider(project).currentState().elemPropertiesByStaticElementId[serviceTaskStartBpmnId]!![PropertyType.FIELD_EXPRESSION]
+            ?.value?.shouldBeEqualTo(ValueInArray("new name", "expression 1"))
+    }
 }

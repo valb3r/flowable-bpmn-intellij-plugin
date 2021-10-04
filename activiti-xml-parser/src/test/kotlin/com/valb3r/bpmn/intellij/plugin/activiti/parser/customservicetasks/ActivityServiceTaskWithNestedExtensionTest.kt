@@ -106,6 +106,22 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
         props[PropertyType.FIELD_NAME]!!.value.shouldBeEqualTo(ValueInArray("other new name", "other new name"))
     }
 
+    @Test
+    fun `Add multiple nested extension elements`() {
+        val process = readAndUpdateProcess(
+            parser,
+            FILE,
+            listOf(
+                StringValueUpdatedEvent(emptyElementId, PropertyType.EXPRESSION, "expression 1", propertyIndex = ""),
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = ""),
+            )
+        )
+        val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
+        val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        props[PropertyType.FIELD_NAME]!!.value.shouldBeEqualTo(ValueInArray("new name", "new name"))
+        props[PropertyType.EXPRESSION]!!.value.shouldBeEqualTo(ValueInArray("expression 1", "expression 1"))
+    }
+
     private fun readAndSetNullString(property: PropertyType, propertyIndex: String): BpmnServiceTask {
         return readServiceTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "", propertyIndex = propertyIndex)))
     }
