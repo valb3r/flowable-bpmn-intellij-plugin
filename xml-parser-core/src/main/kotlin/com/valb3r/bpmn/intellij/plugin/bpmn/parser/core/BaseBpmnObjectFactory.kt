@@ -190,25 +190,28 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         val split = path.split(".", limit = 2)
         val targetId = if (null != indexInArray) split[0].substring(1) else split[0]
 
-        if (true == propertyTree[targetId]?.isArray) {
-            propertyTree[targetId].forEachIndexed { index, it -> parseValue(split[1], type, it, result, it[type.indexInGroupArrayName!!].asText()) }
+        val node = propertyTree[targetId] ?: return
+
+        if (node.isArray) {
+            node.forEach { parseValue(split[1], type, it, result, it[type.indexInGroupArrayName!!].asText()) }
+            if (node.isEmpty && type.addToGroupArrayIfEmpty) {
+                result[type] = mutableListOf(Property(ValueInArray("", "")))
+            }
             return
         }
 
-        propertyTree[targetId]?.apply {
-            if (split.size < 2) {
-                doParse(this, result, type, indexInArray)
-                return
-            }
-
-            if (split[1].contains(".")) {
-                parseValue(split[1], type, this, result, indexInArray)
-                return
-            }
-
-            val value = this[split[1]]
-            doParse(value, result, type, indexInArray)
+        if (split.size < 2) {
+            doParse(node, result, type, indexInArray)
+            return
         }
+
+        if (split[1].contains(".")) {
+            parseValue(split[1], type, node, result, indexInArray)
+            return
+        }
+
+        val value = node[split[1]]
+        doParse(value, result, type, indexInArray)
     }
 
     private fun doParse(

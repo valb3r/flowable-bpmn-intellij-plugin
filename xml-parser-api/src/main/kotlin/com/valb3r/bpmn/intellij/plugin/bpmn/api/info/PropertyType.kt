@@ -4,17 +4,18 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.EXPRESSION as T_EXPRESSION
 
 enum class PropertyType(
-        val id: String,
-        val caption: String,
-        val valueType: PropertyValueType,
-        val path: String = id,
-        val cascades: Boolean = false,
-        val updatedBy: PropertyType? = null,
-        val updateOrder: Int = 0,
-        val elementUpdateChangesClass: Boolean = false,
-        val defaultValueIfNull: Any? = null,
-        val controlInGroupCaption: String? = null,
-        val indexInGroupArrayName: String? = null
+    val id: String,
+    val caption: String,
+    val valueType: PropertyValueType,
+    val path: String = id,
+    val cascades: Boolean = false,
+    val updatedBy: PropertyType? = null,
+    val updateOrder: Int = 0,
+    val elementUpdateChangesClass: Boolean = false,
+    val defaultValueIfNull: Any? = null,
+    val addToGroupArrayIfEmpty: Boolean = false,
+    val controlInGroupCaption: String? = null,
+    val indexInGroupArrayName: String? = null
 ) {
     ID("id", "ID", STRING, "id.id", true, null, 1000), // ID should fire last
     NAME("name", "Name", STRING),
@@ -118,7 +119,7 @@ enum class PropertyType(
     OUTPUT_VARIABLE("outputVariable", "Output variable", STRING),
     DIRECTORY("directory", "Working directory", STRING),
     FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
-    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", updateOrder = 100), // Is sub-id
+    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", updateOrder = 100, addToGroupArrayIfEmpty = true), // Is sub-id
     FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name"),
     FIELD_STRING("fieldsExtension.@string", "String value", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name")
 }
