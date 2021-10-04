@@ -18,6 +18,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.events.IntelliJFileCommitter
+import com.valb3r.bpmn.intellij.plugin.core.parser.currentParser
 import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
@@ -38,8 +39,8 @@ import kotlin.math.abs
 
 class BpmnPluginToolWindow(
     private val project: Project,
-    private val bpmnParser: BpmnParser,
     private val onBadContentCallback: ((String) -> Unit)? = null,
+    private val onBeforeFileOpen: (PsiFile) -> Unit,
     private val onFileOpenCallback: (PsiFile) -> Unit
 ) {
 
@@ -72,6 +73,8 @@ class BpmnPluginToolWindow(
     fun getContent() = this.mainToolWindowForm
 
     fun run(bpmnFile: PsiFile, context: BpmnActionContext) {
+        onBeforeFileOpen(bpmnFile)
+        val bpmnParser = currentParser(project)
         if (this.canvasBuilder.assertFileContentAndShowError(bpmnParser, bpmnFile.virtualFile, onBadContentCallback)) return
 
         val table = MultiEditJTable(DefaultTableModel())

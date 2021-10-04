@@ -6,7 +6,6 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnFile
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.DiagramNode
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.ProcessNode
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.NS
@@ -105,17 +104,6 @@ open class ActivitiParser : BaseBpmnParser() {
     override fun parse(input: String): BpmnProcessObject {
         val dto = mapper.readValue<BpmnFile>(input)
         return toProcessObject(dto)
-    }
-
-    // FIXME is rather a hack but correct approach would require selecting parser based on content
-    override fun update(input: String, events: List<EventPropagatableToXml>): String {
-        if (hackActiviti7(input)) return Activiti7Parser().update(input, events)
-
-        return super.update(input, events)
-    }
-
-    protected open fun hackActiviti7(input: String): Boolean {
-        return input.contains("xmlns:bpmn2=\"http://www.omg.org/spec/BPMN/20100524/MODEL\"");
     }
 
     private fun toProcessObject(dto: BpmnFile): BpmnProcessObject {

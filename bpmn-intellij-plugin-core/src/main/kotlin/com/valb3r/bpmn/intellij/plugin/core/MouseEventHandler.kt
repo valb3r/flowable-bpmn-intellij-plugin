@@ -20,9 +20,8 @@ fun setCurrentMouseEventHandler(project: Project, canvas: Canvas): MouseEventHan
     return handler
 }
 
-class MouseEventHandler(project: Project, private val canvas: Canvas): MouseListener, MouseMotionListener, MouseWheelListener {
+class MouseEventHandler(private val project: Project, private val canvas: Canvas): MouseListener, MouseMotionListener, MouseWheelListener {
 
-    private val popupMenuProvider = popupMenuProvider(project)
     private var prevActionableMousePosition: Point2D.Float? = null
     private var currentMousePosition: Point2D.Float? = null
 
@@ -30,7 +29,7 @@ class MouseEventHandler(project: Project, private val canvas: Canvas): MouseList
         val point2D = Point2D.Float(event.x.toFloat(), event.y.toFloat())
 
         if (SwingUtilities.isRightMouseButton(event)) {
-            popupMenuProvider.popupMenu(
+            popupMenuProvider(project).popupMenu(
                     canvas.fromCameraView(point2D),
                     canvas.parentableElementAt(point2D)
             ).show(event.component, event.x, event.y)

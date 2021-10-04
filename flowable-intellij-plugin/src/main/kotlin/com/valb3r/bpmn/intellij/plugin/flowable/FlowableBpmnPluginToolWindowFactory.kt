@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBa
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
 import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
+import com.valb3r.bpmn.intellij.plugin.core.parser.registerParser
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.core.xmlnav.registerXmlNavigator
@@ -27,9 +28,16 @@ class FlowableBpmnPluginToolWindowFactory: ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         log.info("Creating tool window content")
         currentSettingsStateProvider.set { ServiceManager.getService(FlowableBpmnPluginSettingsState::class.java) }
-        registerPopupMenuProvider(project, FlowableCanvasPopupMenuProvider(project))
-        registerNewElementsFactory(project, FlowableObjectFactory())
-        val bpmnWindow = BpmnPluginToolWindow(project, FlowableParser(), { showNotificationBalloon(project, it, NotificationType.ERROR) }) {
+
+        val bpmnWindow = BpmnPluginToolWindow(
+            project,
+            { showNotificationBalloon(project, it, NotificationType.ERROR) },
+            {
+                registerPopupMenuProvider(project, FlowableCanvasPopupMenuProvider(project))
+                registerParser(project, FlowableParser())
+                registerNewElementsFactory(project, FlowableObjectFactory())
+            }
+        ) {
             registerCurrentFile(project, it)
             registerXmlNavigator(project, FlowableXmlNavigator(project))
         }
