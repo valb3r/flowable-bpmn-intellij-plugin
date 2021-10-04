@@ -185,13 +185,13 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         type: PropertyType,
         propertyTree: JsonNode,
         result: MutableMap<PropertyType, MutableList<Property>>,
-        indexInArray: Int? = null
+        indexInArray: String? = null
     ) {
         val split = path.split(".", limit = 2)
         val targetId = if (null != indexInArray) split[0].substring(1) else split[0]
 
         if (true == propertyTree[targetId]?.isArray) {
-            propertyTree[targetId].forEachIndexed { index, it -> parseValue(split[1], type, it, result, index) }
+            propertyTree[targetId].forEachIndexed { index, it -> parseValue(split[1], type, it, result, it[type.indexInArrayName!!].asText()) }
             return
         }
 
@@ -215,7 +215,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         node: JsonNode?,
         result: MutableMap<PropertyType, MutableList<Property>>,
         type: PropertyType,
-        indexInArray: Int? = null
+        indexInArray: String? = null
     ) {
         val makeProperty = {it: Any? ->
             if (null != indexInArray) { Property(ValueInArray(indexInArray, it))} else Property(it)

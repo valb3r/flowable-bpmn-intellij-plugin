@@ -53,14 +53,17 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
 
     @Test
     fun `Service task nested elements are updatable`() {
-        {value: String -> readAndUpdate(PropertyType.ID, value, "recipient").id.id.shouldBeEqualTo(value)} ("new Id")
+        {value: String -> readAndUpdate(PropertyType.FIELD_NAME, value, "recipient").fieldsExtension!![0].name.shouldBeEqualTo(value)} ("new name");
+        {value: String -> readAndUpdate(PropertyType.FIELD_EXPRESSION, value, "recipient").fieldsExtension!![0].expression.shouldBeEqualTo(value)} ("EXPR0=EXPR1");
+        {value: String -> readAndUpdate(PropertyType.FIELD_NAME, value, "multiline").fieldsExtension!![1].name.shouldBeEqualTo(value)} ("new mulitline name");
+        {value: String -> readAndUpdate(PropertyType.FIELD_STRING, value, "multiline").fieldsExtension!![1].string.shouldBeEqualTo(value)} ("  new \n   multiline  ")
     }
 
     @Test
     fun `Service task nested elements are emptyable`() {
-//        readAndSetNullString(PropertyType.FIELD_NAME, "recipient").name.shouldBeNullOrEmpty()
-        readAndSetNullString(PropertyType.FIELD_STRING, "multiline").name.shouldBeNullOrEmpty()
-        readAndSetNullString(PropertyType.FIELD_EXPRESSION, "recipient").name.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.FIELD_NAME, "recipient").fieldsExtension!![0].name.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.FIELD_EXPRESSION, "recipient").fieldsExtension!![0].expression.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.FIELD_STRING, "multiline").fieldsExtension!![1].string.shouldBeNullOrEmpty()
     }
 
     private fun readAndSetNullString(property: PropertyType, propertyIndex: String): BpmnServiceTask {

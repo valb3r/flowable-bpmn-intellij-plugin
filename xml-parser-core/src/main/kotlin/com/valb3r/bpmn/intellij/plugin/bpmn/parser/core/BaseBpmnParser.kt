@@ -34,6 +34,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.ValueInArray
 import org.dom4j.*
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.SAXReader
@@ -425,7 +426,7 @@ abstract class BaseBpmnParser: BpmnParser {
             doc.selectSingleNode("//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]") as Element?
                 ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnElementId.id}'][1]") as Element
 
-        setToNode(node, update.property, update.newValue)
+        setToNode(node, update.property, update.newValue, update.propertyIndex)
 
         if (null == update.newIdValue) {
             return
@@ -456,12 +457,12 @@ abstract class BaseBpmnParser: BpmnParser {
         newParent.add(node)
     }
 
-    private fun setToNode(node: Element, type: PropertyType, value: Any?) {
+    private fun setToNode(node: Element, type: PropertyType, value: Any?, valueIndexInArray: String? = null) {
         val details = propertyTypeDetails().firstOrNull { it.propertyType == type }
             ?: throw IllegalStateException("Wrong (or unsupported) property type details $type")
-        val path = details.xmlPath.replace("@", "multiline")
+        val path = details.xmlPath
         when {
-            path.contains(".") -> setNestedToNode(node, path, type, details, value)
+            path.contains(".") -> setNestedToNode(node, path, type, details, value, valueIndexInArray)
             else -> setAttributeOrValueOrCdataOrRemoveIfNull(
                 node,
                 path,
@@ -471,10 +472,10 @@ abstract class BaseBpmnParser: BpmnParser {
         }
     }
 
-    private fun setNestedToNode(node: Element, path: String, type: PropertyType, details: PropertyTypeDetails, value: Any?) {
+    private fun setNestedToNode(node: Element, path: String, type: PropertyType, details: PropertyTypeDetails, value: Any?, valueIndexInArray: String? = null) {
         val segments = path.split(".")
-        val childOf: (Element, String, String?) -> Element? =
-            { target, name, attributeSelector -> nodeChildByName(target, name, attributeSelector) }
+        val childOf: (Element, String, String?, String?) -> Element? =
+            { target, name, attrName, attrValue -> nodeChildByName(target, name, attrName, attrValue) }
 
         var currentNode = node
         for (segment in 0 until segments.size - 1) {
@@ -485,7 +486,13 @@ abstract class BaseBpmnParser: BpmnParser {
                 continue
             }
 
-            val child = childOf(currentNode, name, attributeSelector)
+            var (attrName, attrValue) = attributeSelector?.split("=") ?: listOf(null, null)
+            if (true == attrValue?.contains('@')) {
+                attrValue = attrValue.replace("@", valueIndexInArray!!)
+            }
+
+            val child = childOf(currentNode, name, attrName, attrValue)
+
             if (null == child) {
                 // do not create elements for null values
                 if (null == value) {
@@ -494,10 +501,7 @@ abstract class BaseBpmnParser: BpmnParser {
 
                 val newElem = currentNode.addElement(name)
                 currentNode = newElem
-                attributeSelector?.apply {
-                    val (attrName, attrValue) = this.split("=")
-                    newElem.addAttribute(attrName, attrValue)
-                }
+                newElem.addAttribute(attrName, attrValue)
             } else {
                 currentNode = child
             }
@@ -511,12 +515,11 @@ abstract class BaseBpmnParser: BpmnParser {
         )
     }
 
-    private fun nodeChildByName(target: Element, name: String, attributeSelector: String?): Element? {
-        if (null == attributeSelector) {
+    private fun nodeChildByName(target: Element, name: String, attrName: String?, attrValue: String?): Element? {
+        if (null == attrName) {
             return nodeChildByName(target, name)
         }
 
-        val (attrName, attrValue) = attributeSelector.split("=")
         val children = target.selectNodes("*")
         for (pos in 0 until children.size) {
             val elem = children[pos] as Element
@@ -584,7 +587,16 @@ abstract class BaseBpmnParser: BpmnParser {
             return
         }
 
-        node.text = value
+        if (requiresWrappingForFormatting(value)) {
+            node.content().filterIsInstance<CDATA>().forEach { node.remove(it) }
+            node.addCDATA(value)
+        } else {
+            node.text = value
+        }
+    }
+
+    private fun requiresWrappingForFormatting(value: String): Boolean {
+        return value.startsWith(" ") || value.endsWith(" ") || value.contains("\n")
     }
 
     private fun asString(type: PropertyValueType, value: Any?): String? {

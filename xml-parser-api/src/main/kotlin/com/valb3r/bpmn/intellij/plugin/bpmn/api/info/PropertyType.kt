@@ -13,7 +13,7 @@ enum class PropertyType(
         val updateOrder: Int = 0,
         val elementUpdateChangesClass: Boolean = false,
         val defaultValueIfNull: Any? = null,
-        val exclusiveGroupId: String? = null
+        val indexInArrayName: String? = null
 ) {
     ID("id", "ID", STRING, "id.id", true, null, 1000), // ID should fire last
     NAME("name", "Name", STRING),
@@ -117,7 +117,7 @@ enum class PropertyType(
     OUTPUT_VARIABLE("outputVariable", "Output variable", STRING),
     DIRECTORY("directory", "Working directory", STRING),
     FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
-    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, exclusiveGroupId = "fields"),
-    FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", STRING, exclusiveGroupId = "fields"),
-    FIELD_STRING("fieldsExtension.@string", "String value", STRING, exclusiveGroupId = "fields")
+    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, indexInArrayName = "name"),
+    FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", STRING, indexInArrayName = "name"),
+    FIELD_STRING("fieldsExtension.@string", "String value", STRING, indexInArrayName = "name")
 }
