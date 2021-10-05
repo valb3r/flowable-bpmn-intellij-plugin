@@ -211,7 +211,7 @@ class PropertiesVisualizer(
             }
         }
         if (event.property.indexCascades) {
-            state[event.bpmnElementId]?.view()?.filter { it.key.indexInGroupArrayName == event.property.indexInGroupArrayName && it.key != event.property }?.forEach { (k, _) ->
+            state[event.bpmnElementId]?.view()?.filter { it.key.indexInGroupArrayName == event.property.indexInGroupArrayName }?.forEach { (k, _) ->
                 cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, k, event.newValue)
             }
         }
