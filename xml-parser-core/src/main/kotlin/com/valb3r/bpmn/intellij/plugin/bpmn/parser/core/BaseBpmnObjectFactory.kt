@@ -194,9 +194,6 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
 
         if (node.isArray) {
             node.forEach { parseValue(split[1], type, it, result, it[type.indexInGroupArrayName!!].asText()) }
-            if (node.isEmpty && type.addToGroupArrayIfEmpty) {
-                result[type] = mutableListOf(Property(ValueInArray("", "")))
-            }
             return
         }
 

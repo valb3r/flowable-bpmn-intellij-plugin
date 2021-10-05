@@ -13,7 +13,6 @@ enum class PropertyType(
     val updateOrder: Int = 0,
     val elementUpdateChangesClass: Boolean = false,
     val defaultValueIfNull: Any? = null,
-    val addToGroupArrayIfEmpty: Boolean = false,
     val controlInGroupCaption: String? = null,
     val indexInGroupArrayName: String? = null
 ) {
@@ -100,7 +99,7 @@ enum class PropertyType(
     OUTPUT_VARIABLE("outputVariable", "Output variable", STRING),
     DIRECTORY("directory", "Working directory", STRING),
     FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
-    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", updateOrder = 100, addToGroupArrayIfEmpty = true, cascades = true), // Is sub-id
-    FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", updatedBy = FIELD_NAME),
-    FIELD_STRING("fieldsExtension.@string", "String value", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", updatedBy = FIELD_NAME)
+    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", updateOrder = 100, defaultValueIfNull = ValueInArray("", ""), cascades = true), // Is sub-id
+    FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", defaultValueIfNull = ValueInArray("", ""), updatedBy = FIELD_NAME),
+    FIELD_STRING("fieldsExtension.@string", "String value", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", defaultValueIfNull = ValueInArray("", ""), updatedBy = FIELD_NAME)
 }

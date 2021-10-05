@@ -30,12 +30,11 @@ internal class ActivityServiceTaskEmptyUpdateWithNestedExtensionTest {
         task.id.shouldBeEqualTo(elementId)
         task.name.shouldBeEqualTo("Service task with extension")
         task.documentation.shouldBeNull()
-        task.failedJobRetryTimeCycle?.shouldBeEqualTo("R10/PT5M")
 
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
-        props.getAll(PropertyType.FIELD_NAME)[0].grpVal().value.shouldBeNull()
-        props.getAll(PropertyType.FIELD_EXPRESSION)[0].grpVal().value.shouldBeNull()
+        props.getAll(PropertyType.FIELD_NAME)[0].grpVal().value.shouldBeEqualTo("")
+        props.getAll(PropertyType.FIELD_EXPRESSION)[0].value.shouldBeNull()
         props.getAll(PropertyType.FIELD_STRING)[0].value.shouldBeNull()
     }
 
