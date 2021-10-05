@@ -3,12 +3,14 @@ package com.valb3r.bpmn.intellij.plugin.core.properties
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.ValueInArray
 import com.valb3r.bpmn.intellij.plugin.core.events.BooleanValueUpdatedEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.IndexUiOnlyValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstColumnReadOnlyModel
@@ -200,12 +202,17 @@ class PropertiesVisualizer(
     }
 
     private fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, PropertyTable>, event: StringValueUpdatedEvent) {
-        val cascades = mutableListOf<PropertyUpdateWithId>()
+        val cascades = mutableListOf<Event>()
         if (null != event.referencedValue) {
             state.forEach { (id, props) ->
-                props.filter { k, v -> k.updatedBy == event.property }.filter { it.second.value == event.referencedValue }.forEach {prop ->
+                props.filter { k, _ -> k.updatedBy == event.property }.filter { it.second.value == event.referencedValue }.forEach { prop ->
                     cascades += StringValueUpdatedEvent(id, prop.first, event.newValue, event.referencedValue, null)
                 }
+            }
+        }
+        if (event.property.indexCascades) {
+            state[event.bpmnElementId]?.view()?.filter { it.key.indexInGroupArrayName == event.property.indexInGroupArrayName && it.key != event.property }?.forEach { (k, _) ->
+                cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, k, event.newValue)
             }
         }
 

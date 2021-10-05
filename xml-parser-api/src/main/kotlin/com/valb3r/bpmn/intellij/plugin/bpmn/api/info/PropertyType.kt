@@ -14,7 +14,8 @@ enum class PropertyType(
     val elementUpdateChangesClass: Boolean = false,
     val defaultValueIfNull: Any? = null,
     val controlInGroupCaption: String? = null,
-    val indexInGroupArrayName: String? = null
+    val indexInGroupArrayName: String? = null,
+    val indexCascades: Boolean = false,
 ) {
     ID("id", "ID", STRING, "id.id", true, null, 1000), // ID should fire last
     NAME("name", "Name", STRING),
@@ -99,7 +100,7 @@ enum class PropertyType(
     OUTPUT_VARIABLE("outputVariable", "Output variable", STRING),
     DIRECTORY("directory", "Working directory", STRING),
     FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
-    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", updateOrder = 100, defaultValueIfNull = ValueInArray("", ""), cascades = true), // Is sub-id
-    FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", defaultValueIfNull = ValueInArray("", ""), updatedBy = FIELD_NAME),
-    FIELD_STRING("fieldsExtension.@string", "String value", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", defaultValueIfNull = ValueInArray("", ""), updatedBy = FIELD_NAME)
+    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name", updateOrder = 100, indexCascades = true), // Is sub-id
+    FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name"),
+    FIELD_STRING("fieldsExtension.@string", "String value", STRING, controlInGroupCaption = "Fields", indexInGroupArrayName = "name")
 }
