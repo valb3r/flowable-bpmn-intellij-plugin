@@ -6,29 +6,25 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceT
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.ValueInArray
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.asResource
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.readAndUpdateProcess
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.*
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldBeNullOrEmpty
-import org.amshove.kluent.shouldHaveSingleItem
+import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 
 private const val FILE = "custom-service-tasks/service-task-with-nested-extensions.bpmn20.xml"
 
 internal class FlowableServiceTaskWithNestedExtensionTest {
 
+
     private val parser = FlowableParser()
     private val elementId = BpmnElementId("serviceTaskWithExtensionId")
+    private val emptyElementId = BpmnElementId("emptyServiceTaskId")
 
     @Test
     fun `Service task with nested extensions is parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
 
-        val task = readServiceTask(processObject)
+        val task = readServiceTaskWithExtensions(processObject)
         task.id.shouldBeEqualTo(elementId)
         task.name.shouldBeEqualTo("Service task with extension")
         task.documentation.shouldBeNull()
@@ -63,21 +59,80 @@ internal class FlowableServiceTaskWithNestedExtensionTest {
 
     @Test
     fun `Service task nested elements are emptyable`() {
-        readAndSetNullString(PropertyType.FIELD_NAME, "recipient").fieldsExtension!![0].name.shouldBeNullOrEmpty()
-        readAndSetNullString(PropertyType.FIELD_EXPRESSION, "recipient").fieldsExtension!![0].expression.shouldBeNullOrEmpty()
-        readAndSetNullString(PropertyType.FIELD_STRING, "multiline").fieldsExtension!![1].string.shouldBeNullOrEmpty()
+        readAndSetNullStringAndAssertItIsRemoved(PropertyType.FIELD_NAME, "recipient", "activiti:field name=\"recipient\"", "<activiti:field>", "<activiti:field/>", "activiti:expression")
+            .fieldsExtension?.map { it.name }?.shouldNotContain("recipient")
+        readAndSetNullStringAndAssertItIsRemoved(PropertyType.FIELD_EXPRESSION, "recipient", "activiti:expression").fieldsExtension!![0].expression.shouldBeNullOrEmpty()
+        readAndSetNullStringAndAssertItIsRemoved(PropertyType.FIELD_STRING, "multiline", "activiti:string").fieldsExtension!![1].string.shouldBeNullOrEmpty()
     }
 
-    private fun readAndSetNullString(property: PropertyType, propertyIndex: String): BpmnServiceTask {
-        return readServiceTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "", propertyIndex = propertyIndex)))
+    @Test
+    fun `Add nested extension element`() {
+        val process = readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = ""))
+        val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
+        val props = BpmnProcessObject(process.process, process.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        props[PropertyType.FIELD_NAME]!!.value.shouldBeEqualTo(ValueInArray("new name", "new name"))
+    }
+
+    @Test
+    fun `Add and remove nested extension element`() {
+        val process = readAndUpdateProcess(
+            parser,
+            FILE,
+            listOf(
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = "name"),
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "", propertyIndex = "new name")
+            )
+        )
+        val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
+        val props = BpmnProcessObject(process.process, process.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        props[PropertyType.FIELD_NAME]!!.value.shouldBeNull()
+    }
+
+    @Test
+    fun `Add and remove and add nested extension element`() {
+        val process = readAndUpdateProcess(
+            parser,
+            FILE,
+            listOf(
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = ""),
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "", propertyIndex = "new name"),
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "other new name", propertyIndex = ""),
+            )
+        )
+        val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
+        val props = BpmnProcessObject(process.process, process.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        props[PropertyType.FIELD_NAME]!!.value.shouldBeEqualTo(ValueInArray("other new name", "other new name"))
+    }
+
+    @Test
+    fun `Add multiple nested extension elements`() {
+        val process = readAndUpdateProcess(
+            parser,
+            FILE,
+            listOf(
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_EXPRESSION, "expression 1", propertyIndex = ""),
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = ""),
+            )
+        )
+        val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
+        val props = BpmnProcessObject(process.process, process.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        props[PropertyType.FIELD_NAME]!!.value.shouldBeEqualTo(ValueInArray("new name", "new name"))
+        props[PropertyType.FIELD_EXPRESSION]!!.value.shouldBeEqualTo(ValueInArray("new name", "expression 1"))
+    }
+
+    private fun readAndSetNullStringAndAssertItIsRemoved(property: PropertyType, propertyIndex: String, vararg shouldNotContainStr: String): BpmnServiceTask {
+        val event = StringValueUpdatedEvent(elementId, property, "", propertyIndex = propertyIndex)
+        val updated = updateBpmnFile(parser, FILE, listOf(event))
+        shouldNotContainStr.forEach { updated.shouldNotContain(it) }
+        return readServiceTaskWithExtensions(parser.parse(updated))
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: String, propertyIndex: String): BpmnServiceTask {
-        return readServiceTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue, propertyIndex = propertyIndex)))
+        return readServiceTaskWithExtensions(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue, propertyIndex = propertyIndex)))
     }
 
-    private fun readServiceTask(processObject: BpmnProcessObject): BpmnServiceTask {
-        return processObject.process.body!!.serviceTask!!.shouldHaveSingleItem()
+    private fun readServiceTaskWithExtensions(processObject: BpmnProcessObject): BpmnServiceTask {
+        return processObject.process.body!!.serviceTask!!.shouldHaveSize(2)[0]
     }
 
     private fun Property.grpVal(): ValueInArray {

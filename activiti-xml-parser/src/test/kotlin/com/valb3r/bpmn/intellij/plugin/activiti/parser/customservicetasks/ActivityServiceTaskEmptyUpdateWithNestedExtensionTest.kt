@@ -33,16 +33,12 @@ internal class ActivityServiceTaskEmptyUpdateWithNestedExtensionTest {
 
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
-        props.getAll(PropertyType.FIELD_NAME)[0].grpVal().value.shouldBeEqualTo("")
+        props.getAll(PropertyType.FIELD_NAME)[0].value.shouldBeNull()
         props.getAll(PropertyType.FIELD_EXPRESSION)[0].value.shouldBeNull()
         props.getAll(PropertyType.FIELD_STRING)[0].value.shouldBeNull()
     }
 
     private fun readServiceTask(processObject: BpmnProcessObject): BpmnServiceTask {
         return processObject.process.body!!.serviceTask!!.shouldHaveSingleItem()
-    }
-
-    private fun Property.grpVal(): ValueInArray {
-        return this.value as ValueInArray
     }
 }
