@@ -14,9 +14,12 @@ import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstColumnReadOnlyModel
 import java.util.*
+import java.util.stream.IntStream
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JTable
+
+private const val maxFields = 9999
 
 private val visualizer = Collections.synchronizedMap(WeakHashMap<Project,  PropertiesVisualizer>())
 
@@ -47,6 +50,12 @@ fun newPropertiesVisualizer(
 fun propertiesVisualizer(project: Project): PropertiesVisualizer {
     return visualizer[project]!!
 }
+
+private val i: Int
+    get() {
+        val maxFields = 9999
+        return maxFields
+    }
 
 class PropertiesVisualizer(
         private val project: Project,
@@ -194,7 +203,7 @@ class PropertiesVisualizer(
         val result = mutableSetOf("")
 
         state.forEach { (_, props) ->
-            props.forEach { k, v ->
+            props.forEach { k, _ ->
                 if (k == type.updatedBy && props[PropertyType.SOURCE_REF]?.value == forId.id) {
                     props[PropertyType.ID]?.value?.let { result += it as String }
                 }
@@ -216,8 +225,10 @@ class PropertiesVisualizer(
     private fun addButtonListener(state: Map<BpmnElementId, PropertyTable>, field: JButton, bpmnElementId: BpmnElementId, type: FunctionalGroupType) {
         field.addActionListener {
             val propType = PropertyType.values().find { it.name == type.actionType }!!
-            val countFields = state[bpmnElementId]!!.getAll(propType).size
-            updateEventsRegistry(project).addEvents(listOf(StringValueUpdatedEvent(bpmnElementId, propType, "Field $countFields", propertyIndex = "")))
+            val allPropsOfType = state[bpmnElementId]!!.getAll(propType).map { it.index }.toSet()
+            val countFields = allPropsOfType.size
+            val fieldName = (countFields..maxFields).map { "Field $it" }.firstOrNull { !allPropsOfType.contains(it) } ?: UUID.randomUUID().toString()
+            updateEventsRegistry(project).addEvents(listOf(StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = fieldName)))
         }
     }
 
