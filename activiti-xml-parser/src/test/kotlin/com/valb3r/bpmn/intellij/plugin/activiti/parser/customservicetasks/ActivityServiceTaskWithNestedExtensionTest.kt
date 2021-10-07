@@ -1,13 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiObjectFactory
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
-import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.*
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnMuleTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -62,9 +58,10 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
 
     @Test
     fun `Service task nested elements are emptyable`() {
-        readAndSetNullString(PropertyType.FIELD_NAME, "recipient").fieldsExtension!![0].name.shouldBeNullOrEmpty()
-        readAndSetNullString(PropertyType.FIELD_EXPRESSION, "recipient").fieldsExtension!![0].expression.shouldBeNullOrEmpty()
-        readAndSetNullString(PropertyType.FIELD_STRING, "multiline").fieldsExtension!![1].string.shouldBeNullOrEmpty()
+        readAndSetNullStringAndAssertItIsRemoved(PropertyType.FIELD_NAME, "recipient", "activiti:field name=\"recipient\"", "<activiti:field>", "<activiti:field/>", "activiti:expression")
+            .fieldsExtension?.map { it.name }?.shouldNotContain("recipient")
+        readAndSetNullStringAndAssertItIsRemoved(PropertyType.FIELD_EXPRESSION, "recipient", "activiti:expression").fieldsExtension!![0].expression.shouldBeNullOrEmpty()
+        readAndSetNullStringAndAssertItIsRemoved(PropertyType.FIELD_STRING, "multiline", "activiti:string").fieldsExtension!![1].string.shouldBeNullOrEmpty()
     }
 
     @Test
@@ -122,8 +119,11 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
         props[PropertyType.EXPRESSION]!!.value.shouldBeEqualTo(ValueInArray("expression 1", "expression 1"))
     }
 
-    private fun readAndSetNullString(property: PropertyType, propertyIndex: String): BpmnServiceTask {
-        return readServiceTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, "", propertyIndex = propertyIndex)))
+    private fun readAndSetNullStringAndAssertItIsRemoved(property: PropertyType, propertyIndex: String, vararg shouldNotContainStr: String): BpmnServiceTask {
+        val event = StringValueUpdatedEvent(elementId, property, "", propertyIndex = propertyIndex)
+        val updated = updateBpmnFile(parser, FILE, listOf(event))
+        shouldNotContainStr.forEach { updated.shouldNotContain(it) }
+        return readServiceTask(parser.parse(updated))
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: String, propertyIndex: String): BpmnServiceTask {

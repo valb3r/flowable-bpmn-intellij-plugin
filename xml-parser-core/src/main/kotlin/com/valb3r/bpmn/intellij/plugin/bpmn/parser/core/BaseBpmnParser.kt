@@ -548,16 +548,18 @@ abstract class BaseBpmnParser: BpmnParser {
         value: String?
     ) {
         when (details.type) {
-            XmlType.ATTRIBUTE -> setAttribute(node, name, value)
-            XmlType.CDATA -> setCdata(node, name, value)
+            XmlType.ATTRIBUTE -> setAttribute(node, details, name, value)
+            XmlType.CDATA -> setCdata(node, details, name, value)
             XmlType.ELEMENT -> changeElementType(node, name, details, value)
         }
     }
 
-    private fun setAttribute(node: Element, name: String, value: String?) {
+    private fun setAttribute(node: Element, details: PropertyTypeDetails, name: String, value: String?) {
         val qname = qname(name)
 
         if (value.isNullOrEmpty()) {
+            if (destroyEnclosingNode(details, node)) return
+
             val attr = node.attribute(qname)
             if (null != attr) {
                 node.remove(attr)
@@ -580,8 +582,9 @@ abstract class BaseBpmnParser: BpmnParser {
         return byPrefix(ns).named(localName)
     }
 
-    private fun setCdata(node: Element, name: String, value: String?) {
+    private fun setCdata(node: Element, details: PropertyTypeDetails, name: String, value: String?) {
         if (value.isNullOrEmpty()) {
+            if (destroyEnclosingNode(details, node)) return
             node.content().filterIsInstance<CDATA>().forEach { node.remove(it) }
             node.content().filterIsInstance<Text>().forEach { node.remove(it) }
             return
@@ -593,6 +596,15 @@ abstract class BaseBpmnParser: BpmnParser {
         } else {
             node.text = value
         }
+    }
+
+    private fun destroyEnclosingNode(details: PropertyTypeDetails, node: Element): Boolean {
+        if (!details.propertyType.removeEnclosingNodeIfNullOrEmpty) {
+            return false
+        }
+
+        node.parent.remove(node)
+        return true
     }
 
     private fun requiresWrappingForFormatting(value: String): Boolean {
