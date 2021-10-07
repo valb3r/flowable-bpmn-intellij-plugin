@@ -14,8 +14,8 @@ import com.intellij.ui.JavaReferenceEditorUtil
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.events.IntelliJFileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.parser.currentParser
@@ -98,6 +98,7 @@ class BpmnPluginToolWindow(
                 { _: BpmnElementId, _: PropertyType, value: String -> createEditor(context.project, bpmnFile, value) },
                 { _: BpmnElementId, _: PropertyType, value: String -> createTextField(value) },
                 { _: BpmnElementId, _: PropertyType, value: Boolean -> createCheckboxField(value) },
+                { _: BpmnElementId, action: FunctionalGroupType -> createButton(action.actionCaption) },
                 canvas,
                 bpmnFile.project,
                 virtualFile
@@ -125,6 +126,10 @@ class BpmnPluginToolWindow(
             override val component: JComponent
                 get() = checkBox
         }
+    }
+
+    fun createButton(caption: String): JButton {
+        return JButton(caption)
     }
 
     fun createEditor(project: Project, bpmnFile: PsiFile, text: String): TextValueAccessor {

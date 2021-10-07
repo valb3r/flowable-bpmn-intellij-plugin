@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
@@ -13,6 +14,7 @@ import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstColumnReadOnlyModel
 import java.util.*
+import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JTable
 
@@ -35,8 +37,9 @@ fun newPropertiesVisualizer(
                             classEditorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
-                            checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor): PropertiesVisualizer {
-    val newVisualizer = PropertiesVisualizer(project, table, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
+                            checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor,
+                            buttonFactory: (id: BpmnElementId, type: FunctionalGroupType) -> JButton): PropertiesVisualizer {
+    val newVisualizer = PropertiesVisualizer(project, table, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory, buttonFactory)
     visualizer[project] = newVisualizer
     return newVisualizer
 }
@@ -52,7 +55,8 @@ class PropertiesVisualizer(
         val classEditorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         val editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         private val textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
-        private val checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor) {
+        private val checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor,
+        private val buttonFactory: (id: BpmnElementId, type: FunctionalGroupType) -> JButton) {
 
     // Using order as ID property change should fire last for this view, otherwise other property change values
     // will use wrong ID as an anchor
@@ -84,12 +88,12 @@ class PropertiesVisualizer(
         table.columnModel.getColumn(1).preferredWidth = 500
 
         val groupedEntries = state[bpmnElementId]?.view()?.entries
-            ?.groupBy { it.key.controlInGroupCaption }
-            ?.toSortedMap(Comparator.comparingInt { it?.length ?: 0 }) ?: emptyMap()
+            ?.groupBy { it.key.group }
+            ?.toSortedMap(Comparator.comparingInt { it?.name?.length ?: 0 }) ?: emptyMap()
         
-        for ((groupId, entries) in groupedEntries) {
-            if (null != groupId) {
-                // todo add group caption
+        for ((groupType, entries) in groupedEntries) {
+            if (null != groupType) {
+                model.addRow(arrayOf("", groupType.groupCaption))
             }
 
             entries
@@ -104,6 +108,10 @@ class PropertiesVisualizer(
                         ATTACHED_SEQUENCE_SELECT -> model.addRow(arrayOf(it.first.caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, it.first, it.second)))
                     }
                 }
+
+            if (null != groupType) {
+                model.addRow(arrayOf("", buildButtonField(state, bpmnElementId, groupType)))
+            }
         }
         
         model.fireTableDataChanged()
@@ -165,6 +173,12 @@ class PropertiesVisualizer(
         return field.component
     }
 
+    private fun buildButtonField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: FunctionalGroupType): JComponent {
+        val button = buttonFactory(bpmnElementId, type)
+        addButtonListener(state, button, bpmnElementId, type)
+        return button
+    }
+
     private fun buildDropDownSelectFieldForTargettedIds(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
         val fieldValue = extractString(value)
         val field = dropDownFactory(bpmnElementId, type, fieldValue, findCascadeTargetIds(bpmnElementId, type, state))
@@ -196,6 +210,14 @@ class PropertiesVisualizer(
             if (initialValue != field.text) {
                 emitStringUpdateWithCascadeIfNeeded(state, StringValueUpdatedEvent(bpmnElementId, type, removeQuotes(field.text)))
             }
+        }
+    }
+
+    private fun addButtonListener(state: Map<BpmnElementId, PropertyTable>, field: JButton, bpmnElementId: BpmnElementId, type: FunctionalGroupType) {
+        field.addActionListener {
+            val propType = PropertyType.values().find { it.name == type.actionType }!!
+            val countFields = state[bpmnElementId]!!.getAll(propType).size
+            updateEventsRegistry(project).addEvents(listOf(StringValueUpdatedEvent(bpmnElementId, propType, "Field $countFields", propertyIndex = "")))
         }
     }
 

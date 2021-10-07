@@ -10,10 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import java.awt.Component
 import java.awt.Font
 import java.awt.event.ActionEvent
-import javax.swing.AbstractAction
-import javax.swing.JLabel
-import javax.swing.JTable
-import javax.swing.KeyStroke
+import javax.swing.*
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableCellEditor
 import javax.swing.table.TableCellRenderer
@@ -33,6 +30,7 @@ class MultiEditJTable(tableModel: TableModel): JBTable(tableModel) {
             is EditorTextField -> EditorTextFieldCellEditor(value)
             is JBTextField -> JBTextFieldCellEditor(value)
             is JBCheckBox -> JBCheckBoxCellEditor(value)
+            is JButton -> JButtonCellEditor(value)
             is ComboBox<*> -> JBComboBoxCellEditor(value)
             else -> super.getCellEditor(row, column)
         }
@@ -43,6 +41,7 @@ class MultiEditJTable(tableModel: TableModel): JBTable(tableModel) {
             is EditorTextField -> EditorTextFieldCellRenderer(value)
             is JBTextField -> JBTextFieldCellRenderer(value)
             is JBCheckBox -> JBCheckBoxCellRenderer(value)
+            is JButton -> JButtonCellRenderer(value)
             is ComboBox<*> -> JBComboBoxCellRenderer(value)
             is String -> LabelTextFieldCellRenderer(value)
             else -> super.getCellRenderer(row, column)
@@ -121,6 +120,17 @@ class JBCheckBoxCellEditor(val field: JBCheckBox): AbstractTableCellEditor() {
     }
 }
 
+class JButtonCellEditor(val field: JButton): AbstractTableCellEditor() {
+
+    override fun getTableCellEditorComponent(table: JTable?, value: Any?, isSelected: Boolean, row: Int, column: Int): Component {
+        return field
+    }
+
+    override fun getCellEditorValue(): Any {
+        return field
+    }
+}
+
 class JBComboBoxCellEditor(val field: ComboBox<*>): AbstractTableCellEditor() {
 
     override fun getTableCellEditorComponent(table: JTable?, value: Any?, isSelected: Boolean, row: Int, column: Int): Component {
@@ -152,6 +162,14 @@ class JBCheckBoxCellRenderer(val field: JBCheckBox): TableCellRenderer {
 
     override fun getTableCellRendererComponent(
             table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
+        return field
+    }
+}
+
+class JButtonCellRenderer(val field: JButton): TableCellRenderer {
+
+    override fun getTableCellRendererComponent(
+        table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
         return field
     }
 }

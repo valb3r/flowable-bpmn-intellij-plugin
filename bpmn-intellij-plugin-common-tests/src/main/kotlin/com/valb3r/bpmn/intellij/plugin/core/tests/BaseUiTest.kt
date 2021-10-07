@@ -20,6 +20,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.CanvasBuilder
@@ -48,6 +49,8 @@ import java.awt.geom.Rectangle2D
 import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.swing.Icon
+import javax.swing.JButton
+import javax.swing.JComponent
 import javax.swing.JTable
 import javax.swing.table.TableColumn
 import javax.swing.table.TableColumnModel
@@ -147,6 +150,7 @@ abstract class BaseUiTest {
 
     protected val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
     protected val boolFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, SelectedValueAccessor> = mutableMapOf()
+    protected val buttonsConstructed: MutableMap<Pair<BpmnElementId, FunctionalGroupType>, JButton> = mutableMapOf()
     protected val comboboxFactory = { id: BpmnElementId, type: PropertyType, value: String, allowedValues: Set<String> -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
         val res = mock<TextValueAccessor>()
         whenever(res.text).thenReturn(value)
@@ -162,6 +166,10 @@ abstract class BaseUiTest {
         whenever(res.isSelected).thenReturn(value)
         return@computeIfAbsent res
     } }
+    protected val buttonFactory = { id: BpmnElementId, type: FunctionalGroupType -> buttonsConstructed.computeIfAbsent(Pair(id, type)) {
+        return@computeIfAbsent mock<JButton>()
+    } }
+
 
     @BeforeEach
     fun setupMocks() {
@@ -311,7 +319,7 @@ abstract class BaseUiTest {
     }
 
     protected fun initializeCanvas() {
-        canvasBuilder.build({ fileCommitter }, parser, propertiesTable, comboboxFactory, editorFactory, editorFactory, editorFactory, checkboxFieldFactory, canvas, project, virtualFile)
+        canvasBuilder.build({ fileCommitter }, parser, propertiesTable, comboboxFactory, editorFactory, editorFactory, editorFactory, checkboxFieldFactory, buttonFactory, canvas, project, virtualFile)
         canvas.paintComponent(graphics)
     }
 
