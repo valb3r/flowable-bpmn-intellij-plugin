@@ -218,7 +218,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         indexInArray: String? = null
     ) {
         val makeProperty = {it: Any? ->
-            if (null != indexInArray) { Property(ValueInArray(indexInArray, it))} else Property(it)
+            if (null != indexInArray) { Property(it, indexInArray)} else Property(it)
         }
 
         if (null == node || node.isNull) {

@@ -7,7 +7,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.ValueInArray
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 
@@ -35,13 +34,13 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
         props[PropertyType.FAILED_JOB_RETRY_CYCLE]!!.value.shouldBeEqualTo(task.failedJobRetryTimeCycle)
 
-        props.getAll(PropertyType.FIELD_NAME)[0].grpVal().value.shouldBeEqualTo("recipient")
-        props.getAll(PropertyType.FIELD_EXPRESSION)[0].grpVal().value.shouldBeEqualTo("userId:\${accountId}")
-        props.getAll(PropertyType.FIELD_STRING)[0].grpVal().value.shouldBeNull()
+        props.getAll(PropertyType.FIELD_NAME)[0].value.shouldBeEqualTo("recipient")
+        props.getAll(PropertyType.FIELD_EXPRESSION)[0].value.shouldBeEqualTo("userId:\${accountId}")
+        props.getAll(PropertyType.FIELD_STRING)[0].value.shouldBeNull()
 
-        props.getAll(PropertyType.FIELD_NAME)[1].grpVal().value.shouldBeEqualTo("multiline")
-        props.getAll(PropertyType.FIELD_EXPRESSION)[1].grpVal().value.shouldBeNull()
-        props.getAll(PropertyType.FIELD_STRING)[1].grpVal().value.shouldBeEqualTo("This\n" +
+        props.getAll(PropertyType.FIELD_NAME)[1].value.shouldBeEqualTo("multiline")
+        props.getAll(PropertyType.FIELD_EXPRESSION)[1].value.shouldBeNull()
+        props.getAll(PropertyType.FIELD_STRING)[1].value.shouldBeEqualTo("This\n" +
                 "                is\n" +
                 "                multiline\n" +
                 "                text\n" +
@@ -69,7 +68,7 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
         val process = readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = ""))
         val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
         val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
-        props[PropertyType.FIELD_NAME]!!.value.shouldBeEqualTo(ValueInArray("new name", "new name"))
+        props[PropertyType.FIELD_NAME]!!.shouldBeEqualTo(Property("new name", "new name"))
     }
 
     @Test
@@ -100,7 +99,7 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
         )
         val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
         val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
-        props[PropertyType.FIELD_NAME]!!.value.shouldBeEqualTo(ValueInArray("other new name", "other new name"))
+        props[PropertyType.FIELD_NAME]!!.shouldBeEqualTo(Property("other new name", "other new name"))
     }
 
     @Test
@@ -115,8 +114,8 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
         )
         val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
         val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
-        props[PropertyType.FIELD_NAME]!!.value.shouldBeEqualTo(ValueInArray("new name", "new name"))
-        props[PropertyType.FIELD_EXPRESSION]!!.value.shouldBeEqualTo(ValueInArray("new name", "expression 1"))
+        props[PropertyType.FIELD_NAME]!!.shouldBeEqualTo(Property("new name", "new name"))
+        props[PropertyType.FIELD_EXPRESSION]!!.shouldBeEqualTo(Property("expression 1", "new name"))
     }
 
     private fun readAndSetNullStringAndAssertItIsRemoved(property: PropertyType, propertyIndex: String, vararg shouldNotContainStr: String): BpmnServiceTask {
@@ -132,9 +131,5 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
 
     private fun readServiceTaskWithExtensions(processObject: BpmnProcessObject): BpmnServiceTask {
         return processObject.process.body!!.serviceTask!!.shouldHaveSize(2)[0]
-    }
-
-    private fun Property.grpVal(): ValueInArray {
-        return this.value as ValueInArray
     }
 }

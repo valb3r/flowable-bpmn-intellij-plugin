@@ -12,7 +12,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.ValueInArray
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.mappers.MapTransactionalSubprocessToSubprocess
 import com.valb3r.bpmn.intellij.plugin.core.events.BooleanUiOnlyValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.IndexUiOnlyValueUpdatedEvent
@@ -215,7 +214,16 @@ class CurrentStateProvider(private val project: Project) {
 
     private fun updateProperty(event: PropertyUpdateWithId, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
-        updated[event.property] = if (null == event.propertyIndex) Property(event.newValue) else Property(ValueInArray(event.propertyIndex!!, event.newValue))
+        if (null == event.propertyIndex) {
+            updated[event.property] = Property(event.newValue)
+        } else {
+            updated[event.property] = updated.getAll(event.property).map {
+                if (it.index == event.propertyIndex) {
+                    Property(event.newValue, event.propertyIndex!!)
+                } else it
+            }.filter { it.value !is String || (it.value as String).isNotBlank() }.toMutableList()
+        }
+
         updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
     }
 
@@ -227,7 +235,11 @@ class CurrentStateProvider(private val project: Project) {
 
     private fun updateIndexProperty(event: IndexUiOnlyValueUpdatedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
-        updated[event.property] = Property((updated[event.property]!!.value as ValueInArray).copy(index = event.newValue))
+        updated[event.property] = updated.getAll(event.property).map {
+            if (it.index == event.referencedValue || (null == it.index && event.referencedValue.isBlank())) {
+                it.copy(index = event.newValue)
+            } else it
+        }.toMutableList()
         updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
     }
 

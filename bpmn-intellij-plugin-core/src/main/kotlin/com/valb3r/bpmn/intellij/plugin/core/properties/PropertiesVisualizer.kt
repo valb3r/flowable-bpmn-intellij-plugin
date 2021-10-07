@@ -4,11 +4,9 @@ import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.ValueInArray
 import com.valb3r.bpmn.intellij.plugin.core.events.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.IndexUiOnlyValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
@@ -96,7 +94,7 @@ class PropertiesVisualizer(
 
             entries
                 .flatMap { it.value.map { v -> Pair(it.key, v) } }
-                .sortedBy { extractIndex(it.second) }
+                .sortedBy { it.second.index }
                 .forEach {
                     when(it.first.valueType) {
                         STRING -> model.addRow(arrayOf(it.first.caption, buildTextField(state, bpmnElementId, it.first, it.second)))
@@ -118,7 +116,7 @@ class PropertiesVisualizer(
     }
 
     private fun buildTextField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
-        val fieldValue = lastStringValueFromRegistry(bpmnElementId, type) ?: extractString(value)
+        val fieldValue = extractString(value)
         val field = textFieldFactory.invoke(bpmnElementId, type, fieldValue)
         val initialValue = field.text
 
@@ -132,7 +130,7 @@ class PropertiesVisualizer(
                                 field.text,
                                 if (type.cascades) initialValue else null,
                                 if (type == PropertyType.ID) BpmnElementId(field.text) else null,
-                                extractIndex(value)
+                                value.index
                         )
                 )
             }
@@ -141,7 +139,7 @@ class PropertiesVisualizer(
     }
 
     private fun buildCheckboxField(bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
-        val fieldValue =  lastBooleanValueFromRegistry(bpmnElementId, type) ?: extractBoolean(value)
+        val fieldValue = extractBoolean(value)
         val field = checkboxFieldFactory.invoke(bpmnElementId, type, fieldValue)
         val initialValue = field.isSelected
 
@@ -154,21 +152,21 @@ class PropertiesVisualizer(
     }
 
     private fun buildClassField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
-        val fieldValue = lastStringValueFromRegistry(bpmnElementId, type) ?: extractString(value)
+        val fieldValue = extractString(value)
         val field = classEditorFactory(bpmnElementId, type, fieldValue)
         addEditorTextListener(state, field, bpmnElementId, type)
         return field.component
     }
 
     private fun buildExpressionField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
-        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: extractString(value)
+        val fieldValue =  extractString(value)
         val field = editorFactory(bpmnElementId, type, "\"${fieldValue}\"")
         addEditorTextListener(state, field, bpmnElementId, type)
         return field.component
     }
 
     private fun buildDropDownSelectFieldForTargettedIds(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
-        val fieldValue =  lastStringValueFromRegistry(bpmnElementId, type) ?: extractString(value)
+        val fieldValue = extractString(value)
         val field = dropDownFactory(bpmnElementId, type, fieldValue, findCascadeTargetIds(bpmnElementId, type, state))
         addEditorTextListener(state, field, bpmnElementId, type)
         return field.component
@@ -212,7 +210,7 @@ class PropertiesVisualizer(
         }
         if (event.property.indexCascades) {
             state[event.bpmnElementId]?.view()?.filter { it.key.indexInGroupArrayName == event.property.indexInGroupArrayName }?.forEach { (k, _) ->
-                cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, k, event.newValue)
+                cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, k, event.propertyIndex!!, event.newValue)
             }
         }
 
@@ -221,27 +219,6 @@ class PropertiesVisualizer(
 
     private fun removeQuotes(value: String): String {
         return value.replace("^\"".toRegex(), "").replace("\"$".toRegex(), "")
-    }
-
-    private fun lastStringValueFromRegistry(bpmnElementId: BpmnElementId, type: PropertyType): String? {
-        return (updateEventsRegistry(project).currentPropertyUpdateEventList(bpmnElementId)
-                .map { it.event }
-                .filter { bpmnElementId == it.bpmnElementId && it.property.id == type.id }
-                .lastOrNull { it is StringValueUpdatedEvent } as StringValueUpdatedEvent?)
-                ?.newValue
-    }
-
-    private fun lastBooleanValueFromRegistry(bpmnElementId: BpmnElementId, type: PropertyType): Boolean? {
-        // It is not possible to handle boolean cascades due to ambiguities
-        return (updateEventsRegistry(project).currentPropertyUpdateEventList(bpmnElementId)
-                .map { it.event }
-                .filter { it.property.id == type.id }
-                .lastOrNull { it is BooleanValueUpdatedEvent } as BooleanValueUpdatedEvent?)
-                ?.newValue
-    }
-
-    private fun extractIndex(prop: Property?): String? {
-        return if (prop?.value is ValueInArray) (prop.value as ValueInArray).index else null
     }
 
     private fun extractString(prop: Property?): String {
@@ -257,10 +234,6 @@ class PropertiesVisualizer(
             return defaultValue
         }
 
-        return if (prop.value is ValueInArray) {
-            (prop.value as ValueInArray).value as T? ?: defaultValue
-        } else {
-            prop.value as T? ?: defaultValue
-        }
+        return prop.value as T? ?: defaultValue
     }
 }

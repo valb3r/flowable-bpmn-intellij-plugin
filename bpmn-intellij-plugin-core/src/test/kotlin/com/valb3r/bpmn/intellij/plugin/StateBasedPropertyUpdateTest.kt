@@ -1,7 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin
 
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.ValueInArray
 import com.valb3r.bpmn.intellij.plugin.core.events.IndexUiOnlyValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
@@ -13,7 +13,6 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.beans.IndexedPropertyChangeEvent
 
 internal class StateBasedPropertyUpdateTest: BaseUiTest() {
 
@@ -28,13 +27,13 @@ internal class StateBasedPropertyUpdateTest: BaseUiTest() {
         currentStateProvider(project).currentState().elemPropertiesByStaticElementId[serviceTaskStartBpmnId]!![PropertyType.FIELD_NAME]
             ?.value?.shouldBeNull()
 
-        updateEventsRegistry(project).addPropertyUpdateEvent(StringValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_NAME, "1", propertyIndex = ""))
+        updateEventsRegistry(project).addPropertyUpdateEvent(StringValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_NAME, "1", propertyIndex = null))
         currentStateProvider(project).currentState().elemPropertiesByStaticElementId[serviceTaskStartBpmnId]!![PropertyType.FIELD_NAME]
-            ?.value?.shouldBeEqualTo(ValueInArray("", "1"))
+            ?.shouldBeEqualTo(Property("1", null))
 
-        updateEventsRegistry(project).addPropertyUpdateEvent(StringValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_NAME, "", propertyIndex = "1"))
+        updateEventsRegistry(project).addPropertyUpdateEvent(StringValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_NAME, "", propertyIndex = null))
         currentStateProvider(project).currentState().elemPropertiesByStaticElementId[serviceTaskStartBpmnId]!![PropertyType.FIELD_NAME]
-            ?.value?.shouldBeEqualTo(ValueInArray("1", ""))
+            ?.shouldBeEqualTo(Property("", null))
     }
 
     @Test
@@ -43,12 +42,12 @@ internal class StateBasedPropertyUpdateTest: BaseUiTest() {
         currentStateProvider(project).currentState().elemPropertiesByStaticElementId[serviceTaskStartBpmnId]!![PropertyType.FIELD_NAME]
             ?.value?.shouldBeNull()
 
-        updateEventsRegistry(project).addPropertyUpdateEvent(StringValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_EXPRESSION, "expression 1", propertyIndex = ""))
-        updateEventsRegistry(project).addPropertyUpdateEvent(StringValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_NAME, "new name", propertyIndex = "new name"))
-        updateEventsRegistry(project).addEvents(listOf(IndexUiOnlyValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_EXPRESSION, "new name")))
+        updateEventsRegistry(project).addPropertyUpdateEvent(StringValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_EXPRESSION, "expression 1", propertyIndex = null))
+        updateEventsRegistry(project).addPropertyUpdateEvent(StringValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_NAME, "new name", propertyIndex = null))
+        updateEventsRegistry(project).addEvents(listOf(IndexUiOnlyValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_EXPRESSION, "", "new name")))
         currentStateProvider(project).currentState().elemPropertiesByStaticElementId[serviceTaskStartBpmnId]!![PropertyType.FIELD_NAME]
-            ?.value?.shouldBeEqualTo(ValueInArray("new name", "new name"))
+            ?.shouldBeEqualTo(Property("new name", null))
         currentStateProvider(project).currentState().elemPropertiesByStaticElementId[serviceTaskStartBpmnId]!![PropertyType.FIELD_EXPRESSION]
-            ?.value?.shouldBeEqualTo(ValueInArray("new name", "expression 1"))
+            ?.shouldBeEqualTo(Property("expression 1", "new name"))
     }
 }

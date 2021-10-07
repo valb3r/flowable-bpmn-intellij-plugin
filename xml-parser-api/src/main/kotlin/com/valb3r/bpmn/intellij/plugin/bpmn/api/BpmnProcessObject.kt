@@ -184,6 +184,14 @@ data class PropertyTable(private val properties: MutableMap<PropertyType, Mutabl
         properties[type] = mutableListOf(value)
     }
 
+    operator fun set(type: PropertyType, values: MutableList<Property>) {
+        properties[type] = values
+    }
+
+    fun add(type: PropertyType, value: Property) {
+        properties.computeIfAbsent(type) { mutableListOf()}.add(value)
+    }
+
     fun forEach(exec: (key: PropertyType, value: Property) -> Unit) {
         properties.forEach {(k, vals) -> vals.forEach {exec(k, it)}}
     }
