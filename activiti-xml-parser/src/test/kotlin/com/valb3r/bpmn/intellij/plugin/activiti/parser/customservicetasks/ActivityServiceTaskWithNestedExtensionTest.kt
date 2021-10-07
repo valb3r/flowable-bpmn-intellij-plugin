@@ -23,7 +23,7 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
     fun `Service task with nested extensions is parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
 
-        val task = readServiceTask(processObject)
+        val task = readServiceTaskWithExtensions(processObject)
         task.id.shouldBeEqualTo(elementId)
         task.name.shouldBeEqualTo("Service task with extension")
         task.documentation.shouldBeNull()
@@ -78,13 +78,13 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
             parser,
             FILE,
             listOf(
-                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = ""),
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = "name"),
                 StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "", propertyIndex = "new name")
             )
         )
         val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
         val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
-        props[PropertyType.FIELD_NAME]!!.value.shouldBeEqualTo(ValueInArray(null, null))
+        props[PropertyType.FIELD_NAME]!!.value.shouldBeNull()
     }
 
     @Test
@@ -109,29 +109,29 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
             parser,
             FILE,
             listOf(
-                StringValueUpdatedEvent(emptyElementId, PropertyType.EXPRESSION, "expression 1", propertyIndex = ""),
+                StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_EXPRESSION, "expression 1", propertyIndex = ""),
                 StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = ""),
             )
         )
         val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
         val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
         props[PropertyType.FIELD_NAME]!!.value.shouldBeEqualTo(ValueInArray("new name", "new name"))
-        props[PropertyType.EXPRESSION]!!.value.shouldBeEqualTo(ValueInArray("expression 1", "expression 1"))
+        props[PropertyType.FIELD_EXPRESSION]!!.value.shouldBeEqualTo(ValueInArray("new name", "expression 1"))
     }
 
     private fun readAndSetNullStringAndAssertItIsRemoved(property: PropertyType, propertyIndex: String, vararg shouldNotContainStr: String): BpmnServiceTask {
         val event = StringValueUpdatedEvent(elementId, property, "", propertyIndex = propertyIndex)
         val updated = updateBpmnFile(parser, FILE, listOf(event))
         shouldNotContainStr.forEach { updated.shouldNotContain(it) }
-        return readServiceTask(parser.parse(updated))
+        return readServiceTaskWithExtensions(parser.parse(updated))
     }
 
     private fun readAndUpdate(property: PropertyType, newValue: String, propertyIndex: String): BpmnServiceTask {
-        return readServiceTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue, propertyIndex = propertyIndex)))
+        return readServiceTaskWithExtensions(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue, propertyIndex = propertyIndex)))
     }
 
-    private fun readServiceTask(processObject: BpmnProcessObject): BpmnServiceTask {
-        return processObject.process.body!!.serviceTask!!.shouldHaveSingleItem()
+    private fun readServiceTaskWithExtensions(processObject: BpmnProcessObject): BpmnServiceTask {
+        return processObject.process.body!!.serviceTask!!.shouldHaveSize(2)[0]
     }
 
     private fun Property.grpVal(): ValueInArray {
