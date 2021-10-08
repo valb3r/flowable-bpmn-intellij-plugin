@@ -143,7 +143,8 @@ class CurrentStateProvider(private val project: Project) {
                 }
                 is BooleanUiOnlyValueUpdatedEvent -> updateUiProperty(event, updatedElemUiOnlyPropertiesByStaticElementId)
                 is IndexUiOnlyValueUpdatedEvent -> updateIndexProperty(event, updatedElemPropertiesByStaticElementId)
-                is StringValueUiOnlyValueAddedEvent -> updateUiOnlyProperty(event, updatedElemPropertiesByStaticElementId)
+                is UiOnlyValueAddedEvent -> addUiOnlyProperty(event, updatedElemPropertiesByStaticElementId)
+                is UiOnlyValueRemovedEvent -> removeUiOnlyProperty(event, updatedElemPropertiesByStaticElementId)
                 else -> throw IllegalStateException("Can't handle event ${event.javaClass}")
             }
         }
@@ -251,9 +252,14 @@ class CurrentStateProvider(private val project: Project) {
         updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
     }
 
-    private fun updateUiOnlyProperty(event: StringValueUiOnlyValueAddedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
+    private fun addUiOnlyProperty(event: UiOnlyValueAddedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
         updated[event.property] = (updated.getAll(event.property)+ Property(event.newValue, event.propertyIndex!!)).toMutableList()
+    }
+
+    private fun removeUiOnlyProperty(event: UiOnlyValueRemovedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
+        val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
+        updated[event.property] = (updated.getAll(event.property).filter { it.index != event.propertyIndex }).toMutableList()
     }
 
     private fun handleDiagramRemoved(diagramId: DiagramElementId, updatedShapes: MutableList<ShapeElement>, updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>, updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>) {

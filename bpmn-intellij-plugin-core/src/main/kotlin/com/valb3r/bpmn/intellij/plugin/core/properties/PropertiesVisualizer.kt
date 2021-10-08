@@ -11,7 +11,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstColumnReadOnlyModel
 import java.util.*
-import java.util.stream.IntStream
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JTable
@@ -226,7 +225,7 @@ class PropertiesVisualizer(
             val countFields = allPropsOfType.size
             val fieldName = (countFields..maxFields).map { type.actionResult.valuePattern.format(it) }.firstOrNull { !allPropsOfType.contains(it) } ?: UUID.randomUUID().toString()
             val events = mutableListOf<Event>(StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = fieldName))
-            events += type.actionUiOnlyResult.map { StringValueUiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = fieldName) }
+            events += type.actionUiOnlyResult.map { UiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = fieldName) }
             updateEventsRegistry(project).addEvents(events)
         }
     }
@@ -242,6 +241,9 @@ class PropertiesVisualizer(
         }
         if (event.property.indexCascades) {
             state[event.bpmnElementId]?.view()?.filter { it.key.indexInGroupArrayName == event.property.indexInGroupArrayName }?.forEach { (k, _) ->
+                if (event.newValue.isBlank()) {
+                    cascades += UiOnlyValueRemovedEvent(event.bpmnElementId, k, event.propertyIndex!!)
+                }
                 cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, k, event.propertyIndex!!, event.newValue)
             }
         }
