@@ -12,9 +12,9 @@ import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstColumnReadOnlyModel
 import java.util.*
-import javax.swing.JButton
-import javax.swing.JComponent
-import javax.swing.JTable
+import javax.swing.*
+import javax.swing.plaf.basic.BasicArrowButton
+import javax.swing.table.TableRowSorter
 
 private const val maxFields = 9999
 
@@ -65,27 +65,14 @@ class PropertiesVisualizer(
 
     @Synchronized
     fun clear() {
-        notifyDeFocusElement()
-
-        // drop and re-create table model
-        val model = FirstColumnReadOnlyModel()
-        model.addColumn("")
-        model.addColumn("")
-        table.model = model
-        table.columnModel.getColumn(1).preferredWidth = 500
+        val model = prepareTable()
         model.fireTableDataChanged()
     }
 
     @Synchronized
     fun visualize(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId) {
-        notifyDeFocusElement()
-
-        // drop and re-create table model
-        val model = FirstColumnReadOnlyModel()
-        model.addColumn("")
-        model.addColumn("")
-        table.model = model
-        table.columnModel.getColumn(1).preferredWidth = 500
+        val model = prepareTable()
+        val filter = RowExpansionFilter()
 
         val groupedEntries = state[bpmnElementId]?.view()?.entries
             ?.groupBy { it.key.group }
@@ -103,7 +90,7 @@ class PropertiesVisualizer(
                 .sortedBy { it.second.index }
                 .forEach {
                     when(it.first.valueType) {
-                        STRING -> model.addRow(arrayOf(it.first.caption, buildTextField(state, bpmnElementId, it.first, it.second)))
+                        STRING -> model.addRow(arrayOf(it.first.caption, buildTextField(state, bpmnElementId, it.first, it.second), BasicArrowButton(SwingConstants.EAST)))
                         BOOLEAN -> model.addRow(arrayOf(it.first.caption, buildCheckboxField(bpmnElementId, it.first, it.second)))
                         CLASS -> model.addRow(arrayOf(it.first.caption, buildClassField(state, bpmnElementId, it.first, it.second)))
                         EXPRESSION -> model.addRow(arrayOf(it.first.caption, buildExpressionField(state, bpmnElementId, it.first, it.second)))
@@ -117,6 +104,8 @@ class PropertiesVisualizer(
         }
         
         model.fireTableDataChanged()
+        val sorter = TableRowSorter(model)
+        sorter.rowFilter = filter
     }
 
     private fun notifyDeFocusElement() {
@@ -262,6 +251,20 @@ class PropertiesVisualizer(
         property.index
     )
 
+    private fun prepareTable(): FirstColumnReadOnlyModel {
+        notifyDeFocusElement()
+        // drop and re-create table model
+        val model = FirstColumnReadOnlyModel()
+        model.addColumn("")
+        model.addColumn("")
+        model.addColumn("")
+        table.model = model
+        table.rowSorter = null
+        table.columnModel.getColumn(1).preferredWidth = 500
+        table.columnModel.getColumn(2).preferredWidth = 20
+        return model
+    }
+
     private fun removeQuotes(value: String): String {
         return value.replace("^\"".toRegex(), "").replace("\"$".toRegex(), "")
     }
@@ -280,5 +283,12 @@ class PropertiesVisualizer(
         }
 
         return prop.value as T? ?: defaultValue
+    }
+}
+
+private class RowExpansionFilter(val collapsed: MutableSet<Any> = mutableSetOf()): RowFilter<FirstColumnReadOnlyModel, Any>() {
+
+    override fun include(entry: Entry<out FirstColumnReadOnlyModel, out Any>?): Boolean {
+        return !collapsed.contains(entry?.getValue(0))
     }
 }
