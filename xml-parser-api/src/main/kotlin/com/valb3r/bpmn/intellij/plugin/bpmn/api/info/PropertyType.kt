@@ -102,12 +102,12 @@ enum class PropertyType(
     DIRECTORY("directory", "Working directory", STRING),
     FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
     FIELD_NAME("fieldsExtension.@name", "Field name", STRING, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true), // Is sub-id
-    FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", STRING, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
+    FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", T_EXPRESSION, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
     FIELD_STRING("fieldsExtension.@string", "String value", STRING, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true);
 }
 
-enum class FunctionalGroupType(val groupCaption: String, val actionCaption: String, val actionResult: NewElem) {
-    ADD_FIELD("Fields", "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"))
+enum class FunctionalGroupType(val groupCaption: String, val actionCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf()) {
+    ADD_FIELD("Fields", "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", "")))
 }
 
 data class NewElem(val propertyType: String, val valuePattern: String = "")

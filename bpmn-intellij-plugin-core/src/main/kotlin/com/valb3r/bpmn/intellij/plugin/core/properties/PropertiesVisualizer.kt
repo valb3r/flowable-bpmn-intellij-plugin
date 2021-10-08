@@ -8,10 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
-import com.valb3r.bpmn.intellij.plugin.core.events.BooleanValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.core.events.IndexUiOnlyValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
+import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstColumnReadOnlyModel
 import java.util.*
 import java.util.stream.IntStream
@@ -142,15 +139,8 @@ class PropertiesVisualizer(
         listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
             if (initialValue != field.text) {
                 emitStringUpdateWithCascadeIfNeeded(
-                        state,
-                        StringValueUpdatedEvent(
-                                bpmnElementId,
-                                type,
-                                field.text,
-                                if (type.cascades) initialValue else null,
-                                if (type == PropertyType.ID) BpmnElementId(field.text) else null,
-                                value.index
-                        )
+                    state,
+                    stringValueUpdatedTemplate(bpmnElementId, type, field.text, initialValue, value)
                 )
             }
         }
@@ -173,14 +163,21 @@ class PropertiesVisualizer(
     private fun buildClassField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
         val fieldValue = extractString(value)
         val field = classEditorFactory(bpmnElementId, type, fieldValue)
-        addEditorTextListener(state, field, bpmnElementId, type)
+        addEditorTextListener(state, field, bpmnElementId, type, value)
         return field.component
     }
 
     private fun buildExpressionField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
         val fieldValue =  extractString(value)
         val field = editorFactory(bpmnElementId, type, "\"${fieldValue}\"")
-        addEditorTextListener(state, field, bpmnElementId, type)
+        addEditorTextListener(state, field, bpmnElementId, type, value)
+        return field.component
+    }
+
+    private fun buildDropDownSelectFieldForTargettedIds(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
+        val fieldValue = extractString(value)
+        val field = dropDownFactory(bpmnElementId, type, fieldValue, findCascadeTargetIds(bpmnElementId, type, state))
+        addEditorTextListener(state, field, bpmnElementId, type, value)
         return field.component
     }
 
@@ -188,13 +185,6 @@ class PropertiesVisualizer(
         val button = buttonFactory(bpmnElementId, type)
         addButtonListener(state, button, bpmnElementId, type)
         return button
-    }
-
-    private fun buildDropDownSelectFieldForTargettedIds(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
-        val fieldValue = extractString(value)
-        val field = dropDownFactory(bpmnElementId, type, fieldValue, findCascadeTargetIds(bpmnElementId, type, state))
-        addEditorTextListener(state, field, bpmnElementId, type)
-        return field.component
     }
 
     private fun findCascadeTargetIds(forId: BpmnElementId, type: PropertyType, state: Map<BpmnElementId, PropertyTable>): Set<String> {
@@ -215,22 +205,29 @@ class PropertiesVisualizer(
         return result
     }
 
-    private fun addEditorTextListener(state: Map<BpmnElementId, PropertyTable>, field: TextValueAccessor, bpmnElementId: BpmnElementId, type: PropertyType) {
+    private fun addEditorTextListener(state: Map<BpmnElementId, PropertyTable>, field: TextValueAccessor, bpmnElementId: BpmnElementId, type: PropertyType, value: Property) {
         val initialValue = field.text
         listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
             if (initialValue != field.text) {
-                emitStringUpdateWithCascadeIfNeeded(state, StringValueUpdatedEvent(bpmnElementId, type, removeQuotes(field.text)))
+                emitStringUpdateWithCascadeIfNeeded(
+                    state,
+                    stringValueUpdatedTemplate(bpmnElementId, type,  removeQuotes(field.text), initialValue, value)
+                )
             }
         }
     }
 
     private fun addButtonListener(state: Map<BpmnElementId, PropertyTable>, field: JButton, bpmnElementId: BpmnElementId, type: FunctionalGroupType) {
+        fun propertyType(name: String) = PropertyType.values().find { it.name == name }!!
+
         field.addActionListener {
-            val propType = PropertyType.values().find { it.name == type.actionResult.propertyType }!!
+            val propType = propertyType(type.actionResult.propertyType)
             val allPropsOfType = state[bpmnElementId]!!.getAll(propType).map { it.index }.toSet()
             val countFields = allPropsOfType.size
             val fieldName = (countFields..maxFields).map { type.actionResult.valuePattern.format(it) }.firstOrNull { !allPropsOfType.contains(it) } ?: UUID.randomUUID().toString()
-            emitStringUpdateWithCascadeIfNeeded(state, StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = fieldName))
+            val events = mutableListOf<Event>(StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = fieldName))
+            events += type.actionUiOnlyResult.map { StringValueUiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = fieldName) }
+            updateEventsRegistry(project).addEvents(events)
         }
     }
 
@@ -251,6 +248,21 @@ class PropertiesVisualizer(
 
         updateEventsRegistry(project).addEvents(listOf(event) + cascades)
     }
+
+    private fun stringValueUpdatedTemplate(
+        bpmnElementId: BpmnElementId,
+        type: PropertyType,
+        value: String,
+        initialValue: String,
+        property: Property
+    ) = StringValueUpdatedEvent(
+        bpmnElementId,
+        type,
+        value,
+        if (type.cascades) initialValue else null,
+        if (type == PropertyType.ID) BpmnElementId(value) else null,
+        property.index
+    )
 
     private fun removeQuotes(value: String): String {
         return value.replace("^\"".toRegex(), "").replace("\"$".toRegex(), "")

@@ -13,10 +13,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.mappers.MapTransactionalSubprocessToSubprocess
-import com.valb3r.bpmn.intellij.plugin.core.events.BooleanUiOnlyValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.core.events.IndexUiOnlyValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.core.events.ProcessModelUpdateEvents
-import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
+import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.properties.uionly.UiOnlyPropertyType
 import com.valb3r.bpmn.intellij.plugin.core.render.EdgeElementState
 import org.mapstruct.factory.Mappers
@@ -146,6 +143,7 @@ class CurrentStateProvider(private val project: Project) {
                 }
                 is BooleanUiOnlyValueUpdatedEvent -> updateUiProperty(event, updatedElemUiOnlyPropertiesByStaticElementId)
                 is IndexUiOnlyValueUpdatedEvent -> updateIndexProperty(event, updatedElemPropertiesByStaticElementId)
+                is StringValueUiOnlyValueAddedEvent -> updateUiOnlyProperty(event, updatedElemPropertiesByStaticElementId)
                 else -> throw IllegalStateException("Can't handle event ${event.javaClass}")
             }
         }
@@ -251,6 +249,11 @@ class CurrentStateProvider(private val project: Project) {
             } else it
         }.toMutableList()
         updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
+    }
+
+    private fun updateUiOnlyProperty(event: StringValueUiOnlyValueAddedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
+        val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
+        updated[event.property] = (updated.getAll(event.property)+ Property(event.newValue, event.propertyIndex!!)).toMutableList()
     }
 
     private fun handleDiagramRemoved(diagramId: DiagramElementId, updatedShapes: MutableList<ShapeElement>, updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>, updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>) {
