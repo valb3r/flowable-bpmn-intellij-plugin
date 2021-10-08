@@ -88,7 +88,7 @@ class CurrentStateProvider(private val project: Project) {
         var updatedEdges = state.edges.toMutableList()
         val updatedElementByDiagramId = state.elementByDiagramId.toMutableMap()
         val updatedElementByStaticId = state.elementByBpmnId.toMutableMap()
-        val updatedElemPropertiesByStaticElementId = state.elemPropertiesByStaticElementId.toMutableMap()
+        val updatedElemPropertiesByStaticElementId = state.elemPropertiesByStaticElementId.mapValues { it.value.copy() }.toMutableMap()
         val updatedPropertyWithElementByPropertyType = mutableMapOf<PropertyType, MutableMap<BpmnElementId, Property>>()
         val updatedElemUiOnlyPropertiesByStaticElementId = state.elemUiOnlyPropertiesByStaticElementId.toMutableMap()
         var updatedProcessId = state.processId
@@ -217,11 +217,21 @@ class CurrentStateProvider(private val project: Project) {
         if (null == event.propertyIndex) {
             updated[event.property] = Property(event.newValue)
         } else {
-            updated[event.property] = updated.getAll(event.property).map {
-                if (it.index == event.propertyIndex) {
+            val result = mutableListOf<Property>()
+            var eventProcessed = false
+            for (prop in updated.getAll(event.property)) {
+                result += if (prop.index == event.propertyIndex && !eventProcessed) {
+                    eventProcessed = true
                     Property(event.newValue, event.propertyIndex!!)
-                } else it
-            }.filter { it.value !is String || (it.value as String).isNotBlank() }.toMutableList()
+                } else {
+                    prop
+                }
+            }
+
+            if (!eventProcessed) {
+                result += Property(event.newValue, event.propertyIndex!!)
+            }
+            updated[event.property] = result
         }
 
         updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
