@@ -106,6 +106,8 @@ enum class PropertyType(
     FIELD_STRING("fieldsExtension.@string", "String value", STRING, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true);
 }
 
-enum class FunctionalGroupType(val groupCaption: String, val actionCaption: String, val actionType: String) {
-    ADD_FIELD("Fields", "Add field", "FIELD_NAME")
+enum class FunctionalGroupType(val groupCaption: String, val actionCaption: String, val actionResult: NewElem) {
+    ADD_FIELD("Fields", "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"))
 }
+
+data class NewElem(val propertyType: String, val valuePattern: String = "")

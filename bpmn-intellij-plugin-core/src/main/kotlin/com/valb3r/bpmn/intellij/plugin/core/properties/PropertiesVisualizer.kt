@@ -105,8 +105,10 @@ class PropertiesVisualizer(
                 model.addRow(arrayOf("", groupType.groupCaption))
             }
 
+            val byIndex = entries.flatMap { it.value }.filter { null != it.value }.groupBy { it.index ?: "" }
             entries
                 .flatMap { it.value.map { v -> Pair(it.key, v) } }
+                .filter { null == groupType || true == byIndex[it.second.index ?: ""]?.isNotEmpty() }
                 .sortedBy { it.second.index }
                 .forEach {
                     when(it.first.valueType) {
@@ -224,11 +226,11 @@ class PropertiesVisualizer(
 
     private fun addButtonListener(state: Map<BpmnElementId, PropertyTable>, field: JButton, bpmnElementId: BpmnElementId, type: FunctionalGroupType) {
         field.addActionListener {
-            val propType = PropertyType.values().find { it.name == type.actionType }!!
+            val propType = PropertyType.values().find { it.name == type.actionResult.propertyType }!!
             val allPropsOfType = state[bpmnElementId]!!.getAll(propType).map { it.index }.toSet()
             val countFields = allPropsOfType.size
-            val fieldName = (countFields..maxFields).map { "Field $it" }.firstOrNull { !allPropsOfType.contains(it) } ?: UUID.randomUUID().toString()
-            updateEventsRegistry(project).addEvents(listOf(StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = fieldName)))
+            val fieldName = (countFields..maxFields).map { type.actionResult.valuePattern.format(it) }.firstOrNull { !allPropsOfType.contains(it) } ?: UUID.randomUUID().toString()
+            emitStringUpdateWithCascadeIfNeeded(state, StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = fieldName))
         }
     }
 
