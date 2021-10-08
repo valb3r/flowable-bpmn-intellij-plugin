@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import com.valb3r.bpmn.intellij.plugin.core.events.*
+import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstColumnReadOnlyModel
 import java.util.*
 import javax.swing.JButton
@@ -46,12 +47,6 @@ fun newPropertiesVisualizer(
 fun propertiesVisualizer(project: Project): PropertiesVisualizer {
     return visualizer[project]!!
 }
-
-private val i: Int
-    get() {
-        val maxFields = 9999
-        return maxFields
-    }
 
 class PropertiesVisualizer(
         private val project: Project,
@@ -227,6 +222,7 @@ class PropertiesVisualizer(
             val events = mutableListOf<Event>(StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = fieldName))
             events += type.actionUiOnlyResult.map { UiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = fieldName) }
             updateEventsRegistry(project).addEvents(events)
+            visualize(currentStateProvider(project).currentState().elemPropertiesByStaticElementId, bpmnElementId)
         }
     }
 
