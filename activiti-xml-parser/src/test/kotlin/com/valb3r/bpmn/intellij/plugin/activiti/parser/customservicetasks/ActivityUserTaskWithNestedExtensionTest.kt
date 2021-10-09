@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
 
 private const val FILE = "custom-service-tasks/user-task-with-nested-extensions.bpmn20.xml"
 
-@Disabled
 internal class ActivityUserTaskWithNestedExtensionTest {
 
     private val parser = ActivitiParser()
@@ -25,8 +24,8 @@ internal class ActivityUserTaskWithNestedExtensionTest {
 
         val task = readUserTaskWithExtensions(processObject)
         task.id.shouldBeEqualTo(elementId)
-        task.name.shouldBeEqualTo("Service task with extension")
-        task.documentation.shouldBeNull()
+        task.name.shouldBeEqualTo("A user task")
+        task.documentation.shouldBeEqualTo("A user task to do")
 
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)

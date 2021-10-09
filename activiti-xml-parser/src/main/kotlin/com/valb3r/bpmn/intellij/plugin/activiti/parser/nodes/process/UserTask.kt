@@ -12,6 +12,9 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionField
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
@@ -60,11 +63,21 @@ data class UserTask(
     @JsonDeserialize(`as` = UnhandledExtensionElement::class)
     class UnhandledExtensionElement : ExtensionElement()
 
+
     @Mapper(uses = [BpmnElementIdMapper::class])
-    interface UserTaskMapping {
+    abstract class UserTaskMapping {
+
+        fun convertToDto(input: UserTask) : BpmnUserTask {
+            val task = doConvertToDto(input)
+            return task.copy(
+                formPropertiesExtension = input.extensionElements?.filterIsInstance<FormProperty>()?.map { mapFormProperty(it) }
+            )
+        }
 
         @Mapping(source = "forCompensation", target = "isForCompensation")
-        fun convertToDto(input: UserTask) : BpmnUserTask
+        protected abstract fun doConvertToDto(input: UserTask) : BpmnUserTask
+
+        protected abstract fun mapFormProperty(input: FormProperty) : ExtensionFormProperty
     }
 
     class ExtensionElementDeserializer(vc: Class<*>? = null) : StdDeserializer<ExtensionElement?>(vc) {
