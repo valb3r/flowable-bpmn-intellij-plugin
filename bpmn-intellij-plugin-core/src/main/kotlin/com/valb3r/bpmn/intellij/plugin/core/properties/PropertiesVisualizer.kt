@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.properties
 
+import com.intellij.ide.model
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -10,10 +11,11 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
-import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstColumnReadOnlyModel
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstLastColumnReadOnlyModel
 import java.util.*
 import javax.swing.*
 import javax.swing.plaf.basic.BasicArrowButton
+import javax.swing.table.TableModel
 import javax.swing.table.TableRowSorter
 
 private const val maxFields = 9999
@@ -38,8 +40,9 @@ fun newPropertiesVisualizer(
                             editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor,
-                            buttonFactory: (id: BpmnElementId, type: FunctionalGroupType) -> JButton): PropertiesVisualizer {
-    val newVisualizer = PropertiesVisualizer(project, table, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory, buttonFactory)
+                            buttonFactory: (id: BpmnElementId, type: FunctionalGroupType) -> JButton,
+                            arrowButtonFactory: (id: BpmnElementId) -> BasicArrowButton): PropertiesVisualizer {
+    val newVisualizer = PropertiesVisualizer(project, table, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory)
     visualizer[project] = newVisualizer
     return newVisualizer
 }
@@ -56,7 +59,8 @@ class PropertiesVisualizer(
         val editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         private val textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         private val checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor,
-        private val buttonFactory: (id: BpmnElementId, type: FunctionalGroupType) -> JButton) {
+        private val buttonFactory: (id: BpmnElementId, type: FunctionalGroupType) -> JButton,
+        private val arrowButtonFactory: (id: BpmnElementId) -> BasicArrowButton) {
 
     // Using order as ID property change should fire last for this view, otherwise other property change values
     // will use wrong ID as an anchor
@@ -72,7 +76,9 @@ class PropertiesVisualizer(
     @Synchronized
     fun visualize(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId) {
         val model = prepareTable()
-        val filter = RowExpansionFilter()
+        val collapseGroups = mutableMapOf<CollapsedIndex, MutableSet<Int>>()
+        val filter = RowExpansionFilter(collapseGroups, mutableSetOf())
+        val sorter = TableRowSorter(table.model)
 
         val groupedEntries = state[bpmnElementId]?.view()?.entries
             ?.groupBy { it.key.group }
@@ -89,23 +95,33 @@ class PropertiesVisualizer(
                 .filter { null == groupType || true == byIndex[it.second.index ?: ""]?.isNotEmpty() }
                 .sortedBy { it.second.index }
                 .forEach {
-                    when(it.first.valueType) {
-                        STRING -> model.addRow(arrayOf(it.first.caption, buildTextField(state, bpmnElementId, it.first, it.second), BasicArrowButton(SwingConstants.EAST)))
-                        BOOLEAN -> model.addRow(arrayOf(it.first.caption, buildCheckboxField(bpmnElementId, it.first, it.second)))
-                        CLASS -> model.addRow(arrayOf(it.first.caption, buildClassField(state, bpmnElementId, it.first, it.second)))
-                        EXPRESSION -> model.addRow(arrayOf(it.first.caption, buildExpressionField(state, bpmnElementId, it.first, it.second)))
-                        ATTACHED_SEQUENCE_SELECT -> model.addRow(arrayOf(it.first.caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, it.first, it.second)))
+                    var row = when (it.first.valueType) {
+                        STRING -> arrayOf(it.first.caption, buildTextField(state, bpmnElementId, it.first, it.second))
+                        BOOLEAN -> arrayOf(it.first.caption, buildCheckboxField(bpmnElementId, it.first, it.second))
+                        CLASS -> arrayOf(it.first.caption, buildClassField(state, bpmnElementId, it.first, it.second))
+                        EXPRESSION -> arrayOf(it.first.caption, buildExpressionField(state, bpmnElementId, it.first, it.second))
+                        ATTACHED_SEQUENCE_SELECT -> arrayOf(it.first.caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, it.first, it.second))
                     }
+                    if (null != groupType) {
+                        val index = CollapsedIndex(groupType, it.second.index ?: "")
+                        if (it.first.name == groupType.actionResult.propertyType) {
+                            row += buildArrowExpansionButton(bpmnElementId, filter, index, sorter)
+                        } else {
+                            collapseGroups.computeIfAbsent(index) { mutableSetOf() }.add(model.rowCount)
+                        }
+                    }
+                    model.addRow(row)
                 }
 
             if (null != groupType) {
                 model.addRow(arrayOf("", buildButtonField(state, bpmnElementId, groupType)))
             }
         }
-        
-        model.fireTableDataChanged()
-        val sorter = TableRowSorter(model)
+
+        filter.collapsed.addAll(filter.groups.values.flatten())
         sorter.rowFilter = filter
+        table.rowSorter = sorter
+        model.fireTableDataChanged()
     }
 
     private fun notifyDeFocusElement() {
@@ -167,6 +183,24 @@ class PropertiesVisualizer(
     private fun buildButtonField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: FunctionalGroupType): JComponent {
         val button = buttonFactory(bpmnElementId, type)
         addButtonListener(state, button, bpmnElementId, type)
+        return button
+    }
+
+    private fun buildArrowExpansionButton(bpmnElementId: BpmnElementId, filter: RowExpansionFilter, identifier: CollapsedIndex, sorter: TableRowSorter<TableModel>): JButton {
+        val button = arrowButtonFactory(bpmnElementId)
+        button.addActionListener {
+            val isExpanded = SwingConstants.NORTH == button.direction
+            button.direction = if (isExpanded) SwingConstants.SOUTH else SwingConstants.NORTH
+            if (isExpanded) {
+                button.direction = SwingConstants.SOUTH
+                filter.collapse(identifier)
+                sorter.sort()
+            } else {
+                button.direction = SwingConstants.NORTH
+                filter.expand(identifier)
+                sorter.sort()
+            }
+        }
         return button
     }
 
@@ -251,10 +285,10 @@ class PropertiesVisualizer(
         property.index
     )
 
-    private fun prepareTable(): FirstColumnReadOnlyModel {
+    private fun prepareTable(): FirstLastColumnReadOnlyModel {
         notifyDeFocusElement()
         // drop and re-create table model
-        val model = FirstColumnReadOnlyModel()
+        val model = FirstLastColumnReadOnlyModel()
         model.addColumn("")
         model.addColumn("")
         model.addColumn("")
@@ -286,9 +320,19 @@ class PropertiesVisualizer(
     }
 }
 
-private class RowExpansionFilter(val collapsed: MutableSet<Any> = mutableSetOf()): RowFilter<FirstColumnReadOnlyModel, Any>() {
+private class RowExpansionFilter(val groups: Map<CollapsedIndex, MutableSet<Int>>, val collapsed: MutableSet<Int>): RowFilter<TableModel, Any>() {
 
-    override fun include(entry: Entry<out FirstColumnReadOnlyModel, out Any>?): Boolean {
-        return !collapsed.contains(entry?.getValue(0))
+    override fun include(entry: Entry<out TableModel, out Any>?): Boolean {
+        return !collapsed.contains(entry?.identifier)
+    }
+
+    fun expand(group: CollapsedIndex) {
+        collapsed.removeAll((groups[group] ?: mutableSetOf()).toSet())
+    }
+
+    fun collapse(group: CollapsedIndex) {
+        collapsed.addAll((groups[group] ?: mutableSetOf()).toSet())
     }
 }
+
+private data class CollapsedIndex(val type: FunctionalGroupType, val index: String)

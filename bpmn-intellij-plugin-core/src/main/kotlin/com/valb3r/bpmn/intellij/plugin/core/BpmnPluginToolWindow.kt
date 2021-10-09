@@ -33,6 +33,7 @@ import java.awt.event.AdjustmentListener
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.*
+import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.DefaultTableModel
 import kotlin.math.abs
 
@@ -99,6 +100,7 @@ class BpmnPluginToolWindow(
                 { _: BpmnElementId, _: PropertyType, value: String -> createTextField(value) },
                 { _: BpmnElementId, _: PropertyType, value: Boolean -> createCheckboxField(value) },
                 { _: BpmnElementId, action: FunctionalGroupType -> createButton(action.actionCaption) },
+                { _: BpmnElementId -> createArrowButton() },
                 canvas,
                 bpmnFile.project,
                 virtualFile
@@ -130,6 +132,10 @@ class BpmnPluginToolWindow(
 
     fun createButton(caption: String): JButton {
         return JButton(caption)
+    }
+
+    fun createArrowButton(): BasicArrowButton {
+        return BasicArrowButton(SwingConstants.SOUTH)
     }
 
     fun createEditor(project: Project, bpmnFile: PsiFile, text: String): TextValueAccessor {

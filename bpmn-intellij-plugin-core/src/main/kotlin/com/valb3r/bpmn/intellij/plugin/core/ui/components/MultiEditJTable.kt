@@ -193,9 +193,9 @@ class LabelTextFieldCellRenderer(val field: String): TableCellRenderer {
     }
 }
 
-class FirstColumnReadOnlyModel: DefaultTableModel() {
+class FirstLastColumnReadOnlyModel: DefaultTableModel() {
 
     override fun isCellEditable(row: Int, column: Int): Boolean {
-        return column != 0
+        return column != 0 && (column != columnCount - 1 || getValueAt(row, column) is JButton)
     }
 }

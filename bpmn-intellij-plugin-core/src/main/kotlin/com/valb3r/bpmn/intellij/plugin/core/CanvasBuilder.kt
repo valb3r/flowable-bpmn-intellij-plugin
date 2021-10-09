@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
 import javax.swing.JButton
 import javax.swing.JTable
+import javax.swing.plaf.basic.BasicArrowButton
 
 interface PaintTopicListener: EventListener {
     fun repaint()
@@ -45,6 +46,7 @@ class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer, privat
         textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor,
         buttonFactory: (id: BpmnElementId,  type: FunctionalGroupType) -> JButton,
+        arrowButtonFactory: (id: BpmnElementId) -> BasicArrowButton,
         canvas: Canvas,
         project: Project,
         bpmnFile: VirtualFile
@@ -54,13 +56,13 @@ class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer, privat
         initializeUpdateEventsRegistry(project, committerFactory.invoke(parser))
         val data = readFile(bpmnFile)
         val process = parser.parse(data)
-        newPropertiesVisualizer(project, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory, buttonFactory)
+        newPropertiesVisualizer(project, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory)
         canvas.reset(data, process.toView(newElementsFactory(project)), bpmnProcessRenderer)
 
         currentVfsConnection?.let { it.disconnect(); it.dispose() }
         currentPaintConnection?.let { it.disconnect(); it.dispose() }
         currentVfsConnection = attachFileChangeListener(project, bpmnFile) {
-            build(committerFactory, parser, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory, buttonFactory, canvas, project, it)
+            build(committerFactory, parser, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory, canvas, project, it)
         }
         currentPaintConnection = attachPaintListener(project, canvas)
     }
