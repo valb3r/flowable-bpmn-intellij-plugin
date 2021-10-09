@@ -425,7 +425,7 @@ abstract class BaseBpmnParser: BpmnParser {
             doc.selectSingleNode("//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]") as Element?
                 ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnElementId.id}'][1]") as Element
 
-        setToNode(node, update.property, update.newValue, update.propertyIndex)
+        setToNode(node, update.property, update.newValue, update.propertyIndex?.toMutableList())
 
         if (null == update.newIdValue) {
             return
@@ -456,7 +456,7 @@ abstract class BaseBpmnParser: BpmnParser {
         newParent.add(node)
     }
 
-    private fun setToNode(node: Element, type: PropertyType, value: Any?, valueIndexInArray: String? = null) {
+    private fun setToNode(node: Element, type: PropertyType, value: Any?, valueIndexInArray: MutableList<String>? = null) {
         val details = propertyTypeDetails().firstOrNull { it.propertyType == type }
             ?: throw IllegalStateException("Wrong (or unsupported) property type details $type")
         val path = details.xmlPath
@@ -471,7 +471,7 @@ abstract class BaseBpmnParser: BpmnParser {
         }
     }
 
-    private fun setNestedToNode(node: Element, path: String, type: PropertyType, details: PropertyTypeDetails, value: Any?, valueIndexInArray: String? = null) {
+    private fun setNestedToNode(node: Element, path: String, type: PropertyType, details: PropertyTypeDetails, value: Any?, valueIndexInArray: MutableList<String>? = null) {
         val segments = path.split(".")
         val childOf: (Element, String, String?, String?) -> Element? =
             { target, name, attrName, attrValue -> nodeChildByName(target, name, attrName, attrValue) }
@@ -487,7 +487,7 @@ abstract class BaseBpmnParser: BpmnParser {
 
             var (attrName, attrValue) = attributeSelector?.split("=") ?: listOf(null, null)
             if (true == attrValue?.contains('@')) {
-                attrValue = attrValue.replace("@", valueIndexInArray!!)
+                attrValue = attrValue.replace("@", valueIndexInArray!!.removeAt(0))
             }
 
             val child = childOf(currentNode, name, attrName, attrValue)

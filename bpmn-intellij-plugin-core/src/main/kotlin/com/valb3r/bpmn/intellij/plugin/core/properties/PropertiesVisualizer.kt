@@ -92,7 +92,7 @@ class PropertiesVisualizer(
             entries
                 .flatMap { it.value.map { v -> Pair(it.key, v) } }
                 .filter { null == groupType || true == byIndex[it.second.index ?: ""]?.isNotEmpty() }
-                .sortedBy { it.second.index }
+                .sortedBy { it.second.index?.joinToString() }
                 .forEach {
                     var row = when (it.first.valueType) {
                         STRING -> arrayOf(it.first.caption, buildTextField(state, bpmnElementId, it.first, it.second))
@@ -102,7 +102,7 @@ class PropertiesVisualizer(
                         ATTACHED_SEQUENCE_SELECT -> arrayOf(it.first.caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, it.first, it.second))
                     }
                     if (null != groupType) {
-                        val index = CollapsedIndex(groupType, it.second.index ?: "")
+                        val index = CollapsedIndex(groupType, it.second.index?.joinToString() ?: "")
                         if (it.first.name == groupType.actionResult.propertyType) {
                             row += buildArrowExpansionButton(bpmnElementId, filter, index, sorter)
                         } else {
@@ -238,11 +238,11 @@ class PropertiesVisualizer(
 
         field.addActionListener {
             val propType = propertyType(type.actionResult.propertyType)
-            val allPropsOfType = state[bpmnElementId]!!.getAll(propType).map { it.index }.toSet()
+            val allPropsOfType = state[bpmnElementId]!!.getAll(propType).map { it.index?.joinToString() }.toSet()
             val countFields = allPropsOfType.size
             val fieldName = (countFields..maxFields).map { type.actionResult.valuePattern.format(it) }.firstOrNull { !allPropsOfType.contains(it) } ?: UUID.randomUUID().toString()
-            val events = mutableListOf<Event>(StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = fieldName))
-            events += type.actionUiOnlyResult.map { UiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = fieldName) }
+            val events = mutableListOf<Event>(StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = listOf(fieldName)))
+            events += type.actionUiOnlyResult.map { UiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = listOf(fieldName)) }
             updateEventsRegistry(project).addEvents(events)
             visualize(currentStateProvider(project).currentState().elemPropertiesByStaticElementId, bpmnElementId)
         }
@@ -262,7 +262,7 @@ class PropertiesVisualizer(
                 if (event.newValue.isBlank()) {
                     cascades += UiOnlyValueRemovedEvent(event.bpmnElementId, k, event.propertyIndex!!)
                 }
-                cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, k, event.propertyIndex!!, event.newValue)
+                cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, k, event.propertyIndex!!, event.propertyIndex.dropLast(1) + event.newValue)
             }
         }
 

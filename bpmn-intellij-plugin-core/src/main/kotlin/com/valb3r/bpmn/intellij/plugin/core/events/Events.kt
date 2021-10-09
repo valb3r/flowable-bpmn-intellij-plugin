@@ -11,9 +11,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.properties.uionly.UiOnlyPropertyType
 import java.awt.geom.Point2D
 
-data class StringValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: String, override val referencedValue: String? = null, override val newIdValue: BpmnElementId? = null, override val propertyIndex: String? = null): PropertyUpdateWithId
+data class StringValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: String, override val referencedValue: String? = null, override val newIdValue: BpmnElementId? = null, override val propertyIndex: List<String>? = null): PropertyUpdateWithId
 
-data class BooleanValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: Boolean, override val referencedValue: Boolean? = null, override val newIdValue: BpmnElementId? = null, override val propertyIndex: String? = null): PropertyUpdateWithId
+data class BooleanValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: Boolean, override val referencedValue: Boolean? = null, override val newIdValue: BpmnElementId? = null, override val propertyIndex: List<String>? = null): PropertyUpdateWithId
 
 data class DraggedToEvent(override val diagramElementId: DiagramElementId, override val dx: Float, override val dy: Float, override val parentElementId: DiagramElementId?, override val internalPos: Int?): LocationUpdateWithId
 
@@ -36,10 +36,10 @@ data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithParentId, over
 
 data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithParentId, override val edge: EdgeWithIdentifiableWaypoints, override val props: PropertyTable): BpmnEdgeObjectAdded
 
-data class UiOnlyValueAddedEvent(val bpmnElementId: BpmnElementId, val property: PropertyType, val newValue: Any?, val propertyIndex: String? = null): EventUiOnly
+data class UiOnlyValueAddedEvent(val bpmnElementId: BpmnElementId, val property: PropertyType, val newValue: Any?, val propertyIndex: List<String>? = null): EventUiOnly
 
-data class UiOnlyValueRemovedEvent(val bpmnElementId: BpmnElementId, val property: PropertyType, val propertyIndex: String? = null): EventUiOnly
+data class UiOnlyValueRemovedEvent(val bpmnElementId: BpmnElementId, val property: PropertyType, val propertyIndex: List<String>? = null): EventUiOnly
 
-data class IndexUiOnlyValueUpdatedEvent(val bpmnElementId: BpmnElementId, val property: PropertyType, val referencedValue: String, val newValue: String): EventUiOnly
+data class IndexUiOnlyValueUpdatedEvent(val bpmnElementId: BpmnElementId, val property: PropertyType, val propertyIndex: List<String>, val newValue: List<String>): EventUiOnly
 
 data class BooleanUiOnlyValueUpdatedEvent(val bpmnElementId: BpmnElementId, val property: UiOnlyPropertyType, val newValue: Boolean): EventUiOnly

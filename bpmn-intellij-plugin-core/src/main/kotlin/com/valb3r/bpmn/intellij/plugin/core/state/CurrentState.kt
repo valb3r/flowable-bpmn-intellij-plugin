@@ -245,7 +245,7 @@ class CurrentStateProvider(private val project: Project) {
     private fun updateIndexProperty(event: IndexUiOnlyValueUpdatedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
         updated[event.property] = updated.getAll(event.property).map {
-            if (it.index == event.referencedValue || (null == it.index && event.referencedValue.isBlank())) {
+            if (it.index == event.propertyIndex || (null == it.index && event.propertyIndex.isEmpty())) {
                 it.copy(index = event.newValue)
             } else it
         }.toMutableList()

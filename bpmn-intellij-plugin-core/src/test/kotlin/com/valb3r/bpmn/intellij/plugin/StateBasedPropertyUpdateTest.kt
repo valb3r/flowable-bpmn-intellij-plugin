@@ -44,10 +44,10 @@ internal class StateBasedPropertyUpdateTest: BaseUiTest() {
 
         updateEventsRegistry(project).addPropertyUpdateEvent(StringValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_EXPRESSION, "expression 1", propertyIndex = null))
         updateEventsRegistry(project).addPropertyUpdateEvent(StringValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_NAME, "new name", propertyIndex = null))
-        updateEventsRegistry(project).addEvents(listOf(IndexUiOnlyValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_EXPRESSION, "", "new name")))
+        updateEventsRegistry(project).addEvents(listOf(IndexUiOnlyValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.FIELD_EXPRESSION, listOf(), listOf("new name"))))
         currentStateProvider(project).currentState().elemPropertiesByStaticElementId[serviceTaskStartBpmnId]!![PropertyType.FIELD_NAME]
             ?.shouldBeEqualTo(Property("new name", null))
         currentStateProvider(project).currentState().elemPropertiesByStaticElementId[serviceTaskStartBpmnId]!![PropertyType.FIELD_EXPRESSION]
-            ?.shouldBeEqualTo(Property("expression 1", "new name"))
+            ?.shouldBeEqualTo(Property("expression 1", listOf("new name")))
     }
 }

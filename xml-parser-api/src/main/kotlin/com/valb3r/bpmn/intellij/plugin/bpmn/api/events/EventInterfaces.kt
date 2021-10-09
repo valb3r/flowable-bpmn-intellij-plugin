@@ -81,7 +81,7 @@ interface PropertyUpdateWithId: EventPropagatableToXml {
     val newValue: Any
     val referencedValue: Any?
     val newIdValue: BpmnElementId?
-    val propertyIndex: String?
+    val propertyIndex: List<String>?
 }
 
 @JsonTypeInfo(

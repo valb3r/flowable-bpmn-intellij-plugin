@@ -103,7 +103,7 @@ enum class PropertyType(
     FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
     FIELD_NAME("fieldsExtension.@name", "Field name", STRING, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true), // Is sub-id
     FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", T_EXPRESSION, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
-    FIELD_STRING("fieldsExtension.@string", "String value", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
+    FIELD_STRING("fieldsExtension.@string", "String value", STRING, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
     FORM_PROPERTY_ID("formPropertiesExtension.@id", "Form property ID", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true), // Is sub-id
     FORM_PROPERTY_NAME("formPropertiesExtension.@name", "Property name", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
     FORM_PROPERTY_TYPE("formPropertiesExtension.@type", "Type", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
