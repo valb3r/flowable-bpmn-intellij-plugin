@@ -57,9 +57,9 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
 
     @Test
     fun `Service task nested elements are emptyable`() {
-        readAndSetNullStringAndAssertItIsRemoved(PropertyType.FIELD_NAME, "recipient", "activiti:field name=\"recipient\"", "<activiti:field>", "<activiti:field/>", "activiti:expression")
+        readAndSetNullStringAndAssertItIsRemoved(PropertyType.FIELD_NAME, "recipient", "activiti:field name=\"recipient\"", "<activiti:field>", "<activiti:field/>", "<activiti:expression><![CDATA[userId:\${accountId}]]")
             .fieldsExtension?.map { it.name }?.shouldNotContain("recipient")
-        readAndSetNullStringAndAssertItIsRemoved(PropertyType.FIELD_EXPRESSION, "recipient", "activiti:expression").fieldsExtension!![0].expression.shouldBeNullOrEmpty()
+        readAndSetNullStringAndAssertItIsRemoved(PropertyType.FIELD_EXPRESSION, "recipient", "<activiti:expression><![CDATA[userId:\${accountId}]]").fieldsExtension!![0].expression.shouldBeNullOrEmpty()
         readAndSetNullStringAndAssertItIsRemoved(PropertyType.FIELD_STRING, "multiline", "activiti:string").fieldsExtension!![1].string.shouldBeNullOrEmpty()
     }
 
@@ -130,6 +130,6 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
     }
 
     private fun readServiceTaskWithExtensions(processObject: BpmnProcessObject): BpmnServiceTask {
-        return processObject.process.body!!.serviceTask!!.shouldHaveSize(2)[0]
+        return processObject.process.body!!.serviceTask!!.shouldHaveSize(3)[0]
     }
 }

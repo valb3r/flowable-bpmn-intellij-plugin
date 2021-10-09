@@ -20,8 +20,8 @@
     </serviceTask>
     <serviceTask id="serviceTaskWithSingleExtensionId" name="Service task with single fielld extension">
         <extensionElements>
-            <activiti:field name="recipient">
-                <activiti:expression><![CDATA[userId:${accountId}]]></activiti:expression>
+            <activiti:field name="testSingle">
+                <activiti:expression>TEST</activiti:expression>
             </activiti:field>
         </extensionElements>
     </serviceTask>
