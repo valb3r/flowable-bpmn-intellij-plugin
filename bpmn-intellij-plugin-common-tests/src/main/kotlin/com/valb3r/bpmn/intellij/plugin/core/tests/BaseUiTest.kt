@@ -52,6 +52,7 @@ import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JTable
+import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.TableColumn
 import javax.swing.table.TableColumnModel
 
@@ -151,6 +152,8 @@ abstract class BaseUiTest {
     protected val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
     protected val boolFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, SelectedValueAccessor> = mutableMapOf()
     protected val buttonsConstructed: MutableMap<Pair<BpmnElementId, FunctionalGroupType>, JButton> = mutableMapOf()
+    protected val arrowButtonsConstructed: MutableMap<BpmnElementId, BasicArrowButton> = mutableMapOf()
+
     protected val comboboxFactory = { id: BpmnElementId, type: PropertyType, value: String, allowedValues: Set<String> -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
         val res = mock<TextValueAccessor>()
         whenever(res.text).thenReturn(value)
@@ -168,6 +171,9 @@ abstract class BaseUiTest {
     } }
     protected val buttonFactory = { id: BpmnElementId, type: FunctionalGroupType -> buttonsConstructed.computeIfAbsent(Pair(id, type)) {
         return@computeIfAbsent mock<JButton>()
+    } }
+    protected val arrowButtonFactory = { id: BpmnElementId -> arrowButtonsConstructed.computeIfAbsent(id) {
+        return@computeIfAbsent mock<BasicArrowButton>()
     } }
 
 
@@ -319,7 +325,10 @@ abstract class BaseUiTest {
     }
 
     protected fun initializeCanvas() {
-        canvasBuilder.build({ fileCommitter }, parser, propertiesTable, comboboxFactory, editorFactory, editorFactory, editorFactory, checkboxFieldFactory, buttonFactory, canvas, project, virtualFile)
+        canvasBuilder.build(
+            { fileCommitter },
+            parser, propertiesTable, comboboxFactory, editorFactory, editorFactory, editorFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory, canvas, project, virtualFile
+        )
         canvas.paintComponent(graphics)
     }
 

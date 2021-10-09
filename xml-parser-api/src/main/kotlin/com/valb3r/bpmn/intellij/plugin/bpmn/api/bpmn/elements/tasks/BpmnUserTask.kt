@@ -2,7 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionElement
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionField
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
 data class BpmnUserTask(
@@ -21,7 +21,7 @@ data class BpmnUserTask(
     /* BPMN engine specific extensions (intermediate storage) */
     val extensionElements: List<ExtensionElement>? = null,
     /* Flattened extensionElements, for explicitness - these are the target of binding */
-    val fieldsExtension: List<ExtensionField>? = null
+    val formPropertiesExtension: List<ExtensionFormProperty>? = null
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

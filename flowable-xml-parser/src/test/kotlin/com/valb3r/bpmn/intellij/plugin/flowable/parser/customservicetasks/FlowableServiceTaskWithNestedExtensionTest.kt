@@ -84,7 +84,7 @@ internal class FlowableServiceTaskWithNestedExtensionTest {
         )
         val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
         val props = BpmnProcessObject(process.process, process.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
-        props[PropertyType.FIELD_NAME]!!.value.shouldBeNull()
+        props[PropertyType.FIELD_NAME]?.shouldBeNull()
     }
 
     @Test
@@ -116,7 +116,7 @@ internal class FlowableServiceTaskWithNestedExtensionTest {
         val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
         val props = BpmnProcessObject(process.process, process.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
         props[PropertyType.FIELD_NAME]!!.shouldBeEqualTo(Property("new name", "new name"))
-        props[PropertyType.FIELD_EXPRESSION]!!.shouldBeEqualTo(Property("new name", "expression 1"))
+        props[PropertyType.FIELD_EXPRESSION]!!.shouldBeEqualTo(Property("expression 1", "new name"))
     }
 
     private fun readAndSetNullStringAndAssertItIsRemoved(property: PropertyType, propertyIndex: String, vararg shouldNotContainStr: String): BpmnServiceTask {
