@@ -88,13 +88,6 @@ internal class ActivityUserTaskWithNestedExtensionTest {
         {value: String -> readAndUpdate(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "fullProperty,value1").formPropertiesExtension!![2].value!![0].name.shouldBeNull()} ("");
     }
 
-    private fun readAndSetNullStringAndAssertItIsRemoved(property: PropertyType, propertyIndex: String, vararg shouldNotContainStr: String): BpmnUserTask {
-        val event = StringValueUpdatedEvent(elementId, property, "", propertyIndex = propertyIndex.split(","))
-        val updated = updateBpmnFile(parser, FILE, listOf(event))
-        shouldNotContainStr.forEach { updated.shouldNotContain(it) }
-        return readUserTaskWithExtensions(parser.parse(updated))
-    }
-
     private fun readAndUpdate(property: PropertyType, newValue: String, propertyIndex: String): BpmnUserTask {
         return readUserTaskWithExtensions(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue, propertyIndex = propertyIndex.split(","))))
     }
