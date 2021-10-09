@@ -103,11 +103,30 @@ enum class PropertyType(
     FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
     FIELD_NAME("fieldsExtension.@name", "Field name", STRING, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true), // Is sub-id
     FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", T_EXPRESSION, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
-    FIELD_STRING("fieldsExtension.@string", "String value", STRING, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true);
+    FIELD_STRING("fieldsExtension.@string", "String value", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
+    FORM_PROPERTY_ID("formPropertiesExtension.@id", "Form property ID", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true), // Is sub-id
+    FORM_PROPERTY_NAME("formPropertiesExtension.@name", "Property name", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
+    FORM_PROPERTY_TYPE("formPropertiesExtension.@type", "Type", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
+    FORM_PROPERTY_VARIABLE("formPropertiesExtension.@variable", "Variable", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
+    FORM_PROPERTY_DEFAULT("formPropertiesExtension.@default", "Default value", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
+    FORM_PROPERTY_EXPRESSION("formPropertiesExtension.@expression", "Expression", T_EXPRESSION, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
+    FORM_PROPERTY_DATE_PATTERN("formPropertiesExtension.@datePattern", "Date pattern", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
+    FORM_PROPERTY_VALUE_ID("formPropertiesExtension.@value.@id", "Value ID", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
+    FORM_PROPERTY_VALUE_NAME("formPropertiesExtension.@value.@name", "Value name", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
 }
 
 enum class FunctionalGroupType(val groupCaption: String, val actionCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf()) {
-    ADD_FIELD("Fields", "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", "")))
+    ADD_FIELD("Fields", "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", ""))),
+    ADD_FORM_PROPERTY("Form properties", "Add property", actionResult = NewElem("FORM_PROPERTY_ID", "Property %d"),
+        actionUiOnlyResult = listOf(
+            NewElem("FORM_PROPERTY_NAME", ""),
+            NewElem("FORM_PROPERTY_TYPE", ""),
+            NewElem("FORM_PROPERTY_VARIABLE", ""),
+            NewElem("FORM_PROPERTY_DEFAULT", ""),
+            NewElem("FORM_PROPERTY_EXPRESSION", ""),
+            NewElem("FORM_PROPERTY_DATE_PATTERN", "")
+        )
+    )
 }
 
 data class NewElem(val propertyType: String, val valuePattern: String = "")

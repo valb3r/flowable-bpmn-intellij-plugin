@@ -57,6 +57,7 @@ data class UserTask(
         @JacksonXmlProperty(isAttribute = true) expression: String?,
         @JacksonXmlProperty(isAttribute = true) val variable: String?,
         @JacksonXmlProperty(isAttribute = true) val default: String?,
+        @JacksonXmlProperty(isAttribute = true) val datePattern: String?,
         @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var value: List<ExtensionFormPropertyValue>? = null
     ) : ExtensionElement(name, string, expression)
 
