@@ -14,6 +14,14 @@
                 </activiti:formProperty>
             </extensionElements>
         </userTask>
+        <userTask id="userTaskWithSingleExtensionId" name="A user task with single form value" activiti:async="true" activiti:assignee="$INITIATOR" activiti:dueDate="2020-01-01" activiti:formKey="FORM_KEY" activiti:priority="1" isForCompensation="true">
+            <documentation>A user task to do</documentation>
+            <extensionElements>
+                <activiti:formProperty id="fullProperty" name="Full Property" type="string" expression="${foo}" variable="fullProperty" default="aValue" datePattern="DD.MM.YYYY">
+                    <activiti:value id="value2" name="Bar"></activiti:value>
+                </activiti:formProperty>
+            </extensionElements>
+        </userTask>
     </process>
     <bpmndi:BPMNDiagram id="BPMNDiagram_custom-service-task">
         <bpmndi:BPMNPlane bpmnElement="custom-service-task" id="BPMNPlane_custom-service-task">
