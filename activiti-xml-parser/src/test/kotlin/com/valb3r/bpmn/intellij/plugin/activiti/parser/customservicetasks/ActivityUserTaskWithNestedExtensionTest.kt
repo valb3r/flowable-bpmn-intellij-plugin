@@ -84,7 +84,7 @@ internal class ActivityUserTaskWithNestedExtensionTest {
         {value: String -> readAndUpdate(PropertyType.FORM_PROPERTY_DEFAULT, value, "fullProperty").formPropertiesExtension!![2].default.shouldBeNull()} ("");
         {value: String -> readAndUpdate(PropertyType.FORM_PROPERTY_EXPRESSION, value, "fullProperty").formPropertiesExtension!![2].expression.shouldBeNull()} ("");
         {value: String -> readAndUpdate(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "fullProperty").formPropertiesExtension!![2].datePattern.shouldBeNull()} ("");
-        {value: String -> readAndUpdate(PropertyType.FORM_PROPERTY_VALUE_ID, value, "fullProperty,value1").formPropertiesExtension!![2].value!![0].id?.shouldBeNull()} ("");
+        {value: String -> readAndUpdate(PropertyType.FORM_PROPERTY_VALUE_ID, value, "fullProperty,value1").formPropertiesExtension!![2].value!![0].id?.shouldBeEqualTo("value2")} ("");
         {value: String -> readAndUpdate(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "fullProperty,value1").formPropertiesExtension!![2].value!![0].name.shouldBeNull()} ("");
     }
 
@@ -93,6 +93,6 @@ internal class ActivityUserTaskWithNestedExtensionTest {
     }
 
     private fun readUserTaskWithExtensions(processObject: BpmnProcessObject): BpmnUserTask {
-        return processObject.process.body!!.userTask!!.shouldHaveSingleItem()
+        return processObject.process.body!!.userTask!!.shouldHaveSize(2)[0]
     }
 }

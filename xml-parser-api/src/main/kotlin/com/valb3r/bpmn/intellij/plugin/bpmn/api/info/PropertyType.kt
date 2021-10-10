@@ -105,14 +105,14 @@ enum class PropertyType(
     FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", T_EXPRESSION, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
     FIELD_STRING("fieldsExtension.@string", "String value", STRING, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
     FORM_PROPERTY_ID("formPropertiesExtension.@id", "Form property ID", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true), // Is sub-id
-    FORM_PROPERTY_NAME("formPropertiesExtension.@name", "Property name", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
-    FORM_PROPERTY_TYPE("formPropertiesExtension.@type", "Type", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
-    FORM_PROPERTY_VARIABLE("formPropertiesExtension.@variable", "Variable", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
-    FORM_PROPERTY_DEFAULT("formPropertiesExtension.@default", "Default value", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
-    FORM_PROPERTY_EXPRESSION("formPropertiesExtension.@expression", "Expression", T_EXPRESSION, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
-    FORM_PROPERTY_DATE_PATTERN("formPropertiesExtension.@datePattern", "Date pattern", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
-    FORM_PROPERTY_VALUE_ID("formPropertiesExtension.@value.@id", "Value ID", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
-    FORM_PROPERTY_VALUE_NAME("formPropertiesExtension.@value.@name", "Value name", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),
+    FORM_PROPERTY_NAME("formPropertiesExtension.@name", "Property name", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
+    FORM_PROPERTY_TYPE("formPropertiesExtension.@type", "Type", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
+    FORM_PROPERTY_VARIABLE("formPropertiesExtension.@variable", "Variable", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
+    FORM_PROPERTY_DEFAULT("formPropertiesExtension.@default", "Default value", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
+    FORM_PROPERTY_EXPRESSION("formPropertiesExtension.@expression", "Expression", T_EXPRESSION, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
+    FORM_PROPERTY_DATE_PATTERN("formPropertiesExtension.@datePattern", "Date pattern", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
+    FORM_PROPERTY_VALUE_ID("formPropertiesExtension.@value.@id", "Value ID", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),  // Is sub-id
+    FORM_PROPERTY_VALUE_NAME("formPropertiesExtension.@value.@name", "Value name", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
 }
 
 enum class FunctionalGroupType(val groupCaption: String, val actionCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf()) {
