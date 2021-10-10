@@ -100,7 +100,16 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     FAILED_JOB_RETRY_CYCLE(PropertyTypeDetails(PropertyType.FAILED_JOB_RETRY_CYCLE, "extensionElements.flowable:failedJobRetryTimeCycle.text", XmlType.CDATA)),
     FIELD_NAME(PropertyTypeDetails(PropertyType.FIELD_NAME, "extensionElements.flowable:field?name=@.name", XmlType.ATTRIBUTE)),
     FIELD_EXPRESSION(PropertyTypeDetails(PropertyType.FIELD_EXPRESSION, "extensionElements.flowable:field?name=@.flowable:expression.text", XmlType.CDATA)),
-    FIELD_STRING(PropertyTypeDetails(PropertyType.FIELD_STRING, "extensionElements.flowable:field?name=@.flowable:string.text", XmlType.CDATA))
+    FIELD_STRING(PropertyTypeDetails(PropertyType.FIELD_STRING, "extensionElements.flowable:field?name=@.flowable:string.text", XmlType.CDATA)),
+    FORM_PROPERTY_ID(PropertyTypeDetails(PropertyType.FORM_PROPERTY_ID, "extensionElements.flowable:formProperty?id=@.id", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_NAME, "extensionElements.flowable:formProperty?id=@.name", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_TYPE(PropertyTypeDetails(PropertyType.FORM_PROPERTY_TYPE, "extensionElements.flowable:formProperty?id=@.type", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_VARIABLE(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VARIABLE, "extensionElements.flowable:formProperty?id=@.variable", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_DEFAULT(PropertyTypeDetails(PropertyType.FORM_PROPERTY_DEFAULT, "extensionElements.flowable:formProperty?id=@.default", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_EXPRESSION(PropertyTypeDetails(PropertyType.FORM_PROPERTY_EXPRESSION, "extensionElements.flowable:formProperty?id=@.expression", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_DATE_PATTERN(PropertyTypeDetails(PropertyType.FORM_PROPERTY_DATE_PATTERN, "extensionElements.flowable:formProperty?id=@.datePattern", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_VALUE_ID(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_ID, "extensionElements.flowable:formProperty?id=@.flowable:value.id", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_VALUE_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_NAME, "extensionElements.flowable:formProperty?id=@.flowable:value.name", XmlType.ATTRIBUTE))
 }
 
 class FlowableParser : BaseBpmnParser() {

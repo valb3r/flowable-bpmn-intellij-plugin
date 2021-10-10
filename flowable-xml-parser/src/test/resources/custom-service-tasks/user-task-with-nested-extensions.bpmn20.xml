@@ -13,6 +13,14 @@
                 </flowable:formProperty>
             </extensionElements>
         </userTask>
+        <userTask id="userTaskWithSingleExtensionId" name="A user task with single form value" flowable:async="true" flowable:assignee="$INITIATOR" flowable:dueDate="2020-01-01" flowable:formKey="FORM_KEY" flowable:priority="1" isForCompensation="true">
+            <documentation>A user task to do</documentation>
+            <extensionElements>
+                <flowable:formProperty id="fullProperty" name="Full Property" type="string" expression="${foo}" variable="fullProperty" default="aValue" datePattern="DD.MM.YYYY">
+                    <flowable:value id="value2" name="Bar"></flowable:value>
+                </flowable:formProperty>
+            </extensionElements>
+        </userTask>
     </process>
     <bpmndi:BPMNDiagram id="BPMNDiagram_custom-service-task">
         <bpmndi:BPMNPlane bpmnElement="custom-service-task" id="BPMNPlane_custom-service-task">
@@ -21,6 +29,9 @@
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="userTaskId" id="BPMNShape_userTaskId">
                 <omgdc:Bounds height="80.0" width="100.0" x="210.0" y="138.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="userTaskWithSingleExtensionId" id="BPMNShape_userTaskWithSingleExtensionId">
+                <omgdc:Bounds height="80.0" width="100.0" x="310.0" y="138.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
         </bpmndi:BPMNPlane>
     </bpmndi:BPMNDiagram>
