@@ -184,11 +184,11 @@ published to JetBrains marketplace. It can take up to two days for plugin to be 
 |         extensionElements        |           |
 |      flowable:eventListener      |           |
 |    flowable:executionListener    |           |
-|          flowable:field          |           |
+|          flowable:field          |     Y     |
 |            flowable:in           |           |
 |           flowable:out           |           |
-|          flowable:string         |           |
-|          flowable:value          |           |
+|          flowable:string         |     Y     |
+|          flowable:value          |     Y     |
 |         inclusiveGateway         |     Y     |
 |      intermediateCatchEvent      |     P     |
 |      intermediateThrowEvent      |     P     |

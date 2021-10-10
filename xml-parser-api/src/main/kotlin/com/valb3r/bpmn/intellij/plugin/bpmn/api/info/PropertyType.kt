@@ -13,7 +13,7 @@ enum class PropertyType(
     val updateOrder: Int = 0,
     val elementUpdateChangesClass: Boolean = false,
     val defaultValueIfNull: Any? = null,
-    val group: FunctionalGroupType? = null,
+    val group: List<FunctionalGroupType>? = null,
     val indexInGroupArrayName: String? = null,
     val indexCascades: Boolean = false,
     val removeEnclosingNodeIfNullOrEmpty: Boolean = false
@@ -101,18 +101,18 @@ enum class PropertyType(
     OUTPUT_VARIABLE("outputVariable", "Output variable", STRING),
     DIRECTORY("directory", "Working directory", STRING),
     FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
-    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true), // Is sub-id
-    FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", T_EXPRESSION, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
-    FIELD_STRING("fieldsExtension.@string", "String value", STRING, group = FunctionalGroupType.ADD_FIELD, indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
-    FORM_PROPERTY_ID("formPropertiesExtension.@id", "Form property ID", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true), // Is sub-id
-    FORM_PROPERTY_NAME("formPropertiesExtension.@name", "Property name", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
-    FORM_PROPERTY_TYPE("formPropertiesExtension.@type", "Type", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
-    FORM_PROPERTY_VARIABLE("formPropertiesExtension.@variable", "Variable", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
-    FORM_PROPERTY_DEFAULT("formPropertiesExtension.@default", "Default value", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
-    FORM_PROPERTY_EXPRESSION("formPropertiesExtension.@expression", "Expression", T_EXPRESSION, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
-    FORM_PROPERTY_DATE_PATTERN("formPropertiesExtension.@datePattern", "Date pattern", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
-    FORM_PROPERTY_VALUE_ID("formPropertiesExtension.@value.@id", "Value ID", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id", removeEnclosingNodeIfNullOrEmpty = true),  // Is sub-id
-    FORM_PROPERTY_VALUE_NAME("formPropertiesExtension.@value.@name", "Value name", STRING, group = FunctionalGroupType.ADD_FORM_PROPERTY, indexInGroupArrayName = "id"),
+    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, group = listOf(FunctionalGroupType.ADD_FIELD), indexInGroupArrayName = "name", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true), // Is sub-id
+    FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", T_EXPRESSION, group = listOf(FunctionalGroupType.ADD_FIELD), indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
+    FIELD_STRING("fieldsExtension.@string", "String value", STRING, group = listOf(FunctionalGroupType.ADD_FIELD), indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
+    FORM_PROPERTY_ID("formPropertiesExtension.@id", "Form property ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true), // Is sub-id
+    FORM_PROPERTY_NAME("formPropertiesExtension.@name", "Property name", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
+    FORM_PROPERTY_TYPE("formPropertiesExtension.@type", "Type", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
+    FORM_PROPERTY_VARIABLE("formPropertiesExtension.@variable", "Variable", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
+    FORM_PROPERTY_DEFAULT("formPropertiesExtension.@default", "Default value", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
+    FORM_PROPERTY_EXPRESSION("formPropertiesExtension.@expression", "Expression", T_EXPRESSION, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
+    FORM_PROPERTY_DATE_PATTERN("formPropertiesExtension.@datePattern", "Date pattern", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
+    FORM_PROPERTY_VALUE_ID("formPropertiesExtension.@value.@id", "Value ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true),  // Is sub-id
+    FORM_PROPERTY_VALUE_NAME("formPropertiesExtension.@value.@name", "Value name", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id"),
 }
 
 enum class FunctionalGroupType(val groupCaption: String, val actionCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf()) {
@@ -124,7 +124,14 @@ enum class FunctionalGroupType(val groupCaption: String, val actionCaption: Stri
             NewElem("FORM_PROPERTY_VARIABLE", ""),
             NewElem("FORM_PROPERTY_DEFAULT", ""),
             NewElem("FORM_PROPERTY_EXPRESSION", ""),
-            NewElem("FORM_PROPERTY_DATE_PATTERN", "")
+            NewElem("FORM_PROPERTY_DATE_PATTERN", ""),
+            NewElem("FORM_PROPERTY_VALUE_ID", ""),
+            NewElem("FORM_PROPERTY_VALUE_NAME", "")
+        )
+    ),
+    ADD_FORM_PROPERTY_VALUE("Form property values", "Add value", actionResult = NewElem("FORM_PROPERTY_VALUE_ID", "Property value %d"),
+        actionUiOnlyResult = listOf(
+            NewElem("FORM_PROPERTY_VALUE_NAME", "")
         )
     )
 }
