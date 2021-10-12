@@ -16,6 +16,7 @@ import javax.swing.*
 import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.TableModel
 import javax.swing.table.TableRowSorter
+import kotlin.math.max
 
 private const val maxFields = 9999
 
@@ -76,7 +77,7 @@ class PropertiesVisualizer(
     fun visualize(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId) {
         val model = prepareTable()
         val collapseGroups = mutableMapOf<CollapsedIndex, MutableSet<Int>>()
-        val filter = RowExpansionFilter(collapseGroups, mutableSetOf())
+        val filter = RowExpansionFilter(collapseGroups)
         val sorter = TableRowSorter(table.model)
 
         val orderedControls = state[bpmnElementId]?.view()?.entries
@@ -85,7 +86,7 @@ class PropertiesVisualizer(
 
         createControls(model, state, bpmnElementId, orderedControls, filter, sorter, collapseGroups)
 
-        filter.collapsed.addAll(filter.groups.values.flatten())
+        filter.build()
         sorter.rowFilter = filter
         table.rowSorter = sorter
         model.fireTableDataChanged()
@@ -99,11 +100,19 @@ class PropertiesVisualizer(
         filter: RowExpansionFilter,
         sorter: TableRowSorter<TableModel>,
         collapseGroups: MutableMap<CollapsedIndex, MutableSet<Int>>) {
-        var currentGroupType: FunctionalGroupType? = null
+        val seenIndexes = mutableSetOf<CollapsedIndex>()
         for (control in controls) {
             val groupType = control.first.group?.lastOrNull()
-            if (currentGroupType != groupType) {
-                model.addRow(arrayOf("", groupType?.groupCaption))
+            val isExpandButton = control.first.name == groupType?.actionResult?.propertyType
+            val controlGroupIndex = CollapsedIndex(
+                if (isExpandButton) control.first.group?.getOrNull(control.first.group!!.size - 2) else groupType,
+                control.second.index?.take(max(0, control.first.group!!.size - if (isExpandButton) 1 else 0))?.joinToString() ?: ""
+            )
+
+            if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex)) {
+                addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, collapseGroups, model)
+                model.addRow(arrayOf("", buildButtonField(state, bpmnElementId, groupType)))
+                seenIndexes.add(controlGroupIndex)
             }
 
             var row = when (control.first.valueType) {
@@ -114,85 +123,31 @@ class PropertiesVisualizer(
                 ATTACHED_SEQUENCE_SELECT -> arrayOf(control.first.caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, control.first, control.second))
             }
 
-            if (null != groupType) {
-                val index = CollapsedIndex(groupType, control.second.index?.joinToString() ?: "")
-                if (control.first.name != groupType.actionResult.propertyType || (control.second.index?.size ?: 0) > 1) {
-                    collapseGroups.computeIfAbsent(index) { mutableSetOf() }.add(model.rowCount)
-                }
-                if (currentGroupType != groupType) {
-                    row += buildArrowExpansionButton(bpmnElementId, filter, index, sorter)
-                }
+            if (isExpandButton) {
+                val controlExpandsGroupIndex = CollapsedIndex(
+                    groupType,
+                    control.second.index?.joinToString() ?: ""
+                )
+                row += buildArrowExpansionButton(bpmnElementId, filter, controlExpandsGroupIndex, sorter)
             }
 
+            addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, collapseGroups, model)
             model.addRow(row)
-            currentGroupType = groupType
+        }
+    }
+
+    private fun addCurrentRowToCollapsedSectionIfNeeded(
+        controlGroupIndex: CollapsedIndex,
+        collapseGroups: MutableMap<CollapsedIndex, MutableSet<Int>>,
+        model: FirstLastColumnReadOnlyModel
+    ) {
+        if (null != controlGroupIndex.type) {
+            collapseGroups.computeIfAbsent(controlGroupIndex) { mutableSetOf() }.add(model.rowCount)
         }
     }
 
     private fun computePropertyKey(entry: Pair<PropertyType, Property>): String {
         return entry.first.group?.mapIndexed { index, type -> type.name + entry.second.index?.getOrElse(index) {""} }?.joinToString() ?: ""
-    }
-
-    private fun addControlsOnLevel(
-        level: Int,
-        state: Map<BpmnElementId, PropertyTable>,
-        bpmnElementId: BpmnElementId,
-        model: FirstLastColumnReadOnlyModel,
-        filter: RowExpansionFilter,
-        sorter: TableRowSorter<TableModel>,
-        collapseGroups: MutableMap<CollapsedIndex, MutableSet<Int>>
-    ) {
-        val groupedEntries = state[bpmnElementId]?.view()?.entries
-            ?.filter { (it.key.group?.size ?: 0) >= level }
-            ?.groupBy { it.key.group?.getOrNull(level) }
-            ?.toSortedMap(Comparator.comparingInt { it?.name?.length ?: 0 }) ?: emptyMap()
-
-        for ((groupType, entries) in groupedEntries) {
-            addControlsOnGroup(groupType, model, entries, state, bpmnElementId, filter, sorter, collapseGroups)
-        }
-    }
-
-    private fun addControlsOnGroup(
-        groupType: FunctionalGroupType?,
-        model: FirstLastColumnReadOnlyModel,
-        entries: List<Map.Entry<PropertyType, List<Property>>>,
-        state: Map<BpmnElementId, PropertyTable>,
-        bpmnElementId: BpmnElementId,
-        filter: RowExpansionFilter,
-        sorter: TableRowSorter<TableModel>,
-        collapseGroups: MutableMap<CollapsedIndex, MutableSet<Int>>
-    ) {
-        if (null != groupType) {
-            model.addRow(arrayOf("", groupType.groupCaption))
-        }
-
-        val byIndex = entries.flatMap { it.value }.filter { null != it.value }.groupBy { it.index?.get(0) ?: "" }
-        entries
-            .flatMap { it.value.map { v -> Pair(it.key, v) } }
-            .filter { null == groupType || true == byIndex[it.second.index?.get(0) ?: ""]?.isNotEmpty() }
-            .sortedBy { it.second.index?.joinToString() }
-            .forEach {
-                var row = when (it.first.valueType) {
-                    STRING -> arrayOf(it.first.caption, buildTextField(state, bpmnElementId, it.first, it.second))
-                    BOOLEAN -> arrayOf(it.first.caption, buildCheckboxField(bpmnElementId, it.first, it.second))
-                    CLASS -> arrayOf(it.first.caption, buildClassField(state, bpmnElementId, it.first, it.second))
-                    EXPRESSION -> arrayOf(it.first.caption, buildExpressionField(state, bpmnElementId, it.first, it.second))
-                    ATTACHED_SEQUENCE_SELECT -> arrayOf(it.first.caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, it.first, it.second))
-                }
-                if (null != groupType) {
-                    val index = CollapsedIndex(groupType, it.second.index?.joinToString() ?: "")
-                    if (it.first.name == groupType.actionResult.propertyType) {
-                        row += buildArrowExpansionButton(bpmnElementId, filter, index, sorter)
-                    } else {
-                        collapseGroups.computeIfAbsent(index) { mutableSetOf() }.add(model.rowCount)
-                    }
-                }
-                model.addRow(row)
-            }
-
-        if (null != groupType) {
-            model.addRow(arrayOf("", buildButtonField(state, bpmnElementId, groupType)))
-        }
     }
 
     private fun notifyDeFocusElement() {
@@ -391,7 +346,15 @@ class PropertiesVisualizer(
     }
 }
 
-private class RowExpansionFilter(val groups: Map<CollapsedIndex, MutableSet<Int>>, val collapsed: MutableSet<Int>): RowFilter<TableModel, Any>() {
+private class RowExpansionFilter(val groups: Map<CollapsedIndex, MutableSet<Int>>): RowFilter<TableModel, Any>() {
+
+    private val collapsed: MutableSet<Int> = mutableSetOf()
+    private val inverseGroups: MutableMap<Int, CollapsedIndex> = mutableMapOf()
+
+    fun build() {
+        collapsed.addAll(groups.values.flatten())
+        groups.forEach { (k, v) -> v.forEach { inverseGroups[it] = k }}
+    }
 
     override fun include(entry: Entry<out TableModel, out Any>?): Boolean {
         return !collapsed.contains(entry?.identifier)
@@ -406,4 +369,4 @@ private class RowExpansionFilter(val groups: Map<CollapsedIndex, MutableSet<Int>
     }
 }
 
-private data class CollapsedIndex(val type: FunctionalGroupType, val index: String)
+private data class CollapsedIndex(val type: FunctionalGroupType?, val index: String)

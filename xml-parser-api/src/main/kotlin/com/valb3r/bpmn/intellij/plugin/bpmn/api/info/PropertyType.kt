@@ -115,9 +115,9 @@ enum class PropertyType(
     FORM_PROPERTY_VALUE_NAME("formPropertiesExtension.@value.@name", "Value name", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id"),
 }
 
-enum class FunctionalGroupType(val groupCaption: String, val actionCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf()) {
-    ADD_FIELD("Fields", "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", ""))),
-    ADD_FORM_PROPERTY("Form properties", "Add property", actionResult = NewElem("FORM_PROPERTY_ID", "Property %d"),
+enum class FunctionalGroupType(val actionCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf()) {
+    ADD_FIELD("Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", ""))),
+    ADD_FORM_PROPERTY("Add property", actionResult = NewElem("FORM_PROPERTY_ID", "Property %d"),
         actionUiOnlyResult = listOf(
             NewElem("FORM_PROPERTY_NAME", ""),
             NewElem("FORM_PROPERTY_TYPE", ""),
@@ -129,7 +129,7 @@ enum class FunctionalGroupType(val groupCaption: String, val actionCaption: Stri
             NewElem("FORM_PROPERTY_VALUE_NAME", "")
         )
     ),
-    ADD_FORM_PROPERTY_VALUE("Form property values", "Add value", actionResult = NewElem("FORM_PROPERTY_VALUE_ID", "Property value %d"),
+    ADD_FORM_PROPERTY_VALUE("Add value", actionResult = NewElem("FORM_PROPERTY_VALUE_ID", "Property value %d"),
         actionUiOnlyResult = listOf(
             NewElem("FORM_PROPERTY_VALUE_NAME", "")
         )
