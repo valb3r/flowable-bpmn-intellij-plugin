@@ -115,6 +115,10 @@ class PropertiesVisualizer(
                 seenIndexes.add(controlGroupIndex)
             }
 
+            if (control.first.hideIfNullOrEmpty && (null == control.second.value || (control.second.value is String && (control.second.value as String).isBlank()))) {
+                continue
+            }
+
             var row = when (control.first.valueType) {
                 STRING -> arrayOf(control.first.caption, buildTextField(state, bpmnElementId, control.first, control.second))
                 BOOLEAN -> arrayOf(control.first.caption, buildCheckboxField(bpmnElementId, control.first, control.second))
