@@ -83,7 +83,7 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
         )
         val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
         val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
-        props[PropertyType.FIELD_NAME]?.shouldBeNull()
+        props[PropertyType.FIELD_NAME]?.value.shouldBeNull()
     }
 
     @Test
