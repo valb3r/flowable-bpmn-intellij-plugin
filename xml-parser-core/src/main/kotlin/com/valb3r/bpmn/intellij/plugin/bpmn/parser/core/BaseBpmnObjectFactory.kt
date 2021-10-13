@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.parser.core
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.NullNode
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnObjectFactory
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -197,6 +198,9 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
                 val indexValue = it[type.indexInGroupArrayName!!].asText()
                 val index = if (null != indexValue) ((indexInArray ?: listOf()) + indexValue) else indexInArray
                 parseValue(split[1], type, it, result, index)
+            }
+            if (node.isEmpty) {
+                doParse(NullNode.instance, result, type, listOf())
             }
             return
         }

@@ -88,11 +88,25 @@ internal class ActivityUserTaskWithNestedExtensionTest {
         {value: String -> readAndUpdate(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "fullProperty,value1").formPropertiesExtension!![2].value!![0].name.shouldBeNull()} ("");
     }
 
+    @Test
+    fun `Empty user task contains extension`() {
+        val processObject = parser.parse(FILE.asResource()!!)
+
+        val task = readEmptyUserTaskWithExtensions(processObject)
+        task.id.shouldBeEqualTo(BpmnElementId("emptyUserTaskId"))
+        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        props.getAll(PropertyType.FORM_PROPERTY_ID).shouldHaveSize(1)
+    }
+
     private fun readAndUpdate(property: PropertyType, newValue: String, propertyIndex: String): BpmnUserTask {
         return readUserTaskWithExtensions(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue, propertyIndex = propertyIndex.split(","))))
     }
 
     private fun readUserTaskWithExtensions(processObject: BpmnProcessObject): BpmnUserTask {
-        return processObject.process.body!!.userTask!!.shouldHaveSize(2)[0]
+        return processObject.process.body!!.userTask!!.shouldHaveSize(3)[0]
+    }
+
+    private fun readEmptyUserTaskWithExtensions(processObject: BpmnProcessObject): BpmnUserTask {
+        return processObject.process.body!!.userTask!!.shouldHaveSize(3)[2]
     }
 }

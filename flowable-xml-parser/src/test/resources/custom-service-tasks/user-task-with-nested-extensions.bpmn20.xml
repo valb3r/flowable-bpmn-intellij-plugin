@@ -21,6 +21,9 @@
                 </flowable:formProperty>
             </extensionElements>
         </userTask>
+        <userTask id="emptyUserTaskId" name="An empty user task">
+            <extensionElements></extensionElements>
+        </userTask>
     </process>
     <bpmndi:BPMNDiagram id="BPMNDiagram_custom-service-task">
         <bpmndi:BPMNPlane bpmnElement="custom-service-task" id="BPMNPlane_custom-service-task">
@@ -32,6 +35,9 @@
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="userTaskWithSingleExtensionId" id="BPMNShape_userTaskWithSingleExtensionId">
                 <omgdc:Bounds height="80.0" width="100.0" x="310.0" y="138.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="emptyUserTaskId" id="BPMNShape_emptyUserTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="410.0" y="138.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
         </bpmndi:BPMNPlane>
     </bpmndi:BPMNDiagram>
