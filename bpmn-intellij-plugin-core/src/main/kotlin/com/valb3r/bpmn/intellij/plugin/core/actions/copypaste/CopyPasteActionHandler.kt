@@ -217,10 +217,10 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
         val result = PropertyTable(mutableMapOf())
         props.forEach { k, v ->
             when {
-                v.value == null -> result[k] = v
+                v.value == null -> result.add(k, v)
                 PropertyType.ID == k -> result[k] = Property(copied(BpmnElementId(v.value as String), updatedIds).id)
                 PropertyType.ID == k.updatedBy -> result[k] = Property(copiedExistsOrEmpty(BpmnElementId(v.value as String), updatedIds))
-                else -> result[k] = v
+                else -> result.add(k, v)
             }
         }
         return result
