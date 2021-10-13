@@ -76,15 +76,14 @@ class PropertiesVisualizer(
     @Synchronized
     fun visualize(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId) {
         val model = prepareTable()
-        val collapseGroups = mutableMapOf<CollapsedIndex, MutableSet<Int>>()
-        val filter = RowExpansionFilter(collapseGroups)
+        val filter = RowExpansionFilter()
         val sorter = TableRowSorter(table.model)
 
         val orderedControls = state[bpmnElementId]?.view()?.entries
             ?.flatMap { it.value.map { v -> Pair(it.key, v) } }
             ?.sortedBy { computePropertyKey(it) } ?: listOf()
 
-        createControls(model, state, bpmnElementId, orderedControls, filter, sorter, collapseGroups)
+        createControls(model, state, bpmnElementId, orderedControls, filter, sorter)
 
         filter.build()
         sorter.rowFilter = filter
@@ -98,8 +97,7 @@ class PropertiesVisualizer(
         bpmnElementId: BpmnElementId,
         controls: List<Pair<PropertyType, Property>>,
         filter: RowExpansionFilter,
-        sorter: TableRowSorter<TableModel>,
-        collapseGroups: MutableMap<CollapsedIndex, MutableSet<Int>>) {
+        sorter: TableRowSorter<TableModel>) {
         val seenIndexes = mutableSetOf<CollapsedIndex>()
         for (control in controls) {
             val groupType = control.first.group?.lastOrNull()
@@ -110,7 +108,7 @@ class PropertiesVisualizer(
             )
 
             if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex)) {
-                addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, collapseGroups, model)
+                addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
                 model.addRow(arrayOf("", buildButtonField(state, bpmnElementId, groupType)))
                 seenIndexes.add(controlGroupIndex)
             }
@@ -128,21 +126,23 @@ class PropertiesVisualizer(
                     groupType,
                     control.second.index?.joinToString() ?: ""
                 )
-                row += buildArrowExpansionButton(bpmnElementId, filter, controlExpandsGroupIndex, sorter)
+                val button = buildArrowExpansionButton(bpmnElementId, filter, controlExpandsGroupIndex, sorter)
+                row += button
+                filter.setCollapseGroupControl(controlGroupIndex, controlExpandsGroupIndex, button)
             }
 
-            addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, collapseGroups, model)
+            addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
             model.addRow(row)
         }
     }
 
     private fun addCurrentRowToCollapsedSectionIfNeeded(
         controlGroupIndex: CollapsedIndex,
-        collapseGroups: MutableMap<CollapsedIndex, MutableSet<Int>>,
+        filter: RowExpansionFilter,
         model: FirstLastColumnReadOnlyModel
     ) {
         if (null != controlGroupIndex.type) {
-            collapseGroups.computeIfAbsent(controlGroupIndex) { mutableSetOf() }.add(model.rowCount)
+            filter.addControl(controlGroupIndex, model.rowCount)
         }
     }
 
@@ -212,17 +212,16 @@ class PropertiesVisualizer(
         return button
     }
 
-    private fun buildArrowExpansionButton(bpmnElementId: BpmnElementId, filter: RowExpansionFilter, identifier: CollapsedIndex, sorter: TableRowSorter<TableModel>): JButton {
+    private fun buildArrowExpansionButton(bpmnElementId: BpmnElementId, filter: RowExpansionFilter, identifier: CollapsedIndex, sorter: TableRowSorter<TableModel>): BasicArrowButton {
         val button = arrowButtonFactory(bpmnElementId)
         button.addActionListener {
             val isExpanded = SwingConstants.NORTH == button.direction
-            button.direction = if (isExpanded) SwingConstants.SOUTH else SwingConstants.NORTH
             if (isExpanded) {
-                button.direction = SwingConstants.SOUTH
+                button.direction = arrowButtonDirection(true)
                 filter.collapse(identifier)
                 sorter.sort()
             } else {
-                button.direction = SwingConstants.NORTH
+                button.direction = arrowButtonDirection(false)
                 filter.expand(identifier)
                 sorter.sort()
             }
@@ -346,10 +345,20 @@ class PropertiesVisualizer(
     }
 }
 
-private class RowExpansionFilter(val groups: Map<CollapsedIndex, MutableSet<Int>>): RowFilter<TableModel, Any>() {
+private class RowExpansionFilter: RowFilter<TableModel, Any>() {
 
+    private val groups: MutableMap<CollapsedIndex, MutableSet<Int>> = mutableMapOf()
     private val collapsed: MutableSet<Int> = mutableSetOf()
     private val inverseGroups: MutableMap<Int, CollapsedIndex> = mutableMapOf()
+    private val collapseControls: MutableMap<CollapsedIndex, MutableSet<Pair<BasicArrowButton, CollapsedIndex>>> = mutableMapOf()
+
+    fun addControl(control: CollapsedIndex, rowIndex: Int) {
+        groups.computeIfAbsent(control) { mutableSetOf() }.add(rowIndex)
+    }
+
+    fun setCollapseGroupControl(control: CollapsedIndex, group: CollapsedIndex, button: BasicArrowButton) {
+        collapseControls.computeIfAbsent(control) { mutableSetOf() }.add(Pair(button, group))
+    }
 
     fun build() {
         collapsed.addAll(groups.values.flatten())
@@ -365,8 +374,25 @@ private class RowExpansionFilter(val groups: Map<CollapsedIndex, MutableSet<Int>
     }
 
     fun collapse(group: CollapsedIndex) {
-        collapsed.addAll((groups[group] ?: mutableSetOf()).toSet())
+        collapse(group, mutableSetOf())
+    }
+
+    private fun collapse(group: CollapsedIndex, seen: MutableSet<CollapsedIndex>) {
+        val collapseTargets = (groups[group] ?: mutableSetOf()).toSet()
+        val nestedCollapse = collapseTargets
+            .asSequence()
+            .mapNotNull { inverseGroups[it] }
+            .mapNotNull { collapseControls[it] }
+            .flatten()
+            .toSet()
+
+        collapsed.addAll(collapseTargets)
+        seen += group
+        nestedCollapse.forEach { it.first.direction = arrowButtonDirection(true)}
+        nestedCollapse.map { it.second }.filter { !seen.contains(it) }.forEach { collapse(it, seen) }
     }
 }
+
+private fun arrowButtonDirection(isCollapsed: Boolean) = if (isCollapsed) SwingConstants.SOUTH else SwingConstants.NORTH
 
 private data class CollapsedIndex(val type: FunctionalGroupType?, val index: String)
