@@ -6,7 +6,6 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnFile
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.DiagramNode
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.ProcessNode
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.NS
@@ -92,7 +91,19 @@ enum class ActivitiPropertyTypeDetails(val details: PropertyTypeDetails) {
     ERROR_CODE_VARIABLE(PropertyTypeDetails(PropertyType.ERROR_CODE_VARIABLE, "extensionElements.activiti:field?name=errorCodeVariable.activiti:string.text", XmlType.CDATA)),
     OUTPUT_VARIABLE(PropertyTypeDetails(PropertyType.OUTPUT_VARIABLE, "extensionElements.activiti:field?name=outputVariable.activiti:string.text", XmlType.CDATA)),
     DIRECTORY(PropertyTypeDetails(PropertyType.DIRECTORY, "extensionElements.activiti:field?name=directory.activiti:string.text", XmlType.CDATA)),
-    FAILED_JOB_RETRY_CYCLE(PropertyTypeDetails(PropertyType.FAILED_JOB_RETRY_CYCLE, "extensionElements.activiti:failedJobRetryTimeCycle.text", XmlType.CDATA))
+    FAILED_JOB_RETRY_CYCLE(PropertyTypeDetails(PropertyType.FAILED_JOB_RETRY_CYCLE, "extensionElements.activiti:failedJobRetryTimeCycle.text", XmlType.CDATA)),
+    FIELD_NAME(PropertyTypeDetails(PropertyType.FIELD_NAME, "extensionElements.activiti:field?name=@.name", XmlType.ATTRIBUTE)),
+    FIELD_EXPRESSION(PropertyTypeDetails(PropertyType.FIELD_EXPRESSION, "extensionElements.activiti:field?name=@.activiti:expression.text", XmlType.CDATA)),
+    FIELD_STRING(PropertyTypeDetails(PropertyType.FIELD_STRING, "extensionElements.activiti:field?name=@.activiti:string.text", XmlType.CDATA)),
+    FORM_PROPERTY_ID(PropertyTypeDetails(PropertyType.FORM_PROPERTY_ID, "extensionElements.activiti:formProperty?id=@.id", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_NAME, "extensionElements.activiti:formProperty?id=@.name", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_TYPE(PropertyTypeDetails(PropertyType.FORM_PROPERTY_TYPE, "extensionElements.activiti:formProperty?id=@.type", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_VARIABLE(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VARIABLE, "extensionElements.activiti:formProperty?id=@.variable", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_DEFAULT(PropertyTypeDetails(PropertyType.FORM_PROPERTY_DEFAULT, "extensionElements.activiti:formProperty?id=@.default", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_EXPRESSION(PropertyTypeDetails(PropertyType.FORM_PROPERTY_EXPRESSION, "extensionElements.activiti:formProperty?id=@.expression", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_DATE_PATTERN(PropertyTypeDetails(PropertyType.FORM_PROPERTY_DATE_PATTERN, "extensionElements.activiti:formProperty?id=@.datePattern", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_VALUE_ID(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_ID, "extensionElements.activiti:formProperty?id=@.activiti:value?id=@.id", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_VALUE_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_NAME, "extensionElements.activiti:formProperty?id=@.activiti:value?id=@.name", XmlType.ATTRIBUTE))
 }
 
 open class ActivitiParser : BaseBpmnParser() {
@@ -102,17 +113,6 @@ open class ActivitiParser : BaseBpmnParser() {
     override fun parse(input: String): BpmnProcessObject {
         val dto = mapper.readValue<BpmnFile>(input)
         return toProcessObject(dto)
-    }
-
-    // FIXME is rather a hack but correct approach would require selecting parser based on content
-    override fun update(input: String, events: List<EventPropagatableToXml>): String {
-        if (hackActiviti7(input)) return Activiti7Parser().update(input, events)
-
-        return super.update(input, events)
-    }
-
-    protected open fun hackActiviti7(input: String): Boolean {
-        return input.contains("xmlns:bpmn2=\"http://www.omg.org/spec/BPMN/20100524/MODEL\"");
     }
 
     private fun toProcessObject(dto: BpmnFile): BpmnProcessObject {
@@ -129,7 +129,7 @@ open class ActivitiParser : BaseBpmnParser() {
     }
 
     override fun bpmndiNs(): NS {
-        return NS("bpmdi", "http://www.omg.org/spec/BPMN/20100524/DI")
+        return NS("bpmndi", "http://www.omg.org/spec/BPMN/20100524/DI")
     }
 
     override fun omgdcNs(): NS {

@@ -14,6 +14,17 @@
                 </activiti:formProperty>
             </extensionElements>
         </userTask>
+        <userTask id="userTaskWithSingleExtensionId" name="A user task with single form value" activiti:async="true" activiti:assignee="$INITIATOR" activiti:dueDate="2020-01-01" activiti:formKey="FORM_KEY" activiti:priority="1" isForCompensation="true">
+            <documentation>A user task to do</documentation>
+            <extensionElements>
+                <activiti:formProperty id="fullProperty" name="Full Property" type="string" expression="${foo}" variable="fullProperty" default="aValue" datePattern="DD.MM.YYYY">
+                    <activiti:value id="value2" name="Bar"></activiti:value>
+                </activiti:formProperty>
+            </extensionElements>
+        </userTask>
+        <userTask id="emptyUserTaskId" name="An empty user task">
+            <extensionElements></extensionElements>
+        </userTask>
     </process>
     <bpmndi:BPMNDiagram id="BPMNDiagram_custom-service-task">
         <bpmndi:BPMNPlane bpmnElement="custom-service-task" id="BPMNPlane_custom-service-task">
@@ -22,6 +33,9 @@
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape bpmnElement="userTaskId" id="BPMNShape_userTaskId">
                 <omgdc:Bounds height="80.0" width="100.0" x="210.0" y="138.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="emptyUserTaskId" id="BPMNShape_emptyUserTaskId">
+                <omgdc:Bounds height="80.0" width="100.0" x="310.0" y="138.0"></omgdc:Bounds>
             </bpmndi:BPMNShape>
         </bpmndi:BPMNPlane>
     </bpmndi:BPMNDiagram>

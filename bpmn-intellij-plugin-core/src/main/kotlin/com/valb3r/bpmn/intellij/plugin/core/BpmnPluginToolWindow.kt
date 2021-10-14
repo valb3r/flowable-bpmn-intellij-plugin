@@ -14,10 +14,11 @@ import com.intellij.ui.JavaReferenceEditorUtil
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.events.IntelliJFileCommitter
+import com.valb3r.bpmn.intellij.plugin.core.parser.currentParser
 import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
@@ -32,14 +33,15 @@ import java.awt.event.AdjustmentListener
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.*
+import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.DefaultTableModel
 import kotlin.math.abs
 
 
 class BpmnPluginToolWindow(
     private val project: Project,
-    private val bpmnParser: BpmnParser,
     private val onBadContentCallback: ((String) -> Unit)? = null,
+    private val onBeforeFileOpen: (PsiFile) -> Unit,
     private val onFileOpenCallback: (PsiFile) -> Unit
 ) {
 
@@ -72,6 +74,8 @@ class BpmnPluginToolWindow(
     fun getContent() = this.mainToolWindowForm
 
     fun run(bpmnFile: PsiFile, context: BpmnActionContext) {
+        onBeforeFileOpen(bpmnFile)
+        val bpmnParser = currentParser(project)
         if (this.canvasBuilder.assertFileContentAndShowError(bpmnParser, bpmnFile.virtualFile, onBadContentCallback)) return
 
         val table = MultiEditJTable(DefaultTableModel())
@@ -95,6 +99,8 @@ class BpmnPluginToolWindow(
                 { _: BpmnElementId, _: PropertyType, value: String -> createEditor(context.project, bpmnFile, value) },
                 { _: BpmnElementId, _: PropertyType, value: String -> createTextField(value) },
                 { _: BpmnElementId, _: PropertyType, value: Boolean -> createCheckboxField(value) },
+                { _: BpmnElementId, action: FunctionalGroupType -> createButton(action.actionCaption) },
+                { _: BpmnElementId -> createArrowButton() },
                 canvas,
                 bpmnFile.project,
                 virtualFile
@@ -122,6 +128,14 @@ class BpmnPluginToolWindow(
             override val component: JComponent
                 get() = checkBox
         }
+    }
+
+    fun createButton(caption: String): JButton {
+        return JButton(caption)
+    }
+
+    fun createArrowButton(): BasicArrowButton {
+        return BasicArrowButton(SwingConstants.SOUTH)
     }
 
     fun createEditor(project: Project, bpmnFile: PsiFile, text: String): TextValueAccessor {

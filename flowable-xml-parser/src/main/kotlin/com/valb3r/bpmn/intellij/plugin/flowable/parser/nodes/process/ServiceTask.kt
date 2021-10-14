@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import org.mapstruct.Mapper
@@ -45,7 +46,8 @@ data class ServiceTask(
         fun convertToDto(input: ServiceTask) : BpmnServiceTask {
             val task = doConvertToDto(input)
             return task.copy(
-                    failedJobRetryTimeCycleExtension = input.extensionElements?.filter { null != it.failedJobRetryTimeCycle }?.map { it.failedJobRetryTimeCycle }?.firstOrNull()
+                    fieldsExtension = input.extensionElements?.filterIsInstance<FieldExtensionElement>()?.map { ExtensionField(it.name, it.string, it.expression) },
+                    failedJobRetryTimeCycle = input.extensionElements?.filter { null != it.failedJobRetryTimeCycle }?.map { it.failedJobRetryTimeCycle }?.firstOrNull()
             )
         }
 
@@ -81,16 +83,10 @@ data class ServiceTask(
             val staxName = (parser as FromXmlParser).staxReader.localName
             val mapper: ObjectMapper = parser.codec as ObjectMapper
 
-            return when {
-                "failedJobRetryTimeCycle" == staxName -> {
-                    FailedJobRetryTimeCycleExtensionElement(node.textValue())
-                }
-                node.has("name") -> {
-                    mapper.treeToValue(node, FieldExtensionElement::class.java)
-                }
-                else -> {
-                    UnhandledExtensionElement()
-                }
+            return when (staxName) {
+                "failedJobRetryTimeCycle" -> FailedJobRetryTimeCycleExtensionElement(node.textValue())
+                "field" -> mapper.treeToValue(node, FieldExtensionElement::class.java)
+                else -> UnhandledExtensionElement()
             }
         }
     }

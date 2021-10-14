@@ -11,6 +11,6 @@ interface BpmnObjectFactory {
 
     fun <T: WithBpmnId> newBpmnObject(clazz: KClass<T>): T
     fun <T: WithBpmnId> newOutgoingSequence(obj: T): BpmnSequenceFlow
-    fun <T: WithBpmnId> propertiesOf(obj: T):  Map<PropertyType, Property>
+    fun <T: WithBpmnId> propertiesOf(obj: T):  PropertyTable
     fun <T: WithDiagramId> newDiagramObject(clazz: KClass<T>, forBpmnObject: WithBpmnId): T
 }

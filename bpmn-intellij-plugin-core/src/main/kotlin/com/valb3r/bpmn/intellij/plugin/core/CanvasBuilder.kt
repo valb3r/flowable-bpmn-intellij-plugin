@@ -10,6 +10,7 @@ import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.messages.Topic
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.events.FileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.events.initializeUpdateEventsRegistry
@@ -22,7 +23,9 @@ import com.valb3r.bpmn.intellij.plugin.core.render.BpmnProcessRenderer
 import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
+import javax.swing.JButton
 import javax.swing.JTable
+import javax.swing.plaf.basic.BasicArrowButton
 
 interface PaintTopicListener: EventListener {
     fun repaint()
@@ -36,28 +39,30 @@ class CanvasBuilder(private val bpmnProcessRenderer: BpmnProcessRenderer, privat
     private var currentPaintConnection: MessageBusConnection? = null
 
     fun build(
-            committerFactory: (BpmnParser) -> FileCommitter, parser: BpmnParser, properties: JTable,
-            dropDownFactory: (id: BpmnElementId, type: PropertyType, value: String, availableValues: Set<String>) -> TextValueAccessor,
-            classEditorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
-            editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
-            textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
-            checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor,
-            canvas: Canvas,
-            project: Project,
-            bpmnFile: VirtualFile
+        committerFactory: (BpmnParser) -> FileCommitter, parser: BpmnParser, properties: JTable,
+        dropDownFactory: (id: BpmnElementId, type: PropertyType, value: String, availableValues: Set<String>) -> TextValueAccessor,
+        classEditorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
+        editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
+        textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
+        checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor,
+        buttonFactory: (id: BpmnElementId,  type: FunctionalGroupType) -> JButton,
+        arrowButtonFactory: (id: BpmnElementId) -> BasicArrowButton,
+        canvas: Canvas,
+        project: Project,
+        bpmnFile: VirtualFile
     ) {
         if (assertFileContentAndShowError(parser, bpmnFile, onBadContentCallback)) return
 
         initializeUpdateEventsRegistry(project, committerFactory.invoke(parser))
         val data = readFile(bpmnFile)
         val process = parser.parse(data)
-        newPropertiesVisualizer(project, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory)
+        newPropertiesVisualizer(project, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory)
         canvas.reset(data, process.toView(newElementsFactory(project)), bpmnProcessRenderer)
 
         currentVfsConnection?.let { it.disconnect(); it.dispose() }
         currentPaintConnection?.let { it.disconnect(); it.dispose() }
         currentVfsConnection = attachFileChangeListener(project, bpmnFile) {
-            build(committerFactory, parser, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory, canvas, project, it)
+            build(committerFactory, parser, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory, canvas, project, it)
         }
         currentPaintConnection = attachPaintListener(project, canvas)
     }

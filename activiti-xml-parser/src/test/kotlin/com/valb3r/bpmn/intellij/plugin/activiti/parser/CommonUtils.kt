@@ -12,12 +12,20 @@ fun readAndUpdateProcess(parser: ActivitiParser, event: EventPropagatableToXml):
 }
 
 fun readAndUpdateProcess(parser: ActivitiParser, processName: String, event: EventPropagatableToXml): BpmnProcessObject {
+    return readAndUpdateProcess(parser, processName, listOf(event))
+}
+
+fun readAndUpdateProcess(parser: ActivitiParser, processName: String, events: List<EventPropagatableToXml>): BpmnProcessObject {
+    val updated = updateBpmnFile(parser, processName, events)
+    return parser.parse(updated)
+}
+
+fun updateBpmnFile(parser: ActivitiParser, processName: String, events: List<EventPropagatableToXml>): String {
     val updated = parser.update(
-            processName.asResource()!!,
-            listOf(event)
+        processName.asResource()!!,
+        events
     )
 
     updated.shouldNotBeNull()
-
-    return parser.parse(updated)
+    return updated
 }

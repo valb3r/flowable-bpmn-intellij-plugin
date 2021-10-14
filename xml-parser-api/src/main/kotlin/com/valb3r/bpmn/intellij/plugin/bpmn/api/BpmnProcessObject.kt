@@ -16,7 +16,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
     fun toView(factory: BpmnObjectFactory) : BpmnProcessObjectView {
         val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
         val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
-        val propertiesById = mutableMapOf<BpmnElementId, MutableMap<PropertyType, Property>>()
+        val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
 
         fillFor(BpmnElementId(""), factory, process, elementByStaticId, propertiesById)
         elementByDiagramId[DiagramElementId(process.id.id)] = process.id
@@ -49,7 +49,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
             body: BpmnProcessBody,
             factory: BpmnObjectFactory, 
             elementByStaticId: MutableMap<BpmnElementId, WithParentId>, 
-            propertiesById: MutableMap<BpmnElementId, MutableMap<PropertyType, Property>>) {
+            propertiesById: MutableMap<BpmnElementId, PropertyTable>) {
         // Events
         // Start
         body.startEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
@@ -123,7 +123,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
             body: BpmnProcessBody,
             factory: BpmnObjectFactory,
             elementByStaticId: MutableMap<BpmnElementId, WithParentId>,
-            propertiesById: MutableMap<BpmnElementId, MutableMap<PropertyType, Property>>) {
+            propertiesById: MutableMap<BpmnElementId, PropertyTable>) {
         // Boundary
         body.boundaryEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
         body.boundaryCancelEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
@@ -141,9 +141,9 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
             factory: BpmnObjectFactory,
             activity: WithBpmnId,
             elementById: MutableMap<BpmnElementId, WithParentId>,
-            propertiesByElemType: MutableMap<BpmnElementId, MutableMap<PropertyType, Property>>) {
+            propertiesByElemType: MutableMap<BpmnElementId, PropertyTable>) {
         elementById[activity.id] = WithParentId(parentId, activity)
-        propertiesByElemType[activity.id] = factory.propertiesOf(activity).toMutableMap()
+        propertiesByElemType[activity.id] = factory.propertiesOf(activity)
     }
 
     private fun fillForTargetRefParent(
@@ -151,8 +151,8 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
             factory: BpmnObjectFactory,
             activity: WithBpmnId,
             elementById: MutableMap<BpmnElementId, WithParentId>,
-            propertiesByElemType: MutableMap<BpmnElementId, MutableMap<PropertyType, Property>>) {
-        propertiesByElemType[activity.id] = factory.propertiesOf(activity).toMutableMap()
+            propertiesByElemType: MutableMap<BpmnElementId, PropertyTable>) {
+        propertiesByElemType[activity.id] = factory.propertiesOf(activity)
         var parentId = defaultParentId
         val referencedId = propertiesByElemType[activity.id]?.get(PropertyType.ATTACHED_TO_REF)?.value
         referencedId?.let {referenced ->
@@ -168,6 +168,45 @@ data class BpmnProcessObjectView(
         val processId: BpmnElementId,
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
         val elementByStaticId: Map<BpmnElementId, WithParentId>,
-        val elemPropertiesByElementId: Map<BpmnElementId, Map<PropertyType, Property>>,
+        val elemPropertiesByElementId: Map<BpmnElementId, PropertyTable>,
         val diagram: List<DiagramElement>
 )
+
+data class PropertyTable(val props: MutableMap<PropertyType, MutableList<Property>>) {
+
+    private val properties: MutableMap<PropertyType, MutableList<Property>> = props.mapValues { it.value.toMutableList() }.toMutableMap()
+
+    val keys get() = properties.keys
+
+    operator fun get(type: PropertyType): Property? {
+        return properties[type]?.get(0)
+    }
+
+    operator fun set(type: PropertyType, value: Property) {
+        properties[type] = mutableListOf(value)
+    }
+
+    operator fun set(type: PropertyType, values: MutableList<Property>) {
+        properties[type] = values
+    }
+
+    fun add(type: PropertyType, value: Property) {
+        properties.computeIfAbsent(type) { mutableListOf()}.add(value)
+    }
+
+    fun forEach(exec: (key: PropertyType, value: Property) -> Unit) {
+        properties.forEach {(k, vals) -> vals.forEach {exec(k, it)}}
+    }
+
+    fun filter(exec: (key: PropertyType, value: Property) -> Boolean): List<Pair<PropertyType, Property>> {
+        return properties.flatMap { it.value.map { v -> Pair(it.key, v) } }.filter {(k, v) -> exec(k, v)}
+    }
+
+    fun getAll(type: PropertyType): List<Property> {
+        return properties[type] ?: emptyList()
+    }
+
+    fun view(): Map<PropertyType, List<Property>> {
+        return properties
+    }
+}

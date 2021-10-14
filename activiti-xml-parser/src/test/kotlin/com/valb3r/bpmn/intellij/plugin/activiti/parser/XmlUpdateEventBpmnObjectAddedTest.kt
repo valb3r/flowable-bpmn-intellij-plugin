@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.activiti.parser
 
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BpmnShapeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
@@ -374,7 +375,7 @@ internal class XmlUpdateEventBpmnObjectAddedTest {
         return BpmnShapeObjectAddedEvent(
                 WithParentId(processId, createClass(clazz)),
                 ShapeElement(diagramId, id, BoundsElement(0.0f, 0.0f, 10.0f, 10.0f)),
-                mutableMapOf(Pair(PropertyType.ID, Property(id.id)), Pair(PropertyType.NAME, Property(nameOnProp)))
+                PropertyTable(mutableMapOf(Pair(PropertyType.ID, mutableListOf(Property(id.id))), Pair(PropertyType.NAME, mutableListOf(Property(nameOnProp)))))
         )
     }
 

@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
@@ -204,7 +205,7 @@ internal class XmlUpdateEventApplyTest {
                                 WaypointElementState(DiagramElementId(UUID.randomUUID().toString()), 110.0f, 110.0f, 0.0f, 0.0f, true, 1)
                         ),
                         0),
-                mutableMapOf(Pair(PropertyType.ID, Property(id.id)), Pair(PropertyType.NAME, Property(nameOnProp)))
+                PropertyTable(mutableMapOf(Pair(PropertyType.ID, mutableListOf(Property(id.id))), Pair(PropertyType.NAME, mutableListOf(Property(nameOnProp)))))
         ))
 
         updatedProcess.process.body!!.sequenceFlow!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
@@ -226,7 +227,7 @@ internal class XmlUpdateEventApplyTest {
                                 WaypointElementState(DiagramElementId(UUID.randomUUID().toString()), 110.0f, 110.0f, 0.0f, 0.0f, true, 1)
                         ),
                         0),
-                mutableMapOf(Pair(PropertyType.ID, Property(id.id)), Pair(PropertyType.NAME, Property(nameOnProp)))
+            PropertyTable(mutableMapOf(Pair(PropertyType.ID, mutableListOf(Property(id.id))), Pair(PropertyType.NAME, mutableListOf(Property(nameOnProp)))))
         ))
 
         updatedProcess.process.children!![subProcessId]!!.sequenceFlow!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)

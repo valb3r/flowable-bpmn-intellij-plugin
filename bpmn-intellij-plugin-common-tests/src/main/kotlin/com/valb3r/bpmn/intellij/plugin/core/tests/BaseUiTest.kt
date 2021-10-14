@@ -7,6 +7,7 @@ import com.intellij.util.messages.MessageBusConnection
 import com.nhaarman.mockitokotlin2.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
@@ -19,6 +20,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.CanvasBuilder
@@ -47,7 +49,10 @@ import java.awt.geom.Rectangle2D
 import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.swing.Icon
+import javax.swing.JButton
+import javax.swing.JComponent
 import javax.swing.JTable
+import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.TableColumn
 import javax.swing.table.TableColumnModel
 
@@ -146,6 +151,9 @@ abstract class BaseUiTest {
 
     protected val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
     protected val boolFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, SelectedValueAccessor> = mutableMapOf()
+    protected val buttonsConstructed: MutableMap<Pair<BpmnElementId, FunctionalGroupType>, JButton> = mutableMapOf()
+    protected val arrowButtonsConstructed: MutableMap<BpmnElementId, BasicArrowButton> = mutableMapOf()
+
     protected val comboboxFactory = { id: BpmnElementId, type: PropertyType, value: String, allowedValues: Set<String> -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
         val res = mock<TextValueAccessor>()
         whenever(res.text).thenReturn(value)
@@ -161,6 +169,13 @@ abstract class BaseUiTest {
         whenever(res.isSelected).thenReturn(value)
         return@computeIfAbsent res
     } }
+    protected val buttonFactory = { id: BpmnElementId, type: FunctionalGroupType -> buttonsConstructed.computeIfAbsent(Pair(id, type)) {
+        return@computeIfAbsent mock<JButton>()
+    } }
+    protected val arrowButtonFactory = { id: BpmnElementId -> arrowButtonsConstructed.computeIfAbsent(id) {
+        return@computeIfAbsent mock<BasicArrowButton>()
+    } }
+
 
     @BeforeEach
     fun setupMocks() {
@@ -236,7 +251,7 @@ abstract class BaseUiTest {
                 bounds = BoundsElement(intermediateX, intermediateY, serviceTaskSize, serviceTaskSize)
         )
         updateEventsRegistry(project).addObjectEvent(
-                BpmnShapeObjectAddedEvent(WithParentId(basicProcess.process.id, task), shape, mapOf(PropertyType.ID to Property(task.id)))
+                BpmnShapeObjectAddedEvent(WithParentId(basicProcess.process.id, task), shape, PropertyTable(mutableMapOf(PropertyType.ID to mutableListOf(Property(task.id)))))
         )
 
         return task.id
@@ -310,7 +325,10 @@ abstract class BaseUiTest {
     }
 
     protected fun initializeCanvas() {
-        canvasBuilder.build({ fileCommitter }, parser, propertiesTable, comboboxFactory, editorFactory, editorFactory, editorFactory, checkboxFieldFactory, canvas, project, virtualFile)
+        canvasBuilder.build(
+            { fileCommitter },
+            parser, propertiesTable, comboboxFactory, editorFactory, editorFactory, editorFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory, canvas, project, virtualFile
+        )
         canvas.paintComponent(graphics)
     }
 

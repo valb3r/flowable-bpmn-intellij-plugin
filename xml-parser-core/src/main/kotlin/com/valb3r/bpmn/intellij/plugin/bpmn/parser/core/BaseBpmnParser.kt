@@ -332,7 +332,7 @@ abstract class BaseBpmnParser: BpmnParser {
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 
-        update.props.forEach { setToNode(newNode, it.key, it.value.value) }
+        update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.index?.toMutableList()) }
         trimWhitespace(diagramParent, false)
 
         val shapeParent = doc.selectSingleNode(
@@ -407,7 +407,7 @@ abstract class BaseBpmnParser: BpmnParser {
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 
-        update.props.forEach { setToNode(newNode, it.key, it.value.value) }
+        update.props.forEach { k, v ->  setToNode(newNode, k, v.value) }
         trimWhitespace(diagramParent, false)
 
         val shapeParent = doc.selectSingleNode(
@@ -425,7 +425,7 @@ abstract class BaseBpmnParser: BpmnParser {
             doc.selectSingleNode("//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]") as Element?
                 ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnElementId.id}'][1]") as Element
 
-        setToNode(node, update.property, update.newValue)
+        setToNode(node, update.property, update.newValue, update.propertyIndex?.toMutableList())
 
         if (null == update.newIdValue) {
             return
@@ -456,24 +456,25 @@ abstract class BaseBpmnParser: BpmnParser {
         newParent.add(node)
     }
 
-    private fun setToNode(node: Element, type: PropertyType, value: Any?) {
+    private fun setToNode(node: Element, type: PropertyType, value: Any?, valueIndexInArray: MutableList<String>? = null) {
         val details = propertyTypeDetails().firstOrNull { it.propertyType == type }
             ?: throw IllegalStateException("Wrong (or unsupported) property type details $type")
+        val path = details.xmlPath
         when {
-            details.xmlPath.contains(".") -> setNestedToNode(node, type, details, value)
+            path.contains(".") -> setNestedToNode(node, path, type, details, value, valueIndexInArray)
             else -> setAttributeOrValueOrCdataOrRemoveIfNull(
                 node,
-                details.xmlPath,
+                path,
                 details,
                 asString(type.valueType, value)
             )
         }
     }
 
-    private fun setNestedToNode(node: Element, type: PropertyType, details: PropertyTypeDetails, value: Any?) {
-        val segments = details.xmlPath.split(".")
-        val childOf: (Element, String, String?) -> Element? =
-            { target, name, attributeSelector -> nodeChildByName(target, name, attributeSelector) }
+    private fun setNestedToNode(node: Element, path: String, type: PropertyType, details: PropertyTypeDetails, value: Any?, valueIndexInArray: MutableList<String>? = null) {
+        val segments = path.split(".")
+        val childOf: (Element, String, String?, String?) -> Element? =
+            { target, name, attrName, attrValue -> nodeChildByName(target, name, attrName, attrValue) }
 
         var currentNode = node
         for (segment in 0 until segments.size - 1) {
@@ -484,7 +485,13 @@ abstract class BaseBpmnParser: BpmnParser {
                 continue
             }
 
-            val child = childOf(currentNode, name, attributeSelector)
+            var (attrName, attrValue) = attributeSelector?.split("=") ?: listOf(null, null)
+            if (true == attrValue?.contains('@')) {
+                attrValue = attrValue.replace("@", valueIndexInArray!!.removeAt(0))
+            }
+
+            val child = childOf(currentNode, name, attrName, attrValue)
+
             if (null == child) {
                 // do not create elements for null values
                 if (null == value) {
@@ -493,10 +500,7 @@ abstract class BaseBpmnParser: BpmnParser {
 
                 val newElem = currentNode.addElement(name)
                 currentNode = newElem
-                attributeSelector?.apply {
-                    val (attrName, attrValue) = this.split("=")
-                    newElem.addAttribute(attrName, attrValue)
-                }
+                newElem.addAttribute(attrName, attrValue)
             } else {
                 currentNode = child
             }
@@ -510,12 +514,11 @@ abstract class BaseBpmnParser: BpmnParser {
         )
     }
 
-    private fun nodeChildByName(target: Element, name: String, attributeSelector: String?): Element? {
-        if (null == attributeSelector) {
+    private fun nodeChildByName(target: Element, name: String, attrName: String?, attrValue: String?): Element? {
+        if (null == attrName) {
             return nodeChildByName(target, name)
         }
 
-        val (attrName, attrValue) = attributeSelector.split("=")
         val children = target.selectNodes("*")
         for (pos in 0 until children.size) {
             val elem = children[pos] as Element
@@ -544,16 +547,18 @@ abstract class BaseBpmnParser: BpmnParser {
         value: String?
     ) {
         when (details.type) {
-            XmlType.ATTRIBUTE -> setAttribute(node, name, value)
-            XmlType.CDATA -> setCdata(node, name, value)
+            XmlType.ATTRIBUTE -> setAttribute(node, details, name, value)
+            XmlType.CDATA -> setCdata(node, details, name, value)
             XmlType.ELEMENT -> changeElementType(node, name, details, value)
         }
     }
 
-    private fun setAttribute(node: Element, name: String, value: String?) {
+    private fun setAttribute(node: Element, details: PropertyTypeDetails, name: String, value: String?) {
         val qname = qname(name)
 
         if (value.isNullOrEmpty()) {
+            if (destroyEnclosingNode(details, node)) return
+
             val attr = node.attribute(qname)
             if (null != attr) {
                 node.remove(attr)
@@ -576,14 +581,33 @@ abstract class BaseBpmnParser: BpmnParser {
         return byPrefix(ns).named(localName)
     }
 
-    private fun setCdata(node: Element, name: String, value: String?) {
+    private fun setCdata(node: Element, details: PropertyTypeDetails, name: String, value: String?) {
         if (value.isNullOrEmpty()) {
+            if (destroyEnclosingNode(details, node)) return
             node.content().filterIsInstance<CDATA>().forEach { node.remove(it) }
             node.content().filterIsInstance<Text>().forEach { node.remove(it) }
             return
         }
 
-        node.text = value
+        if (requiresWrappingForFormatting(value)) {
+            node.content().filterIsInstance<CDATA>().forEach { node.remove(it) }
+            node.addCDATA(value)
+        } else {
+            node.text = value
+        }
+    }
+
+    private fun destroyEnclosingNode(details: PropertyTypeDetails, node: Element): Boolean {
+        if (!details.propertyType.removeEnclosingNodeIfNullOrEmpty) {
+            return false
+        }
+
+        node.parent.remove(node)
+        return true
+    }
+
+    private fun requiresWrappingForFormatting(value: String): Boolean {
+        return value.startsWith(" ") || value.endsWith(" ") || value.contains("\n")
     }
 
     private fun asString(type: PropertyValueType, value: Any?): String? {
