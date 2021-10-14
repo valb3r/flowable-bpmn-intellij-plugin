@@ -126,8 +126,8 @@ enum class FunctionalGroupType(val groupCaption: String, val actionCaption: Stri
             NewElem("FORM_PROPERTY_DEFAULT", ""),
             NewElem("FORM_PROPERTY_EXPRESSION", ""),
             NewElem("FORM_PROPERTY_DATE_PATTERN", ""),
-            NewElem("FORM_PROPERTY_VALUE_ID", ""),
-            NewElem("FORM_PROPERTY_VALUE_NAME", "")
+            NewElem("FORM_PROPERTY_VALUE_ID", "", uiOnlyaddedIndex = listOf("")),
+            NewElem("FORM_PROPERTY_VALUE_NAME", "", uiOnlyaddedIndex = listOf(""))
         )
     ),
     ADD_FORM_PROPERTY_VALUE("Form property value", "Add value", actionResult = NewElem("FORM_PROPERTY_VALUE_ID", "Property value %d"),
@@ -137,4 +137,4 @@ enum class FunctionalGroupType(val groupCaption: String, val actionCaption: Stri
     )
 }
 
-data class NewElem(val propertyType: String, val valuePattern: String = "")
+data class NewElem(val propertyType: String, val valuePattern: String = "", val uiOnlyaddedIndex: List<String> = emptyList())

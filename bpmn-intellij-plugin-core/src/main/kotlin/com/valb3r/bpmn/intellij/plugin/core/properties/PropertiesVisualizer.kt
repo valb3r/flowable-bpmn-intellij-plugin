@@ -288,7 +288,7 @@ class PropertiesVisualizer(
             val fieldName = (countFields..maxFields).map { type.actionResult.valuePattern.format(it) }.firstOrNull { !allPropsOfType.contains(it) } ?: UUID.randomUUID().toString()
             val propertyIndex = parentIndex + fieldName
             val events = mutableListOf<Event>(StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = propertyIndex))
-            events += type.actionUiOnlyResult.map { UiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = propertyIndex) }
+            events += type.actionUiOnlyResult.map { UiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = propertyIndex + it.uiOnlyaddedIndex) }
             updateEventsRegistry(project).addEvents(events)
             visualize(currentStateProvider(project).currentState().elemPropertiesByStaticElementId, bpmnElementId, expandedElems.toSet())
         }
