@@ -67,14 +67,18 @@ class PropertiesVisualizer(
     // Listeners with their order
     private var listenersForCurrentView: MutableMap<Int, MutableList<() -> Unit>> = mutableMapOf()
 
+    private val expandedElems: MutableSet<ElementIndex> = mutableSetOf()
+
     @Synchronized
     fun clear() {
+        expandedElems.clear()
         val model = prepareTable()
         model.fireTableDataChanged()
     }
 
     @Synchronized
-    fun visualize(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId) {
+    fun visualize(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, elemsToExpand: Set<ElementIndex> = emptySet()) {
+        expandedElems.clear()
         val model = prepareTable()
         val filter = RowExpansionFilter()
         val sorter = TableRowSorter(table.model)
@@ -83,12 +87,13 @@ class PropertiesVisualizer(
             ?.flatMap { it.value.map { v -> Pair(it.key, v) } }
             ?.sortedBy { computePropertyKey(it) } ?: listOf()
 
-        createControls(model, state, bpmnElementId, orderedControls, filter, sorter)
+        val restoreVisualState = createControls(model, state, bpmnElementId, orderedControls, filter, sorter, elemsToExpand)
 
         filter.build()
         sorter.rowFilter = filter
         table.rowSorter = sorter
         model.fireTableDataChanged()
+        restoreVisualState.forEach { it.doClick() }
     }
 
     private fun createControls(
@@ -97,12 +102,14 @@ class PropertiesVisualizer(
         bpmnElementId: BpmnElementId,
         controls: List<Pair<PropertyType, Property>>,
         filter: RowExpansionFilter,
-        sorter: TableRowSorter<TableModel>) {
-        val seenIndexes = mutableSetOf<CollapsedIndex>()
+        sorter: TableRowSorter<TableModel>,
+        elemsToExpand: Set<ElementIndex>): Set<BasicArrowButton> {
+        val seenIndexes = mutableSetOf<ElementIndex>()
+        val buttonsToClick = mutableSetOf<BasicArrowButton>()
         for (control in controls) {
             val groupType = control.first.group?.lastOrNull()
             val isExpandButton = control.first.name == groupType?.actionResult?.propertyType
-            val controlGroupIndex = CollapsedIndex(
+            val controlGroupIndex = ElementIndex(
                 if (isExpandButton) control.first.group?.getOrNull(control.first.group!!.size - 2) else groupType,
                 control.second.index?.take(max(0, control.first.group!!.size - if (isExpandButton) 1 else 0))?.joinToString() ?: ""
             )
@@ -128,22 +135,27 @@ class PropertiesVisualizer(
             }
 
             if (isExpandButton) {
-                val controlExpandsGroupIndex = CollapsedIndex(
+                val controlExpandsGroupIndex = ElementIndex(
                     groupType,
                     control.second.index?.joinToString() ?: ""
                 )
                 val button = buildArrowExpansionButton(bpmnElementId, filter, controlExpandsGroupIndex, sorter)
                 row += button
+                if (elemsToExpand.contains(controlExpandsGroupIndex)) {
+                    buttonsToClick.add(button)
+                }
                 filter.setCollapseGroupControl(controlGroupIndex, controlExpandsGroupIndex, button)
             }
 
             addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
             model.addRow(row)
         }
+
+        return buttonsToClick
     }
 
     private fun addCurrentRowToCollapsedSectionIfNeeded(
-        controlGroupIndex: CollapsedIndex,
+        controlGroupIndex: ElementIndex,
         filter: RowExpansionFilter,
         model: FirstLastColumnReadOnlyModel
     ) {
@@ -218,16 +230,17 @@ class PropertiesVisualizer(
         return button
     }
 
-    private fun buildArrowExpansionButton(bpmnElementId: BpmnElementId, filter: RowExpansionFilter, identifier: CollapsedIndex, sorter: TableRowSorter<TableModel>): BasicArrowButton {
+    private fun buildArrowExpansionButton(bpmnElementId: BpmnElementId, filter: RowExpansionFilter, identifier: ElementIndex, sorter: TableRowSorter<TableModel>): BasicArrowButton {
         val button = arrowButtonFactory(bpmnElementId)
         button.addActionListener {
-            val isExpanded = SwingConstants.NORTH == button.direction
+            val isExpanded = button.isExpanded()
             if (isExpanded) {
                 button.direction = arrowButtonDirection(true)
                 filter.collapse(identifier)
                 sorter.sort()
             } else {
                 button.direction = arrowButtonDirection(false)
+                expandedElems.add(identifier)
                 filter.expand(identifier)
                 sorter.sort()
             }
@@ -277,7 +290,7 @@ class PropertiesVisualizer(
             val events = mutableListOf<Event>(StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = propertyIndex))
             events += type.actionUiOnlyResult.map { UiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = propertyIndex) }
             updateEventsRegistry(project).addEvents(events)
-            visualize(currentStateProvider(project).currentState().elemPropertiesByStaticElementId, bpmnElementId)
+            visualize(currentStateProvider(project).currentState().elemPropertiesByStaticElementId, bpmnElementId, expandedElems.toSet())
         }
     }
 
@@ -354,16 +367,16 @@ class PropertiesVisualizer(
 
 private class RowExpansionFilter: RowFilter<TableModel, Any>() {
 
-    private val groups: MutableMap<CollapsedIndex, MutableSet<Int>> = mutableMapOf()
+    private val groups: MutableMap<ElementIndex, MutableSet<Int>> = mutableMapOf()
     private val collapsed: MutableSet<Int> = mutableSetOf()
-    private val inverseGroups: MutableMap<Int, CollapsedIndex> = mutableMapOf()
-    private val collapseControls: MutableMap<CollapsedIndex, MutableSet<Pair<BasicArrowButton, CollapsedIndex>>> = mutableMapOf()
+    private val inverseGroups: MutableMap<Int, ElementIndex> = mutableMapOf()
+    private val collapseControls: MutableMap<ElementIndex, MutableSet<Pair<BasicArrowButton, ElementIndex>>> = mutableMapOf()
 
-    fun addControl(control: CollapsedIndex, rowIndex: Int) {
+    fun addControl(control: ElementIndex, rowIndex: Int) {
         groups.computeIfAbsent(control) { mutableSetOf() }.add(rowIndex)
     }
 
-    fun setCollapseGroupControl(control: CollapsedIndex, group: CollapsedIndex, button: BasicArrowButton) {
+    fun setCollapseGroupControl(control: ElementIndex, group: ElementIndex, button: BasicArrowButton) {
         collapseControls.computeIfAbsent(control) { mutableSetOf() }.add(Pair(button, group))
     }
 
@@ -376,15 +389,15 @@ private class RowExpansionFilter: RowFilter<TableModel, Any>() {
         return !collapsed.contains(entry?.identifier)
     }
 
-    fun expand(group: CollapsedIndex) {
+    fun expand(group: ElementIndex) {
         collapsed.removeAll((groups[group] ?: mutableSetOf()).toSet())
     }
 
-    fun collapse(group: CollapsedIndex) {
+    fun collapse(group: ElementIndex) {
         collapse(group, mutableSetOf())
     }
 
-    private fun collapse(group: CollapsedIndex, seen: MutableSet<CollapsedIndex>) {
+    private fun collapse(group: ElementIndex, seen: MutableSet<ElementIndex>) {
         val collapseTargets = (groups[group] ?: mutableSetOf()).toSet()
         val nestedCollapse = collapseTargets
             .asSequence()
@@ -400,6 +413,8 @@ private class RowExpansionFilter: RowFilter<TableModel, Any>() {
     }
 }
 
+private fun BasicArrowButton.isExpanded() = SwingConstants.NORTH == this.direction
+
 private fun arrowButtonDirection(isCollapsed: Boolean) = if (isCollapsed) SwingConstants.SOUTH else SwingConstants.NORTH
 
-private data class CollapsedIndex(val type: FunctionalGroupType?, val index: String)
+data class ElementIndex(val type: FunctionalGroupType?, val index: String)
