@@ -116,9 +116,10 @@ class PropertiesVisualizer(
 
             if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex)) {
                 addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
-                model.addRow(arrayOf("", groupType.groupCaption))
-                addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
-                model.addRow(arrayOf("", buildButtonField(state, bpmnElementId, groupType, control.second.index?.dropLast(1) ?: listOf())))
+                model.addRow(arrayOf(
+                    groupType.groupCaption,
+                    buildButtonField(state, bpmnElementId, groupType, control.second.index?.dropLast(1) ?: listOf())
+                ))
                 seenIndexes.add(controlGroupIndex)
             }
 
