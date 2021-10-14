@@ -102,8 +102,8 @@ enum class ActivitiPropertyTypeDetails(val details: PropertyTypeDetails) {
     FORM_PROPERTY_DEFAULT(PropertyTypeDetails(PropertyType.FORM_PROPERTY_DEFAULT, "extensionElements.activiti:formProperty?id=@.default", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_EXPRESSION(PropertyTypeDetails(PropertyType.FORM_PROPERTY_EXPRESSION, "extensionElements.activiti:formProperty?id=@.expression", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_DATE_PATTERN(PropertyTypeDetails(PropertyType.FORM_PROPERTY_DATE_PATTERN, "extensionElements.activiti:formProperty?id=@.datePattern", XmlType.ATTRIBUTE)),
-    FORM_PROPERTY_VALUE_ID(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_ID, "extensionElements.activiti:formProperty?id=@.activiti:value.id", XmlType.ATTRIBUTE)),
-    FORM_PROPERTY_VALUE_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_NAME, "extensionElements.activiti:formProperty?id=@.activiti:value.name", XmlType.ATTRIBUTE))
+    FORM_PROPERTY_VALUE_ID(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_ID, "extensionElements.activiti:formProperty?id=@.activiti:value?id=@.id", XmlType.ATTRIBUTE)),
+    FORM_PROPERTY_VALUE_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_NAME, "extensionElements.activiti:formProperty?id=@.activiti:value?id=@.name", XmlType.ATTRIBUTE))
 }
 
 open class ActivitiParser : BaseBpmnParser() {
