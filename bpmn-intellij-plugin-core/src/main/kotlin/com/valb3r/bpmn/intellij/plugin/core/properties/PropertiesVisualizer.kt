@@ -111,7 +111,7 @@ class PropertiesVisualizer(
                 addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
                 model.addRow(arrayOf("", groupType.groupCaption))
                 addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
-                model.addRow(arrayOf("", buildButtonField(state, bpmnElementId, groupType)))
+                model.addRow(arrayOf("", buildButtonField(state, bpmnElementId, groupType, control.second.index ?: listOf())))
                 seenIndexes.add(controlGroupIndex)
             }
 
@@ -212,9 +212,9 @@ class PropertiesVisualizer(
         return field.component
     }
 
-    private fun buildButtonField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: FunctionalGroupType): JComponent {
+    private fun buildButtonField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: FunctionalGroupType, parentIndex: List<String>): JComponent {
         val button = buttonFactory(bpmnElementId, type)
-        addButtonListener(state, button, bpmnElementId, type)
+        addButtonListener(state, button, bpmnElementId, type, parentIndex)
         return button
     }
 
@@ -265,7 +265,7 @@ class PropertiesVisualizer(
         }
     }
 
-    private fun addButtonListener(state: Map<BpmnElementId, PropertyTable>, field: JButton, bpmnElementId: BpmnElementId, type: FunctionalGroupType) {
+    private fun addButtonListener(state: Map<BpmnElementId, PropertyTable>, field: JButton, bpmnElementId: BpmnElementId, type: FunctionalGroupType, parentIndex: List<String>) {
         fun propertyType(name: String) = PropertyType.values().find { it.name == name }!!
 
         field.addActionListener {
@@ -273,8 +273,9 @@ class PropertiesVisualizer(
             val allPropsOfType = state[bpmnElementId]!!.getAll(propType).map { it.index?.joinToString() }.toSet()
             val countFields = allPropsOfType.size
             val fieldName = (countFields..maxFields).map { type.actionResult.valuePattern.format(it) }.firstOrNull { !allPropsOfType.contains(it) } ?: UUID.randomUUID().toString()
-            val events = mutableListOf<Event>(StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = listOf(fieldName)))
-            events += type.actionUiOnlyResult.map { UiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = listOf(fieldName)) }
+            val propertyIndex = parentIndex + fieldName
+            val events = mutableListOf<Event>(StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = propertyIndex))
+            events += type.actionUiOnlyResult.map { UiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = propertyIndex) }
             updateEventsRegistry(project).addEvents(events)
             visualize(currentStateProvider(project).currentState().elemPropertiesByStaticElementId, bpmnElementId)
         }
