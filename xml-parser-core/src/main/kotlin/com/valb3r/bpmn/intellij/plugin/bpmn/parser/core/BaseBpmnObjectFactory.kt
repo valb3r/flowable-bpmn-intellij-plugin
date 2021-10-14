@@ -158,7 +158,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         val propertyTree = mapper.valueToTree<JsonNode>(dto)
 
         for (type in propertyTypes()) {
-            parseValue(type.path, type, propertyTree, result)
+            parseValue(type.path, type, propertyTree, result, 0)
         }
 
         return result
@@ -186,6 +186,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         type: PropertyType,
         propertyTree: JsonNode,
         result: MutableMap<PropertyType, MutableList<Property>>,
+        arrayIndexDepth: Int,
         indexInArray: List<String>? = null
     ) {
         val split = path.split(".", limit = 2)
@@ -195,28 +196,28 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
 
         if (node.isArray) {
             node.forEach {
-                val indexValue = it[type.indexInGroupArrayName!!].asText()
+                val indexValue = it[type.indexInGroupArrayName!!.split(".")[arrayIndexDepth]].asText()
                 val index = if (null != indexValue) ((indexInArray ?: listOf()) + indexValue) else indexInArray
-                parseValue(split[1], type, it, result, index)
+                parseValue(split[1], type, it, result, arrayIndexDepth = arrayIndexDepth + 1, indexInArray = index)
             }
             if (node.isEmpty) {
-                doParse(NullNode.instance, result, type, listOf())
+                doParse(NullNode.instance, result, type, indexInArray = listOf())
             }
             return
         }
 
         if (split.size < 2) {
-            doParse(node, result, type, indexInArray)
+            doParse(node, result, type, indexInArray = indexInArray)
             return
         }
 
         if (split[1].contains(".")) {
-            parseValue(split[1], type, node, result, indexInArray)
+            parseValue(split[1], type, node, result, indexInArray = indexInArray, arrayIndexDepth = arrayIndexDepth)
             return
         }
 
         val value = node[split[1]]
-        doParse(value, result, type, indexInArray)
+        doParse(value, result, type, indexInArray = indexInArray)
     }
 
     private fun doParse(
@@ -226,7 +227,11 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         indexInArray: List<String>? = null
     ) {
         val makeProperty = {it: Any? ->
-            if (null != indexInArray) { Property(it, indexInArray)} else Property(it)
+            if (null != indexInArray) {
+                val minPathIdLen = type.indexInGroupArrayName!!.split(".").size
+                val computedIndex = indexInArray + (0 until minPathIdLen - indexInArray.size).map { "" }.toList()
+                Property(it, computedIndex)
+            } else Property(it)
         }
 
         if (null == node || node.isNull) {
