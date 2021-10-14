@@ -55,10 +55,10 @@ internal class ActivityUserTaskWithNestedExtensionTest {
             Property(null, listOf("fooVariableName")), Property(null, listOf("isSkippable")), Property("DD.MM.YYYY", listOf("fullProperty"))
         ))
         props.getAll(PropertyType.FORM_PROPERTY_VALUE_ID).shouldContainSame(arrayOf(
-            Property(null, listOf("fooVariableName")), Property(null, listOf("isSkippable")), Property("value1", listOf("fullProperty", "value1")), Property("value2", listOf("fullProperty", "value2"))
+            Property(null, listOf("fooVariableName", "")), Property(null, listOf("isSkippable", "")), Property("value1", listOf("fullProperty", "value1")), Property("value2", listOf("fullProperty", "value2"))
         ))
         props.getAll(PropertyType.FORM_PROPERTY_VALUE_NAME).shouldContainSame(arrayOf(
-            Property(null, listOf("fooVariableName")), Property(null, listOf("isSkippable")), Property("Foo", listOf("fullProperty", "value1")), Property("Bar", listOf("fullProperty", "value2"))
+            Property(null, listOf("fooVariableName", "")), Property(null, listOf("isSkippable", "")), Property("Foo", listOf("fullProperty", "value1")), Property("Bar", listOf("fullProperty", "value2"))
         ))
     }
 
