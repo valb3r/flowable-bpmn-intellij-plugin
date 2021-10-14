@@ -114,10 +114,12 @@ class PropertiesVisualizer(
                 control.second.index?.take(max(0, control.first.group!!.size - if (isExpandButton) 1 else 0))?.joinToString() ?: ""
             )
 
+            val ifInnerPadd = "".padStart(if (null == groupType || control.first.indexCascades) 0 else 2)
+            val paddGroup = ifInnerPadd + "".padStart((control.second.index?.size ?: 1) * 2 - 2)
             if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex)) {
                 addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
                 model.addRow(arrayOf(
-                    groupType.groupCaption,
+                    paddGroup + groupType.groupCaption,
                     buildButtonField(state, bpmnElementId, groupType, control.second.index?.dropLast(1) ?: listOf())
                 ))
                 seenIndexes.add(controlGroupIndex)
@@ -127,12 +129,14 @@ class PropertiesVisualizer(
                 continue
             }
 
+            val padd = ifInnerPadd + "".padStart((control.second.index?.size ?: 0) * 2)
+            val caption = padd + control.first.caption
             var row = when (control.first.valueType) {
-                STRING -> arrayOf(control.first.caption, buildTextField(state, bpmnElementId, control.first, control.second))
-                BOOLEAN -> arrayOf(control.first.caption, buildCheckboxField(bpmnElementId, control.first, control.second))
-                CLASS -> arrayOf(control.first.caption, buildClassField(state, bpmnElementId, control.first, control.second))
-                EXPRESSION -> arrayOf(control.first.caption, buildExpressionField(state, bpmnElementId, control.first, control.second))
-                ATTACHED_SEQUENCE_SELECT -> arrayOf(control.first.caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, control.first, control.second))
+                STRING -> arrayOf(caption, buildTextField(state, bpmnElementId, control.first, control.second))
+                BOOLEAN -> arrayOf(caption, buildCheckboxField(bpmnElementId, control.first, control.second))
+                CLASS -> arrayOf(caption, buildClassField(state, bpmnElementId, control.first, control.second))
+                EXPRESSION -> arrayOf(caption, buildExpressionField(state, bpmnElementId, control.first, control.second))
+                ATTACHED_SEQUENCE_SELECT -> arrayOf(caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, control.first, control.second))
             }
 
             if (isExpandButton) {
