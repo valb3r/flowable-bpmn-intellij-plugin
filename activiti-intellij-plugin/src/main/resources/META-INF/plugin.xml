@@ -4,7 +4,7 @@
     <name>Activiti BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.4.6.3</version>
+    <version>0.4.7.0</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -36,6 +36,18 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+      <p>0.4.7.0:</p>
+        <ul>
+          <li>
+            Improved rendering performance for large processes (up to 3x)
+          </li>
+          <li>
+            Support for form properties / field names
+          </li>
+          <li>
+            Fixed the regression - Activiti 7 parser was used by default, leading to less features supported
+          </li>
+        </ul>
       <p>0.4.6.3:</p>
         <ul>
           <li>
@@ -61,12 +73,6 @@
           </li>
           <li>
             Stop using scheduled for removal JB API method (support 2021.3+)
-          </li>
-        </ul>
-      <p>0.4.6.1:</p>
-        <ul>
-          <li>
-            Preserve &lt;documentation&gt; element formatting
           </li>
         </ul>
     ]]></change-notes>
