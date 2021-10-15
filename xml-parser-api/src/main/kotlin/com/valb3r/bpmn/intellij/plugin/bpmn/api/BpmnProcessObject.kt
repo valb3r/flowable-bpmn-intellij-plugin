@@ -172,9 +172,7 @@ data class BpmnProcessObjectView(
         val diagram: List<DiagramElement>
 )
 
-class PropertyTable(props: MutableMap<PropertyType, MutableList<Property>>) {
-
-    private val properties: MutableMap<PropertyType, MutableList<Property>> = props.mapValues { it.value.toMutableList() }.toMutableMap()
+data class PropertyTable(private val properties: MutableMap<PropertyType, MutableList<Property>>) {
 
     val keys get() = properties.keys
 
