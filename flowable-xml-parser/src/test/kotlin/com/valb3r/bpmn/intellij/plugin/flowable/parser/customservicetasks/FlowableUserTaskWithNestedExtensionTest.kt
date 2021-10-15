@@ -80,7 +80,7 @@ internal class FlowableUserTaskWithNestedExtensionTest {
     }
 
     @Test
-    fun `Service task nested elements are emptyable`() {
+    fun `User task nested elements are emptyable`() {
         {value: String -> readAndUpdate(PropertyType.FORM_PROPERTY_ID, value, "fullProperty").formPropertiesExtension?.shouldHaveSize(2)} ("");
         {value: String -> readAndUpdate(PropertyType.FORM_PROPERTY_NAME, value, "fullProperty").formPropertiesExtension!![2].name.shouldBeNull()} ("");
         {value: String -> readAndUpdate(PropertyType.FORM_PROPERTY_TYPE, value, "fullProperty").formPropertiesExtension!![2].type.shouldBeNull()} ("");
