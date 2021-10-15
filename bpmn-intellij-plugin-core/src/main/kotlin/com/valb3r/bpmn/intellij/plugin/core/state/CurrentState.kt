@@ -254,12 +254,12 @@ class CurrentStateProvider(private val project: Project) {
 
     private fun addUiOnlyProperty(event: UiOnlyValueAddedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
-        updated[event.property] = (updated.getAll(event.property)+ Property(event.newValue, event.propertyIndex!!)).toMutableList()
+        updated[event.property] = (updated.getAll(event.property) + Property(event.newValue, event.propertyIndex!!)).toSet().toMutableList()
     }
 
     private fun removeUiOnlyProperty(event: UiOnlyValueRemovedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
-        updated[event.property] = (updated.getAll(event.property).filter { it.index != event.propertyIndex }).toMutableList()
+        updated[event.property] = (updated.getAll(event.property).filter { it.index != event.propertyIndex }).toSet().toMutableList()
     }
 
     private fun handleDiagramRemoved(diagramId: DiagramElementId, updatedShapes: MutableList<ShapeElement>, updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>, updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>) {
