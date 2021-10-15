@@ -206,6 +206,10 @@ data class PropertyTable(val props: MutableMap<PropertyType, MutableList<Propert
         return properties[type] ?: emptyList()
     }
 
+    fun getAllInitialized(type: PropertyType): List<Property> {
+        return properties[type]?.filter { null == type.group || null != it.index } ?: emptyList()
+    }
+
     fun view(): Map<PropertyType, List<Property>> {
         return properties
     }
