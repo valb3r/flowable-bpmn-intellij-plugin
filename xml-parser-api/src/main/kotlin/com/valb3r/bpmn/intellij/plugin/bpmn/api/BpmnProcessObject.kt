@@ -213,4 +213,8 @@ data class PropertyTable(val props: MutableMap<PropertyType, MutableList<Propert
     fun view(): Map<PropertyType, List<Property>> {
         return properties
     }
+
+    fun copy(): PropertyTable {
+        return PropertyTable(props.mapValues { it.value.toMutableList() }.toMutableMap())
+    }
 }

@@ -117,13 +117,13 @@ class CurrentStateProvider(private val project: Project) {
                     updatedShapes.add(event.shape)
                     updatedElementByDiagramId[event.shape.id] = event.bpmnObject.id
                     updatedElementByStaticId[event.bpmnObject.id] = event.bpmnObject
-                    updatedElemPropertiesByStaticElementId[event.bpmnObject.id] = event.props
+                    updatedElemPropertiesByStaticElementId[event.bpmnObject.id] = event.props.copy()
                 }
                 is BpmnEdgeObjectAdded -> {
                     updatedEdges.add(event.edge)
                     updatedElementByDiagramId[event.edge.id] = event.bpmnObject.id
                     updatedElementByStaticId[event.bpmnObject.id] = event.bpmnObject
-                    updatedElemPropertiesByStaticElementId[event.bpmnObject.id] = event.props
+                    updatedElemPropertiesByStaticElementId[event.bpmnObject.id] = event.props.copy()
                 }
                 is PropertyUpdateWithId -> {
                     updatedProcessId = applyPropertyUpdate(updatedProcessId, event, updatedElemPropertiesByStaticElementId, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId)
