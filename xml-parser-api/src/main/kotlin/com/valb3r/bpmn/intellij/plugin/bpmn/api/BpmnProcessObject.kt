@@ -172,7 +172,7 @@ data class BpmnProcessObjectView(
         val diagram: List<DiagramElement>
 )
 
-data class PropertyTable(val props: MutableMap<PropertyType, MutableList<Property>>) {
+class PropertyTable(props: MutableMap<PropertyType, MutableList<Property>>) {
 
     private val properties: MutableMap<PropertyType, MutableList<Property>> = props.mapValues { it.value.toMutableList() }.toMutableMap()
 
@@ -215,6 +215,6 @@ data class PropertyTable(val props: MutableMap<PropertyType, MutableList<Propert
     }
 
     fun copy(): PropertyTable {
-        return PropertyTable(props.mapValues { it.value.toMutableList() }.toMutableMap())
+        return PropertyTable(properties.mapValues { it.value.toMutableList() }.toMutableMap())
     }
 }
