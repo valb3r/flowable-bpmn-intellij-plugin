@@ -1,9 +1,11 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm'
+    id 'kotlin-kapt'
 }
 
-group = 'com.valb3r.bpmn.intellij.plugin.bpmn.parser.core'
+group = 'com.valb3r.bpmn.intellij.plugin.camunda.parser'
+
 
 sourceCompatibility = 1.8
 
@@ -13,13 +15,23 @@ repositories {
 
 dependencies {
     api project(":xml-parser-api")
-
-    api "org.dom4j:dom4j:$dom4j" // Implementation comes from IntelliJ
+    implementation project(":xml-parser-core")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jackson"
+
+    api "org.mapstruct:mapstruct:$mapstruct"
+    kapt "org.mapstruct:mapstruct-processor:$mapstruct"
+
+    api "org.dom4j:dom4j:$dom4j" // Implementation comes from IntelliJ
+
+    // Tests
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiter"
+    testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformRunner"
+    testImplementation "org.amshove.kluent:kluent:$kluent"
 }
 
 compileKotlin {

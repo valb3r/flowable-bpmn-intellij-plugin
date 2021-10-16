@@ -1,11 +1,10 @@
 plugins {
     id 'java'
+    id 'org.jetbrains.intellij'
     id 'org.jetbrains.kotlin.jvm'
-    id 'kotlin-kapt'
 }
 
-group = 'com.valb3r.bpmn.intellij.plugin.flowable.parser'
-
+group = 'com.valb3r.bpmn.intellij.plugin.camunda'
 
 sourceCompatibility = 1.8
 
@@ -14,24 +13,37 @@ repositories {
 }
 
 dependencies {
-    api project(":xml-parser-api")
     implementation project(":xml-parser-core")
+    implementation project(":camunda-xml-parser")
+    implementation project(":bpmn-intellij-plugin-core")
+    implementation project(":bpmn-intellij-plugin-commons")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jackson"
-
-    api "org.mapstruct:mapstruct:$mapstruct"
-    kapt "org.mapstruct:mapstruct-processor:$mapstruct"
-
-    api "org.dom4j:dom4j:$dom4j" // Implementation comes from IntelliJ
 
     // Tests
+    testImplementation project(':bpmn-intellij-plugin-common-tests')
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiter"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiter"
     testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformRunner"
     testImplementation "org.amshove.kluent:kluent:$kluent"
+    testImplementation "org.mockito:mockito-inline:$mockitoInline"
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlin"
+}
+
+sourceSets {
+    main.kotlin.srcDirs += 'src/main/kotlin'
+}
+
+intellij {
+    version = intellijPlatform
+    pluginName = 'camunda-bpmn-plugin'
+    updateSinceUntilBuild = false
+    plugins = intellijPlatformPlugins
+}
+
+publishPlugin {
+    token = intellijPublishToken
 }
 
 compileKotlin {
@@ -45,6 +57,10 @@ compileTestKotlin {
         jvmTarget = "1.8"
         apiVersion = kotlinApiVersion
     }
+}
+
+clean {
+    delete 'out'
 }
 
 test {

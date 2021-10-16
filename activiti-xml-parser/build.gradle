@@ -4,7 +4,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
 
-group = 'com.valb3r.bpmn.intellij.plugin'
+group = 'com.valb3r.bpmn.intellij.plugin.activiti.parser'
 
 
 sourceCompatibility = 1.8
