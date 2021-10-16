@@ -16,7 +16,7 @@ class FormPropExtensionElementDeserializer(vc: Class<*>? = null) : StdDeserializ
         val mapper: ObjectMapper = parser.codec as ObjectMapper
 
         return when (staxName) {
-            "formField" -> readFormProperty(
+            "formData" -> readFormDataProperty(
                 mapper,
                 node
             ) // FIXME the ignored field that is updated by custom deserializer because `parser.codec.readTree(parser)` returns single object instead of array
@@ -24,16 +24,33 @@ class FormPropExtensionElementDeserializer(vc: Class<*>? = null) : StdDeserializ
         }
     }
 
-    private fun readFormProperty(mapper: ObjectMapper, node: JsonNode): FormProperty {
-        val parsedNode = mapper.treeToValue(node, FormProperty::class.java)
-        val nodeValue = node["value"]
+    private fun readFormDataProperty(mapper: ObjectMapper, node: JsonNode): FormDataExtensionElement {
+        val parsedNode = mapper.treeToValue(node, FormDataExtensionElement::class.java)
+        val nodeValue = node["formField"]
         val parsedArray = when {
+            null == nodeValue || nodeValue.isNull -> null
+            nodeValue.isArray -> {
+                val fields = mapper.convertValue(nodeValue, object : TypeReference<List<FormField>?>() {})
+                fields?.forEachIndexed { ind, field -> field.properties = readFormPropertyProperties(mapper, nodeValue.get(ind)) }
+                fields
+            }
+            else -> {
+                val fields = listOf(mapper.treeToValue(nodeValue, FormField::class.java))
+                fields[0].properties = readFormPropertyProperties(mapper, nodeValue)
+                fields
+            }
+        }
+
+        parsedNode.formField = parsedArray
+        return parsedNode
+    }
+
+    private fun readFormPropertyProperties(mapper: ObjectMapper, node: JsonNode): List<ExtensionFormPropertyValue>? {
+        val nodeValue = node.get("properties")?.get("property")
+        return when {
             null == nodeValue || nodeValue.isNull -> null
             nodeValue.isArray -> mapper.convertValue(nodeValue, object : TypeReference<List<ExtensionFormPropertyValue>?>() {})
             else -> listOf(mapper.treeToValue(nodeValue, ExtensionFormPropertyValue::class.java))
         }
-
-        parsedNode.value = parsedArray
-        return parsedNode
     }
 }

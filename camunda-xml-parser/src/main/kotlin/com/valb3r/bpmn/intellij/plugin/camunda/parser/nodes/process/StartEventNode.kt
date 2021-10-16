@@ -9,7 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormPrope
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.FormPropExtensionElement
-import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.FormProperty
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.FormField
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -60,12 +60,12 @@ data class StartEventNode(
         fun convertToDto(input: StartEventNode) : BpmnStartEvent {
             val task = doConvertToDto(input)
             return task.copy(
-                formPropertiesExtension = input.extensionElements?.filterIsInstance<FormProperty>()?.map { mapFormProperty(it) }
+                formPropertiesExtension = input.extensionElements?.filterIsInstance<FormField>()?.map { mapFormProperty(it) }
             )
         }
 
         protected abstract fun doConvertToDto(input: StartEventNode) : BpmnStartEvent
 
-        protected abstract fun mapFormProperty(input: FormProperty) : ExtensionFormProperty
+        protected abstract fun mapFormProperty(input: FormField) : ExtensionFormProperty
     }
 }

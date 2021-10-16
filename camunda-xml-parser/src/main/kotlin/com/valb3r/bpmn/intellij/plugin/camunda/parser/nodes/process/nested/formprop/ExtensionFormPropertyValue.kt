@@ -2,4 +2,4 @@ package com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.form
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 
-class ExtensionFormPropertyValue(@JacksonXmlProperty(isAttribute = true) val id: String?, @JacksonXmlProperty(isAttribute = true) val name: String?)
+class ExtensionFormPropertyValue(@JacksonXmlProperty(isAttribute = true) val id: String?, @JacksonXmlProperty(isAttribute = true) val value: String?)
