@@ -4,12 +4,13 @@ import com.fasterxml.jackson.annotation.JsonMerge
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
-import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.FormPropExtensionElement
-import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.FormField
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.*
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
+import org.mapstruct.Mappings
 import org.mapstruct.factory.Mappers
 
 data class UserTask(
@@ -39,13 +40,12 @@ data class UserTask(
         fun convertToDto(input: UserTask) : BpmnUserTask {
             val task = doConvertToDto(input)
             return task.copy(
-                formPropertiesExtension = input.extensionElements?.filterIsInstance<FormField>()?.map { mapFormProperty(it) }
+                formPropertiesExtension = input.extensionElements?.filterIsInstance<FormDataExtensionElement>()
+                    ?.flatMap { it.formField ?: emptyList() }
+                    ?.map { Mappers.getMapper(FormFieldMapper::class.java).mapFormProperty(it) }
             )
         }
 
-        @Mapping(source = "forCompensation", target = "isForCompensation")
         protected abstract fun doConvertToDto(input: UserTask) : BpmnUserTask
-
-        protected abstract fun mapFormProperty(input: FormField) : ExtensionFormProperty
     }
 }

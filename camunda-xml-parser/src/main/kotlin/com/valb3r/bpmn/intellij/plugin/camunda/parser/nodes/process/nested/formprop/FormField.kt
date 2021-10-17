@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonMerge
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
+import org.mapstruct.Mapper
+import org.mapstruct.Mapping
+import org.mapstruct.Mappings
 
 class FormField(
     @JacksonXmlProperty(isAttribute = true) val id: String?,
@@ -18,3 +22,14 @@ class FormField(
     @JsonIgnore // FIXME this is ignored field that is updated by custom deserializer because `parser.codec.readTree(parser)` returns single object instead of array
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var properties: List<ExtensionFormPropertyValue>? = null
 )
+
+@Mapper(uses = [ExtensionFormPropertyValueMapper::class])
+interface FormFieldMapper {
+
+    @Mappings(
+        Mapping(source = "label", target = "name"),
+        Mapping(source = "defaultValue", target = "default"),
+        Mapping(source = "properties", target = "value"),
+    )
+    fun mapFormProperty(input: FormField) : ExtensionFormProperty
+}

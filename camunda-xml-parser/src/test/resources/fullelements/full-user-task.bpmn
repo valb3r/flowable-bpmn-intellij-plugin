@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0fx3xzt" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.11.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:process id="Process_0z5afpe" isExecutable="true">
+    <bpmn:userTask id="detailedUserTaskSingleAll" name="User task with single extension" camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:jobPriority="1" camunda:formRef="Form-1" camunda:assignee="someAssignee" camunda:candidateUsers="candidateUser1" camunda:candidateGroups="candidates1" camunda:dueDate="2022-01-01T00:00:00" camunda:followUpDate="2021-01-01T00:00:00" camunda:priority="1">
+      <bpmn:documentation>Some docs</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="formField" label="formFieldValue" type="string" defaultValue="123">
+            <camunda:properties>
+              <camunda:property id="property1" value="value1" />
+            </camunda:properties>
+            <camunda:validation>
+              <camunda:constraint name="check1" config="1" />
+            </camunda:validation>
+          </camunda:formField>
+        </camunda:formData>
+        <camunda:executionListener class="com.some.Listener" event="start">
+          <camunda:field name="field1">
+            <camunda:string>1</camunda:string>
+          </camunda:field>
+        </camunda:executionListener>
+        <camunda:taskListener class="com.some.TaskListener" event="create" id="listener1">
+          <camunda:field name="field1">
+            <camunda:expression>someExpr</camunda:expression>
+          </camunda:field>
+        </camunda:taskListener>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="inputValue1">value1</camunda:inputParameter>
+          <camunda:outputParameter name="outputValue1">output1</camunda:outputParameter>
+        </camunda:inputOutput>
+        <camunda:properties>
+          <camunda:property name="property" value="value" />
+        </camunda:properties>
+        <camunda:failedJobRetryTimeCycle>PT02</camunda:failedJobRetryTimeCycle>
+      </bpmn:extensionElements>
+    </bpmn:userTask>
+    <bpmn:userTask id="detailedUserTaskMultipleAll" name="User task with multiple extension" camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:jobPriority="1" camunda:formRef="Form-1" camunda:assignee="someAssignee" camunda:candidateUsers="candidateUser1" camunda:candidateGroups="candidates1" camunda:dueDate="2022-01-01T00:00:00" camunda:followUpDate="2021-01-01T00:00:00" camunda:priority="1">
+      <bpmn:documentation>Some docs</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="formField1" label="formFieldValue1" type="string" defaultValue="123">
+            <camunda:properties>
+              <camunda:property id="property1" value="value1" />
+              <camunda:property id="property2" value="value2" />
+            </camunda:properties>
+            <camunda:validation>
+              <camunda:constraint name="check1" config="1" />
+              <camunda:constraint name="check2" config="2" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="formField2" label="label2" type="long" defaultValue="12">
+            <camunda:properties>
+              <camunda:property id="prop1" value="value1" />
+              <camunda:property id="prop2" value="value2" />
+            </camunda:properties>
+            <camunda:validation>
+              <camunda:constraint name="constr1" config="1" />
+              <camunda:constraint name="constr2" config="2" />
+            </camunda:validation>
+          </camunda:formField>
+        </camunda:formData>
+        <camunda:executionListener class="com.some.Listener" event="start">
+          <camunda:field name="field1">
+            <camunda:string>1</camunda:string>
+          </camunda:field>
+        </camunda:executionListener>
+        <camunda:taskListener class="com.some.TaskListener" event="create" id="listener1">
+          <camunda:field name="field1">
+            <camunda:expression>someExpr</camunda:expression>
+          </camunda:field>
+        </camunda:taskListener>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="inputValue2">value2</camunda:inputParameter>
+          <camunda:inputParameter name="inputValue1">value1</camunda:inputParameter>
+          <camunda:outputParameter name="outputValue2">value2</camunda:outputParameter>
+          <camunda:outputParameter name="outputValue1">output1</camunda:outputParameter>
+        </camunda:inputOutput>
+        <camunda:properties>
+          <camunda:property name="property1" value="value1" />
+          <camunda:property name="property2" value="value2" />
+        </camunda:properties>
+        <camunda:failedJobRetryTimeCycle>PT01</camunda:failedJobRetryTimeCycle>
+        <camunda:executionListener class="com.some.EndListener" event="end">
+          <camunda:field name="field1">
+            <camunda:string>123</camunda:string>
+          </camunda:field>
+          <camunda:field name="field2">
+            <camunda:expression>${fooBar}</camunda:expression>
+          </camunda:field>
+        </camunda:executionListener>
+        <camunda:taskListener class="com.some.CompleteListenr" event="complete" id="completeListener">
+          <camunda:field name="field1">
+            <camunda:string>21</camunda:string>
+          </camunda:field>
+          <camunda:field name="field2">
+            <camunda:expression>expr0</camunda:expression>
+          </camunda:field>
+        </camunda:taskListener>
+      </bpmn:extensionElements>
+    </bpmn:userTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0z5afpe">
+      <bpmndi:BPMNShape id="Activity_0lzezc1_di" bpmnElement="detailedUserTaskSingleAll">
+        <dc:Bounds x="160" y="100" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_049qdbf_di" bpmnElement="detailedUserTaskMultipleAll">
+        <dc:Bounds x="160" y="240" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
