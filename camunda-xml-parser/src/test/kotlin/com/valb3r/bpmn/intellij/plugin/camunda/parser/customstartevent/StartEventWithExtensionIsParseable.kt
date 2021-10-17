@@ -20,6 +20,7 @@ internal class StartEventWithExtensionIsParseable {
 
     private val parser = CamundaParser()
     private val singlePropElementId = BpmnElementId("detailedStartEventSingleAll")
+    private val multiplePropElementId = BpmnElementId("detailedStartEventMultiAll")
 
     @Test
     fun `Start event (single props) with nested extensions is parseable`() {
@@ -96,11 +97,100 @@ internal class StartEventWithExtensionIsParseable {
         {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formFieldId,fieldProperty").formPropertiesExtension!![0].value!![0].name.shouldBeNull()} ("");
     }
 
+    @Test
+    fun `Start event (multiple props) with nested extensions is parseable`() {
+        val processObject = parser.parse(FILE.asResource()!!)
+
+        val task = readStartEventMultiProp(processObject)
+        task.id.shouldBeEqualTo(multiplePropElementId)
+        task.name.shouldBeEqualTo("Start event(multi)")
+        task.documentation.shouldBeEqualTo("As full as possible start event\nmultiline")
+
+        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
+        props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
+        props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
+
+        props.getAll(PropertyType.FORM_PROPERTY_ID).shouldContainSame(arrayOf(
+            Property("formFieldId1", listOf("formFieldId1")), Property("formFieldId2", listOf("formFieldId2"))
+        ))
+        props.getAll(PropertyType.FORM_PROPERTY_NAME).shouldContainSame(arrayOf(
+            Property("someFormField", listOf("formFieldId1")), Property("someLabel", listOf("formFieldId2"))
+        ))
+        props.getAll(PropertyType.FORM_PROPERTY_TYPE).shouldContainSame(arrayOf(
+            Property("long", listOf("formFieldId1")), Property("date", listOf("formFieldId2"))
+        ))
+
+        props.getAll(PropertyType.FORM_PROPERTY_VARIABLE).shouldBeEmpty() // Camunda does not seem to support this field
+
+        props.getAll(PropertyType.FORM_PROPERTY_DEFAULT).shouldContainSame(arrayOf(
+            Property("1", listOf("formFieldId1")), Property("2020-01-01", listOf("formFieldId2"))
+        ))
+
+        props.getAll(PropertyType.FORM_PROPERTY_EXPRESSION).shouldBeEmpty() // Camunda does not seem to support this field
+
+        props.getAll(PropertyType.FORM_PROPERTY_DATE_PATTERN).shouldBeEmpty() // Camunda does not seem to support this field
+
+        props.getAll(PropertyType.FORM_PROPERTY_VALUE_ID).shouldContainSame(arrayOf(
+            Property("fieldProperty1", listOf("formFieldId1", "fieldProperty1")),
+            Property("fieldProperty2", listOf("formFieldId1", "fieldProperty2")),
+            Property("formFieldProperty1", listOf("formFieldId2", "formFieldProperty1")),
+            Property("formFieldProperty2", listOf("formFieldId2", "formFieldProperty2")),
+        ))
+        props.getAll(PropertyType.FORM_PROPERTY_VALUE_NAME).shouldContainSame(arrayOf(
+            Property("propertyValue", listOf("formFieldId1", "fieldProperty1")),
+            Property("propertyValue2", listOf("formFieldId1", "fieldProperty2")),
+            Property("123", listOf("formFieldId2", "formFieldProperty1")),
+            Property("fooBar", listOf("formFieldId2", "formFieldProperty2"))
+        ))
+    }
+
+    @Test
+    fun `Start event (multiple props) is updatable`() {
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.ID, value).id.id.shouldBeEqualTo(value)} ("new Id");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.NAME, value).name.shouldBeEqualTo(value)} ("new Name");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.DOCUMENTATION, value).documentation.shouldBeEqualTo(value)} ("new docs");
+    }
+
+    @Test
+    fun `Start event (multiple props)  nested elements are updatable`() {
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_ID, value, "formFieldId1").formPropertiesExtension!![0].id.shouldBeEqualTo(value)} ("new id");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_NAME, value, "formFieldId1").formPropertiesExtension!![0].name.shouldBeEqualTo(value)} ("new name");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_TYPE, value, "formFieldId1").formPropertiesExtension!![0].type.shouldBeEqualTo(value)} ("new type");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "formFieldId").formPropertiesExtension!![0].variable.shouldBeEqualTo(value)} ("new variable");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "formFieldId1").formPropertiesExtension!![0].default.shouldBeEqualTo(value)} ("new default");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "formFieldId").formPropertiesExtension!![0].expression.shouldBeEqualTo(value)} ("new expression");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "formFieldId").formPropertiesExtension!![0].datePattern.shouldBeEqualTo(value)} ("new datePattern");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formFieldId1,fieldProperty1").formPropertiesExtension!![0].value!![0].id?.shouldBeEqualTo(value)} ("new inner id");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formFieldId1,fieldProperty1").formPropertiesExtension!![0].value!![0].name.shouldBeEqualTo(value)} ("new inner name");
+    }
+
+    @Test
+    fun `Start event (multiple props) nested elements are emptyable`() {
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_ID, value, "formFieldId1").formPropertiesExtension?.shouldHaveSize(1)} ("");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_NAME, value, "formFieldId1").formPropertiesExtension!![0].name.shouldBeNull()} ("");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_TYPE, value, "formFieldId1").formPropertiesExtension!![0].type.shouldBeNull()} ("");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "formFieldId").formPropertiesExtension!![2].variable.shouldBeNull()} ("");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "formFieldId1").formPropertiesExtension!![0].default.shouldBeNull()} ("");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "formFieldId").formPropertiesExtension!![2].expression.shouldBeNull()} ("");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "formFieldId").formPropertiesExtension!![2].datePattern.shouldBeNull()} ("");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formFieldId1,fieldProperty1").formPropertiesExtension!![0].value?.shouldHaveSize(1)} ("");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formFieldId1,fieldProperty1").formPropertiesExtension!![0].value!![0].name.shouldBeNull()} ("");
+    }
+
     private fun readAndUpdateSinglePropTask(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnStartEvent {
         return readStartEventSingleProp(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(singlePropElementId, property, newValue, propertyIndex = propertyIndex.split(","))))
     }
 
     private fun readStartEventSingleProp(processObject: BpmnProcessObject): BpmnStartEvent {
         return processObject.process.body!!.startEvent!!.shouldHaveSize(2)[0]
+    }
+
+    private fun readAndUpdateMultiPropTask(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnStartEvent {
+        return readStartEventMultiProp(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(multiplePropElementId, property, newValue, propertyIndex = propertyIndex.split(","))))
+    }
+
+    private fun readStartEventMultiProp(processObject: BpmnProcessObject): BpmnStartEvent {
+        return processObject.process.body!!.startEvent!!.shouldHaveSize(2)[1]
     }
 }
