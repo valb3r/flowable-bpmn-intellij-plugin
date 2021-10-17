@@ -20,10 +20,10 @@ internal class UserTaskWithExtensionIsParseable {
 
     private val parser = CamundaParser()
     private val singlePropElementId = BpmnElementId("detailedUserTaskSingleAll")
-    private val multiplePropElementId = BpmnElementId("detailedUserTaskMultiAll")
+    private val multiplePropElementId = BpmnElementId("detailedUserTaskMultipleAll")
 
     @Test
-    fun `Start event (single props) with nested extensions is parseable`() {
+    fun `User task (single props) with nested extensions is parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
 
         val task = readStartEventSingleProp(processObject)
@@ -37,19 +37,19 @@ internal class UserTaskWithExtensionIsParseable {
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
 
         props.getAll(PropertyType.FORM_PROPERTY_ID).shouldContainSame(arrayOf(
-            Property("formFieldId", listOf("formFieldId"))
+            Property("formField", listOf("formField"))
         ))
         props.getAll(PropertyType.FORM_PROPERTY_NAME).shouldContainSame(arrayOf(
-            Property("someFormField", listOf("formFieldId"))
+            Property("formFieldValue", listOf("formField"))
         ))
         props.getAll(PropertyType.FORM_PROPERTY_TYPE).shouldContainSame(arrayOf(
-            Property("long", listOf("formFieldId"))
+            Property("string", listOf("formField"))
         ))
 
         props.getAll(PropertyType.FORM_PROPERTY_VARIABLE).shouldBeEmpty() // Camunda does not seem to support this field
 
         props.getAll(PropertyType.FORM_PROPERTY_DEFAULT).shouldContainSame(arrayOf(
-            Property("1", listOf("formFieldId"))
+            Property("123", listOf("formField"))
         ))
 
         props.getAll(PropertyType.FORM_PROPERTY_EXPRESSION).shouldBeEmpty() // Camunda does not seem to support this field
@@ -57,54 +57,54 @@ internal class UserTaskWithExtensionIsParseable {
         props.getAll(PropertyType.FORM_PROPERTY_DATE_PATTERN).shouldBeEmpty() // Camunda does not seem to support this field
 
         props.getAll(PropertyType.FORM_PROPERTY_VALUE_ID).shouldContainSame(arrayOf(
-            Property("fieldProperty", listOf("formFieldId", "fieldProperty"))
+            Property("property1", listOf("formField", "property1"))
         ))
         props.getAll(PropertyType.FORM_PROPERTY_VALUE_NAME).shouldContainSame(arrayOf(
-            Property("propertyValue", listOf("formFieldId", "fieldProperty"))
+            Property("value1", listOf("formField", "property1"))
         ))
     }
 
     @Test
-    fun `Start event (single props) is updatable`() {
+    fun `User task (single props) is updatable`() {
         {value: String -> readAndUpdateSinglePropTask(PropertyType.ID, value).id.id.shouldBeEqualTo(value)} ("new Id");
         {value: String -> readAndUpdateSinglePropTask(PropertyType.NAME, value).name.shouldBeEqualTo(value)} ("new Name");
         {value: String -> readAndUpdateSinglePropTask(PropertyType.DOCUMENTATION, value).documentation.shouldBeEqualTo(value)} ("new docs");
     }
 
     @Test
-    fun `Start event (single props)  nested elements are updatable`() {
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_ID, value, "formFieldId").formPropertiesExtension!![0].id.shouldBeEqualTo(value)} ("new id");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_NAME, value, "formFieldId").formPropertiesExtension!![0].name.shouldBeEqualTo(value)} ("new name");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_TYPE, value, "formFieldId").formPropertiesExtension!![0].type.shouldBeEqualTo(value)} ("new type");
-        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "formFieldId").formPropertiesExtension!![0].variable.shouldBeEqualTo(value)} ("new variable");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "formFieldId").formPropertiesExtension!![0].default.shouldBeEqualTo(value)} ("new default");
-        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "formFieldId").formPropertiesExtension!![0].expression.shouldBeEqualTo(value)} ("new expression");
-        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "formFieldId").formPropertiesExtension!![0].datePattern.shouldBeEqualTo(value)} ("new datePattern");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formFieldId,fieldProperty").formPropertiesExtension!![0].value!![0].id?.shouldBeEqualTo(value)} ("new inner id");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formFieldId,fieldProperty").formPropertiesExtension!![0].value!![0].name.shouldBeEqualTo(value)} ("new inner name");
+    fun `User task (single props)  nested elements are updatable`() {
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_ID, value, "formField").formPropertiesExtension!![0].id.shouldBeEqualTo(value)} ("new id");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_NAME, value, "formField").formPropertiesExtension!![0].name.shouldBeEqualTo(value)} ("new name");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_TYPE, value, "formField").formPropertiesExtension!![0].type.shouldBeEqualTo(value)} ("new type");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "formField").formPropertiesExtension!![0].variable.shouldBeEqualTo(value)} ("new variable");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "formField").formPropertiesExtension!![0].default.shouldBeEqualTo(value)} ("new default");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "formField").formPropertiesExtension!![0].expression.shouldBeEqualTo(value)} ("new expression");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "formField").formPropertiesExtension!![0].datePattern.shouldBeEqualTo(value)} ("new datePattern");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formField,property1").formPropertiesExtension!![0].value!![0].id?.shouldBeEqualTo(value)} ("new inner id");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formField,property1").formPropertiesExtension!![0].value!![0].name.shouldBeEqualTo(value)} ("new inner name");
     }
 
     @Test
-    fun `Start event (single props) nested elements are emptyable`() {
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_ID, value, "formFieldId").formPropertiesExtension?.shouldHaveSize(0)} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_NAME, value, "formFieldId").formPropertiesExtension!![0].name.shouldBeNull()} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_TYPE, value, "formFieldId").formPropertiesExtension!![0].type.shouldBeNull()} ("");
-        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "formFieldId").formPropertiesExtension!![2].variable.shouldBeNull()} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "formFieldId").formPropertiesExtension!![0].default.shouldBeNull()} ("");
-        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "formFieldId").formPropertiesExtension!![2].expression.shouldBeNull()} ("");
-        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "formFieldId").formPropertiesExtension!![2].datePattern.shouldBeNull()} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formFieldId,fieldProperty").formPropertiesExtension!![0].value.shouldBeNull()} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formFieldId,fieldProperty").formPropertiesExtension!![0].value!![0].name.shouldBeNull()} ("");
+    fun `User task (single props) nested elements are emptyable`() {
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_ID, value, "formField").formPropertiesExtension?.shouldHaveSize(0)} ("");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_NAME, value, "formField").formPropertiesExtension!![0].name.shouldBeNull()} ("");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_TYPE, value, "formField").formPropertiesExtension!![0].type.shouldBeNull()} ("");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "formField").formPropertiesExtension!![2].variable.shouldBeNull()} ("");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "formField").formPropertiesExtension!![0].default.shouldBeNull()} ("");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "formField").formPropertiesExtension!![2].expression.shouldBeNull()} ("");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "formField").formPropertiesExtension!![2].datePattern.shouldBeNull()} ("");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formField,property1").formPropertiesExtension!![0].value.shouldBeNull()} ("");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formField,property1").formPropertiesExtension!![0].value!![0].name.shouldBeNull()} ("");
     }
 
     @Test
-    fun `Start event (multiple props) with nested extensions is parseable`() {
+    fun `User task (multiple props) with nested extensions is parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
 
         val task = readStartEventMultiProp(processObject)
         task.id.shouldBeEqualTo(multiplePropElementId)
-        task.name.shouldBeEqualTo("Start event(multi)")
-        task.documentation.shouldBeEqualTo("As full as possible start event\nmultiline")
+        task.name.shouldBeEqualTo("User task with multiple extension")
+        task.documentation.shouldBeEqualTo("Some docs")
 
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
@@ -112,19 +112,19 @@ internal class UserTaskWithExtensionIsParseable {
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
 
         props.getAll(PropertyType.FORM_PROPERTY_ID).shouldContainSame(arrayOf(
-            Property("formFieldId1", listOf("formFieldId1")), Property("formFieldId2", listOf("formFieldId2"))
+            Property("formField1", listOf("formField1")), Property("formField2", listOf("formField2"))
         ))
         props.getAll(PropertyType.FORM_PROPERTY_NAME).shouldContainSame(arrayOf(
-            Property("someFormField", listOf("formFieldId1")), Property("someLabel", listOf("formFieldId2"))
+            Property("formFieldValue1", listOf("formField1")), Property("label2", listOf("formField2"))
         ))
         props.getAll(PropertyType.FORM_PROPERTY_TYPE).shouldContainSame(arrayOf(
-            Property("long", listOf("formFieldId1")), Property("date", listOf("formFieldId2"))
+            Property("string", listOf("formField1")), Property("long", listOf("formField2"))
         ))
 
         props.getAll(PropertyType.FORM_PROPERTY_VARIABLE).shouldBeEmpty() // Camunda does not seem to support this field
 
         props.getAll(PropertyType.FORM_PROPERTY_DEFAULT).shouldContainSame(arrayOf(
-            Property("1", listOf("formFieldId1")), Property("2020-01-01", listOf("formFieldId2"))
+            Property("123", listOf("formField1")), Property("12", listOf("formField2"))
         ))
 
         props.getAll(PropertyType.FORM_PROPERTY_EXPRESSION).shouldBeEmpty() // Camunda does not seem to support this field
@@ -132,50 +132,50 @@ internal class UserTaskWithExtensionIsParseable {
         props.getAll(PropertyType.FORM_PROPERTY_DATE_PATTERN).shouldBeEmpty() // Camunda does not seem to support this field
 
         props.getAll(PropertyType.FORM_PROPERTY_VALUE_ID).shouldContainSame(arrayOf(
-            Property("fieldProperty1", listOf("formFieldId1", "fieldProperty1")),
-            Property("fieldProperty2", listOf("formFieldId1", "fieldProperty2")),
-            Property("formFieldProperty1", listOf("formFieldId2", "formFieldProperty1")),
-            Property("formFieldProperty2", listOf("formFieldId2", "formFieldProperty2")),
+            Property("property1", listOf("formField1", "property1")),
+            Property("property2", listOf("formField1", "property2")),
+            Property("prop1", listOf("formField2", "prop1")),
+            Property("prop2", listOf("formField2", "prop2")),
         ))
         props.getAll(PropertyType.FORM_PROPERTY_VALUE_NAME).shouldContainSame(arrayOf(
-            Property("propertyValue", listOf("formFieldId1", "fieldProperty1")),
-            Property("propertyValue2", listOf("formFieldId1", "fieldProperty2")),
-            Property("123", listOf("formFieldId2", "formFieldProperty1")),
-            Property("fooBar", listOf("formFieldId2", "formFieldProperty2"))
+            Property("value1", listOf("formField1", "property1")),
+            Property("value2", listOf("formField1", "property2")),
+            Property("value1", listOf("formField2", "prop1")),
+            Property("value2", listOf("formField2", "prop2"))
         ))
     }
 
     @Test
-    fun `Start event (multiple props) is updatable`() {
+    fun `User task (multiple props) is updatable`() {
         {value: String -> readAndUpdateMultiPropTask(PropertyType.ID, value).id.id.shouldBeEqualTo(value)} ("new Id");
         {value: String -> readAndUpdateMultiPropTask(PropertyType.NAME, value).name.shouldBeEqualTo(value)} ("new Name");
         {value: String -> readAndUpdateMultiPropTask(PropertyType.DOCUMENTATION, value).documentation.shouldBeEqualTo(value)} ("new docs");
     }
 
     @Test
-    fun `Start event (multiple props)  nested elements are updatable`() {
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_ID, value, "formFieldId1").formPropertiesExtension!![0].id.shouldBeEqualTo(value)} ("new id");
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_NAME, value, "formFieldId1").formPropertiesExtension!![0].name.shouldBeEqualTo(value)} ("new name");
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_TYPE, value, "formFieldId1").formPropertiesExtension!![0].type.shouldBeEqualTo(value)} ("new type");
-        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "formFieldId").formPropertiesExtension!![0].variable.shouldBeEqualTo(value)} ("new variable");
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "formFieldId1").formPropertiesExtension!![0].default.shouldBeEqualTo(value)} ("new default");
-        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "formFieldId").formPropertiesExtension!![0].expression.shouldBeEqualTo(value)} ("new expression");
-        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "formFieldId").formPropertiesExtension!![0].datePattern.shouldBeEqualTo(value)} ("new datePattern");
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formFieldId1,fieldProperty1").formPropertiesExtension!![0].value!![0].id?.shouldBeEqualTo(value)} ("new inner id");
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formFieldId1,fieldProperty1").formPropertiesExtension!![0].value!![0].name.shouldBeEqualTo(value)} ("new inner name");
+    fun `User task (multiple props)  nested elements are updatable`() {
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_ID, value, "formField1").formPropertiesExtension!![0].id.shouldBeEqualTo(value)} ("new id");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_NAME, value, "formField1").formPropertiesExtension!![0].name.shouldBeEqualTo(value)} ("new name");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_TYPE, value, "formField1").formPropertiesExtension!![0].type.shouldBeEqualTo(value)} ("new type");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "formField").formPropertiesExtension!![0].variable.shouldBeEqualTo(value)} ("new variable");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "formField1").formPropertiesExtension!![0].default.shouldBeEqualTo(value)} ("new default");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "formField").formPropertiesExtension!![0].expression.shouldBeEqualTo(value)} ("new expression");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "formField").formPropertiesExtension!![0].datePattern.shouldBeEqualTo(value)} ("new datePattern");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formField1,property1").formPropertiesExtension!![0].value!![0].id?.shouldBeEqualTo(value)} ("new inner id");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formField1,property1").formPropertiesExtension!![0].value!![0].name.shouldBeEqualTo(value)} ("new inner name");
     }
 
     @Test
-    fun `Start event (multiple props) nested elements are emptyable`() {
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_ID, value, "formFieldId1").formPropertiesExtension?.shouldHaveSize(1)} ("");
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_NAME, value, "formFieldId1").formPropertiesExtension!![0].name.shouldBeNull()} ("");
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_TYPE, value, "formFieldId1").formPropertiesExtension!![0].type.shouldBeNull()} ("");
-        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "formFieldId").formPropertiesExtension!![2].variable.shouldBeNull()} ("");
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "formFieldId1").formPropertiesExtension!![0].default.shouldBeNull()} ("");
-        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "formFieldId").formPropertiesExtension!![2].expression.shouldBeNull()} ("");
-        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "formFieldId").formPropertiesExtension!![2].datePattern.shouldBeNull()} ("");
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formFieldId1,fieldProperty1").formPropertiesExtension!![0].value?.shouldHaveSize(1)} ("");
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formFieldId1,fieldProperty1").formPropertiesExtension!![0].value!![0].name.shouldBeNull()} ("");
+    fun `User task (multiple props) nested elements are emptyable`() {
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_ID, value, "formField1").formPropertiesExtension?.shouldHaveSize(1)} ("");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_NAME, value, "formField1").formPropertiesExtension!![0].name.shouldBeNull()} ("");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_TYPE, value, "formField1").formPropertiesExtension!![0].type.shouldBeNull()} ("");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "formField").formPropertiesExtension!![2].variable.shouldBeNull()} ("");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "formField1").formPropertiesExtension!![0].default.shouldBeNull()} ("");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "formField").formPropertiesExtension!![2].expression.shouldBeNull()} ("");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "formField").formPropertiesExtension!![2].datePattern.shouldBeNull()} ("");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formField1,property1").formPropertiesExtension!![0].value?.shouldHaveSize(1)} ("");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formField1,property1").formPropertiesExtension!![0].value!![0].name.shouldBeNull()} ("");
     }
 
     private fun readAndUpdateSinglePropTask(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnUserTask {
