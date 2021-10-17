@@ -79,21 +79,21 @@ internal class StartEventWithExtensionIsParseable {
         {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "formFieldId").formPropertiesExtension!![0].default.shouldBeEqualTo(value)} ("new default");
         // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "formFieldId").formPropertiesExtension!![0].expression.shouldBeEqualTo(value)} ("new expression");
         // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "formFieldId").formPropertiesExtension!![0].datePattern.shouldBeEqualTo(value)} ("new datePattern");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formFieldId,").formPropertiesExtension!![0].value!![0].id?.shouldBeEqualTo(value)} ("new inner id");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formFieldId,").formPropertiesExtension!![0].value!![0].name.shouldBeEqualTo(value)} ("new inner name");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formFieldId,fieldProperty").formPropertiesExtension!![0].value!![0].id?.shouldBeEqualTo(value)} ("new inner id");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formFieldId,fieldProperty").formPropertiesExtension!![0].value!![0].name.shouldBeEqualTo(value)} ("new inner name");
     }
 
     @Test
     fun `Start event (single props) nested elements are emptyable`() {
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_ID, value, "fullProperty").formPropertiesExtension?.shouldHaveSize(2)} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_NAME, value, "fullProperty").formPropertiesExtension!![2].name.shouldBeNull()} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_TYPE, value, "fullProperty").formPropertiesExtension!![2].type.shouldBeNull()} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "fullProperty").formPropertiesExtension!![2].variable.shouldBeNull()} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "fullProperty").formPropertiesExtension!![2].default.shouldBeNull()} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "fullProperty").formPropertiesExtension!![2].expression.shouldBeNull()} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "fullProperty").formPropertiesExtension!![2].datePattern.shouldBeNull()} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "fullProperty,value1").formPropertiesExtension!![2].value!![0].id?.shouldBeEqualTo("value2")} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "fullProperty,value1").formPropertiesExtension!![2].value!![0].name.shouldBeNull()} ("");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_ID, value, "formFieldId").formPropertiesExtension?.shouldHaveSize(0)} ("");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_NAME, value, "formFieldId").formPropertiesExtension!![0].name.shouldBeNull()} ("");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_TYPE, value, "formFieldId").formPropertiesExtension!![0].type.shouldBeNull()} ("");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "formFieldId").formPropertiesExtension!![2].variable.shouldBeNull()} ("");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "formFieldId").formPropertiesExtension!![0].default.shouldBeNull()} ("");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "formFieldId").formPropertiesExtension!![2].expression.shouldBeNull()} ("");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "formFieldId").formPropertiesExtension!![2].datePattern.shouldBeNull()} ("");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formFieldId,fieldProperty").formPropertiesExtension!![0].value.shouldBeNull()} ("");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formFieldId,fieldProperty").formPropertiesExtension!![0].value!![0].name.shouldBeNull()} ("");
     }
 
     private fun readAndUpdateSinglePropTask(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnStartEvent {
