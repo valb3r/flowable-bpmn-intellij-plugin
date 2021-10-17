@@ -8,9 +8,13 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExtensionFormPropertyValueMapper
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.FormDataExtensionElement
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.FormPropExtensionElement
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.FormField
 import org.mapstruct.Mapper
+import org.mapstruct.Mapping
+import org.mapstruct.Mappings
 import org.mapstruct.factory.Mappers
 
 data class StartEventNode(
@@ -54,18 +58,25 @@ data class StartEventNode(
             val condition: String? = null
     )
 
-    @Mapper(uses = [BpmnElementIdMapper::class])
+    @Mapper(uses = [BpmnElementIdMapper::class, ExtensionFormPropertyValueMapper::class])
     abstract class StartEventNodeMapping {
 
         fun convertToDto(input: StartEventNode) : BpmnStartEvent {
             val task = doConvertToDto(input)
             return task.copy(
-                formPropertiesExtension = input.extensionElements?.filterIsInstance<FormField>()?.map { mapFormProperty(it) }
+                formPropertiesExtension = input.extensionElements?.filterIsInstance<FormDataExtensionElement>()
+                    ?.flatMap { it.formField ?: emptyList() }
+                    ?.map { mapFormProperty(it) }
             )
         }
 
         protected abstract fun doConvertToDto(input: StartEventNode) : BpmnStartEvent
 
+        @Mappings(
+            Mapping(source = "label", target = "name"),
+            Mapping(source = "defaultValue", target = "default"),
+            Mapping(source = "properties", target = "value"),
+        )
         protected abstract fun mapFormProperty(input: FormField) : ExtensionFormProperty
     }
 }

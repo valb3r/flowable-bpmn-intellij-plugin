@@ -104,10 +104,10 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     FORM_PROPERTY_ID(PropertyTypeDetails(PropertyType.FORM_PROPERTY_ID, "extensionElements.camunda:formProperty?id=@.id", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_NAME, "extensionElements.camunda:formProperty?id=@.name", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_TYPE(PropertyTypeDetails(PropertyType.FORM_PROPERTY_TYPE, "extensionElements.camunda:formProperty?id=@.type", XmlType.ATTRIBUTE)),
-    FORM_PROPERTY_VARIABLE(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VARIABLE, "extensionElements.camunda:formProperty?id=@.variable", XmlType.ATTRIBUTE)),
+    // Unsupported FORM_PROPERTY_VARIABLE(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VARIABLE, "extensionElements.camunda:formProperty?id=@.variable", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_DEFAULT(PropertyTypeDetails(PropertyType.FORM_PROPERTY_DEFAULT, "extensionElements.camunda:formProperty?id=@.default", XmlType.ATTRIBUTE)),
-    FORM_PROPERTY_EXPRESSION(PropertyTypeDetails(PropertyType.FORM_PROPERTY_EXPRESSION, "extensionElements.camunda:formProperty?id=@.expression", XmlType.ATTRIBUTE)),
-    FORM_PROPERTY_DATE_PATTERN(PropertyTypeDetails(PropertyType.FORM_PROPERTY_DATE_PATTERN, "extensionElements.camunda:formProperty?id=@.datePattern", XmlType.ATTRIBUTE)),
+    // Unsupported FORM_PROPERTY_EXPRESSION(PropertyTypeDetails(PropertyType.FORM_PROPERTY_EXPRESSION, "extensionElements.camunda:formProperty?id=@.expression", XmlType.ATTRIBUTE)),
+    // Unsupported FORM_PROPERTY_DATE_PATTERN(PropertyTypeDetails(PropertyType.FORM_PROPERTY_DATE_PATTERN, "extensionElements.camunda:formProperty?id=@.datePattern", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_VALUE_ID(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_ID, "extensionElements.camunda:formProperty?id=@.camunda:value?id=@.id", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_VALUE_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_NAME, "extensionElements.camunda:formProperty?id=@.camunda:value?id=@.name", XmlType.ATTRIBUTE))
 }
