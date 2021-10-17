@@ -12,6 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.camunda.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 private const val FILE = "customevents/full-start-event.bpmn"
 
@@ -63,16 +64,23 @@ internal class StartEventWithExtensionIsParseable {
     }
 
     @Test
+    fun `Start event (single props) is updatable`() {
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.ID, value).id.id.shouldBeEqualTo(value)} ("new Id");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.NAME, value).name.shouldBeEqualTo(value)} ("new Name");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.DOCUMENTATION, value).documentation.shouldBeEqualTo(value)} ("new docs");
+    }
+
+    @Test
     fun `Start event (single props)  nested elements are updatable`() {
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_ID, value, "fooVariableName").formPropertiesExtension!![0].id.shouldBeEqualTo(value)} ("new id");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_NAME, value, "fooVariableName").formPropertiesExtension!![0].name.shouldBeEqualTo(value)} ("new name");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_TYPE, value, "fooVariableName").formPropertiesExtension!![0].type.shouldBeEqualTo(value)} ("new type");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "fooVariableName").formPropertiesExtension!![0].variable.shouldBeEqualTo(value)} ("new variable");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "fooVariableName").formPropertiesExtension!![0].default.shouldBeEqualTo(value)} ("new default");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "fooVariableName").formPropertiesExtension!![0].expression.shouldBeEqualTo(value)} ("new expression");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "fooVariableName").formPropertiesExtension!![0].datePattern.shouldBeEqualTo(value)} ("new datePattern");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "fooVariableName,").formPropertiesExtension!![0].value!![0].id?.shouldBeEqualTo(value)} ("new inner id");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "fooVariableName,").formPropertiesExtension!![0].value!![0].name.shouldBeEqualTo(value)} ("new inner name");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_ID, value, "formFieldId").formPropertiesExtension!![0].id.shouldBeEqualTo(value)} ("new id");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_NAME, value, "formFieldId").formPropertiesExtension!![0].name.shouldBeEqualTo(value)} ("new name");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_TYPE, value, "formFieldId").formPropertiesExtension!![0].type.shouldBeEqualTo(value)} ("new type");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VARIABLE, value, "formFieldId").formPropertiesExtension!![0].variable.shouldBeEqualTo(value)} ("new variable");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DEFAULT, value, "formFieldId").formPropertiesExtension!![0].default.shouldBeEqualTo(value)} ("new default");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_EXPRESSION, value, "formFieldId").formPropertiesExtension!![0].expression.shouldBeEqualTo(value)} ("new expression");
+        // Unsupported {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_DATE_PATTERN, value, "formFieldId").formPropertiesExtension!![0].datePattern.shouldBeEqualTo(value)} ("new datePattern");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_ID, value, "formFieldId,").formPropertiesExtension!![0].value!![0].id?.shouldBeEqualTo(value)} ("new inner id");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "formFieldId,").formPropertiesExtension!![0].value!![0].name.shouldBeEqualTo(value)} ("new inner name");
     }
 
     @Test
@@ -88,7 +96,7 @@ internal class StartEventWithExtensionIsParseable {
         {value: String -> readAndUpdateSinglePropTask(PropertyType.FORM_PROPERTY_VALUE_NAME, value, "fullProperty,value1").formPropertiesExtension!![2].value!![0].name.shouldBeNull()} ("");
     }
 
-    private fun readAndUpdateSinglePropTask(property: PropertyType, newValue: String, propertyIndex: String): BpmnStartEvent {
+    private fun readAndUpdateSinglePropTask(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnStartEvent {
         return readStartEventSingleProp(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(singlePropElementId, property, newValue, propertyIndex = propertyIndex.split(","))))
     }
 
