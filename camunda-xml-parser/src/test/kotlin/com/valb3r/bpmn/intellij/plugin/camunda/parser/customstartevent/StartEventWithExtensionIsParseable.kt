@@ -14,7 +14,7 @@ import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-private const val FILE = "customevents/full-start-event.bpmn"
+private const val FILE = "fullelements/full-start-event.bpmn"
 
 internal class StartEventWithExtensionIsParseable {
 
