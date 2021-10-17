@@ -51,8 +51,8 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
     private val START_EVENT = IconLoader.getIcon("/icons/popupmenu/start-event.png")
     private val START_CONDITIONAL_EVENT = IconLoader.getIcon("/icons/popupmenu/conditional-start-event.png")
     private val START_MESSAGE_EVENT = IconLoader.getIcon("/icons/popupmenu/message-start-event.png")
-    private val START_ERROR_EVENT = IconLoader.getIcon("/icons/popupmenu/error-start-event.png")
-    private val START_ESCALATION_EVENT = IconLoader.getIcon("/icons/popupmenu/escalation-start-event.png")
+    // private val START_ERROR_EVENT = IconLoader.getIcon("/icons/popupmenu/error-start-event.png")
+    // private val START_ESCALATION_EVENT = IconLoader.getIcon("/icons/popupmenu/escalation-start-event.png")
     private val START_SIGNAL_EVENT = IconLoader.getIcon("/icons/popupmenu/signal-start-event.png")
     private val START_TIMER_EVENT = IconLoader.getIcon("/icons/popupmenu/timer-start-event.png")
     // End
@@ -62,14 +62,14 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
     private val ESCALATION_END_EVENT = IconLoader.getIcon("/icons/popupmenu/escalation-end-event.png")
     private val TERMINATE_END_EVENT = IconLoader.getIcon("/icons/popupmenu/terminate-end-event.png")
     // Boundary
-    private val BOUNDARY_CANCEL_EVENT = IconLoader.getIcon("/icons/popupmenu/cancel-boundary-event.png")
-    private val BOUNDARY_COMPENSATION_EVENT = IconLoader.getIcon("/icons/popupmenu/compensation-boundary-event.png")
-    private val BOUNDARY_CONDITIONAL_EVENT = IconLoader.getIcon("/icons/popupmenu/conditional-boundary-event.png")
-    private val BOUNDARY_ERROR_EVENT = IconLoader.getIcon("/icons/popupmenu/error-boundary-event.png")
-    private val BOUNDARY_ESCALATION_EVENT = IconLoader.getIcon("/icons/popupmenu/escalation-boundary-event.png")
-    private val BOUNDARY_MESSAGE_EVENT = IconLoader.getIcon("/icons/popupmenu/message-boundary-event.png")
-    private val BOUNDARY_SIGNAL_EVENT = IconLoader.getIcon("/icons/popupmenu/signal-boundary-event.png")
-    private val BOUNDARY_TIMER_EVENT = IconLoader.getIcon("/icons/popupmenu/timer-boundary-event.png")
+//    private val BOUNDARY_CANCEL_EVENT = IconLoader.getIcon("/icons/popupmenu/cancel-boundary-event.png")
+//    private val BOUNDARY_COMPENSATION_EVENT = IconLoader.getIcon("/icons/popupmenu/compensation-boundary-event.png")
+//    private val BOUNDARY_CONDITIONAL_EVENT = IconLoader.getIcon("/icons/popupmenu/conditional-boundary-event.png")
+//    private val BOUNDARY_ERROR_EVENT = IconLoader.getIcon("/icons/popupmenu/error-boundary-event.png")
+//    private val BOUNDARY_ESCALATION_EVENT = IconLoader.getIcon("/icons/popupmenu/escalation-boundary-event.png")
+//    private val BOUNDARY_MESSAGE_EVENT = IconLoader.getIcon("/icons/popupmenu/message-boundary-event.png")
+//    private val BOUNDARY_SIGNAL_EVENT = IconLoader.getIcon("/icons/popupmenu/signal-boundary-event.png")
+//    private val BOUNDARY_TIMER_EVENT = IconLoader.getIcon("/icons/popupmenu/timer-boundary-event.png")
     // Intermediate events
     // Catch
     private val INTERMEDIATE_TIMER_CATCHING = IconLoader.getIcon("/icons/popupmenu/timer-catch-event.png")
@@ -88,12 +88,12 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
     private val BUSINESS_RULE_TASK = IconLoader.getIcon("/icons/popupmenu/business-rule-task.png")
     private val RECEIVE_TASK = IconLoader.getIcon("/icons/popupmenu/receive-task.png")
     private val MANUAL_TASK = IconLoader.getIcon("/icons/popupmenu/manual-task.png")
-    private val CAMEL_TASK = IconLoader.getIcon("/icons/popupmenu/camel-task.png")
-    private val HTTP_TASK = IconLoader.getIcon("/icons/popupmenu/http-task.png")
-    private val MAIL_TASK = IconLoader.getIcon("/icons/popupmenu/mail-task.png")
-    private val MULE_TASK = IconLoader.getIcon("/icons/popupmenu/mule-task.png")
-    private val DECISION_TASK = IconLoader.getIcon("/icons/popupmenu/decision-task.png")
-    private val SHELL_TASK = IconLoader.getIcon("/icons/popupmenu/shell-task.png")
+//    private val CAMEL_TASK = IconLoader.getIcon("/icons/popupmenu/camel-task.png")
+//    private val HTTP_TASK = IconLoader.getIcon("/icons/popupmenu/http-task.png")
+//    private val MAIL_TASK = IconLoader.getIcon("/icons/popupmenu/mail-task.png")
+//    private val MULE_TASK = IconLoader.getIcon("/icons/popupmenu/mule-task.png")
+//    private val DECISION_TASK = IconLoader.getIcon("/icons/popupmenu/decision-task.png")
+//    private val SHELL_TASK = IconLoader.getIcon("/icons/popupmenu/shell-task.png")
 
     // Sub process alike
     private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
@@ -115,7 +115,7 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
         popup.add(activities(sceneLocation, parent))
         popup.add(structural(sceneLocation, parent))
         popup.add(gateways(sceneLocation, parent))
-        popup.add(boundaryEvents(sceneLocation, parent))
+        // Unsupported? popup.add(boundaryEvents(sceneLocation, parent))
         popup.add(intermediateCatchingEvents(sceneLocation, parent))
         popup.add(intermediateThrowingEvents(sceneLocation, parent))
         popup.add(endEvents(sceneLocation, parent))
@@ -140,8 +140,8 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
         addItem(menu, "Start event", START_EVENT, ShapeCreator(project, BpmnStartEvent::class, sceneLocation, parent))
         addItem(menu, "Start conditional event", START_CONDITIONAL_EVENT, ShapeCreator(project, BpmnStartConditionalEvent::class, sceneLocation, parent))
         addItem(menu, "Start message event", START_MESSAGE_EVENT, ShapeCreator(project, BpmnStartMessageEvent::class, sceneLocation, parent))
-        addItem(menu, "Start error event", START_ERROR_EVENT, ShapeCreator(project, BpmnStartErrorEvent::class, sceneLocation, parent))
-        addItem(menu, "Start escalation event", START_ESCALATION_EVENT, ShapeCreator(project, BpmnStartEscalationEvent::class, sceneLocation, parent))
+        // Unsupported? addItem(menu, "Start error event", START_ERROR_EVENT, ShapeCreator(project, BpmnStartErrorEvent::class, sceneLocation, parent))
+        // Unsupported? addItem(menu, "Start escalation event", START_ESCALATION_EVENT, ShapeCreator(project, BpmnStartEscalationEvent::class, sceneLocation, parent))
         addItem(menu, "Start signal event", START_SIGNAL_EVENT, ShapeCreator(project, BpmnStartSignalEvent::class, sceneLocation, parent))
         addItem(menu, "Start timer event", START_TIMER_EVENT, ShapeCreator(project, BpmnStartTimerEvent::class, sceneLocation, parent))
         return menu
@@ -155,12 +155,12 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
         addItem(menu, "Business rule task", BUSINESS_RULE_TASK, ShapeCreator(project, BpmnBusinessRuleTask::class, sceneLocation, parent))
         addItem(menu, "Receive task", RECEIVE_TASK, ShapeCreator(project, BpmnReceiveTask::class, sceneLocation, parent))
         addItem(menu, "Manual task", MANUAL_TASK, ShapeCreator(project, BpmnManualTask::class, sceneLocation, parent))
-        addItem(menu, "Camel task", CAMEL_TASK, ShapeCreator(project, BpmnCamelTask::class, sceneLocation, parent))
-        addItem(menu, "Http task", HTTP_TASK, ShapeCreator(project, BpmnHttpTask::class, sceneLocation, parent))
-        addItem(menu, "Mail task", MAIL_TASK, ShapeCreator(project, BpmnMailTask::class, sceneLocation, parent))
-        addItem(menu, "Mule task", MULE_TASK, ShapeCreator(project, BpmnMuleTask::class, sceneLocation, parent))
-        addItem(menu, "Decision task", DECISION_TASK, ShapeCreator(project, BpmnDecisionTask::class, sceneLocation, parent))
-        addItem(menu, "Shell task", SHELL_TASK, ShapeCreator(project, BpmnShellTask::class, sceneLocation, parent))
+        // Unsupported addItem(menu, "Camel task", CAMEL_TASK, ShapeCreator(project, BpmnCamelTask::class, sceneLocation, parent))
+        // Unsupported addItem(menu, "Http task", HTTP_TASK, ShapeCreator(project, BpmnHttpTask::class, sceneLocation, parent))
+        // Unsupported addItem(menu, "Mail task", MAIL_TASK, ShapeCreator(project, BpmnMailTask::class, sceneLocation, parent))
+        // Unsupported addItem(menu, "Mule task", MULE_TASK, ShapeCreator(project, BpmnMuleTask::class, sceneLocation, parent))
+        // Unsupported addItem(menu, "Decision task", DECISION_TASK, ShapeCreator(project, BpmnDecisionTask::class, sceneLocation, parent))
+        // Unsupported addItem(menu, "Shell task", SHELL_TASK, ShapeCreator(project, BpmnShellTask::class, sceneLocation, parent))
         return menu
     }
 
@@ -182,18 +182,18 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
         return menu
     }
 
-    private fun boundaryEvents(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
-        val menu = JMenu("Boundary events")
-        addItem(menu, "Boundary cancel event", BOUNDARY_CANCEL_EVENT, ShapeCreator(project, BpmnBoundaryCancelEvent::class, sceneLocation, parent))
-        addItem(menu, "Boundary compensation event", BOUNDARY_COMPENSATION_EVENT, ShapeCreator(project, BpmnBoundaryCompensationEvent::class, sceneLocation, parent))
-        addItem(menu, "Boundary conditional event", BOUNDARY_CONDITIONAL_EVENT, ShapeCreator(project, BpmnBoundaryConditionalEvent::class, sceneLocation, parent))
-        addItem(menu, "Boundary error event", BOUNDARY_ERROR_EVENT, ShapeCreator(project, BpmnBoundaryErrorEvent::class, sceneLocation, parent))
-        addItem(menu, "Boundary escalation event", BOUNDARY_ESCALATION_EVENT, ShapeCreator(project, BpmnBoundaryEscalationEvent::class, sceneLocation, parent))
-        addItem(menu, "Boundary message event", BOUNDARY_MESSAGE_EVENT, ShapeCreator(project, BpmnBoundaryMessageEvent::class, sceneLocation, parent))
-        addItem(menu, "Boundary signal event", BOUNDARY_SIGNAL_EVENT, ShapeCreator(project, BpmnBoundarySignalEvent::class, sceneLocation, parent))
-        addItem(menu, "Boundary timer event", BOUNDARY_TIMER_EVENT, ShapeCreator(project, BpmnBoundaryTimerEvent::class, sceneLocation, parent))
-        return menu
-    }
+//    private fun boundaryEvents(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
+//        val menu = JMenu("Boundary events")
+//        addItem(menu, "Boundary cancel event", BOUNDARY_CANCEL_EVENT, ShapeCreator(project, BpmnBoundaryCancelEvent::class, sceneLocation, parent))
+//        addItem(menu, "Boundary compensation event", BOUNDARY_COMPENSATION_EVENT, ShapeCreator(project, BpmnBoundaryCompensationEvent::class, sceneLocation, parent))
+//        addItem(menu, "Boundary conditional event", BOUNDARY_CONDITIONAL_EVENT, ShapeCreator(project, BpmnBoundaryConditionalEvent::class, sceneLocation, parent))
+//        addItem(menu, "Boundary error event", BOUNDARY_ERROR_EVENT, ShapeCreator(project, BpmnBoundaryErrorEvent::class, sceneLocation, parent))
+//        addItem(menu, "Boundary escalation event", BOUNDARY_ESCALATION_EVENT, ShapeCreator(project, BpmnBoundaryEscalationEvent::class, sceneLocation, parent))
+//        addItem(menu, "Boundary message event", BOUNDARY_MESSAGE_EVENT, ShapeCreator(project, BpmnBoundaryMessageEvent::class, sceneLocation, parent))
+//        addItem(menu, "Boundary signal event", BOUNDARY_SIGNAL_EVENT, ShapeCreator(project, BpmnBoundarySignalEvent::class, sceneLocation, parent))
+//        addItem(menu, "Boundary timer event", BOUNDARY_TIMER_EVENT, ShapeCreator(project, BpmnBoundaryTimerEvent::class, sceneLocation, parent))
+//        return menu
+//    }
 
     private fun intermediateCatchingEvents(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
         val menu = JMenu("Intermediate catching events")
@@ -217,7 +217,7 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
         addItem(menu, "End event", END_EVENT, ShapeCreator(project, BpmnEndEvent::class, sceneLocation, parent))
         addItem(menu, "End error event", ERROR_END_EVENT, ShapeCreator(project, BpmnEndErrorEvent::class, sceneLocation, parent))
         addItem(menu, "End escalation event", ESCALATION_END_EVENT, ShapeCreator(project, BpmnEndEscalationEvent::class, sceneLocation, parent))
-        addItem(menu, "End cancel event", CANCEL_END_EVENT, ShapeCreator(project, BpmnEndCancelEvent::class, sceneLocation, parent))
+        // Unsupported? addItem(menu, "End cancel event", CANCEL_END_EVENT, ShapeCreator(project, BpmnEndCancelEvent::class, sceneLocation, parent))
         addItem(menu, "End terminate event", TERMINATE_END_EVENT, ShapeCreator(project, BpmnEndTerminateEvent::class, sceneLocation, parent))
         return menu
     }
