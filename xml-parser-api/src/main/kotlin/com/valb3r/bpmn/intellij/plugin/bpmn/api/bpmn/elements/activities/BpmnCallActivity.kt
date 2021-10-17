@@ -5,14 +5,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
 data class BpmnCallActivity(
         override val id: BpmnElementId,
-        val name: String?,
-        val documentation: String?,
-        val async: Boolean?,
-        val calledElement: String?,
-        val calledElementType: String?,
-        val inheritVariables: Boolean?,
-        val fallbackToDefaultTenant: Boolean?,
-        val extensionElements: ExtensionElements?
+        val name: String? = null,
+        val documentation: String? = null,
+        val async: Boolean? = null,
+        val calledElement: String? = null,
+        val calledElementType: String? = null,
+        val inheritVariables: Boolean? = null,
+        val fallbackToDefaultTenant: Boolean? = null,
+        val extensionElements: ExtensionElements? = null
 ) : WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
@@ -21,7 +21,7 @@ data class BpmnCallActivity(
 }
 
 data class ExtensionElements(
-        val out: List<OutExtensionElement>?
+        val out: List<OutExtensionElement>? = null
 )
 
-data class OutExtensionElement(val source: String?, val target: String?)
+data class OutExtensionElement(val source: String? = null, val target: String?)

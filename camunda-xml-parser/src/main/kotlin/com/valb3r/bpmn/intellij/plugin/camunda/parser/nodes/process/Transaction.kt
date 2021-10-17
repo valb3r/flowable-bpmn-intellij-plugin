@@ -15,7 +15,8 @@ class Transaction: BpmnMappable<BpmnTransactionalSubProcess>, ProcessBody() {
     @JacksonXmlProperty(isAttribute = true) var id: String? = null
     @JacksonXmlProperty(isAttribute = true) var name: String? = null
     var documentation: String? = null
-    @JacksonXmlProperty(isAttribute = true) var async: Boolean? = null
+    @JacksonXmlProperty(isAttribute = true) val asyncBefore: Boolean? = null
+    @JacksonXmlProperty(isAttribute = true) val asyncAfter: Boolean? = null
     @JacksonXmlProperty(isAttribute = true) var exclusive: Boolean? = null
     @JsonIgnore var hasExternalDiagram: Boolean = false
 

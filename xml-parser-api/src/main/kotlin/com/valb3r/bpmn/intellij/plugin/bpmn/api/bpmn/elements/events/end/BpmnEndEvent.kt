@@ -5,12 +5,14 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
 data class BpmnEndEvent(
         override val id: BpmnElementId,
-        val name: String?,
-        val documentation: String?,
-        val errorEventDefinition: ErrorEventDefinition?,
-        val escalationEventDefinition: EscalationEventDefinition?,
-        val cancelEventDefinition: CancelEventDefinition?,
-        val terminateEventDefinition: TerminateEventDefinition?
+        val name: String? = null,
+        val documentation: String? = null,
+        val asyncBefore: Boolean? = null,
+        val asyncAfter: Boolean? = null,
+        val errorEventDefinition: ErrorEventDefinition? = null,
+        val escalationEventDefinition: EscalationEventDefinition? = null,
+        val cancelEventDefinition: CancelEventDefinition? = null,
+        val terminateEventDefinition: TerminateEventDefinition? = null
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

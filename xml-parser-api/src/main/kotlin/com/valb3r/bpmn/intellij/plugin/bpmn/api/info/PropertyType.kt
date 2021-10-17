@@ -24,6 +24,8 @@ enum class PropertyType(
     DOCUMENTATION("documentation", "Documentation", STRING),
     IS_FOR_COMPENSATION("forCompensation", "Is for compensation", BOOLEAN),
     ASYNC("async", "Asynchronous", BOOLEAN),
+    ASYNC_BEFORE("asyncBefore", "Asynchronous Before", BOOLEAN),
+    ASYNC_AFTER("asyncAfter", "Asynchronous After", BOOLEAN),
     ASSIGNEE("assignee", "Assignee", STRING),
     CALLED_ELEM("calledElement", "Called element", T_EXPRESSION),
     CALLED_ELEM_TYPE("calledElementType", "Called element type", STRING),

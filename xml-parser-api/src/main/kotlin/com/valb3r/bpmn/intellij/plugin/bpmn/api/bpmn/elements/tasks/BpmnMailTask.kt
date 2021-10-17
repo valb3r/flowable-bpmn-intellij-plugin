@@ -5,10 +5,12 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
 data class BpmnMailTask(
         override val id: BpmnElementId,
-        val name: String?,
-        val documentation: String?,
-        val async: Boolean?,
-        val isForCompensation: Boolean?,
+        val name: String? = null,
+        val asyncBefore: Boolean? = null,
+        val asyncAfter: Boolean? = null,
+        val documentation: String? = null,
+        val async: Boolean? = null,
+        val isForCompensation: Boolean? = null,
         val headers: String? = null,
         val to: String? = null,
         val from: String? = null,

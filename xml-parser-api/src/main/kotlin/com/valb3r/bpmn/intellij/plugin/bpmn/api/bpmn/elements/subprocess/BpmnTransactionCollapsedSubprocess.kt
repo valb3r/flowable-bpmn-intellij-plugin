@@ -5,11 +5,13 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
 data class BpmnTransactionCollapsedSubprocess(
         override val id: BpmnElementId,
-        val name: String?,
-        val documentation: String?,
-        val async: Boolean?,
-        val exclusive: Boolean?,
-        val triggeredByEvent: Boolean?,
+        val name: String? = null,
+        val documentation: String? = null,
+        val async: Boolean? = null,
+        val asyncBefore: Boolean? = null,
+        val asyncAfter: Boolean? = null,
+        val exclusive: Boolean? = null,
+        val triggeredByEvent: Boolean? = null,
         val transactionalSubprocess: Boolean // can't set default for @KotlinBuilder
 ): WithBpmnId {
 

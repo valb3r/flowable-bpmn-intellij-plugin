@@ -11,7 +11,8 @@ data class ManualTask(
         @JacksonXmlProperty(isAttribute = true) val id: String,
         @JacksonXmlProperty(isAttribute = true) val name: String?,
         @JacksonXmlProperty(isAttribute = true) val documentation: String?,
-        @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
+        @JacksonXmlProperty(isAttribute = true) val asyncBefore: Boolean?,
+        @JacksonXmlProperty(isAttribute = true) val asyncAfter: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?
 ): BpmnMappable<BpmnManualTask> {
 

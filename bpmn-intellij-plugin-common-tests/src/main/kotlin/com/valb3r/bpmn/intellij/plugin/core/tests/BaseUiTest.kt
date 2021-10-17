@@ -109,8 +109,8 @@ abstract class BaseUiTest {
     protected val sequenceFlowDiagramId = DiagramElementId("DIAGRAM-sequenceFlow")
 
     protected val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId, null, null, null, null, null, null, null, null, null, null, null, null)
-    protected val bpmnSubProcess = BpmnSubProcess(subprocessBpmnId, null, null, null, null, false, false)
-    protected val bpmnNestedSubProcess = BpmnSubProcess(subprocessInSubProcessBpmnId, null, null, null, null, false, false)
+    protected val bpmnSubProcess = BpmnSubProcess(subprocessBpmnId, null, null, null, null, triggeredByEvent = false, transactionalSubprocess = false)
+    protected val bpmnNestedSubProcess = BpmnSubProcess(subprocessInSubProcessBpmnId, null, null, null, null, triggeredByEvent = false, transactionalSubprocess = false)
     protected val bpmnServiceTaskEnd = BpmnServiceTask(serviceTaskEndBpmnId, null, null, null, null, null, null, null, null, null, null, null, null)
     protected val bpmnSequenceFlow = BpmnSequenceFlow(sequenceFlowBpmnId, null, null, null, null, null)
     protected val diagramServiceTaskStart = ShapeElement(serviceTaskStartDiagramId, bpmnServiceTaskStart.id, BoundsElement(startElemX, startElemY, serviceTaskSize, serviceTaskSize))

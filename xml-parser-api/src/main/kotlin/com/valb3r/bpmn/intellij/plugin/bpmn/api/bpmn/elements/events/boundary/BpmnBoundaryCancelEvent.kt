@@ -5,9 +5,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
 data class BpmnBoundaryCancelEvent(
         override val id: BpmnElementId,
-        val name: String?,
-        val attachedToRef: BpmnElementId?,
-        val cancelActivity: Boolean?
+        val name: String? = null,
+        val attachedToRef: BpmnElementId? = null,
+        val cancelActivity: Boolean? = null
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

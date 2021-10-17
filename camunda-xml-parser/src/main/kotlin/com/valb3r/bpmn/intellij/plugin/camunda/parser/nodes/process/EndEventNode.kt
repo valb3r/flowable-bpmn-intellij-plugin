@@ -12,6 +12,8 @@ data class EndEventNode(
     @JacksonXmlProperty(isAttribute = true) val id: String,
     @JacksonXmlProperty(isAttribute = true) val name: String?,
     @JacksonXmlProperty(isAttribute = true) val documentation: String?,
+    @JacksonXmlProperty(isAttribute = true) val asyncBefore: Boolean?,
+    @JacksonXmlProperty(isAttribute = true) val asyncAfter: Boolean?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val errorEventDefinition: ErrorEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val escalationEventDefinition: EscalationEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val cancelEventDefinition: CancelEventDefinition?,
