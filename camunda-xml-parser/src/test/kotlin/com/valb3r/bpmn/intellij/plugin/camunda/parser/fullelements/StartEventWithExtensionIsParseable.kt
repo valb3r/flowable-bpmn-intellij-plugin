@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin.camunda.parser.customstartevent
+package com.valb3r.bpmn.intellij.plugin.camunda.parser.fullelements
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -12,7 +12,6 @@ import com.valb3r.bpmn.intellij.plugin.camunda.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 private const val FILE = "fullelements/full-start-event.bpmn"
 
