@@ -23,8 +23,12 @@ internal class SpecialCaseIncomingOutgoingIsParseable {
     private val singleServiceTask = BpmnElementId("singleServiceTask")
     private val singleEndEvent = BpmnElementId("singleEndEvent")
 
+    private val multiStartEvent = BpmnElementId("multiStartEvent")
+    private val multiServiceTask = BpmnElementId("multiServiceTask")
+    private val multiEndEvent = BpmnElementId("multiEndEvent")
+
     @Test
-    fun `Service task (single props) with nested extensions is parseable`() {
+    fun `Service task (single props) with incoming-outgoing is parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
 
         val startEventProps = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[singleStartEvent]!!
@@ -42,15 +46,45 @@ internal class SpecialCaseIncomingOutgoingIsParseable {
     }
 
     @Test
-    fun `Service task (single props) is updatable`() {
+    fun `Service task (single props) with incoming-outgoing is updatable`() {
         {value: String -> readAndUpdateSinglePropTask(PropertyType.BPMN_INCOMING, value).incoming.shouldBeEqualTo(listOf(value))} ("new incoming");
         {value: String -> readAndUpdateSinglePropTask(PropertyType.BPMN_OUTGOING, value).outgoing.shouldBeEqualTo(listOf(value))} ("new outgoing");
     }
 
     @Test
-    fun `Service task (single props) nested elements are emptyable`() {
+    fun `Service task (single props) with incoming-outgoing are emptyable`() {
         {value: String -> readAndUpdateSinglePropTask(PropertyType.BPMN_INCOMING, value).incoming?.shouldBeEmpty()} ("");
         {value: String -> readAndUpdateSinglePropTask(PropertyType.BPMN_OUTGOING, value).outgoing?.shouldBeEmpty()} ("");
+    }
+
+    @Test
+    fun `Service task (multiple props) with incoming-outgoing is parseable`() {
+        val processObject = parser.parse(FILE.asResource()!!)
+
+        val startEventProps = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[multiStartEvent]!!
+        val serviceTaskProps = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[multiServiceTask]!!
+        val endEventProps = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[multiEndEvent]!!
+
+        startEventProps[PropertyType.BPMN_INCOMING]?.value?.shouldBeNull()
+        startEventProps.getAll(PropertyType.BPMN_OUTGOING).shouldBeEqualTo(listOf(Property("fromStart1", null), Property("fromStart2", null)))
+
+        serviceTaskProps.getAll(PropertyType.BPMN_INCOMING).shouldBeEqualTo(listOf(Property("fromStart1", null), Property("fromStart2", null)))
+        serviceTaskProps.getAll(PropertyType.BPMN_OUTGOING).shouldBeEqualTo(listOf(Property("toEnd2", null), Property("toEnd1", null)))
+
+        endEventProps.getAll(PropertyType.BPMN_INCOMING).shouldBeEqualTo(listOf(Property("toEnd2", null), Property("toEnd1", null)))
+        endEventProps[PropertyType.BPMN_OUTGOING]?.value?.shouldBeNull()
+    }
+
+    @Test
+    fun `Service task (multiple props) with incoming-outgoing is updatable`() {
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.BPMN_INCOMING, value).incoming.shouldBeEqualTo(listOf(value))} ("new incoming");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.BPMN_OUTGOING, value).outgoing.shouldBeEqualTo(listOf(value))} ("new outgoing");
+    }
+
+    @Test
+    fun `Service task (multiple props) with incoming-outgoing are emptyable`() {
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.BPMN_INCOMING, value).incoming?.shouldBeEmpty()} ("");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.BPMN_OUTGOING, value).outgoing?.shouldBeEmpty()} ("");
     }
 
     private fun readAndUpdateSinglePropTask(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnServiceTask {
@@ -59,5 +93,13 @@ internal class SpecialCaseIncomingOutgoingIsParseable {
 
     private fun readStartEventSingleProp(processObject: BpmnProcessObject): BpmnServiceTask {
         return processObject.process.body!!.serviceTask!!.shouldHaveSize(2)[0]
+    }
+
+    private fun readAndUpdateMultiPropTask(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnServiceTask {
+        return readStartEventMultiProp(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(singleServiceTask, property, newValue, propertyIndex = propertyIndex.split(","))))
+    }
+
+    private fun readStartEventMultiProp(processObject: BpmnProcessObject): BpmnServiceTask {
+        return processObject.process.body!!.serviceTask!!.shouldHaveSize(2)[1]
     }
 }
