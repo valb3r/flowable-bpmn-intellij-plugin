@@ -199,20 +199,23 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         val node = propertyTree[targetId] ?: return
 
         if (node.isArray) {
-            if (type.isWrappedArray) {
-                val resultValue = mutableListOf<Property>()
-                node.forEach { resultValue += Property(it.asText(), indexInArray) }
-                result[type] = resultValue
-                return
-            }
             if (node.isEmpty) {
                 doParse(NullNode.instance, result, type, indexInArray = listOf())
                 return
             }
             node.forEach {
-                val indexValue = it[type.indexInGroupArrayName!!.split(".")[arrayIndexDepth]].asText()
+                val indexKey = type.indexInGroupArrayName!!.split(".")[arrayIndexDepth]
+                val indexValue = when (indexKey) {
+                    "@" -> it.asText()
+                    else -> it[indexKey].asText()
+                }
+
                 val index = if (null != indexValue) ((indexInArray ?: listOf()) + indexValue) else indexInArray
-                parseValue(split[1], type, it, result, arrayIndexDepth = arrayIndexDepth + 1, indexInArray = index)
+                if (split.size < 2) {
+                    doParse(it, result, type, indexInArray = index)
+                } else {
+                    parseValue(split[1], type, it, result, arrayIndexDepth = arrayIndexDepth + 1, indexInArray = index)
+                }
             }
             return
         }

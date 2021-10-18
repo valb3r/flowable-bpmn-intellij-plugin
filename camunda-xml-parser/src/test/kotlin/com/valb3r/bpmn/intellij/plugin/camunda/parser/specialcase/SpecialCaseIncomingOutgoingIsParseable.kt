@@ -36,19 +36,19 @@ internal class SpecialCaseIncomingOutgoingIsParseable {
         val endEventProps = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[singleEndEvent]!!
 
         startEventProps[PropertyType.BPMN_INCOMING]?.value?.shouldBeNull()
-        startEventProps[PropertyType.BPMN_OUTGOING]?.shouldBeEqualTo(Property("flowFromStartEvent", null))
+        startEventProps[PropertyType.BPMN_OUTGOING]?.shouldBeEqualTo(Property("flowFromStartEvent", listOf("flowFromStartEvent")))
 
-        serviceTaskProps[PropertyType.BPMN_INCOMING]?.shouldBeEqualTo(Property("flowFromStartEvent", null))
-        serviceTaskProps[PropertyType.BPMN_OUTGOING]?.shouldBeEqualTo(Property("flowToEndEvent", null))
+        serviceTaskProps[PropertyType.BPMN_INCOMING]?.shouldBeEqualTo(Property("flowFromStartEvent", listOf("flowFromStartEvent")))
+        serviceTaskProps[PropertyType.BPMN_OUTGOING]?.shouldBeEqualTo(Property("flowToEndEvent", listOf("flowToEndEvent")))
 
-        endEventProps[PropertyType.BPMN_INCOMING]?.shouldBeEqualTo(Property("flowToEndEvent", null))
+        endEventProps[PropertyType.BPMN_INCOMING]?.shouldBeEqualTo(Property("flowToEndEvent", listOf("flowToEndEvent")))
         endEventProps[PropertyType.BPMN_OUTGOING]?.value?.shouldBeNull()
     }
 
     @Test
     fun `Service task (single props) with incoming-outgoing is updatable`() {
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.BPMN_INCOMING, value).incoming.shouldBeEqualTo(listOf(value))} ("new incoming");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.BPMN_OUTGOING, value).outgoing.shouldBeEqualTo(listOf(value))} ("new outgoing");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.BPMN_INCOMING, value, "flowFromStartEvent").incoming.shouldBeEqualTo(listOf(value))} ("new incoming");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.BPMN_OUTGOING, value, "flowToEndEvent").outgoing.shouldBeEqualTo(listOf(value))} ("new outgoing");
     }
 
     @Test
@@ -66,12 +66,12 @@ internal class SpecialCaseIncomingOutgoingIsParseable {
         val endEventProps = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[multiEndEvent]!!
 
         startEventProps[PropertyType.BPMN_INCOMING]?.value?.shouldBeNull()
-        startEventProps.getAll(PropertyType.BPMN_OUTGOING).shouldBeEqualTo(listOf(Property("fromStart1", null), Property("fromStart2", null)))
+        startEventProps.getAll(PropertyType.BPMN_OUTGOING).shouldBeEqualTo(listOf(Property("fromStart1", listOf("fromStart1")), Property("fromStart2", listOf("fromStart2"))))
 
-        serviceTaskProps.getAll(PropertyType.BPMN_INCOMING).shouldBeEqualTo(listOf(Property("fromStart1", null), Property("fromStart2", null)))
-        serviceTaskProps.getAll(PropertyType.BPMN_OUTGOING).shouldBeEqualTo(listOf(Property("toEnd2", null), Property("toEnd1", null)))
+        serviceTaskProps.getAll(PropertyType.BPMN_INCOMING).shouldBeEqualTo(listOf(Property("fromStart1", listOf("fromStart1")), Property("fromStart2", listOf("fromStart2"))))
+        serviceTaskProps.getAll(PropertyType.BPMN_OUTGOING).shouldBeEqualTo(listOf(Property("toEnd2", listOf("toEnd2")), Property("toEnd1", listOf("toEnd1"))))
 
-        endEventProps.getAll(PropertyType.BPMN_INCOMING).shouldBeEqualTo(listOf(Property("toEnd2", null), Property("toEnd1", null)))
+        endEventProps.getAll(PropertyType.BPMN_INCOMING).shouldBeEqualTo(listOf(Property("toEnd2", listOf("toEnd2")), Property("toEnd1", listOf("toEnd1"))))
         endEventProps[PropertyType.BPMN_OUTGOING]?.value?.shouldBeNull()
     }
 
