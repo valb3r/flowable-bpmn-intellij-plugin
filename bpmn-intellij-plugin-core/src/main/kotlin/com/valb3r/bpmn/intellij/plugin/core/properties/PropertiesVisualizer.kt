@@ -86,6 +86,7 @@ class PropertiesVisualizer(
         val sorter = TableRowSorter(table.model)
 
         val orderedControls = state[bpmnElementId]?.view()?.entries
+            ?.filter { it.key.visible }
             ?.flatMap { it.value.map { v -> Pair(it.key, v) } }
             ?.sortedBy { computePropertyKey(it) } ?: listOf()
 
