@@ -47,6 +47,8 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     // Unsupported? EXCLUDE(PropertyTypeDetails(PropertyType.EXCLUDE, "camunda:exclude", XmlType.ATTRIBUTE)),
     SOURCE_REF(PropertyTypeDetails(PropertyType.SOURCE_REF,"sourceRef", XmlType.ATTRIBUTE)),
     TARGET_REF(PropertyTypeDetails(PropertyType.TARGET_REF, "targetRef", XmlType.ATTRIBUTE)),
+    BPMN_INCOMING(PropertyTypeDetails(PropertyType.TARGET_REF, "incoming.text", XmlType.CDATA)),
+    BPMN_OUTGOING(PropertyTypeDetails(PropertyType.TARGET_REF, "outgoing.text", XmlType.CDATA)),
     // Unsupported? ATTACHED_TO_REF(PropertyTypeDetails(PropertyType.ATTACHED_TO_REF, "attachedToRef", XmlType.ATTRIBUTE)),
     CONDITION_EXPR_VALUE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_VALUE, "conditionExpression.text", XmlType.CDATA)),
     CONDITION_EXPR_TYPE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_TYPE, "conditionExpression.xsi:type", XmlType.ATTRIBUTE)),
