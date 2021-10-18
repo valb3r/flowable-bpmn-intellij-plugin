@@ -21,8 +21,8 @@ class Transaction: BpmnMappable<BpmnTransactionalSubProcess>, ProcessBody() {
     @JacksonXmlProperty(isAttribute = true) val asyncAfter: Boolean? = null
     @JacksonXmlProperty(isAttribute = true) var exclusive: Boolean? = null
     @JsonIgnore var hasExternalDiagram: Boolean = false
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val incoming: List<String>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val outgoing: List<String>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>? = null
 
     override fun toElement(): BpmnTransactionalSubProcess {
         return Mappers.getMapper(TransactionMapping::class.java).convertToDto(this)

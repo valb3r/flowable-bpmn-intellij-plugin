@@ -22,8 +22,8 @@ class SubProcess: BpmnMappable<BpmnSubProcess>, ProcessBody() {
     @JacksonXmlProperty(isAttribute = true) var exclusive: Boolean? = null
     @JacksonXmlProperty(isAttribute = true) var triggeredByEvent: Boolean? = null
     @JsonIgnore var hasExternalDiagram: Boolean = false
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val incoming: List<String>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val outgoing: List<String>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>? = null
 
     override fun toElement(): BpmnSubProcess {
         return Mappers.getMapper(SubProcessMapping::class.java).convertToDto(this)

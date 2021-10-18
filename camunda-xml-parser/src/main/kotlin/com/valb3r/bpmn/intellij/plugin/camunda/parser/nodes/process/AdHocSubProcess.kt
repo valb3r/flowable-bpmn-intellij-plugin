@@ -21,8 +21,8 @@ class AdHocSubProcess: BpmnMappable<BpmnAdHocSubProcess>, ProcessBody() {
     var documentation: String? = null
     @JacksonXmlProperty(isAttribute = true) val asyncBefore: Boolean? = null
     @JacksonXmlProperty(isAttribute = true) val asyncAfter: Boolean? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val incoming: List<String>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val outgoing: List<String>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>? = null
     var completionCondition: CompletionCondition? = null
 
     override fun toElement(): BpmnAdHocSubProcess {
