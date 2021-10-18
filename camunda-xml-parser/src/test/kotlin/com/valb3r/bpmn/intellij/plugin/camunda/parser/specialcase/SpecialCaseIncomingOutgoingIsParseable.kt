@@ -53,8 +53,8 @@ internal class SpecialCaseIncomingOutgoingIsParseable {
 
     @Test
     fun `Service task (single props) with incoming-outgoing are emptyable`() {
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.BPMN_INCOMING, value).incoming?.shouldBeEmpty()} ("");
-        {value: String -> readAndUpdateSinglePropTask(PropertyType.BPMN_OUTGOING, value).outgoing?.shouldBeEmpty()} ("");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.BPMN_INCOMING, value, "flowFromStartEvent").incoming?.shouldBeEmpty()} ("");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.BPMN_OUTGOING, value, "flowToEndEvent").outgoing?.shouldBeEmpty()} ("");
     }
 
     @Test

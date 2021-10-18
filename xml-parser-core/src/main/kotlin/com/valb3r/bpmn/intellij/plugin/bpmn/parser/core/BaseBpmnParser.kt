@@ -519,10 +519,18 @@ abstract class BaseBpmnParser: BpmnParser {
             return nodeChildByName(target, name)
         }
 
+        val matchAttrValue = { elem: Element ->
+            if (attrName.startsWith("\$")) {
+                attrValue == elem.text
+            } else {
+                attrValue == elem.attribute(attrName)?.value
+            }
+        }
+
         val children = target.selectNodes("*")
         for (pos in 0 until children.size) {
             val elem = children[pos] as Element
-            if (elem.qualifiedName.contains(name) && attrValue == elem.attribute(attrName)?.value) {
+            if (elem.qualifiedName.contains(name) && matchAttrValue(elem)) {
                 return children[pos] as Element
             }
         }
