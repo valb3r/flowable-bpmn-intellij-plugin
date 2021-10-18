@@ -70,8 +70,10 @@ class PhysicalWaypoint(
         if (null != droppedOn && !multipleElementsSelected() && !multipleElementsDragged()) {
             if (edgePhysicalSize - 1 == physicalPos) {
                 events += StringValueUpdatedEvent(parentElementBpmnId, PropertyType.TARGET_REF, droppedOn.id)
+                events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_INCOMING, parentElementBpmnId.id)
             } else if (0 == physicalPos) {
                 events += StringValueUpdatedEvent(parentElementBpmnId, PropertyType.SOURCE_REF, droppedOn.id)
+                events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_OUTGOING, parentElementBpmnId.id)
             }
         }
 

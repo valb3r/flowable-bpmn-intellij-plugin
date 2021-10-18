@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process
 
+import com.fasterxml.jackson.annotation.JsonMerge
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
@@ -8,18 +9,18 @@ import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
 data class CallActivity(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
-        @JacksonXmlProperty(isAttribute = true) val documentation: String?,
-        @JacksonXmlProperty(isAttribute = true) val asyncBefore: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val asyncAfter: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val calledElement: String?,
-        @JacksonXmlProperty(isAttribute = true) val calledElementType: String?,
-        @JacksonXmlProperty(isAttribute = true) val inheritVariables: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val fallbackToDefaultTenant: Boolean?,
-        val incoming: String?,
-        val outgoing: String?,
-        val extensionElements: ExtensionElements?
+    @JacksonXmlProperty(isAttribute = true) val id: String,
+    @JacksonXmlProperty(isAttribute = true) val name: String?,
+    @JacksonXmlProperty(isAttribute = true) val documentation: String?,
+    @JacksonXmlProperty(isAttribute = true) val asyncBefore: Boolean?,
+    @JacksonXmlProperty(isAttribute = true) val asyncAfter: Boolean?,
+    @JacksonXmlProperty(isAttribute = true) val calledElement: String?,
+    @JacksonXmlProperty(isAttribute = true) val calledElementType: String?,
+    @JacksonXmlProperty(isAttribute = true) val inheritVariables: Boolean?,
+    @JacksonXmlProperty(isAttribute = true) val fallbackToDefaultTenant: Boolean?,
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>?,
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>?,
+    val extensionElements: ExtensionElements?
 ): BpmnMappable<BpmnCallActivity> {
 
     override fun toElement(): BpmnCallActivity {

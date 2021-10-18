@@ -27,8 +27,8 @@ data class UserTask(
         @JacksonXmlProperty(isAttribute = true) val formFieldValidation: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val priority: String?,
         @JacksonXmlProperty(isAttribute = true) val skipExpression: String?,
-        val incoming: String?,
-        val outgoing: String?,
+        @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>?,
+        @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>?,
         @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<FormPropExtensionElement>? = null
 ): BpmnMappable<BpmnUserTask> {
 

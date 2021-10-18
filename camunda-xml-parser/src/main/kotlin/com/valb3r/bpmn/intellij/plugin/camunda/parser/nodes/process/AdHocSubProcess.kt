@@ -1,7 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process
 
+import com.fasterxml.jackson.annotation.JsonMerge
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
@@ -19,8 +21,8 @@ class AdHocSubProcess: BpmnMappable<BpmnAdHocSubProcess>, ProcessBody() {
     var documentation: String? = null
     @JacksonXmlProperty(isAttribute = true) val asyncBefore: Boolean? = null
     @JacksonXmlProperty(isAttribute = true) val asyncAfter: Boolean? = null
-    val incoming: String? = null
-    val outgoing: String? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val incoming: List<String>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val outgoing: List<String>? = null
     var completionCondition: CompletionCondition? = null
 
     override fun toElement(): BpmnAdHocSubProcess {

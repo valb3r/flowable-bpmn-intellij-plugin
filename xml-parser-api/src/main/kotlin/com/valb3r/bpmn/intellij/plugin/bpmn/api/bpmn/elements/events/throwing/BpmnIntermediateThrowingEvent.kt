@@ -7,8 +7,8 @@ data class BpmnIntermediateThrowingEvent(
         override val id: BpmnElementId,
         val name: String? = null,
         val documentation: String? = null,
-        val incoming: String? = null,
-        val outgoing: String? = null,
+        val incoming: List<String>? = null,
+        val outgoing: List<String>? = null,
         val signalEventDefinition: SignalEventDefinition? = null,
         val escalationEventDefinition: EscalationEventDefinition? = null
 ) : WithBpmnId {

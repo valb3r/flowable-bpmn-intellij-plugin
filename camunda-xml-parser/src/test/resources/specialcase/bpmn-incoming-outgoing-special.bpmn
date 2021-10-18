@@ -1,18 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0eda8ox" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.10.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
   <bpmn:process id="Process_01typ9w" isExecutable="true">
-    <bpmn:startEvent id="startEvent">
+    <bpmn:startEvent id="singleStartEvent">
       <bpmn:outgoing>flowFromStartEvent</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:serviceTask id="serviceTask">
+    <bpmn:serviceTask id="singleServiceTask">
       <bpmn:incoming>flowFromStartEvent</bpmn:incoming>
       <bpmn:outgoing>flowToEndEvent</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:endEvent id="endEvent">
+    <bpmn:endEvent id="singleEndEvent">
       <bpmn:incoming>flowToEndEvent</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="flowFromStartEvent" sourceRef="startEvent" targetRef="serviceTask" />
-    <bpmn:sequenceFlow id="flowToEndEvent" sourceRef="serviceTask" targetRef="endEvent" />
+    <bpmn:sequenceFlow id="flowFromStartEvent" sourceRef="singleStartEvent" targetRef="singleServiceTask" />
+    <bpmn:sequenceFlow id="flowToEndEvent" sourceRef="singleServiceTask" targetRef="singleEndEvent" />
+    <bpmn:serviceTask id="multiServiceTask">
+      <bpmn:incoming>fromStart1</bpmn:incoming>
+      <bpmn:incoming>fromStart2</bpmn:incoming>
+      <bpmn:outgoing>toEnd2</bpmn:outgoing>
+      <bpmn:outgoing>toEnd1</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:startEvent id="multiStartEvent">
+      <bpmn:outgoing>fromStart1</bpmn:outgoing>
+      <bpmn:outgoing>fromStart2</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="multiEndEvent">
+      <bpmn:incoming>toEnd2</bpmn:incoming>
+      <bpmn:incoming>toEnd1</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="fromStart1" sourceRef="multiStartEvent" targetRef="multiServiceTask" />
+    <bpmn:sequenceFlow id="toEnd2" sourceRef="multiServiceTask" targetRef="multiEndEvent" />
+    <bpmn:sequenceFlow id="toEnd1" sourceRef="multiServiceTask" targetRef="multiEndEvent" />
+    <bpmn:sequenceFlow id="fromStart2" sourceRef="multiStartEvent" targetRef="multiServiceTask" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_01typ9w">
@@ -24,14 +42,47 @@
         <di:waypoint x="390" y="117" />
         <di:waypoint x="482" y="117" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="startEvent">
+      <bpmndi:BPMNEdge id="Flow_1vnnxew_di" bpmnElement="fromStart1">
+        <di:waypoint x="197" y="272" />
+        <di:waypoint x="197" y="200" />
+        <di:waypoint x="340" y="200" />
+        <di:waypoint x="340" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0gm4b9k_di" bpmnElement="toEnd2">
+        <di:waypoint x="370" y="330" />
+        <di:waypoint x="370" y="370" />
+        <di:waypoint x="500" y="370" />
+        <di:waypoint x="500" y="308" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1g95313_di" bpmnElement="toEnd1">
+        <di:waypoint x="370" y="250" />
+        <di:waypoint x="370" y="200" />
+        <di:waypoint x="500" y="200" />
+        <di:waypoint x="500" y="272" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1yb4gok_di" bpmnElement="fromStart2">
+        <di:waypoint x="197" y="308" />
+        <di:waypoint x="197" y="370" />
+        <di:waypoint x="340" y="370" />
+        <di:waypoint x="340" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="singleStartEvent">
         <dc:Bounds x="179" y="99" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0l00odf_di" bpmnElement="serviceTask">
+      <bpmndi:BPMNShape id="Activity_0l00odf_di" bpmnElement="singleServiceTask">
         <dc:Bounds x="290" y="77" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0zt8vdj_di" bpmnElement="endEvent">
+      <bpmndi:BPMNShape id="Event_0zt8vdj_di" bpmnElement="singleEndEvent">
         <dc:Bounds x="482" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1dzm29g_di" bpmnElement="multiServiceTask">
+        <dc:Bounds x="290" y="250" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0gf77jp_di" bpmnElement="multiStartEvent">
+        <dc:Bounds x="179" y="272" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1qmr82s_di" bpmnElement="multiEndEvent">
+        <dc:Bounds x="482" y="272" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

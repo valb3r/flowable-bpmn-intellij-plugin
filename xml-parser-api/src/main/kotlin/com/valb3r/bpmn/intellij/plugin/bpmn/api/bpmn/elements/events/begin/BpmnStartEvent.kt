@@ -17,8 +17,8 @@ data class BpmnStartEvent(
     val errorEventDefinition: ErrorEventDefinition? = null,
     val escalationEventDefinition: EscalationEventDefinition? = null,
     val conditionalEventDefinition: ConditionalEventDefinition? = null,
-    val incoming: String? = null,
-    val outgoing: String? = null,
+    val incoming: List<String>? = null,
+    val outgoing: List<String>? = null,
     /* BPMN engine specific extensions (intermediate storage) */
     val extensionElements: List<ExtensionElement>? = null,
     /* Flattened extensionElements, for explicitness - these are the target of binding */

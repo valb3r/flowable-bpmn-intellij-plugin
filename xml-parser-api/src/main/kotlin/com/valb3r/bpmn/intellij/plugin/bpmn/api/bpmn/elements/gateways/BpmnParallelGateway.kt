@@ -8,8 +8,8 @@ data class BpmnParallelGateway(
         val name: String? = null,
         val defaultElement: String? = null,
         val documentation: String? = null,
-        val incoming: String? = null,
-        val outgoing: String? = null,
+        val incoming: List<String>? = null,
+        val outgoing: List<String>? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

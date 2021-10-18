@@ -1,7 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process
 
+import com.fasterxml.jackson.annotation.JsonMerge
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
@@ -12,8 +14,8 @@ data class IntermediateCatchEvent(
     @JacksonXmlProperty(isAttribute = true) val id: String,
     @JacksonXmlProperty(isAttribute = true) val name: String?,
     @JacksonXmlProperty(isAttribute = true) val documentation: String?,
-    val incoming: String?,
-    val outgoing: String?,
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>?,
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val timerEventDefinition: TimerEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val signalEventDefinition: SignalEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val messageEventDefinition: MessageEventDefinition?,

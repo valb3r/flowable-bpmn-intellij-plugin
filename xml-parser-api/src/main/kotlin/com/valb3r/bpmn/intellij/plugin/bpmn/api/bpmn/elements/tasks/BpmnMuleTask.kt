@@ -19,8 +19,8 @@ data class BpmnMuleTask(
         val language: String? = null,
         val payloadExpression: String? = null,
         val resultVariableCdata: String? = null,
-        val incoming: String? = null,
-        val outgoing: String? = null,
+        val incoming: List<String>? = null,
+        val outgoing: List<String>? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

@@ -18,7 +18,8 @@ enum class PropertyType(
     val indexCascades: Boolean = false,
     val removeEnclosingNodeIfNullOrEmpty: Boolean = false,
     val hideIfNullOrEmpty: Boolean = false,
-    val visible: Boolean = true
+    val visible: Boolean = true,
+    val isWrappedArray: Boolean = false,
 ) {
     ID("id", "ID", STRING, "id.id", true, null, 1000), // ID should fire last
     NAME("name", "Name", STRING),
@@ -53,8 +54,8 @@ enum class PropertyType(
     EXCLUDE("exclude", "Exclude", BOOLEAN),
     SOURCE_REF("sourceRef", "Source reference", STRING, "sourceRef", false, ID),
     TARGET_REF("targetRef", "Target reference", STRING, "targetRef", false, ID),
-    BPMN_INCOMING("incoming", "Incoming reference", STRING, "incoming", false, ID, visible = false),
-    BPMN_OUTGOING("outgoing", "Outgoing reference", STRING, "outgoing", false, ID, visible = false),
+    BPMN_INCOMING("incoming", "Incoming reference", STRING, "incoming", false, ID, visible = false, isWrappedArray = true),
+    BPMN_OUTGOING("outgoing", "Outgoing reference", STRING, "outgoing", false, ID, visible = false, isWrappedArray = true),
     ATTACHED_TO_REF("attachedToRef", "Attached to", STRING, "attachedToRef.id", false, ID),
     CONDITION_EXPR_VALUE("conditionExpression.text", "Condition expression", T_EXPRESSION, "conditionExpression.text"),
     CONDITION_EXPR_TYPE("conditionExpression.type", "Condition expression type", STRING, "conditionExpression.type"),

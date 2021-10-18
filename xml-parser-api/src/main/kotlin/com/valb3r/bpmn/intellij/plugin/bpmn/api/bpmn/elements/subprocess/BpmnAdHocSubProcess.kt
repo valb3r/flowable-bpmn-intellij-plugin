@@ -10,8 +10,8 @@ data class BpmnAdHocSubProcess(
         val async: Boolean? = null,
         val asyncBefore: Boolean? = null,
         val asyncAfter: Boolean? = null,
-        val incoming: String? = null,
-        val outgoing: String? = null,
+        val incoming: List<String>? = null,
+        val outgoing: List<String>? = null,
         val completionCondition: CompletionCondition? = null
 ): WithBpmnId {
 

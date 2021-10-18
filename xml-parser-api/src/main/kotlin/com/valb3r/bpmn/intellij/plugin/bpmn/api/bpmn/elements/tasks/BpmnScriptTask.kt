@@ -14,8 +14,8 @@ data class BpmnScriptTask(
         val scriptBody: String? = null,
         val scriptFormat: String? = null,
         val autoStoreVariables: Boolean? = null,
-        val incoming: String? = null,
-        val outgoing: String? = null,
+        val incoming: List<String>? = null,
+        val outgoing: List<String>? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

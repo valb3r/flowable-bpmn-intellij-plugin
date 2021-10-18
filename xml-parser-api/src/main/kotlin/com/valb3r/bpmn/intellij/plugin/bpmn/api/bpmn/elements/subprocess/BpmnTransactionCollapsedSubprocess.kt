@@ -12,8 +12,8 @@ data class BpmnTransactionCollapsedSubprocess(
         val asyncAfter: Boolean? = null,
         val exclusive: Boolean? = null,
         val triggeredByEvent: Boolean? = null,
-        val incoming: String? = null,
-        val outgoing: String? = null,
+        val incoming: List<String>? = null,
+        val outgoing: List<String>? = null,
         val transactionalSubprocess: Boolean // can't set default for @KotlinBuilder
 ): WithBpmnId {
 

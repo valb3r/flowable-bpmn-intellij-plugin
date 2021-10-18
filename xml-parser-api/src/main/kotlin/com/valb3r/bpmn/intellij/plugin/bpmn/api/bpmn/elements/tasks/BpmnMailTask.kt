@@ -20,8 +20,8 @@ data class BpmnMailTask(
         val text: String? = null,
         val html: String? = null,
         val charset: String? = null,
-        val incoming: String? = null,
-        val outgoing: String? = null,
+        val incoming: List<String>? = null,
+        val outgoing: List<String>? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

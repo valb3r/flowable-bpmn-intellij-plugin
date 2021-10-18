@@ -14,8 +14,8 @@ data class BpmnBusinessRuleTask(
         val ruleVariablesInput: String? = null,
         val rules: String? = null,
         val resultVariable: String? = null,
-        val incoming: String? = null,
-        val outgoing: String? = null,
+        val incoming: List<String>? = null,
+        val outgoing: List<String>? = null,
         val exclude: Boolean? = null
 ): WithBpmnId {
 
