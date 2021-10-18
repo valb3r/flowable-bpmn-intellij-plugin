@@ -54,6 +54,8 @@ data class CurrentState(
 
 // Global singleton
 class CurrentStateProvider(private val project: Project) {
+    private val mapper = Mappers.getMapper(MapTransactionalSubprocessToSubprocess::class.java)
+
     private var fileState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet(), 0L)
     private var currentState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet(), 0L)
     private val version = AtomicLong(0L)
@@ -196,7 +198,6 @@ class CurrentStateProvider(private val project: Project) {
             throw IllegalArgumentException("Can't change class for: ${event.property.name}}")
         }
 
-        val mapper = Mappers.getMapper(MapTransactionalSubprocessToSubprocess::class.java)
         val withPrentElem = updatedElementByStaticId[event.bpmnElementId]!!
         when (val elem = withPrentElem.element) {
             is BpmnSubProcess -> {

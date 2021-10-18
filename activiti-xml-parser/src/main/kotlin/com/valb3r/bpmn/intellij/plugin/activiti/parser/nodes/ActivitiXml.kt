@@ -577,8 +577,10 @@ data class DiagramNode(
         @JacksonXmlProperty(localName = "BPMNPlane") val bpmnPlane: Plane
 ) : BpmnMappable<DiagramElement> {
 
+    private val mapper = Mappers.getMapper(Mapping::class.java)
+
     override fun toElement(): DiagramElement {
-        return Mappers.getMapper(Mapping::class.java).convertToDto(this)
+        return mapper.convertToDto(this)
     }
 
     @Mapper(uses = [DiagramElementIdMapper::class, BpmnElementIdMapper::class])

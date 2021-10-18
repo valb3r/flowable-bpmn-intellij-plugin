@@ -38,12 +38,14 @@ data class UserTask(
     @Mapper(uses = [BpmnElementIdMapper::class])
     abstract class UserTaskMapping {
 
+        private val mapper = Mappers.getMapper(FormFieldMapper::class.java)
+
         fun convertToDto(input: UserTask) : BpmnUserTask {
             val task = doConvertToDto(input)
             return task.copy(
                 formPropertiesExtension = input.extensionElements?.filterIsInstance<FormDataExtensionElement>()
                     ?.flatMap { it.formField ?: emptyList() }
-                    ?.map { Mappers.getMapper(FormFieldMapper::class.java).mapFormProperty(it) }
+                    ?.map { mapper.mapFormProperty(it) }
             )
         }
 
