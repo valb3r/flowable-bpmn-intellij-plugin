@@ -77,14 +77,14 @@ internal class SpecialCaseIncomingOutgoingIsParseable {
 
     @Test
     fun `Service task (multiple props) with incoming-outgoing is updatable`() {
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.BPMN_INCOMING, value).incoming.shouldBeEqualTo(listOf(value))} ("new incoming");
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.BPMN_OUTGOING, value).outgoing.shouldBeEqualTo(listOf(value))} ("new outgoing");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.BPMN_INCOMING, value, "fromStart1").incoming.shouldBeEqualTo(listOf(value, "fromStart2"))} ("new incoming");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.BPMN_OUTGOING, value, "toEnd2").outgoing.shouldBeEqualTo(listOf(value, "toEnd1"))} ("new outgoing");
     }
 
     @Test
     fun `Service task (multiple props) with incoming-outgoing are emptyable`() {
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.BPMN_INCOMING, value).incoming?.shouldBeEmpty()} ("");
-        {value: String -> readAndUpdateMultiPropTask(PropertyType.BPMN_OUTGOING, value).outgoing?.shouldBeEmpty()} ("");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.BPMN_INCOMING, value, "fromStart1").incoming?.shouldHaveSingleItem()} ("");
+        {value: String -> readAndUpdateMultiPropTask(PropertyType.BPMN_OUTGOING, value, "toEnd2").outgoing?.shouldHaveSingleItem()} ("");
     }
 
     private fun readAndUpdateSinglePropTask(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnServiceTask {
@@ -96,7 +96,7 @@ internal class SpecialCaseIncomingOutgoingIsParseable {
     }
 
     private fun readAndUpdateMultiPropTask(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnServiceTask {
-        return readStartEventMultiProp(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(singleServiceTask, property, newValue, propertyIndex = propertyIndex.split(","))))
+        return readStartEventMultiProp(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(multiServiceTask, property, newValue, propertyIndex = propertyIndex.split(","))))
     }
 
     private fun readStartEventMultiProp(processObject: BpmnProcessObject): BpmnServiceTask {
