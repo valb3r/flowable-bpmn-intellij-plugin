@@ -30,7 +30,9 @@ data class BpmnHttpTask(
         val saveResponseParameters: String? = null,
         val resultVariablePrefix: String? = null,
         val saveResponseParametersTransient: String? = null,
-        val saveResponseVariableAsJson: String? = null
+        val saveResponseVariableAsJson: String? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

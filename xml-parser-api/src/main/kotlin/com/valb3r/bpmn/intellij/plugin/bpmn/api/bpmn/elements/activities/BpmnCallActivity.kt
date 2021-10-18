@@ -12,7 +12,9 @@ data class BpmnCallActivity(
         val calledElementType: String? = null,
         val inheritVariables: Boolean? = null,
         val fallbackToDefaultTenant: Boolean? = null,
-        val extensionElements: ExtensionElements? = null
+        val extensionElements: ExtensionElements? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
 ) : WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

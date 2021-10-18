@@ -9,6 +9,8 @@ data class BpmnStartEscalationEvent(
         val documentation: String? = null,
         val asyncBefore: Boolean? = null,
         val asyncAfter: Boolean? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
 ) : WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

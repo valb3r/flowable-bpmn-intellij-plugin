@@ -16,7 +16,9 @@ data class SequenceFlow(
         val documentation: String?,
         @JacksonXmlProperty(isAttribute = true) val sourceRef: String?,
         @JacksonXmlProperty(isAttribute = true) val targetRef: String?,
-        val conditionExpression: ConditionExpression?
+        val conditionExpression: ConditionExpression?,
+        val incoming: String?,
+        val outgoing: String?,
 ): BpmnMappable<BpmnSequenceFlow> {
 
     override fun toElement(): BpmnSequenceFlow {

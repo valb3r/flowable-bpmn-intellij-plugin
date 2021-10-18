@@ -16,7 +16,9 @@ data class ScriptTask(
         @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
         @JacksonXmlProperty(isAttribute = false, localName = "script") val scriptBody: String?,
         @JacksonXmlProperty(isAttribute = true) val scriptFormat: String?,
-        @JacksonXmlProperty(isAttribute = true) val autoStoreVariables: Boolean?
+        @JacksonXmlProperty(isAttribute = true) val autoStoreVariables: Boolean?,
+        val incoming: String?,
+        val outgoing: String?,
 ): BpmnMappable<BpmnScriptTask> {
 
     override fun toElement(): BpmnScriptTask {

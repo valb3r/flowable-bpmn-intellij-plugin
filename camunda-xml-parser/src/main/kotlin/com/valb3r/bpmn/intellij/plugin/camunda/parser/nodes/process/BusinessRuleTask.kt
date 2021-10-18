@@ -17,7 +17,9 @@ data class BusinessRuleTask(
         @JacksonXmlProperty(isAttribute = true) val ruleVariablesInput: String?,
         @JacksonXmlProperty(isAttribute = true) val rules: String?,
         @JacksonXmlProperty(isAttribute = true) val resultVariable: String?,
-        @JacksonXmlProperty(isAttribute = true) val exclude: Boolean?
+        @JacksonXmlProperty(isAttribute = true) val exclude: Boolean?,
+        val incoming: String?,
+        val outgoing: String?,
 ): BpmnMappable<BpmnBusinessRuleTask> {
 
     override fun toElement(): BpmnBusinessRuleTask {

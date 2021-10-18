@@ -17,7 +17,9 @@ data class BpmnDecisionTask(
         val isForCompensation: Boolean? = null,
         val decisionTableReferenceKey: String? = null,
         val decisionTaskThrowErrorOnNoHits: Boolean? = null,
-        val fallbackToDefaultTenantCdata: Boolean? = null
+        val fallbackToDefaultTenantCdata: Boolean? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

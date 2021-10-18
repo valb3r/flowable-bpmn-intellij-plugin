@@ -25,7 +25,9 @@ data class BpmnShellTask(
         val cleanEnv: String? = null,
         val errorCodeVariable: String? = null,
         val outputVariable: String? = null,
-        val directory: String? = null
+        val directory: String? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

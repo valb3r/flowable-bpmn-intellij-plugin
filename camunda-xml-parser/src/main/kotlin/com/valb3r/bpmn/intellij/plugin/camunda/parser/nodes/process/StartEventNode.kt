@@ -20,6 +20,8 @@ data class StartEventNode(
     val documentation: String?,
     @JacksonXmlProperty(isAttribute = true) val asyncBefore: Boolean?,
     @JacksonXmlProperty(isAttribute = true) val asyncAfter: Boolean?,
+    val incoming: String?,
+    val outgoing: String?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val timerEventDefinition: TimerEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val signalEventDefinition: SignalEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val messageEventDefinition: MessageEventDefinition?,

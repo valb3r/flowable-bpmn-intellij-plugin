@@ -11,6 +11,8 @@ data class BpmnTransactionalSubProcess(
         val asyncBefore: Boolean? = null,
         val asyncAfter: Boolean? = null,
         val exclusive: Boolean? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
         val transactionalSubprocess: Boolean // can't set default for @KotlinBuilder
 ): WithBpmnId {
 

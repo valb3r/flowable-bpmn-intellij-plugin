@@ -16,7 +16,9 @@ data class BpmnBoundaryEvent(
         val cancelEventDefinition: CancelEventDefinition? = null,
         val escalationEventDefinition: EscalationEventDefinition? = null,
         val conditionalEventDefinition: ConditionalEventDefinition? = null,
-        val compensateEventDefinition: CompensateEventDefinition? = null
+        val compensateEventDefinition: CompensateEventDefinition? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

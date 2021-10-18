@@ -13,7 +13,9 @@ data class ManualTask(
         @JacksonXmlProperty(isAttribute = true) val documentation: String?,
         @JacksonXmlProperty(isAttribute = true) val asyncBefore: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val asyncAfter: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?
+        @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
+        val incoming: String?,
+        val outgoing: String?,
 ): BpmnMappable<BpmnManualTask> {
 
     override fun toElement(): BpmnManualTask {

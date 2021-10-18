@@ -14,6 +14,8 @@ data class BoundaryEvent(
     @JacksonXmlProperty(isAttribute = true) val attachedToRef: String?,
     @JacksonXmlProperty(isAttribute = true) val cancelActivity: Boolean?,
     val documentation: String?,
+    val incoming: String?,
+    val outgoing: String?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val timerEventDefinition: TimerEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val signalEventDefinition: SignalEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val messageEventDefinition: MessageEventDefinition?,

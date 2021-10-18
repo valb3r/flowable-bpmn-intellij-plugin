@@ -9,6 +9,8 @@ data class BpmnEndEvent(
         val documentation: String? = null,
         val asyncBefore: Boolean? = null,
         val asyncAfter: Boolean? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
         val errorEventDefinition: ErrorEventDefinition? = null,
         val escalationEventDefinition: EscalationEventDefinition? = null,
         val cancelEventDefinition: CancelEventDefinition? = null,

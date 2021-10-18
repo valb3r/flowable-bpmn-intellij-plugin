@@ -10,7 +10,9 @@ data class InclusiveGateway(
         @JacksonXmlProperty(isAttribute = true) val id: String,
         @JacksonXmlProperty(isAttribute = true) val name: String?,
         @JacksonXmlProperty(isAttribute = true, localName = "default") val defaultElement: String?,
-        val documentation: String?
+        val documentation: String?,
+        val incoming: String?,
+        val outgoing: String?,
 ): BpmnMappable<BpmnInclusiveGateway> {
 
     override fun toElement(): BpmnInclusiveGateway {

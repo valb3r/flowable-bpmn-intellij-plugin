@@ -20,6 +20,8 @@ data class BpmnUserTask(
     val formFieldValidation: Boolean? = null,
     val priority: String? = null,
     val skipExpression: String? = null,
+    val incoming: String? = null,
+    val outgoing: String? = null,
     /* BPMN engine specific extensions (intermediate storage) */
     val extensionElements: List<ExtensionElement>? = null,
     /* Flattened extensionElements, for explicitness - these are the target of binding */

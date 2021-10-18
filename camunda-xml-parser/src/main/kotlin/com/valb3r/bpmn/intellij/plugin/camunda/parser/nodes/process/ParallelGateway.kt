@@ -10,6 +10,8 @@ data class ParallelGateway(
         @JacksonXmlProperty(isAttribute = true) val id: String,
         @JacksonXmlProperty(isAttribute = true) val name: String?,
         @JacksonXmlProperty(isAttribute = true, localName = "default") val defaultElement: String?,
+        val incoming: String?,
+        val outgoing: String?,
         val documentation: String?
 ): BpmnMappable<BpmnParallelGateway> {
 

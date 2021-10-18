@@ -7,7 +7,9 @@ data class BpmnBoundaryConditionalEvent(
         override val id: BpmnElementId,
         val name: String? = null,
         val attachedToRef: BpmnElementId? = null,
-        val cancelActivity: Boolean? = null
+        val cancelActivity: Boolean? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

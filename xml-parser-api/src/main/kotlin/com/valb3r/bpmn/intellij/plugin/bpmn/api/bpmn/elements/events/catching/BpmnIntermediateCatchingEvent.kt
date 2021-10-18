@@ -11,7 +11,9 @@ data class BpmnIntermediateCatchingEvent(
         val timerEventDefinition: TimerEventDefinition? = null,
         val signalEventDefinition: SignalEventDefinition? = null,
         val messageEventDefinition: MessageEventDefinition? = null,
-        val conditionalEventDefinition: ConditionalEventDefinition? = null
+        val conditionalEventDefinition: ConditionalEventDefinition? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
 ) : WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

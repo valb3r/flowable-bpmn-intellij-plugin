@@ -7,7 +7,9 @@ data class BpmnExclusiveGateway(
         override val id: BpmnElementId,
         val name: String? = null,
         val defaultElement: String? = null,
-        val documentation: String? = null
+        val documentation: String? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

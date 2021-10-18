@@ -17,6 +17,8 @@ data class CallActivity(
         @JacksonXmlProperty(isAttribute = true) val calledElementType: String?,
         @JacksonXmlProperty(isAttribute = true) val inheritVariables: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val fallbackToDefaultTenant: Boolean?,
+        val incoming: String?,
+        val outgoing: String?,
         val extensionElements: ExtensionElements?
 ): BpmnMappable<BpmnCallActivity> {
 

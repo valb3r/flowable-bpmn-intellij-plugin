@@ -19,6 +19,8 @@ class AdHocSubProcess: BpmnMappable<BpmnAdHocSubProcess>, ProcessBody() {
     var documentation: String? = null
     @JacksonXmlProperty(isAttribute = true) val asyncBefore: Boolean? = null
     @JacksonXmlProperty(isAttribute = true) val asyncAfter: Boolean? = null
+    val incoming: String? = null
+    val outgoing: String? = null
     var completionCondition: CompletionCondition? = null
 
     override fun toElement(): BpmnAdHocSubProcess {

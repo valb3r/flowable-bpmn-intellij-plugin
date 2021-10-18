@@ -11,7 +11,9 @@ data class BpmnEventSubprocess(
         val asyncBefore: Boolean? = null,
         val asyncAfter: Boolean? = null,
         val exclusive: Boolean? = null,
-        val triggeredByEvent: Boolean? = null
+        val triggeredByEvent: Boolean? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

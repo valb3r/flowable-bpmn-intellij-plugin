@@ -10,7 +10,9 @@ data class BpmnReceiveTask(
         val async: Boolean? = null,
         val asyncBefore: Boolean? = null,
         val asyncAfter: Boolean? = null,
-        val isForCompensation: Boolean? = null
+        val isForCompensation: Boolean? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

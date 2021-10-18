@@ -15,7 +15,9 @@ data class BpmnCamelTask(
         val asyncAfter: Boolean? = null,
         val exclusive: Boolean? = null,
         val isForCompensation: Boolean? = null,
-        val camelContext: String? = null
+        val camelContext: String? = null,
+        val incoming: String? = null,
+        val outgoing: String? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
