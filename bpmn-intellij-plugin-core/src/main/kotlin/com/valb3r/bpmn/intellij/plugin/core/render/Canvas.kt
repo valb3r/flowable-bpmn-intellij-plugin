@@ -12,6 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
+import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.properties.PropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElement
@@ -203,7 +204,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         state
                 .elementByDiagramId[elementIdForPropertiesTable]
                 ?.let { elemId ->
-                    state.elemPropertiesByStaticElementId[elemId]?.let { propsVisualizer?.visualize(state.elemPropertiesByStaticElementId, elemId) }
+                    state.elemPropertiesByStaticElementId[elemId]?.let { propsVisualizer?.visualize(newElementsFactory(project), state.elemPropertiesByStaticElementId, elemId) }
                 } ?: propsVisualizer?.clear()
     }
 

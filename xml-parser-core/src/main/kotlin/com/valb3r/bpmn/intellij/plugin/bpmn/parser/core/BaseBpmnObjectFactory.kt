@@ -151,7 +151,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         return PropertyTable(table)
     }
 
-    protected abstract fun propertyTypes(): List<PropertyType>
+    abstract override fun propertyTypes(): List<PropertyType>
 
     protected open fun processDtoToPropertyMap(dto: Any): MutableMap<PropertyType, MutableList<Property>> {
         val result: MutableMap<PropertyType, MutableList<Property>> = mutableMapOf()

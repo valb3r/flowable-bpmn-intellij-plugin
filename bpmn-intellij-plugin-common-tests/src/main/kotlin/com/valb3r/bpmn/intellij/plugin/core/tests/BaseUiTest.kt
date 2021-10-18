@@ -28,6 +28,7 @@ import com.valb3r.bpmn.intellij.plugin.core.events.BpmnEdgeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnShapeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.FileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
+import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
@@ -227,6 +228,7 @@ abstract class BaseUiTest {
         val id = Pair(elementId, PropertyType.ID)
         clickOnId(diagramElementId)
         propertiesVisualizer(project).visualize(
+                newElementsFactory(project),
                 currentStateProvider(project).currentState().elemPropertiesByStaticElementId,
                 elementId
         )
@@ -237,6 +239,7 @@ abstract class BaseUiTest {
     protected fun changeSelectedIdViaPropertiesVisualizer(elementId: BpmnElementId, newId: String) {
         val id = Pair(elementId, PropertyType.ID)
         propertiesVisualizer(project).visualize(
+                newElementsFactory(project),
                 currentStateProvider(project).currentState().elemPropertiesByStaticElementId,
                 elementId
         )
