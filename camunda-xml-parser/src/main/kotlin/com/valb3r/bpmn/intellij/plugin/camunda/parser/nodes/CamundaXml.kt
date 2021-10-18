@@ -25,6 +25,7 @@ import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Mappings
 import org.mapstruct.factory.Mappers
+import java.util.concurrent.ConcurrentHashMap
 
 
 const val EXTENSION_ELEM_STREAM = "java(null == input.getExtensionElements() ? null : input.getExtensionElements().stream()"
@@ -112,6 +113,7 @@ open class ProcessBody {
 // https://github.com/FasterXML/jackson-dataformat-xml/issues/363
 // unfortunately this has failed with Kotlin 'data' classes
 class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
+    private val mappers = ConcurrentHashMap<Class<*>, Any>()
 
     @JacksonXmlProperty(isAttribute = true) var id: String? = null // it is false - it is non-null
     @JacksonXmlProperty(isAttribute = true) var name: String? = null
@@ -119,7 +121,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     @JacksonXmlProperty(isAttribute = true) var isExecutable: Boolean? = null
 
     override fun toElement(): BpmnProcess {
-        val result = Mappers.getMapper(ProcessNodeMapping::class.java).convertToDto(this)
+        val result = cachedMapper(ProcessNodeMapping::class.java).convertToDto(this)
         val mappedBody = mapBody(this)
 
         return result.copy(
@@ -149,7 +151,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     }
 
     private fun mapBody(body: ProcessBody): BpmnProcessBody {
-        val bodyMapper = Mappers.getMapper(BodyMapping::class.java)
+        val bodyMapper = cachedMapper(BodyMapping::class.java)
         return fillBodyWithDedicatedElements(bodyMapper.convertToDto(body))
     }
 
@@ -166,17 +168,17 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
     private fun applyServiceTaskCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
-        result = extractTasksBasedOnType(result, "camel",  Mappers.getMapper(CamelMapper::class.java)) { updates, target -> target.copy(camelTask = updates) }
-        result = extractTasksBasedOnType(result, "http",  Mappers.getMapper(HttpMapper::class.java)) { updates, target -> target.copy(httpTask = updates) }
-        result = extractTasksBasedOnType(result, "mail",  Mappers.getMapper(MailMapper::class.java)) { updates, target -> target.copy(mailTask = updates) }
-        result = extractTasksBasedOnType(result, "mule",  Mappers.getMapper(MuleMapper::class.java)) { updates, target -> target.copy(muleTask = updates) }
-        result = extractTasksBasedOnType(result, "dmn",  Mappers.getMapper(DecisionMapper::class.java)) { updates, target -> target.copy(decisionTask = updates) }
-        result = extractTasksBasedOnType(result, "shell",  Mappers.getMapper(ShellMapper::class.java)) { updates, target -> target.copy(shellTask = updates) }
+        result = extractTasksBasedOnType(result, "camel",  cachedMapper(CamelMapper::class.java)) { updates, target -> target.copy(camelTask = updates) }
+        result = extractTasksBasedOnType(result, "http",  cachedMapper(HttpMapper::class.java)) { updates, target -> target.copy(httpTask = updates) }
+        result = extractTasksBasedOnType(result, "mail",  cachedMapper(MailMapper::class.java)) { updates, target -> target.copy(mailTask = updates) }
+        result = extractTasksBasedOnType(result, "mule",  cachedMapper(MuleMapper::class.java)) { updates, target -> target.copy(muleTask = updates) }
+        result = extractTasksBasedOnType(result, "dmn",  cachedMapper(DecisionMapper::class.java)) { updates, target -> target.copy(decisionTask = updates) }
+        result = extractTasksBasedOnType(result, "shell",  cachedMapper(ShellMapper::class.java)) { updates, target -> target.copy(shellTask = updates) }
         return result
     }
 
     private fun applySubprocessCustomizationByEventTrigger(process: BpmnProcessBody): BpmnProcessBody {
-        val mapper = Mappers.getMapper(EventSubProcessMapper::class.java)
+        val mapper = cachedMapper(EventSubProcessMapper::class.java)
         process.subProcess?.apply {
             val byTypeGroup = this.groupBy { it.triggeredByEvent == true }
             return process.copy(subProcess = byTypeGroup[false], eventSubProcess = byTypeGroup[true]?.map { mapper.convertToDto(it) })
@@ -186,51 +188,51 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
     private fun applyIntermediateCatchEventCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
-        result = extractIntermediateCatchEventsBasedOnType(result, { null != it.timerEventDefinition },  Mappers.getMapper(TimerCatchingMapper::class.java)) { updates, target -> target.copy(intermediateTimerCatchingEvent = updates) }
-        result = extractIntermediateCatchEventsBasedOnType(result, { null != it.signalEventDefinition },  Mappers.getMapper(SignalCatchingMapper::class.java)) { updates, target -> target.copy(intermediateSignalCatchingEvent = updates) }
-        result = extractIntermediateCatchEventsBasedOnType(result, { null != it.messageEventDefinition },  Mappers.getMapper(MessageCatchingMapper::class.java)) { updates, target -> target.copy(intermediateMessageCatchingEvent = updates) }
-        result = extractIntermediateCatchEventsBasedOnType(result, { null != it.conditionalEventDefinition },  Mappers.getMapper(ConditionalCatchingMapper::class.java)) { updates, target -> target.copy(intermediateConditionalCatchingEvent = updates) }
+        result = extractIntermediateCatchEventsBasedOnType(result, { null != it.timerEventDefinition },  cachedMapper(TimerCatchingMapper::class.java)) { updates, target -> target.copy(intermediateTimerCatchingEvent = updates) }
+        result = extractIntermediateCatchEventsBasedOnType(result, { null != it.signalEventDefinition },  cachedMapper(SignalCatchingMapper::class.java)) { updates, target -> target.copy(intermediateSignalCatchingEvent = updates) }
+        result = extractIntermediateCatchEventsBasedOnType(result, { null != it.messageEventDefinition },  cachedMapper(MessageCatchingMapper::class.java)) { updates, target -> target.copy(intermediateMessageCatchingEvent = updates) }
+        result = extractIntermediateCatchEventsBasedOnType(result, { null != it.conditionalEventDefinition },  cachedMapper(ConditionalCatchingMapper::class.java)) { updates, target -> target.copy(intermediateConditionalCatchingEvent = updates) }
         return result
     }
 
     private fun applyIntermediateThrowingEventCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
-        result = extractIntermediateThrowingEventsBasedOnType(result, { null == it.escalationEventDefinition && null == it.signalEventDefinition },  Mappers.getMapper(NoneThrowMapper::class.java)) { updates, target -> target.copy(intermediateNoneThrowingEvent = updates) }
-        result = extractIntermediateThrowingEventsBasedOnType(result, { null != it.signalEventDefinition },  Mappers.getMapper(SignalThrowMapper::class.java)) { updates, target -> target.copy(intermediateSignalThrowingEvent = updates) }
-        result = extractIntermediateThrowingEventsBasedOnType(result, { null != it.escalationEventDefinition },  Mappers.getMapper(EscalationThrowMapper::class.java)) { updates, target -> target.copy(intermediateEscalationThrowingEvent = updates) }
+        result = extractIntermediateThrowingEventsBasedOnType(result, { null == it.escalationEventDefinition && null == it.signalEventDefinition },  cachedMapper(NoneThrowMapper::class.java)) { updates, target -> target.copy(intermediateNoneThrowingEvent = updates) }
+        result = extractIntermediateThrowingEventsBasedOnType(result, { null != it.signalEventDefinition },  cachedMapper(SignalThrowMapper::class.java)) { updates, target -> target.copy(intermediateSignalThrowingEvent = updates) }
+        result = extractIntermediateThrowingEventsBasedOnType(result, { null != it.escalationEventDefinition },  cachedMapper(EscalationThrowMapper::class.java)) { updates, target -> target.copy(intermediateEscalationThrowingEvent = updates) }
         return result
     }
 
     private fun applyEndEventCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
-        result = extractEndEventsBasedOnType(result, { null != it.errorEventDefinition },  Mappers.getMapper(EndErrorMapper::class.java)) { updates, target -> target.copy(errorEndEvent = updates) }
-        result = extractEndEventsBasedOnType(result, { null != it.escalationEventDefinition },  Mappers.getMapper(EndEscalationMapper::class.java)) { updates, target -> target.copy(escalationEndEvent = updates) }
-        result = extractEndEventsBasedOnType(result, { null != it.cancelEventDefinition },  Mappers.getMapper(EndCancelMapper::class.java)) { updates, target -> target.copy(cancelEndEvent = updates) }
-        result = extractEndEventsBasedOnType(result, { null != it.terminateEventDefinition },  Mappers.getMapper(EndTerminationMapper::class.java)) { updates, target -> target.copy(terminateEndEvent = updates) }
+        result = extractEndEventsBasedOnType(result, { null != it.errorEventDefinition },  cachedMapper(EndErrorMapper::class.java)) { updates, target -> target.copy(errorEndEvent = updates) }
+        result = extractEndEventsBasedOnType(result, { null != it.escalationEventDefinition },  cachedMapper(EndEscalationMapper::class.java)) { updates, target -> target.copy(escalationEndEvent = updates) }
+        result = extractEndEventsBasedOnType(result, { null != it.cancelEventDefinition },  cachedMapper(EndCancelMapper::class.java)) { updates, target -> target.copy(cancelEndEvent = updates) }
+        result = extractEndEventsBasedOnType(result, { null != it.terminateEventDefinition },  cachedMapper(EndTerminationMapper::class.java)) { updates, target -> target.copy(terminateEndEvent = updates) }
         return result
     }
 
     private fun applyStartEventCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
-        result = extractStartEventsBasedOnType(result, { null != it.conditionalEventDefinition },  Mappers.getMapper(StartConditionalMapper::class.java)) { updates, target -> target.copy(conditionalStartEvent = updates) }
-        result = extractStartEventsBasedOnType(result, { null != it.errorEventDefinition },  Mappers.getMapper(StartErrorMapper::class.java)) { updates, target -> target.copy(errorStartEvent = updates) }
-        result = extractStartEventsBasedOnType(result, { null != it.escalationEventDefinition },  Mappers.getMapper(StartEscalationMapper::class.java)) { updates, target -> target.copy(escalationStartEvent = updates) }
-        result = extractStartEventsBasedOnType(result, { null != it.messageEventDefinition },  Mappers.getMapper(StartMessageMapper::class.java)) { updates, target -> target.copy(messageStartEvent = updates) }
-        result = extractStartEventsBasedOnType(result, { null != it.signalEventDefinition },  Mappers.getMapper(StartSignalMapper::class.java)) { updates, target -> target.copy(signalStartEvent = updates) }
-        result = extractStartEventsBasedOnType(result, { null != it.timerEventDefinition },  Mappers.getMapper(StartTimerMapper::class.java)) { updates, target -> target.copy(timerStartEvent = updates) }
+        result = extractStartEventsBasedOnType(result, { null != it.conditionalEventDefinition },  cachedMapper(StartConditionalMapper::class.java)) { updates, target -> target.copy(conditionalStartEvent = updates) }
+        result = extractStartEventsBasedOnType(result, { null != it.errorEventDefinition },  cachedMapper(StartErrorMapper::class.java)) { updates, target -> target.copy(errorStartEvent = updates) }
+        result = extractStartEventsBasedOnType(result, { null != it.escalationEventDefinition },  cachedMapper(StartEscalationMapper::class.java)) { updates, target -> target.copy(escalationStartEvent = updates) }
+        result = extractStartEventsBasedOnType(result, { null != it.messageEventDefinition },  cachedMapper(StartMessageMapper::class.java)) { updates, target -> target.copy(messageStartEvent = updates) }
+        result = extractStartEventsBasedOnType(result, { null != it.signalEventDefinition },  cachedMapper(StartSignalMapper::class.java)) { updates, target -> target.copy(signalStartEvent = updates) }
+        result = extractStartEventsBasedOnType(result, { null != it.timerEventDefinition },  cachedMapper(StartTimerMapper::class.java)) { updates, target -> target.copy(timerStartEvent = updates) }
         return result
     }
 
     private fun applyBoundaryEventCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
-        result = extractBoundaryEventsBasedOnType(result, { null != it.cancelEventDefinition },  Mappers.getMapper(BoundaryCancelMapper::class.java)) { updates, target -> target.copy(boundaryCancelEvent = updates) }
-        result = extractBoundaryEventsBasedOnType(result, { null != it.compensateEventDefinition },  Mappers.getMapper(BoundaryCompensationMapper::class.java)) { updates, target -> target.copy(boundaryCompensationEvent = updates) }
-        result = extractBoundaryEventsBasedOnType(result, { null != it.conditionalEventDefinition },  Mappers.getMapper(BoundaryConditionalMapper::class.java)) { updates, target -> target.copy(boundaryConditionalEvent = updates) }
-        result = extractBoundaryEventsBasedOnType(result, { null != it.errorEventDefinition },  Mappers.getMapper(BoundaryErrorMapper::class.java)) { updates, target -> target.copy(boundaryErrorEvent = updates) }
-        result = extractBoundaryEventsBasedOnType(result, { null != it.escalationEventDefinition },  Mappers.getMapper(BoundaryEscalationMapper::class.java)) { updates, target -> target.copy(boundaryEscalationEvent = updates) }
-        result = extractBoundaryEventsBasedOnType(result, { null != it.messageEventDefinition },  Mappers.getMapper(BoundaryMessageMapper::class.java)) { updates, target -> target.copy(boundaryMessageEvent = updates) }
-        result = extractBoundaryEventsBasedOnType(result, { null != it.signalEventDefinition },  Mappers.getMapper(BoundarySignalMapper::class.java)) { updates, target -> target.copy(boundarySignalEvent = updates) }
-        result = extractBoundaryEventsBasedOnType(result, { null != it.timerEventDefinition },  Mappers.getMapper(BoundaryTimerMapper::class.java)) { updates, target -> target.copy(boundaryTimerEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.cancelEventDefinition },  cachedMapper(BoundaryCancelMapper::class.java)) { updates, target -> target.copy(boundaryCancelEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.compensateEventDefinition },  cachedMapper(BoundaryCompensationMapper::class.java)) { updates, target -> target.copy(boundaryCompensationEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.conditionalEventDefinition },  cachedMapper(BoundaryConditionalMapper::class.java)) { updates, target -> target.copy(boundaryConditionalEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.errorEventDefinition },  cachedMapper(BoundaryErrorMapper::class.java)) { updates, target -> target.copy(boundaryErrorEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.escalationEventDefinition },  cachedMapper(BoundaryEscalationMapper::class.java)) { updates, target -> target.copy(boundaryEscalationEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.messageEventDefinition },  cachedMapper(BoundaryMessageMapper::class.java)) { updates, target -> target.copy(boundaryMessageEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.signalEventDefinition },  cachedMapper(BoundarySignalMapper::class.java)) { updates, target -> target.copy(boundarySignalEvent = updates) }
+        result = extractBoundaryEventsBasedOnType(result, { null != it.timerEventDefinition },  cachedMapper(BoundaryTimerMapper::class.java)) { updates, target -> target.copy(boundaryTimerEvent = updates) }
         return result
     }
 
@@ -294,6 +296,9 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         return process
     }
 
+    private fun <T> cachedMapper(mapper: Class<T>): T {
+        return mappers.computeIfAbsent(mapper) { Mappers.getMapper(mapper) as Any } as T
+    }
 
     @Mapper(uses = [BpmnElementIdMapper::class, BodyMapping::class])
     interface ProcessNodeMapping {
