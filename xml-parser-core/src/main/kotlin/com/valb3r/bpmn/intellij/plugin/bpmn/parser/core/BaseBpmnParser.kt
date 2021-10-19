@@ -487,6 +487,9 @@ abstract class BaseBpmnParser: BpmnParser {
 
             var (attrName, attrValue) = attributeSelector?.split("=") ?: listOf(null, null)
             if (true == attrValue?.contains('@')) {
+                if (null == value && null == valueIndexInArray) { // Skip null unindexable props
+                    return
+                }
                 attrValue = attrValue.replace("@", valueIndexInArray!!.removeAt(0))
             }
 

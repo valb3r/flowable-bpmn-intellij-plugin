@@ -142,11 +142,11 @@ class CamundaParser : BaseBpmnParser() {
     }
 
     override fun omgdcNs(): NS {
-        return NS("omgdc", "http://www.omg.org/spec/DD/20100524/DC")
+        return NS("dc", "http://www.omg.org/spec/DD/20100524/DC")
     }
 
     override fun omgdiNs(): NS {
-        return NS("omgdi", "http://www.omg.org/spec/DD/20100524/DI")
+        return NS("di", "http://www.omg.org/spec/DD/20100524/DI")
     }
 
     override fun xsiNs(): NS {

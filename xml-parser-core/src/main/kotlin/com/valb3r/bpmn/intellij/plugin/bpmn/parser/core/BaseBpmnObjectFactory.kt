@@ -204,8 +204,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
                 return
             }
             node.forEach {
-                val indexKey = type.indexInGroupArrayName!!.split(".")[arrayIndexDepth]
-                val indexValue = when (indexKey) {
+                val indexValue = when (val indexKey = type.indexInGroupArrayName!!.split(".")[arrayIndexDepth]) {
                     "@" -> it.asText()
                     else -> it[indexKey].asText()
                 }
