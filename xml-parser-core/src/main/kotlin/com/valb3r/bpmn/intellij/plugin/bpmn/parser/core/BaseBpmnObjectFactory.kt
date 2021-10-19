@@ -113,17 +113,17 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         return result as T
     }
 
-    override fun <T : WithBpmnId> newOutgoingSequence(obj: T): BpmnSequenceFlow {
-        return when (obj) {
+    override fun <T : WithBpmnId> newOutgoingSequence(sourceRef: T): BpmnSequenceFlow {
+        return when (sourceRef) {
             is BpmnExclusiveGateway, is BpmnParallelGateway, is BpmnInclusiveGateway -> BpmnSequenceFlow(
                 generateBpmnId(),
                 null,
                 null,
-                obj.id.id,
+                sourceRef.id.id,
                 "",
                 ConditionExpression("tFormalExpression", "")
             )
-            else -> BpmnSequenceFlow(generateBpmnId(), null, null, obj.id.id, "", null)
+            else -> BpmnSequenceFlow(generateBpmnId(), null, null, sourceRef.id.id, "", null)
         }
     }
 

@@ -16,6 +16,7 @@ import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnEdgeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnParentChangedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DraggedToEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.render.*
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.*
@@ -286,9 +287,9 @@ abstract class ShapeRenderElement(
             return mutableListOf()
         }
 
-        val elem = state().currentState.elementByBpmnId[bpmnElementId] ?: return mutableListOf()
+        val sourceElem = state().currentState.elementByBpmnId[bpmnElementId] ?: return mutableListOf()
 
-        val newSequenceBpmn = newElementsFactory(state().ctx.project).newOutgoingSequence(elem.element)
+        val newSequenceBpmn = newElementsFactory(state().ctx.project).newOutgoingSequence(sourceElem.element)
         val anchors = findSequenceAnchors(targetArea) ?: return mutableListOf()
         val notYetExistingDiagramId = DiagramElementId("")
         val sourceBounds = shape.rectBounds()
@@ -308,7 +309,9 @@ abstract class ShapeRenderElement(
                         WithParentId(parentForRelatedSequenceElem().bpmnElementId, newSequenceBpmn),
                         EdgeElementState(newSequenceDiagram),
                         props
-                )
+                ),
+                StringValueUpdatedEvent(bpmnElementId, PropertyType.BPMN_OUTGOING, newSequenceBpmn.id.id, propertyIndex = listOf(newSequenceBpmn.id.id)),
+                StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_INCOMING, newSequenceBpmn.id.id, propertyIndex = listOf(newSequenceBpmn.id.id))
         )
     }
 
