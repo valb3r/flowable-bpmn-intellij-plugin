@@ -500,7 +500,12 @@ abstract class BaseBpmnParser: BpmnParser {
 
                 val newElem = currentNode.addElement(name)
                 currentNode = newElem
-                newElem.addAttribute(attrName, attrValue)
+                // TODO Handle this with setAttributeOrValueOrCdataOrRemoveIfNull ?
+                if (attrName != "\$") {
+                    newElem.addAttribute(attrName, attrValue)
+                } else {
+                    newElem.text = attrValue
+                }
             } else {
                 currentNode = child
             }

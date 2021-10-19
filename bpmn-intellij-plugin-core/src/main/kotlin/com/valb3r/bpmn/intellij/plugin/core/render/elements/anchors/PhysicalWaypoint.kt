@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.DraggedToEvent
@@ -67,13 +68,16 @@ class PhysicalWaypoint(
             return events
         }
 
+        val state = state().currentState
+        val currentProps = state.propertyWithElementByPropertyType
+        val rootProcessId = state.processId
         if (null != droppedOn && !multipleElementsSelected() && !multipleElementsDragged()) {
             if (edgePhysicalSize - 1 == physicalPos) {
                 events += StringValueUpdatedEvent(parentElementBpmnId, PropertyType.TARGET_REF, droppedOn.id)
-                events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_INCOMING, parentElementBpmnId.id)
+                handleBpmnIncomingCascade(events, currentProps, droppedOn, rootProcessId, parentElementBpmnId)
             } else if (0 == physicalPos) {
                 events += StringValueUpdatedEvent(parentElementBpmnId, PropertyType.SOURCE_REF, droppedOn.id)
-                events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_OUTGOING, parentElementBpmnId.id)
+                handleBpmnOutgoingCascade(events, currentProps, droppedOn, rootProcessId, parentElementBpmnId)
             }
         }
 
@@ -115,4 +119,38 @@ class PhysicalWaypoint(
     private fun isSourceRefAttached() = null != state().currentState.elemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.SOURCE_REF)?.value
     private fun isTargetRefAttached() = null != state().currentState.elemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.TARGET_REF)?.value
     private fun isEdgeBeginOrEnd() = edgePhysicalSize - 1 == physicalPos || 0 == physicalPos
+
+    private fun handleBpmnOutgoingCascade(
+        events: MutableList<Event>,
+        currentProps: Map<PropertyType, Map<BpmnElementId, Property>>,
+        droppedOn: BpmnElementId,
+        rootProcessId: BpmnElementId,
+        parentElementBpmnId: BpmnElementId
+    ) {
+        events += computeCascadeChangeOfBpmnIncomingOutgoingIndex(currentProps, PropertyType.BPMN_OUTGOING)
+        if (droppedOn != rootProcessId) {
+            events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_INCOMING, parentElementBpmnId.id, propertyIndex = listOf(parentElementBpmnId.id))
+        }
+    }
+
+    private fun handleBpmnIncomingCascade(
+        events: MutableList<Event>,
+        currentProps: Map<PropertyType, Map<BpmnElementId, Property>>,
+        droppedOn: BpmnElementId,
+        rootProcessId: BpmnElementId,
+        parentElementBpmnId: BpmnElementId
+    ) {
+        events += computeCascadeChangeOfBpmnIncomingOutgoingIndex(currentProps, PropertyType.BPMN_INCOMING)
+        if (droppedOn != rootProcessId) {
+            events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_INCOMING, parentElementBpmnId.id, propertyIndex = listOf(parentElementBpmnId.id))
+        }
+    }
+
+    private fun computeCascadeChangeOfBpmnIncomingOutgoingIndex(props: Map<PropertyType, Map<BpmnElementId, Property>>, propertyType: PropertyType): List<StringValueUpdatedEvent> {
+        val defaultIndex = emptyList<StringValueUpdatedEvent>()
+        val elementId = parentElementBpmnId ?: return defaultIndex
+        return props[propertyType]
+            ?.filter { it.value.value == elementId.id }
+            ?.map { StringValueUpdatedEvent(it.key, propertyType, "", propertyIndex = it.value.index) } ?: emptyList()
+    }
 }
