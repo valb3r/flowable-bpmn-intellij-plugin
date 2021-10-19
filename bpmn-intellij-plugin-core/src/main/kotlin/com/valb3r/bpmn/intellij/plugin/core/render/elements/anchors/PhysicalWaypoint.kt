@@ -16,6 +16,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.core.render.ICON_Z_INDEX
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.ACTIONS_ICO_SIZE
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.computeCascadeChangeOfBpmnIncomingOutgoingIndex
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.ResizeViewTransform
 import java.awt.geom.Point2D
@@ -127,7 +128,7 @@ class PhysicalWaypoint(
         rootProcessId: BpmnElementId,
         parentElementBpmnId: BpmnElementId
     ) {
-        events += computeCascadeChangeOfBpmnIncomingOutgoingIndex(currentProps, PropertyType.BPMN_OUTGOING)
+        events += computeCascadeChangeOfBpmnIncomingOutgoingIndex(parentElementBpmnId, currentProps, PropertyType.BPMN_OUTGOING)
         if (droppedOn != rootProcessId) {
             events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_INCOMING, parentElementBpmnId.id, propertyIndex = listOf(parentElementBpmnId.id))
         }
@@ -140,17 +141,9 @@ class PhysicalWaypoint(
         rootProcessId: BpmnElementId,
         parentElementBpmnId: BpmnElementId
     ) {
-        events += computeCascadeChangeOfBpmnIncomingOutgoingIndex(currentProps, PropertyType.BPMN_INCOMING)
+        events += computeCascadeChangeOfBpmnIncomingOutgoingIndex(parentElementBpmnId, currentProps, PropertyType.BPMN_INCOMING)
         if (droppedOn != rootProcessId) {
             events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_INCOMING, parentElementBpmnId.id, propertyIndex = listOf(parentElementBpmnId.id))
         }
-    }
-
-    private fun computeCascadeChangeOfBpmnIncomingOutgoingIndex(props: Map<PropertyType, Map<BpmnElementId, Property>>, propertyType: PropertyType): List<StringValueUpdatedEvent> {
-        val defaultIndex = emptyList<StringValueUpdatedEvent>()
-        val elementId = parentElementBpmnId ?: return defaultIndex
-        return props[propertyType]
-            ?.filter { it.value.value == elementId.id }
-            ?.map { StringValueUpdatedEvent(it.key, propertyType, "", propertyIndex = it.value.index) } ?: emptyList()
     }
 }
