@@ -16,11 +16,12 @@ enum class PropertyType(
     val group: List<FunctionalGroupType>? = null,
     val indexInGroupArrayName: String? = null,
     val indexCascades: Boolean = false,
+    val explicitIndexCascades: List<String>? = null,
     val removeEnclosingNodeIfNullOrEmpty: Boolean = false,
     val hideIfNullOrEmpty: Boolean = false,
     val visible: Boolean = true
 ) {
-    ID("id", "ID", STRING, "id.id", true, null, 1000), // ID should fire last
+    ID("id", "ID", STRING, "id.id", true, null, 1000, explicitIndexCascades = listOf("BPMN_INCOMING", "BPMN_OUTGOING")), // ID should fire last
     NAME("name", "Name", STRING),
     DOCUMENTATION("documentation", "Documentation", STRING),
     IS_FOR_COMPENSATION("forCompensation", "Is for compensation", BOOLEAN),

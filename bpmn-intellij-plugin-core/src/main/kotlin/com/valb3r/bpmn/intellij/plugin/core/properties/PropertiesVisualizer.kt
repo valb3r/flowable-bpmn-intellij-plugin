@@ -309,20 +309,39 @@ class PropertiesVisualizer(
         if (null != event.referencedValue) {
             state.forEach { (id, props) ->
                 props.filter { k, _ -> k.updatedBy == event.property }.filter { it.second.value == event.referencedValue }.forEach { prop ->
-                    cascades += StringValueUpdatedEvent(id, prop.first, event.newValue, event.referencedValue, null)
+                    cascades += StringValueUpdatedEvent(id, prop.first, event.newValue, event.referencedValue, null, propertyIndex = prop.second.index)
                 }
             }
         }
+
         if (event.property.indexCascades) {
             state[event.bpmnElementId]?.view()?.filter { it.key.indexInGroupArrayName == event.property.indexInGroupArrayName }?.forEach { (k, _) ->
-                if (event.newValue.isBlank()) {
-                    cascades += UiOnlyValueRemovedEvent(event.bpmnElementId, k, event.propertyIndex!!)
+                uiEventCascade(event, cascades, k)
+            }
+        }
+
+        event.property.explicitIndexCascades?.forEach {
+            val type = PropertyType.valueOf(it)
+            state.forEach { (id, props) ->
+                props.getAll(type).filter { it.value == event.referencedValue }.forEach { prop ->
+                    uiEventCascade(event.copy(bpmnElementId = id, propertyIndex = prop.index), cascades, type)
                 }
-                cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, k, event.propertyIndex!!, event.propertyIndex.dropLast(1) + event.newValue)
             }
         }
 
         updateEventsRegistry(project).addEvents(listOf(event) + cascades)
+    }
+
+    private fun uiEventCascade(
+        event: StringValueUpdatedEvent,
+        cascades: MutableList<Event>,
+        cascadePropTo: PropertyType
+    ) {
+        val index = event.propertyIndex ?: listOf()
+        if (event.newValue.isBlank()) {
+            cascades += UiOnlyValueRemovedEvent(event.bpmnElementId, cascadePropTo, index)
+        }
+        cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, cascadePropTo, index, index.dropLast(1) + event.newValue)
     }
 
     private fun stringValueUpdatedTemplate(

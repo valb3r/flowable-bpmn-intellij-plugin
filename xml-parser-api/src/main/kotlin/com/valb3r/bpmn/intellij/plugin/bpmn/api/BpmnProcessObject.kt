@@ -177,7 +177,7 @@ data class PropertyTable(private val properties: MutableMap<PropertyType, Mutabl
     val keys get() = properties.keys
 
     operator fun get(type: PropertyType): Property? {
-        return properties[type]?.get(0)
+        return properties[type]?.getOrNull(0)
     }
 
     operator fun set(type: PropertyType, value: Property) {

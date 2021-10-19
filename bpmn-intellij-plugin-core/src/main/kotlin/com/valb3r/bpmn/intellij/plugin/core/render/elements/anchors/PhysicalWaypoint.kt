@@ -130,7 +130,7 @@ class PhysicalWaypoint(
     ) {
         events += computeCascadeChangeOfBpmnIncomingOutgoingIndex(parentElementBpmnId, currentProps, PropertyType.BPMN_OUTGOING)
         if (droppedOn != rootProcessId) {
-            events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_INCOMING, parentElementBpmnId.id, propertyIndex = listOf(parentElementBpmnId.id))
+            events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_OUTGOING, parentElementBpmnId.id, propertyIndex = listOf(parentElementBpmnId.id))
         }
     }
 
