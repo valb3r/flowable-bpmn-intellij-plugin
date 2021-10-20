@@ -66,7 +66,7 @@ internal class ActivityMailTaskTest {
         {value: String -> readAndUpdate(PropertyType.DOCUMENTATION, value).documentation.shouldBeEqualTo(value)} ("new docs");
         {value: Boolean -> readAndUpdate(PropertyType.ASYNC, value).async.shouldBeEqualTo(value)} (false);
         {value: Boolean -> readAndUpdate(PropertyType.IS_FOR_COMPENSATION, value).isForCompensation.shouldBeEqualTo(value)} (false);
-        {value: String -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.HEADERS, value).headers.shouldBeEqualTo(value)}} ("Header111");
+        {value: String -> readAndUpdate(PropertyType.HEADERS, value).headers.shouldBeNull()} ("Header111");
         {value: String -> readAndUpdate(PropertyType.TO, value).to.shouldBeEqualTo(value)} ("to@bar.example.com");
         {value: String -> readAndUpdate(PropertyType.FROM, value).from.shouldBeEqualTo(value)} ("from@bar.example.com");
         {value: String -> readAndUpdate(PropertyType.SUBJECT, value).subject.shouldBeEqualTo(value)} ("Some subject to discuss?");
@@ -81,7 +81,7 @@ internal class ActivityMailTaskTest {
     fun `Mail task fields are emptyable`() {
         readAndSetNullString(PropertyType.NAME).name.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
-        assertThrows<IllegalStateException> {readAndSetNullString(PropertyType.HEADERS)}
+        readAndSetNullString(PropertyType.HEADERS).headers.shouldBeNull()
         readAndSetNullString(PropertyType.TO).to.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.FROM).from.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.SUBJECT).subject.shouldBeNullOrEmpty()

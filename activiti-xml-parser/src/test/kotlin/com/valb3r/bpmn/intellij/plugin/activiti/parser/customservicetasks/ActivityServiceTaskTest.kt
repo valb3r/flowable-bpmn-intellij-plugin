@@ -67,9 +67,9 @@ internal class ActivityServiceTaskTest {
         {value: String -> readAndUpdate(PropertyType.CLASS, value).clazz.shouldBeEqualTo(value)} ("com.foo.bar.another.class");
         {value: String -> readAndUpdate(PropertyType.EXPRESSION, value).expression.shouldBeEqualTo(value)} ("#{some.expr()}");
         {value: String -> readAndUpdate(PropertyType.RESULT_VARIABLE_NAME, value).resultVariableName.shouldBeEqualTo(value)} ("NEW_RESULT_TO");
-        {value: String -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeEqualTo(value)}} ("#{skipStuff.yes()}");
-        {value: Boolean -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.IS_TRIGGERABLE, value).triggerable.shouldBeEqualTo(value)}} (false);
-        {value: Boolean -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, value).useLocalScopeForResultVariable.shouldBeEqualTo(value)}} (false)
+        {value: String -> readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeNull()} ("#{skipStuff.yes()}");
+        {value: Boolean -> readAndUpdate(PropertyType.IS_TRIGGERABLE, value).triggerable.shouldBeNull()} (false);
+        {value: Boolean -> readAndUpdate(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, value).useLocalScopeForResultVariable.shouldBeNull()} (false)
     }
 
     @Test
@@ -80,7 +80,7 @@ internal class ActivityServiceTaskTest {
         readAndSetNullString(PropertyType.CLASS).clazz.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.EXPRESSION).expression.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.RESULT_VARIABLE_NAME).resultVariableName.shouldBeNullOrEmpty()
-        assertThrows<IllegalStateException> {readAndSetNullString(PropertyType.SKIP_EXPRESSION)}
+        readAndSetNullString(PropertyType.SKIP_EXPRESSION).skipExpression.shouldBeNull()
     }
 
     private fun readAndSetNullString(property: PropertyType): BpmnServiceTask {
