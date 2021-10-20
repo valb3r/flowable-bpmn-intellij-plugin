@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_19d4g9l" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.10.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:process id="Process_0dz513p" isExecutable="true">
+    <bpmn:complexGateway id="complexGatewaySingle" name="Single complex gateway" camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:jobPriority="1">
+      <bpmn:documentation>Single complex gateway docs</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:failedJobRetryTimeCycle>PT0M</camunda:failedJobRetryTimeCycle>
+        <camunda:executionListener class="com.listener.Start" event="start">
+          <camunda:field name="field1">
+            <camunda:expression>${foo}</camunda:expression>
+          </camunda:field>
+        </camunda:executionListener>
+        <camunda:properties>
+          <camunda:property name="prop1" value="value1" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+    </bpmn:complexGateway>
+    <bpmn:complexGateway id="complexGatewayMulti" name="Multi complex gateway" camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:jobPriority="1">
+      <bpmn:documentation>Mutli complex gateway docs</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:failedJobRetryTimeCycle>PT0M</camunda:failedJobRetryTimeCycle>
+        <camunda:properties>
+          <camunda:property name="prop1" value="value1" />
+          <camunda:property name="prop2" value="value2" />
+        </camunda:properties>
+        <camunda:executionListener class="com.listener.Start" event="start">
+          <camunda:field name="field1">
+            <camunda:string>123</camunda:string>
+          </camunda:field>
+          <camunda:field name="field2">
+            <camunda:string>12345</camunda:string>
+          </camunda:field>
+        </camunda:executionListener>
+        <camunda:executionListener class="com.foo.AnotherStart" event="start">
+          <camunda:field name="field1">
+            <camunda:string>123</camunda:string>
+          </camunda:field>
+          <camunda:field name="field2">
+            <camunda:string>123</camunda:string>
+          </camunda:field>
+        </camunda:executionListener>
+      </bpmn:extensionElements>
+    </bpmn:complexGateway>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0dz513p">
+      <bpmndi:BPMNShape id="Gateway_1nrkvu4_di" bpmnElement="complexGatewaySingle">
+        <dc:Bounds x="165" y="85" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="153" y="142" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_14g27jg_di" bpmnElement="complexGatewayMulti">
+        <dc:Bounds x="165" y="235" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="158" y="292" width="68" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

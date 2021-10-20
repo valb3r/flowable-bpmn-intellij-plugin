@@ -12,6 +12,7 @@ data class BpmnIntermediateCatchingEvent(
         val signalEventDefinition: SignalEventDefinition? = null,
         val messageEventDefinition: MessageEventDefinition? = null,
         val conditionalEventDefinition: ConditionalEventDefinition? = null,
+        val linkEventDefinition: LinkEventDefinition? = null,
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
 ) : WithBpmnId {
@@ -34,5 +35,10 @@ data class MessageEventDefinition(
 )
 
 data class ConditionalEventDefinition(
+        val condition: String? = null
+)
+
+data class LinkEventDefinition(
+        val id: String? = null,
         val condition: String? = null
 )

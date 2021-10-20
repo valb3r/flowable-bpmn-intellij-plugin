@@ -69,8 +69,12 @@ open class ProcessBody {
     var intermediateCatchEvent: List<IntermediateCatchEvent>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
     var intermediateThrowEvent: List<IntermediateThrowEvent>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var linkIntermediateCatchEvent: List<LinkIntermediateCatchEvent>? = null
 
     // Service task alike:
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var task: List<Task>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
     var userTask: List<UserTask>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
@@ -81,6 +85,8 @@ open class ProcessBody {
     var businessRuleTask: List<BusinessRuleTask>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
     var manualTask: List<ManualTask>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var sendTask: List<SendTask>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
     var receiveTask: List<ReceiveTask>? = null
 
@@ -103,6 +109,8 @@ open class ProcessBody {
     var inclusiveGateway: List<InclusiveGateway>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
     var eventBasedGateway: List<EventBasedGateway>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var complexGateway: List<ComplexGateway>? = null
 
     // Linking elements
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
@@ -192,6 +200,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         result = extractIntermediateCatchEventsBasedOnType(result, { null != it.signalEventDefinition },  cachedMapper(SignalCatchingMapper::class.java)) { updates, target -> target.copy(intermediateSignalCatchingEvent = updates) }
         result = extractIntermediateCatchEventsBasedOnType(result, { null != it.messageEventDefinition },  cachedMapper(MessageCatchingMapper::class.java)) { updates, target -> target.copy(intermediateMessageCatchingEvent = updates) }
         result = extractIntermediateCatchEventsBasedOnType(result, { null != it.conditionalEventDefinition },  cachedMapper(ConditionalCatchingMapper::class.java)) { updates, target -> target.copy(intermediateConditionalCatchingEvent = updates) }
+        result = extractIntermediateCatchEventsBasedOnType(result, { null != it.linkEventDefinition },  cachedMapper(LinkIntermediateCatchMapper::class.java)) { updates, target -> target.copy(intermediateLinkCatchingEvent = updates) }
         return result
     }
 
@@ -488,6 +497,9 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
     @Mapper
     interface ConditionalCatchingMapper: IntermediateCatchEventMapper<BpmnIntermediateConditionalCatchingEvent>
+
+    @Mapper
+    interface LinkIntermediateCatchMapper: IntermediateCatchEventMapper<BpmnLinkIntermediateCatchingEvent>
 
     interface IntermediateCatchEventMapper<T> {
         fun convertToDto(input: BpmnIntermediateCatchingEvent): T

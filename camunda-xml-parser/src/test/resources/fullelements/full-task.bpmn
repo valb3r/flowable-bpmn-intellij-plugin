@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0b16y2x" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.10.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:process id="Process_114gfo5" isExecutable="true">
+    <bpmn:task id="simpleFullSingleTask" name="Simple task" camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:jobPriority="1">
+      <bpmn:documentation>Simple task docs</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:failedJobRetryTimeCycle>PT0M</camunda:failedJobRetryTimeCycle>
+        <camunda:executionListener class="com.start.Listener" event="start">
+          <camunda:field name="field1">
+            <camunda:expression>${foo}</camunda:expression>
+          </camunda:field>
+        </camunda:executionListener>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="INPUT1">123</camunda:inputParameter>
+          <camunda:outputParameter name="OUTPUT1">${foo}</camunda:outputParameter>
+        </camunda:inputOutput>
+        <camunda:properties>
+          <camunda:property name="extension0" value="extValue0" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:task id="simpleMultiFullTask" name="Simple multi task" camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:jobPriority="1">
+      <bpmn:documentation>Simple multi task docs</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:failedJobRetryTimeCycle>PT0M</camunda:failedJobRetryTimeCycle>
+        <camunda:executionListener class="com.start.Listener" event="start">
+          <camunda:field name="field1">
+            <camunda:expression>${foo}</camunda:expression>
+          </camunda:field>
+        </camunda:executionListener>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="INPUT2">input2value</camunda:inputParameter>
+          <camunda:inputParameter name="INPUT1">123</camunda:inputParameter>
+          <camunda:outputParameter name="OUTPUT2">
+            <camunda:script scriptFormat="js">foo == bar</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="OUTPUT1">${foo}</camunda:outputParameter>
+        </camunda:inputOutput>
+        <camunda:executionListener class="com.listener.End" event="end">
+          <camunda:field name="field1">
+            <camunda:string>123</camunda:string>
+          </camunda:field>
+          <camunda:field name="field2">
+            <camunda:string>123</camunda:string>
+          </camunda:field>
+        </camunda:executionListener>
+        <camunda:properties>
+          <camunda:property name="extension0" value="ext0value" />
+          <camunda:property name="extension1" value="ext1value" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+    </bpmn:task>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_114gfo5">
+      <bpmndi:BPMNShape id="Activity_192o8cs_di" bpmnElement="simpleFullSingleTask">
+        <dc:Bounds x="160" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_066gaxi_di" bpmnElement="simpleMultiFullTask">
+        <dc:Bounds x="160" y="200" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
