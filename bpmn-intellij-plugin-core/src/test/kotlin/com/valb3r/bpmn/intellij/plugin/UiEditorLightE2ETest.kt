@@ -443,6 +443,63 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         val newId = UUID.randomUUID().toString()
         val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne()
+        changeIdViaPropertiesVisualizer(addedEdge.edge.id, addedEdge.bpmnObject.id, newId)
+        val dragDelta = Point2D.Float(100.0f, 100.0f)
+        // Drag point into "nowhere"
+        clickOnId(addedEdge.edge.id)
+        var point = clickOnId(addedEdge.edge.waypoint[0].id)
+        dragToButDontStop(point, Point2D.Float(point.x + dragDelta.x, point.y + dragDelta.y))
+        canvas.stopDragOrSelect()
+        // Drag point back to startServiceTask
+        clickOnId(addedEdge.edge.id)
+        point = clickOnId(addedEdge.edge.waypoint[0].id)
+        dragToButDontStop(point, elementCenter(serviceTaskStartDiagramId))
+        canvas.stopDragOrSelect()
+
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
+            verify(fileCommitter, times(4)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(12)
+            val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+            val origIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().filter { it.property == PropertyType.ID }.shouldHaveSingleItem()
+            val cascadeIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().filter { it.property == PropertyType.SOURCE_REF }.shouldHaveSize(2)
+            val dragTask = lastValue.filterIsInstance<DraggedToEvent>().first()
+            val dragEdge = lastValue.filterIsInstance<DraggedToEvent>().last()
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(9).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.ID, PropertyType.SOURCE_REF, PropertyType.BPMN_OUTGOING))
+            lastValue.shouldContainSame(listOf(edgeBpmn, *propUpdate, dragTask, dragEdge))
+
+            val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
+            sequence.targetRef.shouldBe("")
+
+            origIdUpdate.bpmnElementId.shouldBeEqualTo(addedEdge.bpmnObject.id)
+            origIdUpdate.property.shouldBeEqualTo(PropertyType.ID)
+            origIdUpdate.newValue.shouldBeEqualTo(newId)
+            origIdUpdate.newIdValue?.id.shouldBeEqualTo(newId)
+
+            cascadeIdUpdate.first().bpmnElementId.id.shouldBeEqualTo(newId)
+            cascadeIdUpdate.first().property.shouldBeEqualTo(PropertyType.SOURCE_REF)
+            cascadeIdUpdate.first().newValue.shouldBeEqualTo(basicProcess.process.id.id)
+
+            cascadeIdUpdate.last().bpmnElementId.id.shouldBeEqualTo(newId)
+            cascadeIdUpdate.last().property.shouldBeEqualTo(PropertyType.SOURCE_REF)
+            cascadeIdUpdate.last().newValue.shouldBeEqualTo(serviceTaskStartBpmnId.id)
+
+            val incoming = propUpdate.filter { it.property == PropertyType.BPMN_INCOMING }.shouldHaveSize(2)
+            incoming.map { it.bpmnElementId }.toSet().shouldBeEqualTo(setOf(serviceTaskEndBpmnId))
+            val outgoing = propUpdate.filter { it.property == PropertyType.BPMN_OUTGOING }.shouldHaveSize(4)
+            outgoing.map { it.bpmnElementId }.toSet().shouldBeEqualTo(setOf(serviceTaskStartBpmnId))
+            outgoing.map { it.newValue }.shouldContainSame(arrayOf(addedEdge.bpmnObject.id.id, newId, "", newId))
+        }
+    }
+
+    @Test
+    fun `Cascading position of edge element after renaming element ID updates works too`() {
+        prepareTwoServiceTaskView()
+
+        val newId = UUID.randomUUID().toString()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedAtLeastOnceAndSelectOne()
         changeIdViaPropertiesVisualizer(serviceTaskStartDiagramId, serviceTaskStartBpmnId, newId)
         val dragDelta = Point2D.Float(100.0f, 100.0f)
         val point = clickOnId(serviceTaskStartDiagramId)

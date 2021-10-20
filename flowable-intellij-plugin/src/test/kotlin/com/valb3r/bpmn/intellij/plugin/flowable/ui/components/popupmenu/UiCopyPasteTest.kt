@@ -404,6 +404,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.subList(1, lastValue.size).shouldContainSame(
                     listOf(
+                            StringValueUpdatedEvent(serviceTaskStartBpmnId, property = PropertyType.BPMN_OUTGOING, bpmnElement.id, propertyIndex = listOf(bpmnElement.id)),
+                            StringValueUpdatedEvent(serviceTaskEndBpmnId, property = PropertyType.BPMN_INCOMING, bpmnElement.id, propertyIndex = listOf(bpmnElement.id)),
                             DiagramElementRemovedEvent(diagramElement),
                             BpmnElementRemovedEvent(bpmnElement)
                     )
@@ -460,6 +462,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.subList(1, lastValue.size).shouldContainSame(
                     listOf(
+                            StringValueUpdatedEvent(serviceTaskStartBpmnId, property = PropertyType.BPMN_OUTGOING, bpmnElement.id, propertyIndex = listOf(bpmnElement.id)),
+                            StringValueUpdatedEvent(serviceTaskEndBpmnId, property = PropertyType.BPMN_INCOMING, bpmnElement.id, propertyIndex = listOf(bpmnElement.id)),
                             DiagramElementRemovedEvent(diagramElement),
                             DiagramElementRemovedEvent(serviceTaskStartDiagramId),
                             DiagramElementRemovedEvent(serviceTaskEndDiagramId),
