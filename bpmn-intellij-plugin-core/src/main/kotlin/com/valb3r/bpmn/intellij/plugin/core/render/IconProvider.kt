@@ -22,6 +22,7 @@ interface IconProvider {
     val http: Icon
     val mail: Icon
     val mule: Icon
+    val envelope: Icon
     val decision: Icon
     val shell: Icon
     val tilde: Icon
@@ -34,10 +35,12 @@ interface IconProvider {
     val parallelGateway: String
     val inclusiveGateway: String
     val eventGateway: String
+    val complexGateway: String
     val timerCatchEvent: String
     val messageCatchEvent: String
     val signalCatchEvent: String
     val conditionalCatchEvent: String
+    val intermediateLinkCatchEvent: String
     val noneThrowEvent: String
     val signalThrowEvent: String
     val escalationThrowEvent: String
@@ -96,6 +99,7 @@ data class IconProviderImpl(
         override val http: Icon = IconLoader.getIcon("/icons/ui-icons/http.png"),
         override val mail: Icon = IconLoader.getIcon("/icons/ui-icons/mail.png"),
         override val mule: Icon = IconLoader.getIcon("/icons/ui-icons/mule.png"),
+        override val envelope: Icon = IconLoader.getIcon("/icons/ui-icons/envelope.png"),
         override val decision: Icon = IconLoader.getIcon("/icons/ui-icons/decision.png"),
         override val shell: Icon = IconLoader.getIcon("/icons/ui-icons/shell.png"),
         override val tilde: Icon = IconLoader.getIcon("/icons/ui-icons/tilde.png"),
@@ -108,10 +112,12 @@ data class IconProviderImpl(
         override val parallelGateway: String = "/icons/ui-icons/svg/parallel-gateway.svg".asResource()!!,
         override val inclusiveGateway: String = "/icons/ui-icons/svg/inclusive-gateway.svg".asResource()!!,
         override val eventGateway: String = "/icons/ui-icons/svg/event-gateway.svg".asResource()!!,
+        override val complexGateway: String = "/icons/ui-icons/svg/complex-gateway.svg".asResource()!!,
         override val timerCatchEvent: String = "/icons/ui-icons/svg/timer-catch-event.svg".asResource()!!,
         override val messageCatchEvent: String = "/icons/ui-icons/svg/message-catch-event.svg".asResource()!!,
         override val signalCatchEvent: String = "/icons/ui-icons/svg/signal-catch-event.svg".asResource()!!,
         override val conditionalCatchEvent: String = "/icons/ui-icons/svg/conditional-catch-event.svg".asResource()!!,
+        override val intermediateLinkCatchEvent: String = "/icons/ui-icons/svg/intermediate-link-catch-event.svg".asResource()!!,
         override val noneThrowEvent: String = "/icons/ui-icons/svg/none-throw-event.svg".asResource()!!,
         override val signalThrowEvent: String = "/icons/ui-icons/svg/signal-throw-event.svg".asResource()!!,
         override val endEvent: String = "/icons/ui-icons/svg/end-event.svg".asResource()!!,
