@@ -178,9 +178,11 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(1)
+            lastValue.shouldHaveSize(3)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
-            lastValue.shouldContainSame(listOf(edgeBpmn))
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
+            lastValue.shouldContainSame(listOf(edgeBpmn, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -206,9 +208,11 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(1)
+            lastValue.shouldHaveSize(3)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
-            lastValue.shouldContainSame(listOf(edgeBpmn))
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
+            lastValue.shouldContainSame(listOf(edgeBpmn, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)

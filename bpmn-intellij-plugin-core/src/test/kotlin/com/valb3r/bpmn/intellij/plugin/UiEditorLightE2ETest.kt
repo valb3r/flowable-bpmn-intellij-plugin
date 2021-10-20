@@ -89,12 +89,14 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(4)
+            lastValue.shouldHaveSize(8)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val shapeBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().shouldHaveSingleItem()
             val draggedTo = lastValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
-            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
-            lastValue.shouldContainSame(listOf(edgeBpmn, shapeBpmn, draggedTo, propUpdated))
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(5).toTypedArray()
+            propUpdate.map { it.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.TARGET_REF, PropertyType.BPMN_OUTGOING))
+            val propUpdated = propUpdate.firstOrNull { it.property == PropertyType.TARGET_REF }!!
+            lastValue.shouldContainSame(listOf(edgeBpmn, shapeBpmn, draggedTo, *propUpdate))
 
             shapeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnServiceTask>()
             shapeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -130,11 +132,13 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(3)
+            lastValue.shouldHaveSize(7)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val draggedTo = lastValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
-            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
-            lastValue.shouldContainSame(listOf(edgeBpmn, draggedTo, propUpdated))
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(5).toTypedArray()
+            propUpdate.map { it.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.TARGET_REF, PropertyType.BPMN_OUTGOING))
+            val propUpdated = propUpdate.filter { it.property == PropertyType.TARGET_REF }.shouldHaveSingleItem()
+            lastValue.shouldContainSame(listOf(edgeBpmn, draggedTo, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -165,11 +169,13 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(3)
+            lastValue.shouldHaveSize(7)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val draggedTo = lastValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
-            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
-            lastValue.shouldContainSame(listOf(edgeBpmn, draggedTo, propUpdated))
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(5).toTypedArray()
+            propUpdate.map { it.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.TARGET_REF, PropertyType.BPMN_OUTGOING))
+            val propUpdated = propUpdate.filter { it.property == PropertyType.TARGET_REF }.shouldHaveSingleItem()
+            lastValue.shouldContainSame(listOf(edgeBpmn, draggedTo, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -203,13 +209,15 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(5)
+            lastValue.shouldHaveSize(9)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val draggedToMid = lastValue.filterIsInstance<DraggedToEvent>().first().shouldNotBeNull()
-            val intermediateTargetChangeToParentPropUpd = lastValue.filterIsInstance<StringValueUpdatedEvent>().first().shouldNotBeNull()
+            val intermediateTargetChangeToParentPropUpd = lastValue.filterIsInstance<StringValueUpdatedEvent>().first { it.property == PropertyType.TARGET_REF }.shouldNotBeNull()
             val draggedToTarget = lastValue.filterIsInstance<DraggedToEvent>().last().shouldNotBeNull()
-            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().last().shouldNotBeNull()
-            lastValue.shouldContainSame(listOf(edgeBpmn, draggedToMid, intermediateTargetChangeToParentPropUpd, draggedToTarget, propUpdated))
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(6).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.TARGET_REF, PropertyType.BPMN_OUTGOING))
+            val propUpdated = propUpdate.filter { it.property == PropertyType.TARGET_REF }.shouldHaveSize(2).last()
+            lastValue.shouldContainSame(listOf(edgeBpmn, draggedToMid, draggedToTarget, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -247,10 +255,12 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(2)
+            lastValue.shouldHaveSize(4)
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val newWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().shouldHaveSingleItem()
-            lastValue.shouldContainSame(listOf(edgeBpmn, newWaypoint))
+            lastValue.shouldContainSame(listOf(edgeBpmn, *propUpdate, newWaypoint))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -299,11 +309,13 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(3)
+            lastValue.shouldHaveSize(5)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val newMidWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().first()
             val newQuarterWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().last()
-            lastValue.shouldContainSame(listOf(edgeBpmn, newMidWaypoint, newQuarterWaypoint))
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
+            lastValue.shouldContainSame(listOf(edgeBpmn, newMidWaypoint, newQuarterWaypoint, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -368,11 +380,13 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(3)
+            lastValue.shouldHaveSize(5)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val dragTask = lastValue.filterIsInstance<DraggedToEvent>().first()
             val dragEdge = lastValue.filterIsInstance<DraggedToEvent>().last()
-            lastValue.shouldContainSame(listOf(edgeBpmn, dragTask, dragEdge))
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
+            lastValue.shouldContainSame(listOf(edgeBpmn, dragTask, dragEdge, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -399,11 +413,13 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(3)
+            lastValue.shouldHaveSize(5)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
-            val origIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().first()
-            val cascadeIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().last()
-            lastValue.shouldContainSame(listOf(edgeBpmn, origIdUpdate, cascadeIdUpdate))
+            val origIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().filter { it.property == PropertyType.ID }.shouldHaveSingleItem()
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(4).toTypedArray()
+            propUpdate.map { it.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.SOURCE_REF, PropertyType.ID, PropertyType.BPMN_OUTGOING))
+            val cascadeIdUpdate = propUpdate.filter { it.property == PropertyType.SOURCE_REF }.shouldHaveSingleItem()
+            lastValue.shouldContainSame(listOf(edgeBpmn, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -435,13 +451,15 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(5)
+            lastValue.shouldHaveSize(7)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
-            val origIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().first()
-            val cascadeIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().last()
+            val origIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().filter { it.property == PropertyType.ID }.shouldHaveSingleItem()
+            val cascadeIdUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().filter { it.property == PropertyType.SOURCE_REF }.shouldHaveSingleItem()
             val dragTask = lastValue.filterIsInstance<DraggedToEvent>().first()
             val dragEdge = lastValue.filterIsInstance<DraggedToEvent>().last()
-            lastValue.shouldContainSame(listOf(edgeBpmn, origIdUpdate, cascadeIdUpdate, dragTask, dragEdge))
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(4).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.ID, PropertyType.SOURCE_REF, PropertyType.BPMN_OUTGOING))
+            lastValue.shouldContainSame(listOf(edgeBpmn, *propUpdate, dragTask, dragEdge))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -535,11 +553,13 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(3)
+            lastValue.shouldHaveSize(5)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val dragStart = lastValue.filterIsInstance<DraggedToEvent>().first()
             val dragEdge = lastValue.filterIsInstance<DraggedToEvent>().last()
-            lastValue.shouldContainSame(listOf(edgeBpmn, dragStart, dragEdge))
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
+            lastValue.shouldContainSame(listOf(edgeBpmn, dragStart, dragEdge, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -619,11 +639,13 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(3)
+            lastValue.shouldHaveSize(5)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val removeEdgeBpmn = lastValue.filterIsInstance<BpmnElementRemovedEvent>().first()
             val removeEdgeDiagram = lastValue.filterIsInstance<DiagramElementRemovedEvent>().first()
-            lastValue.shouldContainSame(listOf(edgeBpmn, removeEdgeDiagram, removeEdgeBpmn))
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
+            lastValue.shouldContainSame(listOf(edgeBpmn, removeEdgeDiagram, removeEdgeBpmn, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -660,11 +682,13 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(3)
+            lastValue.shouldHaveSize(5)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val newWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().first()
             val removeWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().last()
-            lastValue.shouldContainSame(listOf(edgeBpmn, newWaypoint, removeWaypoint))
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
+            lastValue.shouldContainSame(listOf(edgeBpmn, newWaypoint, removeWaypoint, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -709,11 +733,13 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(7)
+            lastValue.shouldHaveSize(9)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val diagramRemoved = lastValue.filterIsInstance<DiagramElementRemovedEvent>()
             val bpmnRemoved = lastValue.filterIsInstance<BpmnElementRemovedEvent>()
-            lastValue.shouldContainSame(listOf(edgeBpmn) + diagramRemoved + bpmnRemoved)
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
+            lastValue.shouldContainSame(listOf(edgeBpmn) + diagramRemoved + bpmnRemoved + propUpdate)
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -780,12 +806,14 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(4)
+            lastValue.shouldHaveSize(8)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val shapeBpmn = lastValue.filterIsInstance<BpmnShapeObjectAddedEvent>().shouldHaveSingleItem()
             val draggedTo = lastValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
-            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
-            lastValue.shouldContainSame(listOf(edgeBpmn, shapeBpmn, draggedTo, propUpdated))
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(5).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.TARGET_REF, PropertyType.BPMN_OUTGOING))
+            val propUpdated = propUpdate.filter { it.property == PropertyType.TARGET_REF }.shouldHaveSingleItem()
+            lastValue.shouldContainSame(listOf(edgeBpmn, shapeBpmn, draggedTo, *propUpdate))
 
             shapeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnServiceTask>()
             shapeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
@@ -831,7 +859,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(3)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(8)
+            lastValue.shouldHaveSize(10)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val newWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().first()
             val allDraggeds = lastValue.filterIsInstance<DraggedToEvent>()
@@ -842,6 +870,8 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             val subprocessDragEdgeStart = cascadedDrags.filter { it.parentElementId == addedEdge.edge.id && it.internalPos == 0 }.shouldHaveSingleItem()
             val subprocessDragEdgeMid = cascadedDrags.filter { it.parentElementId == addedEdge.edge.id && it.internalPos == 1 }.shouldHaveSingleItem()
             val subprocessDragEdgeEnd = cascadedDrags.filter { it.parentElementId == addedEdge.edge.id && it.internalPos == 2 }.shouldHaveSingleItem()
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
 
             edgeBpmn.bpmnObject.parent.shouldBe(subprocessBpmnId)
             edgeBpmn.bpmnObject.id.shouldBe(addedEdge.bpmnObject.id)
@@ -916,10 +946,12 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(4)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(9)
+            lastValue.shouldHaveSize(13)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val draggedToEdge = lastValue.filterIsInstance<DraggedToEvent>().first()
-            val propUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(5).toTypedArray()
+            propUpdate.map { it.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.TARGET_REF, PropertyType.BPMN_OUTGOING))
+            val propUpdated = propUpdate.filter { it.property == PropertyType.TARGET_REF }.shouldHaveSingleItem()
             val newWaypoint = lastValue.filterIsInstance<NewWaypointsEvent>().first()
             val allDraggeds = lastValue.filterIsInstance<DraggedToEvent>()
             val rectDrags = allDraggeds.subList(1, allDraggeds.size).shouldHaveSize(5)
@@ -1016,7 +1048,9 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(3)
+            lastValue.shouldHaveSize(5)
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val removeShapeBpmn = lastValue.filterIsInstance<BpmnElementRemovedEvent>().shouldHaveSingleItem()
             val removeDiagramBpmn = lastValue.filterIsInstance<DiagramElementRemovedEvent>().shouldHaveSingleItem()

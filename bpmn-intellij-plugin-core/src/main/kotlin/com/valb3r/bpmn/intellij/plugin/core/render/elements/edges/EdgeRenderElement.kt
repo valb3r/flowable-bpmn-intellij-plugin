@@ -30,12 +30,10 @@ class EdgeRenderElement(
         val delId = elementId.elemIdToRemove()
         val deleteIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.recycleBin)
         state().ctx.interactionContext.clickCallbacks[delId] = { dest ->
-            dest.addElementRemovedEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement())
             val currentProps = state().currentState.propertyWithElementByPropertyType
-            dest.addEvents(
-                computeCascadeChangeOfBpmnIncomingOutgoingIndex(bpmnElementId, currentProps, PropertyType.BPMN_INCOMING)
-                        + computeCascadeChangeOfBpmnIncomingOutgoingIndex(bpmnElementId, currentProps, PropertyType.BPMN_OUTGOING)
-            )
+            val cascadeEvents = computeCascadeChangeOfBpmnIncomingOutgoingIndex(bpmnElementId, currentProps, PropertyType.BPMN_INCOMING).toMutableList() +
+                    computeCascadeChangeOfBpmnIncomingOutgoingIndex(bpmnElementId, currentProps, PropertyType.BPMN_OUTGOING)
+            dest.addElementRemovedEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement(), cascadeEvents)
         }
 
         return mutableMapOf(delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId))
