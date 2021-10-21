@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnLinkIntermediateCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCathingEvent
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
@@ -17,15 +17,15 @@ data class LinkIntermediateCatchEvent(
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>?,
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val linkEventDefinition: LinkEventDefinition?,
-): BpmnMappable<BpmnLinkIntermediateCatchingEvent> {
+): BpmnMappable<BpmnIntermediateLinkCathingEvent> {
 
-    override fun toElement(): BpmnLinkIntermediateCatchingEvent {
+    override fun toElement(): BpmnIntermediateLinkCathingEvent {
         return Mappers.getMapper(Mapping::class.java).convertToDto(this)
     }
 
     @Mapper(uses = [BpmnElementIdMapper::class, LinkEventDefinitionMapping::class])
     interface Mapping {
-        fun convertToDto(input: LinkIntermediateCatchEvent) : BpmnLinkIntermediateCatchingEvent
+        fun convertToDto(input: LinkIntermediateCatchEvent) : BpmnIntermediateLinkCathingEvent
     }
 
     @Mapper

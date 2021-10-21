@@ -9,18 +9,12 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateConditionalCatchingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateTimerCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
@@ -76,16 +70,19 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
     private val INTERMEDIATE_MESSAGE_CATCHING = IconLoader.getIcon("/icons/popupmenu/message-catch-event.png")
     private val INTERMEDIATE_SIGNAL_CATCHING = IconLoader.getIcon("/icons/popupmenu/signal-catch-event.png")
     private val INTERMEDIATE_CONDITIONAL_CATCHING = IconLoader.getIcon("/icons/popupmenu/conditional-catch-event.png")
+    private val INTERMEDIATE_LINK_CATCHING = IconLoader.getIcon("/icons/popupmenu/intermediate-link-catch-event.png")
     // Throw
     private val INTERMEDIATE_NONE_THROWING = IconLoader.getIcon("/icons/popupmenu/none-throw-event.png")
     private val INTERMEDIATE_SIGNAL_THROWING = IconLoader.getIcon("/icons/popupmenu/signal-throw-event.png")
     private val INTERMEDIATE_ESCALATION_THROWING = IconLoader.getIcon("/icons/popupmenu/escalation-throw-event.png")
 
     // Service-task alike
+    private val TASK = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
     private val SERVICE_TASK = IconLoader.getIcon("/icons/popupmenu/service-task.png")
     private val USER_TASK = IconLoader.getIcon("/icons/popupmenu/user-task.png")
     private val SCRIPT_TASK = IconLoader.getIcon("/icons/popupmenu/script-task.png")
     private val BUSINESS_RULE_TASK = IconLoader.getIcon("/icons/popupmenu/business-rule-task.png")
+    private val SEND_TASK = IconLoader.getIcon("/icons/popupmenu/send-task.png")
     private val RECEIVE_TASK = IconLoader.getIcon("/icons/popupmenu/receive-task.png")
     private val MANUAL_TASK = IconLoader.getIcon("/icons/popupmenu/manual-task.png")
 //    private val CAMEL_TASK = IconLoader.getIcon("/icons/popupmenu/camel-task.png")
@@ -106,6 +103,7 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
     private val PARALLEL_GATEWAY = IconLoader.getIcon("/icons/popupmenu/parallel-gateway.png")
     private val INCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/inclusive-gateway.png")
     private val EVENT_GATEWAY = IconLoader.getIcon("/icons/popupmenu/event-gateway.png")
+    private val COMPLEX_GATEWAY = IconLoader.getIcon("/icons/popupmenu/complex-gateway.png")
 
     override fun popupMenu(sceneLocation: Point2D.Float, parent: BpmnElementId): JBPopupMenu {
         val popup = JBPopupMenu()
@@ -149,10 +147,12 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
 
     private fun activities(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
         val menu = JMenu("Activities")
+        addItem(menu, "Task", TASK, ShapeCreator(project, BpmnTask::class, sceneLocation, parent))
         addItem(menu, "User task", USER_TASK, ShapeCreator(project, BpmnUserTask::class, sceneLocation, parent))
         addItem(menu, "Service task", SERVICE_TASK, ShapeCreator(project, BpmnServiceTask::class, sceneLocation, parent))
         addItem(menu, "Script task", SCRIPT_TASK, ShapeCreator(project, BpmnScriptTask::class, sceneLocation, parent))
         addItem(menu, "Business rule task", BUSINESS_RULE_TASK, ShapeCreator(project, BpmnBusinessRuleTask::class, sceneLocation, parent))
+        addItem(menu, "Send task", SEND_TASK, ShapeCreator(project, BpmnSendTask::class, sceneLocation, parent))
         addItem(menu, "Receive task", RECEIVE_TASK, ShapeCreator(project, BpmnReceiveTask::class, sceneLocation, parent))
         addItem(menu, "Manual task", MANUAL_TASK, ShapeCreator(project, BpmnManualTask::class, sceneLocation, parent))
         // Unsupported addItem(menu, "Camel task", CAMEL_TASK, ShapeCreator(project, BpmnCamelTask::class, sceneLocation, parent))
@@ -179,6 +179,7 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
         addItem(menu, "Parallel gateway", PARALLEL_GATEWAY, ShapeCreator(project, BpmnParallelGateway::class, sceneLocation, parent))
         addItem(menu, "Inclusive gateway", INCLUSIVE_GATEWAY, ShapeCreator(project, BpmnInclusiveGateway::class, sceneLocation, parent))
         addItem(menu, "Event gateway", EVENT_GATEWAY, ShapeCreator(project, BpmnEventGateway::class, sceneLocation, parent))
+        addItem(menu, "Complex gateway", COMPLEX_GATEWAY, ShapeCreator(project, BpmnComplexGateway::class, sceneLocation, parent))
         return menu
     }
 
@@ -201,6 +202,7 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
         addItem(menu, "Intermediate message catching event", INTERMEDIATE_MESSAGE_CATCHING, ShapeCreator(project, BpmnIntermediateMessageCatchingEvent::class, sceneLocation, parent))
         addItem(menu, "Intermediate signal catching event", INTERMEDIATE_SIGNAL_CATCHING, ShapeCreator(project, BpmnIntermediateSignalCatchingEvent::class, sceneLocation, parent))
         addItem(menu, "Intermediate conditional catching event", INTERMEDIATE_CONDITIONAL_CATCHING, ShapeCreator(project, BpmnIntermediateConditionalCatchingEvent::class, sceneLocation, parent))
+        addItem(menu, "Intermediate link catching event", INTERMEDIATE_LINK_CATCHING, ShapeCreator(project, BpmnIntermediateLinkCathingEvent::class, sceneLocation, parent))
         return menu
     }
 

@@ -51,7 +51,7 @@ data class BpmnProcessBody(
         val intermediateMessageCatchingEvent: List<BpmnIntermediateMessageCatchingEvent>?,
         val intermediateSignalCatchingEvent: List<BpmnIntermediateSignalCatchingEvent>?,
         val intermediateConditionalCatchingEvent: List<BpmnIntermediateConditionalCatchingEvent>?,
-        val intermediateLinkCatchingEvent: List<BpmnLinkIntermediateCatchingEvent>?,
+        val intermediateLinkCatchingEvent: List<BpmnIntermediateLinkCathingEvent>?,
         // Throwing
         val intermediateThrowEvent: List<BpmnIntermediateThrowingEvent>?, // generic mapping point should be empty when processed
         val intermediateNoneThrowingEvent: List<BpmnIntermediateNoneThrowingEvent>?,

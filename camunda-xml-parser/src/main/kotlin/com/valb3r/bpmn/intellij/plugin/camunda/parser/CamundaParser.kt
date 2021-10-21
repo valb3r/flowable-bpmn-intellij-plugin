@@ -3,6 +3,12 @@ package com.valb3r.bpmn.intellij.plugin.camunda.parser
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCathingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnComplexGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.BpmnShapeObjectAdded
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.NS
@@ -171,6 +177,16 @@ class CamundaParser : BaseBpmnParser() {
 
     override fun propertyTypeDetails(): List<PropertyTypeDetails> {
         return CamundaPropertyTypeDetails.values().map { it.details }
+    }
+
+    override fun createBpmnObject(update: BpmnShapeObjectAdded, diagramParent: Element): Element? {
+        return when (update.bpmnObject.element) {
+            is BpmnTask -> diagramParent.addElement(modelNs().named("task"))
+            is BpmnSendTask -> diagramParent.addElement(modelNs().named("sendTask"))
+            is BpmnComplexGateway -> diagramParent.addElement(modelNs().named("complexGateway"))
+            is BpmnIntermediateLinkCathingEvent -> createIntermediateCatchEventWithType(diagramParent, "linkEventDefinition")
+            else -> super.createBpmnObject(update, diagramParent)
+        }
     }
 
     // Mark 'collapsed' subprocesses where diagram is different from 1st one

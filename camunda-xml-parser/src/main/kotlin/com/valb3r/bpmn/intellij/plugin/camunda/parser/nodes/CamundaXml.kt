@@ -499,7 +499,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     interface ConditionalCatchingMapper: IntermediateCatchEventMapper<BpmnIntermediateConditionalCatchingEvent>
 
     @Mapper
-    interface LinkIntermediateCatchMapper: IntermediateCatchEventMapper<BpmnLinkIntermediateCatchingEvent>
+    interface LinkIntermediateCatchMapper: IntermediateCatchEventMapper<BpmnIntermediateLinkCathingEvent>
 
     interface IntermediateCatchEventMapper<T> {
         fun convertToDto(input: BpmnIntermediateCatchingEvent): T
