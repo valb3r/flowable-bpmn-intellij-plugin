@@ -36,7 +36,7 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
-      <p>0.4.7.0:</p>
+      <p>0.4.7.1:</p>
         <ul>
           <li>Initial Camunda plugin release</li>
         </ul>
