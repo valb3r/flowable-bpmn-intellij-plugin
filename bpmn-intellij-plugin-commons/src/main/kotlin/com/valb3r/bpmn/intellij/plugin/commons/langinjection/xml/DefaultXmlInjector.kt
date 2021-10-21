@@ -22,9 +22,7 @@ abstract class DefaultXmlInjector: MultiHostInjector {
             return
         }
 
-        if (!context.containingFile.name.endsWith("bpmn20.xml") && context.containingFile?.context?.containingFile?.name?.endsWith("bpmn20.xml") != true) {
-            return
-        }
+        if (invalidXmlFileExtension(context)) return
 
         when (context) {
             is XmlAttributeValue -> {
@@ -36,6 +34,10 @@ abstract class DefaultXmlInjector: MultiHostInjector {
             }
             is XmlText -> { tryToInjectConditionExpression(context, context, registrar) }
         }
+    }
+
+    protected open fun invalidXmlFileExtension(context: PsiLanguageInjectionHost): Boolean {
+        return !context.containingFile.name.endsWith("bpmn20.xml") && context.containingFile?.context?.containingFile?.name?.endsWith("bpmn20.xml") != true
     }
 
     private fun tryToInjectSkipExpression(context: XmlAttributeValue, asHost: PsiLanguageInjectionHost, registrar: MultiHostRegistrar): Boolean {

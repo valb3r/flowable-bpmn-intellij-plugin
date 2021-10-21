@@ -6,18 +6,12 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateConditionalCatchingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateMessageCatchingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateSignalCatchingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateTimerCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -230,10 +224,12 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             is BpmnBoundaryMessageEvent -> AnyShapeNestableIconShape(id, bpmn.id, icons.boundaryMessageEvent, shape, state)
             is BpmnBoundarySignalEvent -> AnyShapeNestableIconShape(id, bpmn.id, icons.boundarySignalEvent, shape, state)
             is BpmnBoundaryTimerEvent -> AnyShapeNestableIconShape(id, bpmn.id, icons.boundaryTimerEvent, shape, state)
+            is BpmnTask -> NoIconShape(id, bpmn.id, shape, state)
             is BpmnUserTask -> TopLeftIconShape(id, bpmn.id, icons.user, shape, state)
             is BpmnScriptTask -> TopLeftIconShape(id, bpmn.id, icons.script, shape, state)
             is BpmnServiceTask -> TopLeftIconShape(id, bpmn.id, icons.gear, shape, state)
             is BpmnBusinessRuleTask -> TopLeftIconShape(id, bpmn.id, icons.businessRule, shape, state)
+            is BpmnSendTask -> TopLeftIconShape(id, bpmn.id, icons.envelope, shape, state)
             is BpmnReceiveTask -> TopLeftIconShape(id, bpmn.id, icons.receive, shape, state)
             is BpmnManualTask -> TopLeftIconShape(id, bpmn.id, icons.manual, shape, state)
             is BpmnCamelTask -> TopLeftIconShape(id, bpmn.id, icons.camel, shape, state)
@@ -253,6 +249,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             is BpmnParallelGateway -> IconShape(id, bpmn.id, icons.parallelGateway, shape, state)
             is BpmnInclusiveGateway -> IconShape(id, bpmn.id, icons.inclusiveGateway, shape, state)
             is BpmnEventGateway -> IconShape(id, bpmn.id, icons.eventGateway, shape, state)
+            is BpmnComplexGateway -> IconShape(id, bpmn.id, icons.complexGateway, shape, state)
             is BpmnEndEvent -> EllipticIconOnLayerShape(id, bpmn.id, icons.endEvent, shape, state, Colors.END_EVENT)
             is BpmnEndCancelEvent -> EllipticIconOnLayerShape(id, bpmn.id, icons.cancelEndEvent, shape, state, Colors.END_EVENT)
             is BpmnEndErrorEvent -> EllipticIconOnLayerShape(id, bpmn.id, icons.errorEndEvent, shape, state, Colors.END_EVENT)
@@ -262,6 +259,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             is BpmnIntermediateMessageCatchingEvent -> IconShape(id, bpmn.id, icons.messageCatchEvent, shape, state)
             is BpmnIntermediateSignalCatchingEvent -> IconShape(id, bpmn.id, icons.signalCatchEvent, shape, state)
             is BpmnIntermediateConditionalCatchingEvent -> IconShape(id, bpmn.id, icons.conditionalCatchEvent, shape, state)
+            is BpmnIntermediateLinkCatchingEvent -> IconShape(id, bpmn.id, icons.intermediateLinkCatchEvent, shape, state)
             is BpmnIntermediateNoneThrowingEvent -> IconShape(id, bpmn.id, icons.noneThrowEvent, shape, state)
             is BpmnIntermediateSignalThrowingEvent -> IconShape(id, bpmn.id, icons.signalThrowEvent, shape, state)
             is BpmnIntermediateEscalationThrowingEvent -> IconShape(id, bpmn.id, icons.escalationThrowEvent, shape, state)

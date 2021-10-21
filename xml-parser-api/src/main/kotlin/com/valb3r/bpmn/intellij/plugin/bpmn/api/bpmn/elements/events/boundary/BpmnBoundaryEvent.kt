@@ -5,18 +5,20 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
 data class BpmnBoundaryEvent(
         override val id: BpmnElementId,
-        val name: String?,
-        val attachedToRef: BpmnElementId?,
-        val cancelActivity: Boolean?,
-        val documentation: String?,
-        val timerEventDefinition: TimerEventDefinition?,
-        val signalEventDefinition: SignalEventDefinition?,
-        val messageEventDefinition: MessageEventDefinition?,
-        val errorEventDefinition: ErrorEventDefinition?,
-        val cancelEventDefinition: CancelEventDefinition?,
-        val escalationEventDefinition: EscalationEventDefinition?,
-        val conditionalEventDefinition: ConditionalEventDefinition?,
-        val compensateEventDefinition: CompensateEventDefinition?
+        val name: String? = null,
+        val attachedToRef: BpmnElementId? = null,
+        val cancelActivity: Boolean? = null,
+        val documentation: String? = null,
+        val timerEventDefinition: TimerEventDefinition? = null,
+        val signalEventDefinition: SignalEventDefinition? = null,
+        val messageEventDefinition: MessageEventDefinition? = null,
+        val errorEventDefinition: ErrorEventDefinition? = null,
+        val cancelEventDefinition: CancelEventDefinition? = null,
+        val escalationEventDefinition: EscalationEventDefinition? = null,
+        val conditionalEventDefinition: ConditionalEventDefinition? = null,
+        val compensateEventDefinition: CompensateEventDefinition? = null,
+        val incoming: List<String>? = null,
+        val outgoing: List<String>? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
@@ -40,7 +42,7 @@ data class BpmnBoundaryEvent(
     )
 
     data class CancelEventDefinition(
-            val cancelRef: String? = null // TODO - what it cancels?
+            val cancelRef: String? = null // TODO - what it cancels? = null
     )
 
     data class CompensateEventDefinition(

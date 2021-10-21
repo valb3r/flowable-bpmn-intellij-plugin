@@ -5,9 +5,11 @@ import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnEdgeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnParentChangedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DraggedToEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.tests.BaseUiTest
@@ -82,7 +84,9 @@ internal class UiMultiSelectTest: BaseUiTest() {
             val parentChangeStartTask = lastValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.bpmnElementId == serviceTaskStartBpmnId }.shouldHaveSingleItem()
             val parentChangeEndTask = lastValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.bpmnElementId == serviceTaskEndBpmnId }.shouldHaveSingleItem()
             val parentChangeEdge = lastValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.bpmnElementId == newEdge.bpmnObject.id }.shouldHaveSize(2)
-            lastValue.shouldHaveSize(9)
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
+            lastValue.shouldHaveSize(11)
 
             dragStartTask.dx.shouldBeEqualTo(delta)
             dragStartTask.dy.shouldBeEqualTo(delta)
@@ -129,7 +133,9 @@ internal class UiMultiSelectTest: BaseUiTest() {
             val dragEndTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskEndDiagramId }.shouldHaveSingleItem()
             val dragEdgeWaypointStart = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == newEdge.edge.waypoint[0].id }.shouldHaveSingleItem()
             val dragEdgeWaypointEnd = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == newEdge.edge.waypoint[2].id }.shouldHaveSingleItem()
-            lastValue.shouldHaveSize(6)
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
+            lastValue.shouldHaveSize(8)
 
             dragSubprocess.dx.shouldBeEqualTo(delta)
             dragSubprocess.dy.shouldBeEqualTo(delta)
@@ -173,7 +179,9 @@ internal class UiMultiSelectTest: BaseUiTest() {
             val dragEndTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskEndDiagramId }.shouldHaveSingleItem()
             val dragEdgeWaypointStart = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == newEdge.edge.waypoint[0].id }.shouldHaveSingleItem()
             val dragEdgeWaypointEnd = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == newEdge.edge.waypoint[2].id }.shouldHaveSingleItem()
-            lastValue.shouldHaveSize(6)
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
+            lastValue.shouldHaveSize(8)
 
             dragSubProcess.dx.shouldBeEqualTo(delta)
             dragSubProcess.dy.shouldBeEqualTo(delta)

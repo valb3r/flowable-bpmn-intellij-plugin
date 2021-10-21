@@ -4,7 +4,7 @@ plugins {
     id 'kotlin-kapt'
 }
 
-group = 'com.valb3r.bpmn.intellij.plugin'
+group = 'com.valb3r.bpmn.intellij.plugin.flowable.parser'
 
 
 sourceCompatibility = 1.8

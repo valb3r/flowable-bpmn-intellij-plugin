@@ -80,17 +80,20 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         body.intermediateMessageCatchingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.intermediateSignalCatchingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.intermediateConditionalCatchingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.intermediateLinkCatchingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         // Throwing
         body.intermediateNoneThrowingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.intermediateSignalThrowingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.intermediateEscalationThrowingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
 
         // Service-task alike
+        body.task?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.userTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.scriptTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.serviceTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.businessRuleTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.manualTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.sendTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.receiveTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.camelTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.httpTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
@@ -113,6 +116,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         body.parallelGateway?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.inclusiveGateway?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.eventBasedGateway?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.complexGateway?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
 
         // Linking elements
         body.sequenceFlow?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
@@ -177,7 +181,7 @@ data class PropertyTable(private val properties: MutableMap<PropertyType, Mutabl
     val keys get() = properties.keys
 
     operator fun get(type: PropertyType): Property? {
-        return properties[type]?.get(0)
+        return properties[type]?.getOrNull(0)
     }
 
     operator fun set(type: PropertyType, value: Property) {

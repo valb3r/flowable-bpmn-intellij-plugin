@@ -5,14 +5,18 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
 data class BpmnBusinessRuleTask(
         override val id: BpmnElementId,
-        val name: String?,
-        val documentation: String?,
-        val async: Boolean?,
-        val isForCompensation: Boolean?,
-        val ruleVariablesInput: String?,
-        val rules: String?,
-        val resultVariable: String?,
-        val exclude: Boolean?
+        val name: String? = null,
+        val documentation: String? = null,
+        val async: Boolean? = null,
+        val asyncBefore: Boolean? = null,
+        val asyncAfter: Boolean? = null,
+        val isForCompensation: Boolean? = null,
+        val ruleVariablesInput: String? = null,
+        val rules: String? = null,
+        val resultVariable: String? = null,
+        val incoming: List<String>? = null,
+        val outgoing: List<String>? = null,
+        val exclude: Boolean? = null
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

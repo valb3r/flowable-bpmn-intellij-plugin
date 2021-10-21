@@ -9,6 +9,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import com.valb3r.bpmn.intellij.plugin.core.events.*
+import com.valb3r.bpmn.intellij.plugin.core.newelements.NewElementsProvider
+import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstLastColumnReadOnlyModel
 import java.util.*
@@ -77,17 +79,18 @@ class PropertiesVisualizer(
     }
 
     @Synchronized
-    fun visualize(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, elemsToExpand: Set<ElementIndex> = emptySet()) {
+    fun visualize(newElemsProvider: NewElementsProvider, state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, elemsToExpand: Set<ElementIndex> = emptySet()) {
         expandedElems.clear()
         val model = prepareTable()
         val filter = RowExpansionFilter()
         val sorter = TableRowSorter(table.model)
 
         val orderedControls = state[bpmnElementId]?.view()?.entries
+            ?.filter { it.key.visible }
             ?.flatMap { it.value.map { v -> Pair(it.key, v) } }
             ?.sortedBy { computePropertyKey(it) } ?: listOf()
 
-        val restoreVisualState = createControls(model, state, bpmnElementId, orderedControls, filter, sorter, elemsToExpand)
+        val restoreVisualState = createControls(newElemsProvider, model, state, bpmnElementId, orderedControls, filter, sorter, elemsToExpand)
 
         filter.build()
         sorter.rowFilter = filter
@@ -97,6 +100,7 @@ class PropertiesVisualizer(
     }
 
     private fun createControls(
+        newElemsProvider: NewElementsProvider,
         model: FirstLastColumnReadOnlyModel,
         state: Map<BpmnElementId, PropertyTable>,
         bpmnElementId: BpmnElementId,
@@ -120,7 +124,7 @@ class PropertiesVisualizer(
                 addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
                 model.addRow(arrayOf(
                     paddGroup + groupType.groupCaption,
-                    buildButtonField(state, bpmnElementId, groupType, control.second.index?.dropLast(1) ?: listOf())
+                    buildButtonField(newElemsProvider, state, bpmnElementId, groupType, control.second.index?.dropLast(1) ?: listOf())
                 ))
                 seenIndexes.add(controlGroupIndex)
             }
@@ -229,9 +233,9 @@ class PropertiesVisualizer(
         return field.component
     }
 
-    private fun buildButtonField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: FunctionalGroupType, parentIndex: List<String>): JComponent {
+    private fun buildButtonField(newElemsProvider: NewElementsProvider, state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: FunctionalGroupType, parentIndex: List<String>): JComponent {
         val button = buttonFactory(bpmnElementId, type)
-        addButtonListener(state, button, bpmnElementId, type, parentIndex)
+        addButtonListener(newElemsProvider, state, button, bpmnElementId, type, parentIndex)
         return button
     }
 
@@ -283,7 +287,7 @@ class PropertiesVisualizer(
         }
     }
 
-    private fun addButtonListener(state: Map<BpmnElementId, PropertyTable>, field: JButton, bpmnElementId: BpmnElementId, type: FunctionalGroupType, parentIndex: List<String>) {
+    private fun addButtonListener(newElemsProvider: NewElementsProvider, state: Map<BpmnElementId, PropertyTable>, field: JButton, bpmnElementId: BpmnElementId, type: FunctionalGroupType, parentIndex: List<String>) {
         fun propertyType(name: String) = PropertyType.values().find { it.name == name }!!
 
         field.addActionListener {
@@ -293,9 +297,10 @@ class PropertiesVisualizer(
             val fieldName = (countFields..maxFields).map { type.actionResult.valuePattern.format(it) }.firstOrNull { !allPropsOfType.contains(it) } ?: UUID.randomUUID().toString()
             val propertyIndex = parentIndex + fieldName
             val events = mutableListOf<Event>(StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = propertyIndex))
-            events += type.actionUiOnlyResult.map { UiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = propertyIndex + it.uiOnlyaddedIndex) }
+            val supportedTypes = newElemsProvider.propertyTypes().map { it.name }.toSet()
+            events += type.actionUiOnlyResult.filter { supportedTypes.contains(it.propertyType) }.map { UiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = propertyIndex + it.uiOnlyaddedIndex) }
             updateEventsRegistry(project).addEvents(events)
-            visualize(currentStateProvider(project).currentState().elemPropertiesByStaticElementId, bpmnElementId, expandedElems.toSet())
+            visualize(newElementsFactory(project), currentStateProvider(project).currentState().elemPropertiesByStaticElementId, bpmnElementId, expandedElems.toSet())
         }
     }
 
@@ -304,20 +309,39 @@ class PropertiesVisualizer(
         if (null != event.referencedValue) {
             state.forEach { (id, props) ->
                 props.filter { k, _ -> k.updatedBy == event.property }.filter { it.second.value == event.referencedValue }.forEach { prop ->
-                    cascades += StringValueUpdatedEvent(id, prop.first, event.newValue, event.referencedValue, null)
+                    cascades += StringValueUpdatedEvent(id, prop.first, event.newValue, event.referencedValue, null, propertyIndex = prop.second.index)
                 }
             }
         }
+
         if (event.property.indexCascades) {
             state[event.bpmnElementId]?.view()?.filter { it.key.indexInGroupArrayName == event.property.indexInGroupArrayName }?.forEach { (k, _) ->
-                if (event.newValue.isBlank()) {
-                    cascades += UiOnlyValueRemovedEvent(event.bpmnElementId, k, event.propertyIndex!!)
+                uiEventCascade(event, cascades, k)
+            }
+        }
+
+        event.property.explicitIndexCascades?.forEach {
+            val type = PropertyType.valueOf(it)
+            state.forEach { (id, props) ->
+                props.getAll(type).filter { it.value == event.referencedValue }.forEach { prop ->
+                    uiEventCascade(event.copy(bpmnElementId = id, propertyIndex = prop.index), cascades, type)
                 }
-                cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, k, event.propertyIndex!!, event.propertyIndex.dropLast(1) + event.newValue)
             }
         }
 
         updateEventsRegistry(project).addEvents(listOf(event) + cascades)
+    }
+
+    private fun uiEventCascade(
+        event: StringValueUpdatedEvent,
+        cascades: MutableList<Event>,
+        cascadePropTo: PropertyType
+    ) {
+        val index = event.propertyIndex ?: listOf()
+        if (event.newValue.isBlank()) {
+            cascades += UiOnlyValueRemovedEvent(event.bpmnElementId, cascadePropTo, index)
+        }
+        cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, cascadePropTo, index, index.dropLast(1) + event.newValue)
     }
 
     private fun stringValueUpdatedTemplate(

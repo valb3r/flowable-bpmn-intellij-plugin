@@ -7,18 +7,22 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 
 data class BpmnStartEvent(
     override val id: BpmnElementId,
-    val name: String?,
-    val documentation: String?,
-    val timerEventDefinition: TimerEventDefinition?,
-    val signalEventDefinition: SignalEventDefinition?,
-    val messageEventDefinition: MessageEventDefinition?,
-    val errorEventDefinition: ErrorEventDefinition?,
-    val escalationEventDefinition: EscalationEventDefinition?,
-    val conditionalEventDefinition: ConditionalEventDefinition?,
+    val name: String? = null,
+    val documentation: String? = null,
+    val asyncBefore: Boolean? = null,
+    val asyncAfter: Boolean? = null,
+    val timerEventDefinition: TimerEventDefinition? = null,
+    val signalEventDefinition: SignalEventDefinition? = null,
+    val messageEventDefinition: MessageEventDefinition? = null,
+    val errorEventDefinition: ErrorEventDefinition? = null,
+    val escalationEventDefinition: EscalationEventDefinition? = null,
+    val conditionalEventDefinition: ConditionalEventDefinition? = null,
+    val incoming: List<String>? = null,
+    val outgoing: List<String>? = null,
     /* BPMN engine specific extensions (intermediate storage) */
     val extensionElements: List<ExtensionElement>? = null,
     /* Flattened extensionElements, for explicitness - these are the target of binding */
-    val formPropertiesExtension: List<ExtensionFormProperty>? = null
+    val formPropertiesExtension: List<ExtensionFormProperty>? = null,
 ) : WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

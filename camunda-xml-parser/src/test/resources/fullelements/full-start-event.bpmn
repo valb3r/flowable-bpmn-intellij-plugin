@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0j1qegp" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.10.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:process id="Process_1m56o6j" isExecutable="true">
+    <bpmn:startEvent id="detailedStartEventSingleAll" name="Start event (single)" camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:jobPriority="1" camunda:formKey="FORM-1" camunda:initiator="someUser">
+      <bpmn:documentation>As full as possible start event
+multiline</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:failedJobRetryTimeCycle>PT1M</camunda:failedJobRetryTimeCycle>
+        <camunda:formData>
+          <camunda:formField id="formFieldId" label="someFormField" type="long" defaultValue="1">
+            <camunda:properties>
+              <camunda:property id="fieldProperty" value="propertyValue" />
+            </camunda:properties>
+            <camunda:validation>
+              <camunda:constraint name="check" config="123" />
+            </camunda:validation>
+          </camunda:formField>
+        </camunda:formData>
+        <camunda:executionListener class="com.FooBar.Listener" event="start">
+          <camunda:field name="someField">
+            <camunda:string>123</camunda:string>
+          </camunda:field>
+        </camunda:executionListener>
+        <camunda:properties>
+          <camunda:property name="extensionProperty" value="123" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+    </bpmn:startEvent>
+    <bpmn:startEvent id="detailedStartEventMultiAll" name="Start event(multi)" camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:jobPriority="1" camunda:formKey="FORM-1" camunda:initiator="someUser">
+      <bpmn:documentation>As full as possible start event
+multiline</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:failedJobRetryTimeCycle>PT1M</camunda:failedJobRetryTimeCycle>
+        <camunda:formData>
+          <camunda:formField id="formFieldId1" label="someFormField" type="long" defaultValue="1">
+            <camunda:properties>
+              <camunda:property id="fieldProperty1" value="propertyValue" />
+              <camunda:property id="fieldProperty2" value="propertyValue2" />
+            </camunda:properties>
+            <camunda:validation>
+              <camunda:constraint name="check" config="123" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="formFieldId2" label="someLabel" type="date" defaultValue="2020-01-01">
+            <camunda:properties>
+              <camunda:property id="formFieldProperty1" value="123" />
+              <camunda:property id="formFieldProperty2" value="fooBar" />
+            </camunda:properties>
+            <camunda:validation>
+              <camunda:constraint name="isValid" config="config.foo" />
+              <camunda:constraint name="isNotValid" config="config.bar" />
+            </camunda:validation>
+          </camunda:formField>
+        </camunda:formData>
+        <camunda:executionListener class="com.FooBar.Listener" event="start">
+          <camunda:field name="someField">
+            <camunda:string>123</camunda:string>
+          </camunda:field>
+        </camunda:executionListener>
+        <camunda:properties>
+          <camunda:property name="extensionProperty1" value="123" />
+          <camunda:property name="extensionProperty2" value="foobar" />
+        </camunda:properties>
+        <camunda:executionListener class="com.foo.ListenerEnd" event="end">
+          <camunda:field name="field1">
+            <camunda:string>injected2</camunda:string>
+          </camunda:field>
+          <camunda:field name="field2">
+            <camunda:string>injected2</camunda:string>
+          </camunda:field>
+        </camunda:executionListener>
+      </bpmn:extensionElements>
+    </bpmn:startEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1m56o6j">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="detailedStartEventSingleAll">
+        <dc:Bounds x="182" y="82" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="174" y="125" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0up68dw_di" bpmnElement="detailedStartEventMultiAll">
+        <dc:Bounds x="182" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="159" y="225" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

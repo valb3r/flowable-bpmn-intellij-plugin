@@ -1,0 +1,85 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij'
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+group = 'com.valb3r.bpmn.intellij.plugin.camunda'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":xml-parser-core")
+    implementation project(":camunda-xml-parser")
+    implementation project(":bpmn-intellij-plugin-core")
+    implementation project(":bpmn-intellij-plugin-commons")
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson"
+
+    // Tests
+    testImplementation project(':bpmn-intellij-plugin-common-tests')
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiter"
+    testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformRunner"
+    testImplementation "org.amshove.kluent:kluent:$kluent"
+    testImplementation "org.mockito:mockito-inline:$mockitoInline"
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlin"
+}
+
+sourceSets {
+    main.kotlin.srcDirs += 'src/main/kotlin'
+}
+
+intellij {
+    version = intellijPlatform
+    pluginName = 'camunda-bpmn-plugin'
+    updateSinceUntilBuild = false
+    plugins = intellijPlatformPlugins
+}
+
+publishPlugin {
+    token = intellijPublishToken
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+        apiVersion = kotlinApiVersion
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+        apiVersion = kotlinApiVersion
+    }
+}
+
+clean {
+    delete 'out'
+}
+
+test {
+    jacoco {
+        destinationFile = file("${buildDir}/jacoco/test.exec")
+    }
+
+    testLogging {
+        events "failed"
+        exceptionFormat "full"
+    }
+}
+
+
+
+jacocoTestReport {
+    // Adjust the output of the test report
+    reports {
+        xml.enabled true
+        csv.enabled false
+    }
+}

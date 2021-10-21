@@ -8,11 +8,13 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
  */
 data class BpmnHttpTask(
         override val id: BpmnElementId,
-        val name: String?,
-        val documentation: String?,
-        val async: Boolean?,
-        val exclusive: Boolean?,
-        val isForCompensation: Boolean?,
+        val name: String? = null,
+        val documentation: String? = null,
+        val async: Boolean? = null,
+        val asyncBefore: Boolean? = null,
+        val asyncAfter: Boolean? = null,
+        val exclusive: Boolean? = null,
+        val isForCompensation: Boolean? = null,
         val requestMethod: String? = null,
         val requestUrl: String? = null,
         val requestHeaders: String? = null,
@@ -28,7 +30,9 @@ data class BpmnHttpTask(
         val saveResponseParameters: String? = null,
         val resultVariablePrefix: String? = null,
         val saveResponseParametersTransient: String? = null,
-        val saveResponseVariableAsJson: String? = null
+        val saveResponseVariableAsJson: String? = null,
+        val incoming: List<String>? = null,
+        val outgoing: List<String>? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

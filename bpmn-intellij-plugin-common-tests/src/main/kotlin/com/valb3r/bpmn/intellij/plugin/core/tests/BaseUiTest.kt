@@ -24,10 +24,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.CanvasBuilder
-import com.valb3r.bpmn.intellij.plugin.core.events.BpmnEdgeObjectAddedEvent
-import com.valb3r.bpmn.intellij.plugin.core.events.BpmnShapeObjectAddedEvent
-import com.valb3r.bpmn.intellij.plugin.core.events.FileCommitter
-import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
+import com.valb3r.bpmn.intellij.plugin.core.events.*
+import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
@@ -108,11 +106,11 @@ abstract class BaseUiTest {
     protected val serviceTaskEndDiagramId = DiagramElementId("DIAGRAM-endServiceTask")
     protected val sequenceFlowDiagramId = DiagramElementId("DIAGRAM-sequenceFlow")
 
-    protected val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId, null, null, null, null, null, null, null, null, null, null, null, null)
-    protected val bpmnSubProcess = BpmnSubProcess(subprocessBpmnId, null, null, null, null, false, false)
-    protected val bpmnNestedSubProcess = BpmnSubProcess(subprocessInSubProcessBpmnId, null, null, null, null, false, false)
-    protected val bpmnServiceTaskEnd = BpmnServiceTask(serviceTaskEndBpmnId, null, null, null, null, null, null, null, null, null, null, null, null)
-    protected val bpmnSequenceFlow = BpmnSequenceFlow(sequenceFlowBpmnId, null, null, null, null, null)
+    protected val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId)
+    protected val bpmnSubProcess = BpmnSubProcess(subprocessBpmnId, triggeredByEvent = false, transactionalSubprocess = false)
+    protected val bpmnNestedSubProcess = BpmnSubProcess(subprocessInSubProcessBpmnId, triggeredByEvent = false, transactionalSubprocess = false)
+    protected val bpmnServiceTaskEnd = BpmnServiceTask(serviceTaskEndBpmnId)
+    protected val bpmnSequenceFlow = BpmnSequenceFlow(sequenceFlowBpmnId)
     protected val diagramServiceTaskStart = ShapeElement(serviceTaskStartDiagramId, bpmnServiceTaskStart.id, BoundsElement(startElemX, startElemY, serviceTaskSize, serviceTaskSize))
     protected val diagramServiceTaskEnd = ShapeElement(serviceTaskEndDiagramId, bpmnServiceTaskEnd.id, BoundsElement(endElemX, endElemY, serviceTaskSize, serviceTaskSize))
     protected val diagramSubProcess = ShapeElement(subprocessDiagramId, subprocessBpmnId, BoundsElement(subProcessElemX, subProcessElemY, subProcessSize, subProcessSize))
@@ -146,7 +144,7 @@ abstract class BaseUiTest {
         null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null,
-        null, null, null, null, null
+        null, null, null, null, null, null ,null, null, null
     )
 
     protected val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
@@ -227,6 +225,7 @@ abstract class BaseUiTest {
         val id = Pair(elementId, PropertyType.ID)
         clickOnId(diagramElementId)
         propertiesVisualizer(project).visualize(
+                newElementsFactory(project),
                 currentStateProvider(project).currentState().elemPropertiesByStaticElementId,
                 elementId
         )
@@ -237,6 +236,7 @@ abstract class BaseUiTest {
     protected fun changeSelectedIdViaPropertiesVisualizer(elementId: BpmnElementId, newId: String) {
         val id = Pair(elementId, PropertyType.ID)
         propertiesVisualizer(project).visualize(
+                newElementsFactory(project),
                 currentStateProvider(project).currentState().elemPropertiesByStaticElementId,
                 elementId
         )
@@ -276,7 +276,8 @@ abstract class BaseUiTest {
 
         argumentCaptor<List<EventPropagatableToXml>>().let {
             verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any())
-            it.firstValue.shouldHaveSize(1)
+            it.firstValue.shouldHaveSize(3)
+            it.firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).map { value -> value.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
             return it.firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
         }
     }

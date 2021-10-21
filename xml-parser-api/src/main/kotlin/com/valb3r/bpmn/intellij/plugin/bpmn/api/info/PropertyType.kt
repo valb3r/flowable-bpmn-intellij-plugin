@@ -16,14 +16,18 @@ enum class PropertyType(
     val group: List<FunctionalGroupType>? = null,
     val indexInGroupArrayName: String? = null,
     val indexCascades: Boolean = false,
+    val explicitIndexCascades: List<String>? = null,
     val removeEnclosingNodeIfNullOrEmpty: Boolean = false,
-    val hideIfNullOrEmpty: Boolean = false
+    val hideIfNullOrEmpty: Boolean = false,
+    val visible: Boolean = true
 ) {
-    ID("id", "ID", STRING, "id.id", true, null, 1000), // ID should fire last
+    ID("id", "ID", STRING, "id.id", true, null, 1000, explicitIndexCascades = listOf("BPMN_INCOMING", "BPMN_OUTGOING")), // ID should fire last
     NAME("name", "Name", STRING),
     DOCUMENTATION("documentation", "Documentation", STRING),
     IS_FOR_COMPENSATION("forCompensation", "Is for compensation", BOOLEAN),
     ASYNC("async", "Asynchronous", BOOLEAN),
+    ASYNC_BEFORE("asyncBefore", "Asynchronous Before", BOOLEAN),
+    ASYNC_AFTER("asyncAfter", "Asynchronous After", BOOLEAN),
     ASSIGNEE("assignee", "Assignee", STRING),
     CALLED_ELEM("calledElement", "Called element", T_EXPRESSION),
     CALLED_ELEM_TYPE("calledElementType", "Called element type", STRING),
@@ -50,6 +54,8 @@ enum class PropertyType(
     EXCLUDE("exclude", "Exclude", BOOLEAN),
     SOURCE_REF("sourceRef", "Source reference", STRING, "sourceRef", false, ID),
     TARGET_REF("targetRef", "Target reference", STRING, "targetRef", false, ID),
+    BPMN_INCOMING("incoming", "Incoming reference", STRING, "incoming", false, ID, visible = false, indexInGroupArrayName = "@", removeEnclosingNodeIfNullOrEmpty = true),
+    BPMN_OUTGOING("outgoing", "Outgoing reference", STRING, "outgoing", false, ID, visible = false, indexInGroupArrayName = "@", removeEnclosingNodeIfNullOrEmpty = true),
     ATTACHED_TO_REF("attachedToRef", "Attached to", STRING, "attachedToRef.id", false, ID),
     CONDITION_EXPR_VALUE("conditionExpression.text", "Condition expression", T_EXPRESSION, "conditionExpression.text"),
     CONDITION_EXPR_TYPE("conditionExpression.type", "Condition expression type", STRING, "conditionExpression.type"),

@@ -64,11 +64,11 @@ internal class ActivityUserTaskTest {
         {value: Boolean -> readAndUpdate(PropertyType.IS_FOR_COMPENSATION, value).isForCompensation.shouldBeEqualTo(value)} (false);
         {value: String -> readAndUpdate(PropertyType.ASSIGNEE, value).assignee.shouldBeEqualTo(value)} ("Assigned to");
         {value: String -> readAndUpdate(PropertyType.DUE_DATE, value).dueDate.shouldBeEqualTo(value)} ("2000-01-01");
-        {value: String -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.CATEGORY, value).category.shouldBeEqualTo(value)}} ("SOME_CAT123");
+        {value: String -> readAndUpdate(PropertyType.CATEGORY, value).category.shouldBeNull()} ("SOME_CAT123");
         {value: String -> readAndUpdate(PropertyType.FORM_KEY, value).formKey.shouldBeEqualTo(value)} ("KEY_90");
-        {value: Boolean -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.FORM_FIELD_VALIDATION, value).formFieldValidation.shouldBeEqualTo(value)}} (false);
+        {value: Boolean -> readAndUpdate(PropertyType.FORM_FIELD_VALIDATION, value).formFieldValidation.shouldBeNull()} (false);
         {value: String -> readAndUpdate(PropertyType.PRIORITY, value).priority.shouldBeEqualTo(value)} ("22");
-        {value: String -> assertThrows<IllegalStateException> {readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeEqualTo(value)}} ("#{something.wrong()}")
+        {value: String -> readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeNull()} ("#{something.wrong()}")
     }
 
     @Test
@@ -77,10 +77,10 @@ internal class ActivityUserTaskTest {
         readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.ASSIGNEE).assignee.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.DUE_DATE).dueDate.shouldBeNullOrEmpty()
-        assertThrows<IllegalStateException> {readAndSetNullString(PropertyType.CATEGORY)}
+        readAndSetNullString(PropertyType.CATEGORY).category.shouldBeNull()
         readAndSetNullString(PropertyType.FORM_KEY).formKey.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.PRIORITY).priority.shouldBeNullOrEmpty()
-        assertThrows<IllegalStateException> {readAndSetNullString(PropertyType.SKIP_EXPRESSION)}
+        readAndSetNullString(PropertyType.SKIP_EXPRESSION).skipExpression.shouldBeNull()
     }
 
     private fun readAndSetNullString(property: PropertyType): BpmnUserTask {

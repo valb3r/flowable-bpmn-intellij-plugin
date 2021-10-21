@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   aria-hidden="true"
+   role="img"
+   width="32"
+   height="32"
+   preserveAspectRatio="xMidYMid meet"
+   viewBox="0 0 2000 2000"
+   version="1.1"
+   id="svg836"
+   sodipodi:docname="envelope.svg"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs840" />
+  <sodipodi:namedview
+     id="namedview838"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="23.375"
+     inkscape:cx="15.97861"
+     inkscape:cy="16"
+     inkscape:window-width="1920"
+     inkscape:window-height="986"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg836" />
+  <rect
+     x="0"
+     y="0"
+     width="2000"
+     height="2000"
+     fill="none"
+     stroke="none"
+     id="rect824" />
+  <rect
+     width="1800"
+     height="1460"
+     x="100"
+     y="270"
+     rx="329.651"
+     ry="328.5"
+     fill="transparent"
+     stroke-width="120"
+     stroke-linecap="round"
+     id="rect826"
+     style="stroke:#000000;fill:none" />
+  <g
+     fill-rule="evenodd"
+     id="g832"
+     transform="translate(0,947.638)"
+     style="stroke:#000000">
+    <path
+       d="m 346.858,-428.042 h 999.853 l -499.927,283 z"
+       stroke-width="0.62335"
+       fill="currentColor"
+       id="path828" />
+    <path
+       d="m 348.104,-323.32 498.68,279.261 501.174,-279.26 V 235.2 H 348.104 Z"
+       stroke-width="0.62335"
+       fill="currentColor"
+       id="path830" />
+  </g>
+</svg>

@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.DraggedToEvent
@@ -15,6 +16,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.core.render.ICON_Z_INDEX
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.ACTIONS_ICO_SIZE
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.computeCascadeChangeOfBpmnIncomingOutgoingIndex
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.ResizeViewTransform
 import java.awt.geom.Point2D
@@ -67,11 +69,16 @@ class PhysicalWaypoint(
             return events
         }
 
+        val state = state().currentState
+        val currentProps = state.propertyWithElementByPropertyType
+        val rootProcessId = state.processId
         if (null != droppedOn && !multipleElementsSelected() && !multipleElementsDragged()) {
             if (edgePhysicalSize - 1 == physicalPos) {
                 events += StringValueUpdatedEvent(parentElementBpmnId, PropertyType.TARGET_REF, droppedOn.id)
+                handleBpmnIncomingCascade(events, currentProps, droppedOn, rootProcessId, parentElementBpmnId)
             } else if (0 == physicalPos) {
                 events += StringValueUpdatedEvent(parentElementBpmnId, PropertyType.SOURCE_REF, droppedOn.id)
+                handleBpmnOutgoingCascade(events, currentProps, droppedOn, rootProcessId, parentElementBpmnId)
             }
         }
 
@@ -113,4 +120,30 @@ class PhysicalWaypoint(
     private fun isSourceRefAttached() = null != state().currentState.elemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.SOURCE_REF)?.value
     private fun isTargetRefAttached() = null != state().currentState.elemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.TARGET_REF)?.value
     private fun isEdgeBeginOrEnd() = edgePhysicalSize - 1 == physicalPos || 0 == physicalPos
+
+    private fun handleBpmnOutgoingCascade(
+        events: MutableList<Event>,
+        currentProps: Map<PropertyType, Map<BpmnElementId, Property>>,
+        droppedOn: BpmnElementId,
+        rootProcessId: BpmnElementId,
+        parentElementBpmnId: BpmnElementId
+    ) {
+        events += computeCascadeChangeOfBpmnIncomingOutgoingIndex(parentElementBpmnId, currentProps, PropertyType.BPMN_OUTGOING)
+        if (droppedOn != rootProcessId) {
+            events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_OUTGOING, parentElementBpmnId.id, propertyIndex = listOf(parentElementBpmnId.id))
+        }
+    }
+
+    private fun handleBpmnIncomingCascade(
+        events: MutableList<Event>,
+        currentProps: Map<PropertyType, Map<BpmnElementId, Property>>,
+        droppedOn: BpmnElementId,
+        rootProcessId: BpmnElementId,
+        parentElementBpmnId: BpmnElementId
+    ) {
+        events += computeCascadeChangeOfBpmnIncomingOutgoingIndex(parentElementBpmnId, currentProps, PropertyType.BPMN_INCOMING)
+        if (droppedOn != rootProcessId) {
+            events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_INCOMING, parentElementBpmnId.id, propertyIndex = listOf(parentElementBpmnId.id))
+        }
+    }
 }

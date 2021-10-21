@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1dkfe00" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.11.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:process id="Process_13s09mg" isExecutable="true">
+    <bpmn:serviceTask id="detailedServiceTaskSingleAll" name="Service task with single extension" camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:jobPriority="1" camunda:delegateExpression="${someBean}">
+      <bpmn:documentation>Some docs</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:failedJobRetryTimeCycle>PT1M</camunda:failedJobRetryTimeCycle>
+        <camunda:executionListener class="com.java.SingleListener" event="start">
+          <camunda:field name="field1">
+            <camunda:string>123</camunda:string>
+          </camunda:field>
+        </camunda:executionListener>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="InputParam1">123</camunda:inputParameter>
+          <camunda:outputParameter name="OutputParam1">123</camunda:outputParameter>
+        </camunda:inputOutput>
+        <camunda:field name="field">
+          <camunda:string>fieldValue</camunda:string>
+        </camunda:field>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="detailedServiceTaskMultipleAll" name="Service task with multiple extensions" camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:jobPriority="1" camunda:class="com.some.Clazz">
+      <bpmn:documentation>Some docs</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:failedJobRetryTimeCycle>PT1M</camunda:failedJobRetryTimeCycle>
+        <camunda:executionListener class="com.java.SingleListener" event="start">
+          <camunda:field name="field1">
+            <camunda:string>123</camunda:string>
+          </camunda:field>
+        </camunda:executionListener>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="InputParam2">param2value</camunda:inputParameter>
+          <camunda:inputParameter name="InputParam1">123</camunda:inputParameter>
+          <camunda:outputParameter name="OutputParam2">output2</camunda:outputParameter>
+          <camunda:outputParameter name="OutputParam1">123</camunda:outputParameter>
+        </camunda:inputOutput>
+        <camunda:field name="field1">
+          <camunda:string>fieldValue</camunda:string>
+        </camunda:field>
+        <camunda:executionListener class="com.some.EndListener" event="end">
+          <camunda:field name="field1">
+            <camunda:string>123</camunda:string>
+          </camunda:field>
+          <camunda:field name="field2">
+            <camunda:expression>${foo} == 1</camunda:expression>
+          </camunda:field>
+        </camunda:executionListener>
+        <camunda:field name="field2">
+          <camunda:expression>${someExpr}</camunda:expression>
+        </camunda:field>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_13s09mg">
+      <bpmndi:BPMNShape id="Activity_1e1r6gq_di" bpmnElement="detailedServiceTaskSingleAll">
+        <dc:Bounds x="160" y="100" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0yw7bwb_di" bpmnElement="detailedServiceTaskMultipleAll">
+        <dc:Bounds x="160" y="250" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

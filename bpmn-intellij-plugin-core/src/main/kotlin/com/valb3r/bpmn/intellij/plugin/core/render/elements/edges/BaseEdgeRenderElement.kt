@@ -92,10 +92,10 @@ abstract class BaseEdgeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        val minX = edge.waypoint.minBy { it: IdentifiableWaypoint -> it.x }?.x ?: 0.0f
-        val minY = edge.waypoint.minBy { it: IdentifiableWaypoint -> it.y }?.y ?: 0.0f
-        val maxX = edge.waypoint.maxBy { it: IdentifiableWaypoint -> it.x }?.x ?: 0.0f
-        val maxY = edge.waypoint.maxBy { it: IdentifiableWaypoint -> it.y }?.y ?: 0.0f
+        val minX = edge.waypoint.minBy { it.x }?.x ?: 0.0f
+        val minY = edge.waypoint.minBy { it.y }?.y ?: 0.0f
+        val maxX = edge.waypoint.maxBy { it.x }?.x ?: 0.0f
+        val maxY = edge.waypoint.maxBy { it.y }?.y ?: 0.0f
 
         // Edge itself can't be translated, so no viewTransform
         return Rectangle2D.Float(

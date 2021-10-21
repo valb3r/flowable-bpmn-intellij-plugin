@@ -247,90 +247,7 @@ abstract class BaseBpmnParser: BpmnParser {
                     ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnObject.parentIdForXml.id}'][1]") as Element?
                 )!!
 
-        val newNode = when (update.bpmnObject.element) {
-
-            // Events
-            // Start
-            is BpmnStartEvent -> createStartEventWithType(diagramParent, null)
-            is BpmnStartTimerEvent -> createStartEventWithType(diagramParent, "timerEventDefinition")
-            is BpmnStartSignalEvent -> createStartEventWithType(diagramParent, "signalEventDefinition")
-            is BpmnStartMessageEvent -> createStartEventWithType(diagramParent, "messageEventDefinition")
-            is BpmnStartErrorEvent -> createStartEventWithType(diagramParent, "errorEventDefinition")
-            is BpmnStartConditionalEvent -> createStartEventWithType(diagramParent, "conditionalEventDefinition")
-            is BpmnStartEscalationEvent -> createStartEventWithType(diagramParent, "escalationEventDefinition")
-            // End
-            is BpmnEndEvent -> createEndEventWithType(diagramParent, null)
-            is BpmnEndTerminateEvent -> createEndEventWithType(diagramParent, "terminateEventDefinition")
-            is BpmnEndEscalationEvent -> createEndEventWithType(diagramParent, "escalationEventDefinition")
-            is BpmnEndCancelEvent -> createEndEventWithType(diagramParent, "cancelEventDefinition")
-            is BpmnEndErrorEvent -> createEndEventWithType(diagramParent, "errorEventDefinition")
-            // Boundary
-            is BpmnBoundaryCancelEvent -> createBoundaryEventWithType(diagramParent, "cancelEventDefinition")
-            is BpmnBoundaryCompensationEvent -> createBoundaryEventWithType(diagramParent, "compensateEventDefinition")
-            is BpmnBoundaryConditionalEvent -> createBoundaryEventWithType(diagramParent, "conditionalEventDefinition")
-            is BpmnBoundaryErrorEvent -> createBoundaryEventWithType(diagramParent, "errorEventDefinition")
-            is BpmnBoundaryEscalationEvent -> createBoundaryEventWithType(diagramParent, "escalationEventDefinition")
-            is BpmnBoundaryMessageEvent -> createBoundaryEventWithType(diagramParent, "messageEventDefinition")
-            is BpmnBoundarySignalEvent -> createBoundaryEventWithType(diagramParent, "signalEventDefinition")
-            is BpmnBoundaryTimerEvent -> createBoundaryEventWithType(diagramParent, "timerEventDefinition")
-            // Intermediate events
-            // Catching
-            is BpmnIntermediateTimerCatchingEvent -> createIntermediateCatchEventWithType(
-                diagramParent,
-                "timerEventDefinition"
-            )
-            is BpmnIntermediateMessageCatchingEvent -> createIntermediateCatchEventWithType(
-                diagramParent,
-                "messageEventDefinition"
-            )
-            is BpmnIntermediateSignalCatchingEvent -> createIntermediateCatchEventWithType(
-                diagramParent,
-                "signalEventDefinition"
-            )
-            is BpmnIntermediateConditionalCatchingEvent -> createIntermediateCatchEventWithType(
-                diagramParent,
-                "conditionalEventDefinition"
-            )
-            // Throwing
-            is BpmnIntermediateNoneThrowingEvent -> createIntermediateThrowEventWithType(diagramParent, null)
-            is BpmnIntermediateSignalThrowingEvent -> createIntermediateThrowEventWithType(
-                diagramParent,
-                "signalEventDefinition"
-            )
-            is BpmnIntermediateEscalationThrowingEvent -> createIntermediateThrowEventWithType(
-                diagramParent,
-                "escalationEventDefinition"
-            )
-
-            // Service tasks
-            is BpmnUserTask -> diagramParent.addElement(modelNs().named("userTask"))
-            is BpmnScriptTask -> diagramParent.addElement(modelNs().named("scriptTask"))
-            is BpmnServiceTask -> createServiceTask(diagramParent)
-            is BpmnBusinessRuleTask -> diagramParent.addElement(modelNs().named("businessRuleTask"))
-            is BpmnReceiveTask -> diagramParent.addElement(modelNs().named("receiveTask"))
-            is BpmnManualTask -> diagramParent.addElement(modelNs().named("manualTask"))
-            is BpmnCamelTask -> createServiceTaskWithType(diagramParent, "camel")
-            is BpmnHttpTask -> createServiceTaskWithType(diagramParent, "http")
-            is BpmnMailTask -> createServiceTaskWithType(diagramParent, "mail")
-            is BpmnMuleTask -> createServiceTaskWithType(diagramParent, "mule")
-            is BpmnDecisionTask -> createServiceTaskWithType(diagramParent, "dmn")
-            is BpmnShellTask -> createServiceTaskWithType(diagramParent, "shell")
-
-            // Sub processes
-            is BpmnCallActivity -> diagramParent.addElement(modelNs().named("callActivity"))
-            is BpmnSubProcess -> diagramParent.addElement(modelNs().named("subProcess"))
-            is BpmnEventSubprocess -> createEventSubprocess(diagramParent)
-            is BpmnAdHocSubProcess -> diagramParent.addElement(modelNs().named("adHocSubProcess"))
-            is BpmnTransactionalSubProcess -> diagramParent.addElement(modelNs().named("transaction"))
-
-            // Gateways
-            is BpmnExclusiveGateway -> diagramParent.addElement(modelNs().named("exclusiveGateway"))
-            is BpmnParallelGateway -> diagramParent.addElement(modelNs().named("parallelGateway"))
-            is BpmnInclusiveGateway -> diagramParent.addElement(modelNs().named("inclusiveGateway"))
-            is BpmnEventGateway -> diagramParent.addElement(modelNs().named("eventBasedGateway"))
-
-            else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
-        }
+        val newNode = createBpmnObject(update, diagramParent) ?: throw IllegalArgumentException("Can't store: " + update.bpmnObject)
 
         update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.index?.toMutableList()) }
         trimWhitespace(diagramParent, false)
@@ -348,6 +265,90 @@ abstract class BaseBpmnParser: BpmnParser {
         newBounds.addAttribute("width", bounds.width.toString())
         newBounds.addAttribute("height", bounds.height.toString())
         trimWhitespace(shapeParent, false)
+    }
+
+    protected open fun createBpmnObject(update: BpmnShapeObjectAdded, diagramParent: Element) = when (update.bpmnObject.element) {
+        // Events
+        // Start
+        is BpmnStartEvent -> createStartEventWithType(diagramParent, null)
+        is BpmnStartTimerEvent -> createStartEventWithType(diagramParent, "timerEventDefinition")
+        is BpmnStartSignalEvent -> createStartEventWithType(diagramParent, "signalEventDefinition")
+        is BpmnStartMessageEvent -> createStartEventWithType(diagramParent, "messageEventDefinition")
+        is BpmnStartErrorEvent -> createStartEventWithType(diagramParent, "errorEventDefinition")
+        is BpmnStartConditionalEvent -> createStartEventWithType(diagramParent, "conditionalEventDefinition")
+        is BpmnStartEscalationEvent -> createStartEventWithType(diagramParent, "escalationEventDefinition")
+        // End
+        is BpmnEndEvent -> createEndEventWithType(diagramParent, null)
+        is BpmnEndTerminateEvent -> createEndEventWithType(diagramParent, "terminateEventDefinition")
+        is BpmnEndEscalationEvent -> createEndEventWithType(diagramParent, "escalationEventDefinition")
+        is BpmnEndCancelEvent -> createEndEventWithType(diagramParent, "cancelEventDefinition")
+        is BpmnEndErrorEvent -> createEndEventWithType(diagramParent, "errorEventDefinition")
+        // Boundary
+        is BpmnBoundaryCancelEvent -> createBoundaryEventWithType(diagramParent, "cancelEventDefinition")
+        is BpmnBoundaryCompensationEvent -> createBoundaryEventWithType(diagramParent, "compensateEventDefinition")
+        is BpmnBoundaryConditionalEvent -> createBoundaryEventWithType(diagramParent, "conditionalEventDefinition")
+        is BpmnBoundaryErrorEvent -> createBoundaryEventWithType(diagramParent, "errorEventDefinition")
+        is BpmnBoundaryEscalationEvent -> createBoundaryEventWithType(diagramParent, "escalationEventDefinition")
+        is BpmnBoundaryMessageEvent -> createBoundaryEventWithType(diagramParent, "messageEventDefinition")
+        is BpmnBoundarySignalEvent -> createBoundaryEventWithType(diagramParent, "signalEventDefinition")
+        is BpmnBoundaryTimerEvent -> createBoundaryEventWithType(diagramParent, "timerEventDefinition")
+        // Intermediate events
+        // Catching
+        is BpmnIntermediateTimerCatchingEvent -> createIntermediateCatchEventWithType(
+            diagramParent,
+            "timerEventDefinition"
+        )
+        is BpmnIntermediateMessageCatchingEvent -> createIntermediateCatchEventWithType(
+            diagramParent,
+            "messageEventDefinition"
+        )
+        is BpmnIntermediateSignalCatchingEvent -> createIntermediateCatchEventWithType(
+            diagramParent,
+            "signalEventDefinition"
+        )
+        is BpmnIntermediateConditionalCatchingEvent -> createIntermediateCatchEventWithType(
+            diagramParent,
+            "conditionalEventDefinition"
+        )
+        // Throwing
+        is BpmnIntermediateNoneThrowingEvent -> createIntermediateThrowEventWithType(diagramParent, null)
+        is BpmnIntermediateSignalThrowingEvent -> createIntermediateThrowEventWithType(
+            diagramParent,
+            "signalEventDefinition"
+        )
+        is BpmnIntermediateEscalationThrowingEvent -> createIntermediateThrowEventWithType(
+            diagramParent,
+            "escalationEventDefinition"
+        )
+
+        // Service tasks
+        is BpmnUserTask -> diagramParent.addElement(modelNs().named("userTask"))
+        is BpmnScriptTask -> diagramParent.addElement(modelNs().named("scriptTask"))
+        is BpmnServiceTask -> createServiceTask(diagramParent)
+        is BpmnBusinessRuleTask -> diagramParent.addElement(modelNs().named("businessRuleTask"))
+        is BpmnReceiveTask -> diagramParent.addElement(modelNs().named("receiveTask"))
+        is BpmnManualTask -> diagramParent.addElement(modelNs().named("manualTask"))
+        is BpmnCamelTask -> createServiceTaskWithType(diagramParent, "camel")
+        is BpmnHttpTask -> createServiceTaskWithType(diagramParent, "http")
+        is BpmnMailTask -> createServiceTaskWithType(diagramParent, "mail")
+        is BpmnMuleTask -> createServiceTaskWithType(diagramParent, "mule")
+        is BpmnDecisionTask -> createServiceTaskWithType(diagramParent, "dmn")
+        is BpmnShellTask -> createServiceTaskWithType(diagramParent, "shell")
+
+        // Sub processes
+        is BpmnCallActivity -> diagramParent.addElement(modelNs().named("callActivity"))
+        is BpmnSubProcess -> diagramParent.addElement(modelNs().named("subProcess"))
+        is BpmnEventSubprocess -> createEventSubprocess(diagramParent)
+        is BpmnAdHocSubProcess -> diagramParent.addElement(modelNs().named("adHocSubProcess"))
+        is BpmnTransactionalSubProcess -> diagramParent.addElement(modelNs().named("transaction"))
+
+        // Gateways
+        is BpmnExclusiveGateway -> diagramParent.addElement(modelNs().named("exclusiveGateway"))
+        is BpmnParallelGateway -> diagramParent.addElement(modelNs().named("parallelGateway"))
+        is BpmnInclusiveGateway -> diagramParent.addElement(modelNs().named("inclusiveGateway"))
+        is BpmnEventGateway -> diagramParent.addElement(modelNs().named("eventBasedGateway"))
+
+        else -> null
     }
 
     private fun createServiceTask(elem: Element): Element {
@@ -372,7 +373,7 @@ abstract class BaseBpmnParser: BpmnParser {
         return newElem
     }
 
-    private fun createIntermediateCatchEventWithType(elem: Element, type: String): Element {
+    protected fun createIntermediateCatchEventWithType(elem: Element, type: String): Element {
         val newElem = elem.addElement(modelNs().named("intermediateCatchEvent"))
         newElem.addElement(type)
         return newElem
@@ -457,8 +458,7 @@ abstract class BaseBpmnParser: BpmnParser {
     }
 
     private fun setToNode(node: Element, type: PropertyType, value: Any?, valueIndexInArray: MutableList<String>? = null) {
-        val details = propertyTypeDetails().firstOrNull { it.propertyType == type }
-            ?: throw IllegalStateException("Wrong (or unsupported) property type details $type")
+        val details = propertyTypeDetails().firstOrNull { it.propertyType == type } ?: return
         val path = details.xmlPath
         when {
             path.contains(".") -> setNestedToNode(node, path, type, details, value, valueIndexInArray)
@@ -487,6 +487,9 @@ abstract class BaseBpmnParser: BpmnParser {
 
             var (attrName, attrValue) = attributeSelector?.split("=") ?: listOf(null, null)
             if (true == attrValue?.contains('@')) {
+                if (null == value && null == valueIndexInArray) { // Skip null unindexable props
+                    return
+                }
                 attrValue = attrValue.replace("@", valueIndexInArray!!.removeAt(0))
             }
 
@@ -500,7 +503,12 @@ abstract class BaseBpmnParser: BpmnParser {
 
                 val newElem = currentNode.addElement(name)
                 currentNode = newElem
-                newElem.addAttribute(attrName, attrValue)
+                // TODO Handle this with setAttributeOrValueOrCdataOrRemoveIfNull ?
+                if (attrName != "\$") {
+                    newElem.addAttribute(attrName, attrValue)
+                } else {
+                    newElem.text = attrValue
+                }
             } else {
                 currentNode = child
             }
@@ -519,10 +527,18 @@ abstract class BaseBpmnParser: BpmnParser {
             return nodeChildByName(target, name)
         }
 
+        val matchAttrValue = { elem: Element ->
+            if (attrName.startsWith("\$")) {
+                attrValue == elem.text
+            } else {
+                attrValue == elem.attribute(attrName)?.value
+            }
+        }
+
         val children = target.selectNodes("*")
         for (pos in 0 until children.size) {
             val elem = children[pos] as Element
-            if (elem.qualifiedName.contains(name) && attrValue == elem.attribute(attrName)?.value) {
+            if (elem.qualifiedName.contains(name) && matchAttrValue(elem)) {
                 return children[pos] as Element
             }
         }

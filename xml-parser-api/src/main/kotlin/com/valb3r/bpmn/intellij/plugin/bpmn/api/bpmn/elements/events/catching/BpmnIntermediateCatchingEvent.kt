@@ -6,12 +6,15 @@ import java.time.LocalDateTime
 
 data class BpmnIntermediateCatchingEvent(
         override val id: BpmnElementId,
-        val name: String?,
-        val documentation: String?,
-        val timerEventDefinition: TimerEventDefinition?,
-        val signalEventDefinition: SignalEventDefinition?,
-        val messageEventDefinition: MessageEventDefinition?,
-        val conditionalEventDefinition: ConditionalEventDefinition?
+        val name: String? = null,
+        val documentation: String? = null,
+        val timerEventDefinition: TimerEventDefinition? = null,
+        val signalEventDefinition: SignalEventDefinition? = null,
+        val messageEventDefinition: MessageEventDefinition? = null,
+        val conditionalEventDefinition: ConditionalEventDefinition? = null,
+        val linkEventDefinition: LinkEventDefinition? = null,
+        val incoming: List<String>? = null,
+        val outgoing: List<String>? = null,
 ) : WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
@@ -32,5 +35,10 @@ data class MessageEventDefinition(
 )
 
 data class ConditionalEventDefinition(
+        val condition: String? = null
+)
+
+data class LinkEventDefinition(
+        val id: String? = null,
         val condition: String? = null
 )
