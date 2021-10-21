@@ -76,7 +76,7 @@
     <!-- <helpset file="myhelp.jar" path="/Help.hs" /> -->
 
     <!-- Minimum and maximum build of IDE compatible with the plugin -->
-    <idea-version since-build="182"/>
+    <idea-version since-build="192"/>
 
     <!-- Resource bundle (/messages/MyPluginBundle.properties) to be used with `key` attributes in extension points
          and implicit keys like `action.[pluginID].[ActionID].text` -->
