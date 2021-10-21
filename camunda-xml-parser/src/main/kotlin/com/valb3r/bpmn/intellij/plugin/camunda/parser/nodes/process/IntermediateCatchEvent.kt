@@ -19,17 +19,22 @@ data class IntermediateCatchEvent(
     @JsonSetter(nulls = Nulls.AS_EMPTY) val timerEventDefinition: TimerEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val signalEventDefinition: SignalEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val messageEventDefinition: MessageEventDefinition?,
-    @JsonSetter(nulls = Nulls.AS_EMPTY) val conditionalEventDefinition: ConditionalEventDefinition?
-
+    @JsonSetter(nulls = Nulls.AS_EMPTY) val conditionalEventDefinition: ConditionalEventDefinition?,
+    @JsonSetter(nulls = Nulls.AS_EMPTY) val linkEventDefinition: LinkEventDefinition?
 ): BpmnMappable<BpmnIntermediateCatchingEvent> {
 
     override fun toElement(): BpmnIntermediateCatchingEvent {
         return Mappers.getMapper(Mapping::class.java).convertToDto(this)
     }
 
-    @Mapper(uses = [BpmnElementIdMapper::class])
+    @Mapper(uses = [BpmnElementIdMapper::class, LinkEventDefinitionMapping::class])
     interface Mapping {
         fun convertToDto(input: IntermediateCatchEvent) : BpmnIntermediateCatchingEvent
+    }
+
+    @Mapper(uses = [BpmnElementIdMapper::class])
+    interface LinkEventDefinitionMapping {
+        fun convertToDto(input: LinkEventDefinition) : com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.LinkEventDefinition
     }
 
     data class TimerEventDefinition(
@@ -46,5 +51,10 @@ data class IntermediateCatchEvent(
 
     data class ConditionalEventDefinition(
             val condition: String? = null
+    )
+
+    data class LinkEventDefinition(
+        @JacksonXmlProperty(isAttribute = true) val id: String? = null,
+        @JacksonXmlProperty(isAttribute = true) val name: String? = null
     )
 }

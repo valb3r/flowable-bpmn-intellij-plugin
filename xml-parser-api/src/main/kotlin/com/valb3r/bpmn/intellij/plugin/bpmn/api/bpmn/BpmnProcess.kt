@@ -11,10 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateThrowingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnEventGateway
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 
@@ -51,7 +48,7 @@ data class BpmnProcessBody(
         val intermediateMessageCatchingEvent: List<BpmnIntermediateMessageCatchingEvent>?,
         val intermediateSignalCatchingEvent: List<BpmnIntermediateSignalCatchingEvent>?,
         val intermediateConditionalCatchingEvent: List<BpmnIntermediateConditionalCatchingEvent>?,
-        val intermediateLinkCatchingEvent: List<BpmnIntermediateLinkCathingEvent>?,
+        val intermediateLinkCatchingEvent: List<BpmnIntermediateLinkCatchingEvent>?,
         // Throwing
         val intermediateThrowEvent: List<BpmnIntermediateThrowingEvent>?, // generic mapping point should be empty when processed
         val intermediateNoneThrowingEvent: List<BpmnIntermediateNoneThrowingEvent>?,
@@ -92,7 +89,7 @@ data class BpmnProcessBody(
         val parallelGateway: List<BpmnParallelGateway>?,
         val inclusiveGateway: List<BpmnInclusiveGateway>?,
         val eventBasedGateway: List<BpmnEventGateway>?,
-        val complexGateway: List<BpmnEventGateway>?,
+        val complexGateway: List<BpmnComplexGateway>?,
 
         // Linking elements
         val sequenceFlow: List<BpmnSequenceFlow>?

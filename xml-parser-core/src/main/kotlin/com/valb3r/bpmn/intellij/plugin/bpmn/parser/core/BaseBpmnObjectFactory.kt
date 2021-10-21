@@ -135,7 +135,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             is BpmnSubProcess, is BpmnEventSubprocess, is BpmnTransactionalSubProcess, is BpmnAdHocSubProcess, is BpmnCollapsedSubprocess, is BpmnTransactionCollapsedSubprocess,
             is BpmnExclusiveGateway, is BpmnParallelGateway, is BpmnInclusiveGateway, is BpmnEventGateway, is BpmnComplexGateway,
             is BpmnIntermediateTimerCatchingEvent, is BpmnIntermediateMessageCatchingEvent, is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent,
-            is BpmnIntermediateNoneThrowingEvent, is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent, is BpmnIntermediateLinkCathingEvent,
+            is BpmnIntermediateNoneThrowingEvent, is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent, is BpmnIntermediateLinkCatchingEvent,
             is BpmnProcess
             -> processDtoToPropertyMap(obj)
 
@@ -265,7 +265,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             is BpmnBoundarySignalEvent, is BpmnBoundaryTimerEvent, is BpmnEndErrorEvent,
             is BpmnEndCancelEvent, is BpmnIntermediateTimerCatchingEvent, is BpmnIntermediateMessageCatchingEvent,
             is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent, is BpmnIntermediateNoneThrowingEvent,
-            is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent, is BpmnIntermediateLinkCathingEvent -> BoundsElement(
+            is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent, is BpmnIntermediateLinkCatchingEvent -> BoundsElement(
                 0.0f,
                 0.0f,
                 30.0f,

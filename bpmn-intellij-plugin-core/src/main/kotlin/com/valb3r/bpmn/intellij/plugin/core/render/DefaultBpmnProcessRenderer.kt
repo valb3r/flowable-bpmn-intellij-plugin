@@ -259,7 +259,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             is BpmnIntermediateMessageCatchingEvent -> IconShape(id, bpmn.id, icons.messageCatchEvent, shape, state)
             is BpmnIntermediateSignalCatchingEvent -> IconShape(id, bpmn.id, icons.signalCatchEvent, shape, state)
             is BpmnIntermediateConditionalCatchingEvent -> IconShape(id, bpmn.id, icons.conditionalCatchEvent, shape, state)
-            is BpmnIntermediateLinkCathingEvent -> IconShape(id, bpmn.id, icons.intermediateLinkCatchEvent, shape, state)
+            is BpmnIntermediateLinkCatchingEvent -> IconShape(id, bpmn.id, icons.intermediateLinkCatchEvent, shape, state)
             is BpmnIntermediateNoneThrowingEvent -> IconShape(id, bpmn.id, icons.noneThrowEvent, shape, state)
             is BpmnIntermediateSignalThrowingEvent -> IconShape(id, bpmn.id, icons.signalThrowEvent, shape, state)
             is BpmnIntermediateEscalationThrowingEvent -> IconShape(id, bpmn.id, icons.escalationThrowEvent, shape, state)

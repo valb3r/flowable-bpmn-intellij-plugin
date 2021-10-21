@@ -202,7 +202,7 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
         addItem(menu, "Intermediate message catching event", INTERMEDIATE_MESSAGE_CATCHING, ShapeCreator(project, BpmnIntermediateMessageCatchingEvent::class, sceneLocation, parent))
         addItem(menu, "Intermediate signal catching event", INTERMEDIATE_SIGNAL_CATCHING, ShapeCreator(project, BpmnIntermediateSignalCatchingEvent::class, sceneLocation, parent))
         addItem(menu, "Intermediate conditional catching event", INTERMEDIATE_CONDITIONAL_CATCHING, ShapeCreator(project, BpmnIntermediateConditionalCatchingEvent::class, sceneLocation, parent))
-        addItem(menu, "Intermediate link catching event", INTERMEDIATE_LINK_CATCHING, ShapeCreator(project, BpmnIntermediateLinkCathingEvent::class, sceneLocation, parent))
+        addItem(menu, "Intermediate link catching event", INTERMEDIATE_LINK_CATCHING, ShapeCreator(project, BpmnIntermediateLinkCatchingEvent::class, sceneLocation, parent))
         return menu
     }
 

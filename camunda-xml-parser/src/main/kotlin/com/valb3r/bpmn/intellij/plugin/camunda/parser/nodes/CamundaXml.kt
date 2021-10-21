@@ -69,8 +69,6 @@ open class ProcessBody {
     var intermediateCatchEvent: List<IntermediateCatchEvent>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
     var intermediateThrowEvent: List<IntermediateThrowEvent>? = null
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
-    var linkIntermediateCatchEvent: List<LinkIntermediateCatchEvent>? = null
 
     // Service task alike:
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
@@ -324,7 +322,8 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         ReceiveTask.ReceiveTaskMapping::class,
         ScriptTask.ScriptTaskMapping::class,
         UserTask.UserTaskMapping::class,
-        StartEventNode.StartEventNodeMapping::class
+        StartEventNode.StartEventNodeMapping::class,
+        IntermediateCatchEvent.Mapping::class
     ])
     interface BodyMapping {
 
@@ -499,7 +498,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     interface ConditionalCatchingMapper: IntermediateCatchEventMapper<BpmnIntermediateConditionalCatchingEvent>
 
     @Mapper
-    interface LinkIntermediateCatchMapper: IntermediateCatchEventMapper<BpmnIntermediateLinkCathingEvent>
+    interface LinkIntermediateCatchMapper: IntermediateCatchEventMapper<BpmnIntermediateLinkCatchingEvent>
 
     interface IntermediateCatchEventMapper<T> {
         fun convertToDto(input: BpmnIntermediateCatchingEvent): T

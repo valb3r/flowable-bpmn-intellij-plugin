@@ -29,7 +29,7 @@
       </bpmn:extensionElements>
     </bpmn:sendTask>
     <bpmn:sendTask id="fullSendTaskMulti" name="Multi send task" camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:jobPriority="1" camunda:type="external" camunda:topic="kafka1" camunda:taskPriority="1">
-      <bpmn:documentation>Single send task docs</bpmn:documentation>
+      <bpmn:documentation>Multi send task docs</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:failedJobRetryTimeCycle>PT0M</camunda:failedJobRetryTimeCycle>
         <camunda:executionListener class="com.java.Start" event="start">
