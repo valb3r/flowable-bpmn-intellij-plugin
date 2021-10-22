@@ -14,6 +14,7 @@ open class Activiti7ObjectFactory: ActivitiObjectFactory() {
     override fun verifyConditionalExpressionInSequenceFlow(activity: BpmnSequenceFlow) {
         if (
             null != activity.conditionExpression
+            && null != activity.conditionExpression!!.type
             && activity.conditionExpression!!.type != "tFormalExpression"
             && activity.conditionExpression!!.type != "bpmn2:tFormalExpression" // FIXME It is actually a hack
         ) {
