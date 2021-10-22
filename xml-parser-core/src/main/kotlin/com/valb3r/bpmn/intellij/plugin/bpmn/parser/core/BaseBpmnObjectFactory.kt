@@ -168,6 +168,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
     protected open fun verifyConditionalExpressionInSequenceFlow(activity: BpmnSequenceFlow) {
         if (
             null != activity.conditionExpression
+            && null != activity.conditionExpression!!.type
             && activity.conditionExpression!!.type != "tFormalExpression"
             && activity.conditionExpression!!.type != "bpmn:tFormalExpression" // FIXME It is actually a hack
         ) {
