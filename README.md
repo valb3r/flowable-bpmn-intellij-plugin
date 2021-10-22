@@ -34,8 +34,11 @@ Don't hesitate - ask or tell your opinion in gitter:
 
 # Installation
 
-You can install the plugin from JetBrains plugin repository (just search for `Flowable BPMN visualizer`) like any
-other plugin.
+You can install the plugin from JetBrains plugin repository (just search for 
+[`Flowable BPMN visualizer`](https://plugins.jetbrains.com/plugin/14318-flowable-bpmn-visualizer) 
+or [`Activiti BPMN visualizer`](https://plugins.jetbrains.com/plugin/15222-activiti-bpmn-visualizer) 
+or [`Camunda BPMN visualizer`](https://plugins.jetbrains.com/plugin/17844-camunda-bpmn-visualizer) depending on engine you need
+) like any other plugin.
 
 **Bleeding edge**:
 You can install the latest build of the plugin from ZIP file provided at releases page of this repository 
@@ -74,7 +77,7 @@ in project root this command:
 ./gradlew clean buildPlugin
 ```
 
-It will create `bpmn-intellij-plugin/build/distributions/bpmn-intellij-plugin.zip` file that contains plugin distributive.
+It will create `flowable-intellij-plugin/build/distributions/bpmn-intellij-plugin.zip` file that contains plugin distributive.
 You can install it by following steps [here](#from-github-releases).
 
 If you want just to run the plugin in the `sandbox` you can execute
@@ -89,6 +92,12 @@ If you want just to run the plugin in the `sandbox` you can execute
 
 ```shell script
 ./gradlew clean :activiti-intellij-plugin:runIde
+```
+
+**Activiti:**
+
+```shell script
+./gradlew clean :camunda-intellij-plugin:runIde
 ```
 
 # Workflow
