@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.flowable.org/processdef">
+    <process id="fbp-267-empty-cond-expr.bpmn20" name="fbp-267-empty-cond-expr.bpmn20" isExecutable="true">
+        <startEvent id="sid-06158dc1-58d3-4b10-8ac8-230d79f61b98"/>
+        <endEvent id="sid-0f06c558-3745-42f7-9d30-b909eed94ae2"/>
+        <sequenceFlow id="sequenceFlow" sourceRef="sid-06158dc1-58d3-4b10-8ac8-230d79f61b98" targetRef="sid-0f06c558-3745-42f7-9d30-b909eed94ae2">
+            <conditionExpression/>
+        </sequenceFlow>
+    </process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_fbp-267-empty-cond-expr.bpmn20">
+        <bpmndi:BPMNPlane bpmnElement="fbp-267-empty-cond-expr.bpmn20" id="BPMNPlane_fbp-267-empty-cond-expr.bpmn20">
+            <bpmndi:BPMNShape id="shape-ceb8e364-8c98-414e-9e73-d2ed856b1a68" bpmnElement="sid-06158dc1-58d3-4b10-8ac8-230d79f61b98">
+                <omgdc:Bounds x="-93.0" y="-14.75" width="30.0" height="30.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="shape-49085b5e-c153-41a8-aefa-012a6280734e" bpmnElement="sid-0f06c558-3745-42f7-9d30-b909eed94ae2">
+                <omgdc:Bounds x="63.5" y="-14.75" width="30.0" height="30.0"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNEdge id="edge-ee304cd1-3150-4101-bdb0-8eb2493e3879" bpmnElement="sequenceFlow">
+                <omgdi:waypoint x="-63.0" y="0.25"/>
+                <omgdi:waypoint x="63.5" y="0.25"/>
+            </bpmndi:BPMNEdge>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</definitions>
