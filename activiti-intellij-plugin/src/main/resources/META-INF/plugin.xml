@@ -4,7 +4,7 @@
     <name>Activiti BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.4.7.1</version>
+    <version>0.4.7.2</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -308,6 +308,11 @@
     <!-- Notification balloons TODO: Not clear if it may cause any issues with 2018-2020.2 as extension is supported with 2020.3+ -->
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="Activiti BPMN Editor Notification group" displayType="BALLOON" key="com.valb3r.bpmn.intellij.activiti.plugin"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType name="Activiti BPMN 2.0 Engine XML process" implementationClass="com.valb3r.bpmn.intellij.activiti.plugin.meta.ActivitiFileType"
+                  fieldName="INSTANCE" language="Activiti BPMN Engine XML process definition" extensions="simple"/>
     </extensions>
 
     <!-- Extensions which the plugin adds to extension points defined by the IntelliJ Platform or by other plugins.
