@@ -272,7 +272,7 @@
 
     <!-- Notification balloons TODO: Not clear if it may cause any issues with 2018-2020.2 as extension is supported with 2020.3+ -->
     <extensions defaultExtensionNs="com.intellij">
-        <notificationGroup id="Camunda BPMN Editor Notification group" displayType="BALLOON" key="com.valb3r.bpmn.intellij.activiti.plugin"/>
+        <notificationGroup id="Camunda BPMN Editor Notification group" displayType="BALLOON" key="com.valb3r.bpmn.intellij.camunda.plugin"/>
     </extensions>
     <!-- Extensions which the plugin adds to extension points defined by the IntelliJ Platform or by other plugins.
          The "defaultExtensionNs " attribute must be set to the ID of the plugin defining the extension point,
