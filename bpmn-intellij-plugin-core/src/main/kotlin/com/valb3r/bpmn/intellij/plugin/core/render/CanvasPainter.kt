@@ -571,7 +571,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         val cacheKey = Hashing.goodFastHash(32).hashString(svgFile + ":" + width.toInt() + "@" + height.toInt() + "@" + invertColors, UTF_8).toString()
 
         return svgCachedIcons.get(cacheKey) {
-            val imageScaleFactor = if (SystemInfo.isWindows) 2.0f else 1.0f // This resolves issue with Windows icons in HiDPI
+            val imageScaleFactor = if (isJreHiDPIEnabledOnWindows()) 2.0f else 1.0f // This resolves issue with Windows icons in HiDPI
             val imageTranscoder = BufferedImageTranscoder()
             imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, width * imageScaleFactor)
             imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, height * imageScaleFactor)
