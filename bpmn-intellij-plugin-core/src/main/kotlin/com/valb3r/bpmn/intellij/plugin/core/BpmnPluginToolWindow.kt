@@ -13,6 +13,7 @@ import com.intellij.ui.EditorTextField
 import com.intellij.ui.JavaReferenceEditorUtil
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
@@ -38,7 +39,7 @@ import javax.swing.table.DefaultTableModel
 import kotlin.math.abs
 
 
-class BpmnPluginToolWindow(
+open class BpmnPluginToolWindow(
     private val project: Project,
     private val onBadContentCallback: ((String) -> Unit)? = null,
     private val onBeforeFileOpen: (PsiFile) -> Unit,
@@ -100,7 +101,7 @@ class BpmnPluginToolWindow(
                 { _: BpmnElementId, _: PropertyType, value: String -> createTextField(value) },
                 { _: BpmnElementId, _: PropertyType, value: Boolean -> createCheckboxField(value) },
                 { _: BpmnElementId, action: FunctionalGroupType -> createButton(action.actionCaption) },
-                { _: BpmnElementId -> createArrowButton() },
+                { createArrowButton() },
                 canvas,
                 bpmnFile.project,
                 virtualFile
@@ -108,8 +109,8 @@ class BpmnPluginToolWindow(
         setupUiAfterRun()
     }
 
-    fun createTextField(value: String): TextValueAccessor {
-        val textField = JBTextField(value)
+    private fun createTextField(value: String): TextValueAccessor {
+        val textField = JBTextArea(value)
 
         return object: TextValueAccessor {
             override val text: String
@@ -119,7 +120,7 @@ class BpmnPluginToolWindow(
         }
     }
 
-    fun createCheckboxField(value: Boolean): SelectedValueAccessor {
+    private fun createCheckboxField(value: Boolean): SelectedValueAccessor {
         val checkBox = JBCheckBox(null, value)
 
         return object: SelectedValueAccessor {
@@ -130,15 +131,15 @@ class BpmnPluginToolWindow(
         }
     }
 
-    fun createButton(caption: String): JButton {
+    private fun createButton(caption: String): JButton {
         return JButton(caption)
     }
 
-    fun createArrowButton(): BasicArrowButton {
+    private fun createArrowButton(): BasicArrowButton {
         return BasicArrowButton(SwingConstants.SOUTH)
     }
 
-    fun createEditor(project: Project, bpmnFile: PsiFile, text: String): TextValueAccessor {
+    private fun createEditor(project: Project, bpmnFile: PsiFile, text: String): TextValueAccessor {
         val factory = JavaCodeFragmentFactory.getInstance(project)
         val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, PsiType.CHAR, true)
         fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
@@ -155,7 +156,7 @@ class BpmnPluginToolWindow(
         }
     }
 
-    fun createDropdown(text: String, allowableValues: Set<String>): TextValueAccessor {
+    private fun createDropdown(text: String, allowableValues: Set<String>): TextValueAccessor {
         val dropDownField = ComboBox(allowableValues.toTypedArray())
         dropDownField.selectedItem = text
         return object: TextValueAccessor {
@@ -167,7 +168,7 @@ class BpmnPluginToolWindow(
     }
 
     // JavaCodeFragmentFactory - important
-    protected fun createEditorForClass(project: Project, bpmnFile: PsiFile, text: String?): TextValueAccessor {
+    private fun createEditorForClass(project: Project, bpmnFile: PsiFile, text: String?): TextValueAccessor {
         val document = JavaReferenceEditorUtil.createDocument(text, project, true)!!
         val textField: EditorTextField = JavaEditorTextField(document, project)
         textField.setOneLineMode(true)
