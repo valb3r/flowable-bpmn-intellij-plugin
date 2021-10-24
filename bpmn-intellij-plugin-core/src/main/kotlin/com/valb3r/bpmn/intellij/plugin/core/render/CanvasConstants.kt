@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.render
 
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.ui.JreHiDpiUtil
 import java.awt.geom.Point2D
 
@@ -21,4 +22,8 @@ data class DefaultCanvasConstants(
 
 fun isJreHiDPIEnabled(): Boolean {
     return JreHiDpiUtil.isJreHiDPIEnabled()
+}
+
+fun isJreHiDPIEnabledOnWindows(): Boolean {
+    return JreHiDpiUtil.isJreHiDPIEnabled() && SystemInfo.isWindows
 }
