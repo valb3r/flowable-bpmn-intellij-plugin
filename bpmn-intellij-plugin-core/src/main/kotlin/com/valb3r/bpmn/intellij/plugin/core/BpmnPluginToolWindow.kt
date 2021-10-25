@@ -304,7 +304,7 @@ class JExpandableArea(private var originalText: String = ""): JBTextArea() {
             return
         }
 
-        val eolIndex = text.indexOf(System.lineSeparator())
+        val eolIndex = text.indexOf("\n")
         val ellipsisIndex = if (eolIndex < 0) maxLen else eolIndex
         super.setText("${text.substring(0, ellipsisIndex)}...")
     }
