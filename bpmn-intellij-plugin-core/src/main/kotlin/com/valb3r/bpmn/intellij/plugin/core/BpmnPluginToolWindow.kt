@@ -14,7 +14,6 @@ import com.intellij.ui.JavaReferenceEditorUtil
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
-import com.intellij.ui.components.JBTextField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -31,6 +30,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
 import java.awt.event.AdjustmentEvent
 import java.awt.event.AdjustmentListener
+import java.awt.event.FocusEvent
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.*
@@ -110,7 +110,7 @@ open class BpmnPluginToolWindow(
     }
 
     private fun createTextField(value: String): TextValueAccessor {
-        val textField = JBTextArea(value)
+        val textField = JExpandableArea(value)
 
         return object: TextValueAccessor {
             override val text: String
@@ -286,5 +286,43 @@ class ScrollBarInteractionHandler(project: Project, private val canvas: Canvas, 
                 scrolling = false
             }
         }
+    }
+}
+
+class JExpandableArea(private var originalText: String = ""): JBTextArea() {
+    private val maxLen = 20
+
+    init {
+        isEditable = false
+        text = originalText
+    }
+
+    override fun setText(text: String) {
+        originalText = text
+        if (text.length < maxLen) {
+            super.setText(text)
+            return
+        }
+
+        val eolIndex = text.indexOf(System.lineSeparator())
+        val ellipsisIndex = if (eolIndex < 0) maxLen else eolIndex
+        super.setText("${text.substring(0, ellipsisIndex)}...")
+    }
+
+    override fun getText(): String {
+        if (isEditable) {
+            return super.getText()
+        }
+
+        return originalText
+    }
+
+    override fun processFocusEvent(e: FocusEvent?) {
+        if (e?.id == FocusEvent.FOCUS_GAINED) {
+            super.setText(originalText)
+            isEditable = true
+        }
+
+        super.processFocusEvent(e)
     }
 }
