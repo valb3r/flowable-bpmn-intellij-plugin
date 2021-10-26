@@ -30,7 +30,7 @@ abstract class DefaultXmlNavigator(private val project: Project): XmlNavigator {
     }
 
     private fun findOffset(id: BpmnElementId, file: VirtualFile): Int {
-        val regex = "id\\s*=\\s*\"${id.id}".toRegex()
+        val regex = "\\s*id\\s*=\\s*\"${id.id}\"".toRegex()
         val pos = regex.find(String(file.contentsToByteArray(), StandardCharsets.UTF_8)) ?: return 0
         val firstMatch = pos.groups.firstOrNull() ?: return 0
         return firstMatch.range.first
