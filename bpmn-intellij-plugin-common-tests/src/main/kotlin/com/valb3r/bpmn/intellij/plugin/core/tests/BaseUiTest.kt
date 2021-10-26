@@ -148,6 +148,7 @@ abstract class BaseUiTest {
     )
 
     protected val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
+    protected val multiLineTextFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
     protected val boolFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, SelectedValueAccessor> = mutableMapOf()
     protected val buttonsConstructed: MutableMap<Pair<BpmnElementId, FunctionalGroupType>, JButton> = mutableMapOf()
     protected val arrowButtonsConstructed: MutableMap<BpmnElementId, BasicArrowButton> = mutableMapOf()
@@ -158,6 +159,11 @@ abstract class BaseUiTest {
         return@computeIfAbsent res
     } }
     protected val editorFactory = { id: BpmnElementId, type: PropertyType, value: String -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
+        val res = mock<TextValueAccessor>()
+        whenever(res.text).thenReturn(value)
+        return@computeIfAbsent res
+    } }
+    protected val multiLineEditorFactory = { id: BpmnElementId, type: PropertyType, value: String -> multiLineTextFieldsConstructed.computeIfAbsent(Pair(id, type)) {
         val res = mock<TextValueAccessor>()
         whenever(res.text).thenReturn(value)
         return@computeIfAbsent res
@@ -328,7 +334,7 @@ abstract class BaseUiTest {
     protected fun initializeCanvas() {
         canvasBuilder.build(
             { fileCommitter },
-            parser, propertiesTable, comboboxFactory, editorFactory, editorFactory, editorFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory, canvas, project, virtualFile
+            parser, propertiesTable, comboboxFactory, editorFactory, editorFactory, editorFactory, multiLineEditorFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory, canvas, project, virtualFile
         )
         canvas.paintComponent(graphics)
     }

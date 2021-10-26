@@ -41,10 +41,11 @@ fun newPropertiesVisualizer(
                             classEditorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
+                            multiLineExpandableTextFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
                             checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor,
                             buttonFactory: (id: BpmnElementId, type: FunctionalGroupType) -> JButton,
                             arrowButtonFactory: (id: BpmnElementId) -> BasicArrowButton): PropertiesVisualizer {
-    val newVisualizer = PropertiesVisualizer(project, table, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory)
+    val newVisualizer = PropertiesVisualizer(project, table, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, multiLineExpandableTextFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory)
     visualizer[project] = newVisualizer
     return newVisualizer
 }
@@ -60,6 +61,7 @@ class PropertiesVisualizer(
         val classEditorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         val editorFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         private val textFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
+        private val multiLineExpandableTextFieldFactory: (id: BpmnElementId, type: PropertyType, value: String) -> TextValueAccessor,
         private val checkboxFieldFactory: (id: BpmnElementId, type: PropertyType, value: Boolean) -> SelectedValueAccessor,
         private val buttonFactory: (id: BpmnElementId, type: FunctionalGroupType) -> JButton,
         private val arrowButtonFactory: (id: BpmnElementId) -> BasicArrowButton) {
@@ -185,7 +187,7 @@ class PropertiesVisualizer(
 
     private fun buildTextField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
         val fieldValue = extractString(value)
-        val field = textFieldFactory.invoke(bpmnElementId, type, fieldValue)
+        val field = if (type.multiline) multiLineExpandableTextFieldFactory.invoke(bpmnElementId, type, fieldValue) else textFieldFactory.invoke(bpmnElementId, type, fieldValue)
         val initialValue = field.text
 
         listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {

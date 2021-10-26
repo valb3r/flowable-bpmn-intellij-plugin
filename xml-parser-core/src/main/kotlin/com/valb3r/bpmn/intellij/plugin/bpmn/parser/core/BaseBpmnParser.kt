@@ -600,15 +600,15 @@ abstract class BaseBpmnParser: BpmnParser {
     private fun setCdata(node: Element, details: PropertyTypeDetails, name: String, value: String?) {
         if (value.isNullOrEmpty()) {
             if (destroyEnclosingNode(details, node)) return
-            node.content().filterIsInstance<CDATA>().forEach { node.remove(it) }
-            node.content().filterIsInstance<Text>().forEach { node.remove(it) }
+            node.content().filter { it is CDATA || it is Text }.forEach { node.remove(it) }
             return
         }
 
         if (requiresWrappingForFormatting(value)) {
-            node.content().filterIsInstance<CDATA>().forEach { node.remove(it) }
+            node.content().filter { it is CDATA || it is Text }.forEach { node.remove(it) }
             node.addCDATA(value)
         } else {
+            node.content().filter { it is CDATA || it is Text }.forEach { node.remove(it) }
             node.text = value
         }
     }
