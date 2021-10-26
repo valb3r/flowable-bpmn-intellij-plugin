@@ -2,8 +2,14 @@ package com.valb3r.bpmn.intellij.plugin.core
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.editor.ScrollType
+import com.intellij.openapi.editor.actionSystem.EditorActionManager
+import com.intellij.openapi.editor.event.EditorMouseEvent
+import com.intellij.openapi.editor.event.EditorMouseListener
 import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.editor.ex.FocusChangeListener
 import com.intellij.openapi.fileTypes.StdFileTypes
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
@@ -14,6 +20,7 @@ import com.intellij.ui.JavaReferenceEditorUtil
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
+import com.intellij.ui.components.JBTextField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -28,9 +35,9 @@ import com.valb3r.bpmn.intellij.plugin.core.render.currentIconProvider
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ViewRectangleChangeEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
-import java.awt.event.AdjustmentEvent
-import java.awt.event.AdjustmentListener
-import java.awt.event.FocusEvent
+import java.awt.AWTEvent
+import java.awt.Event
+import java.awt.event.*
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.*
@@ -99,6 +106,7 @@ open class BpmnPluginToolWindow(
                 { _: BpmnElementId, _: PropertyType, value: String -> createEditorForClass(context.project, bpmnFile, value) },
                 { _: BpmnElementId, _: PropertyType, value: String -> createEditor(context.project, bpmnFile, value) },
                 { _: BpmnElementId, _: PropertyType, value: String -> createTextField(value) },
+                { _: BpmnElementId, _: PropertyType, value: String -> createMultiLineTextField(value) },
                 { _: BpmnElementId, _: PropertyType, value: Boolean -> createCheckboxField(value) },
                 { _: BpmnElementId, action: FunctionalGroupType -> createButton(action.actionCaption) },
                 { createArrowButton() },
@@ -109,8 +117,19 @@ open class BpmnPluginToolWindow(
         setupUiAfterRun()
     }
 
-    private fun createTextField(value: String): TextValueAccessor {
+    private fun createMultiLineTextField(value: String): TextValueAccessor {
         val textField = JExpandableArea(value)
+
+        return object: TextValueAccessor {
+            override val text: String
+                get() = textField.text
+            override val component: JComponent
+                get() = textField
+        }
+    }
+
+    private fun createTextField(value: String): TextValueAccessor {
+        val textField = JBTextField(value)
 
         return object: TextValueAccessor {
             override val text: String
@@ -144,6 +163,11 @@ open class BpmnPluginToolWindow(
         val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, PsiType.CHAR, true)
         fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
         val document = PsiDocumentManager.getInstance(project).getDocument(fragment)!!
+        document.createGuardedBlock(0, 1).isGreedyToLeft = true
+        document.createGuardedBlock(text.length - 1, text.length).isGreedyToRight = true
+        EditorActionManager.getInstance().setReadonlyFragmentModificationHandler(document) {
+            // NOP
+        }
 
         val textField: EditorTextField = JavaEditorTextField(document, project)
         textField.setOneLineMode(true)
@@ -206,20 +230,54 @@ open class BpmnPluginToolWindow(
 
         override fun createEditor(): EditorEx {
             val editorEx: EditorEx = super.createEditor()
+            editorEx.addEditorMouseListener(object: EditorMouseListener {
+                override fun mouseReleased(event: EditorMouseEvent) {
+                    super.mouseReleased(event)
+                    val pos = editorEx.caretModel.currentCaret.logicalPosition
+                    smartMoveCursor(pos, editorEx)
+                }
+            })
+            editorEx.contentComponent.addKeyListener(object: KeyListener {
+                override fun keyTyped(e: KeyEvent?) {
+                    // NOP
+                }
+
+                override fun keyPressed(e: KeyEvent?) {
+                    // NOP
+                }
+
+                override fun keyReleased(e: KeyEvent?) {
+                    val currEditor = editor ?: return
+                    if (e?.keyCode == KeyEvent.VK_HOME) {
+                        smartMoveCursor(LogicalPosition(0, 0), currEditor)
+                    }
+                    if (e?.keyCode == KeyEvent.VK_END) {
+                        smartMoveCursor(LogicalPosition(0, currEditor.document.textLength), currEditor)
+                    }
+                }
+            })
             return editorEx
         }
 
         // If not overridden causes NPE when calling editCellAt of JTable (when changing selected cell with TAB fast)
         override fun requestFocus() {
-            if (editor != null) {
-                IdeFocusManager.getGlobalInstance().doWhenFocusSettlesDown {
-                    val currEditor = editor
-                    if (currEditor != null) {
-                        IdeFocusManager.getGlobalInstance().requestFocus(currEditor.contentComponent, true)
-                    }
+            val currEditor = editor ?: return
+            IdeFocusManager.getGlobalInstance().doWhenFocusSettlesDown {
+                IdeFocusManager.getGlobalInstance().requestFocus(currEditor.contentComponent, true)
+            }
+            smartMoveCursor(LogicalPosition(0, currEditor.document.textLength), currEditor)
+            currEditor.scrollingModel.scrollToCaret(ScrollType.RELATIVE)
+        }
+
+        private fun smartMoveCursor(pos: LogicalPosition, editorEx: Editor) {
+            if (pos.column < 1 || pos.column >= document.text.length) {
+                val deltaLeft = abs(pos.column - 1)
+                val deltaRight = abs(pos.column - (document.text.length - 1))
+                if (deltaLeft < deltaRight) {
+                    editorEx.caretModel.moveToOffset(1)
+                } else {
+                    editorEx.caretModel.moveToOffset(document.text.length - 1)
                 }
-                val currEditor = editor
-                currEditor?.scrollingModel?.scrollToCaret(ScrollType.RELATIVE)
             }
         }
     }
@@ -290,11 +348,12 @@ class ScrollBarInteractionHandler(project: Project, private val canvas: Canvas, 
 }
 
 class JExpandableArea(private var originalText: String = ""): JBTextArea() {
-    private val maxLen = 20
+    private val maxLen = 30
 
     init {
         isEditable = false
         text = originalText
+        font = JBTextField("").font
     }
 
     override fun setText(text: String) {
