@@ -9,7 +9,6 @@ import com.intellij.openapi.editor.actionSystem.EditorActionManager
 import com.intellij.openapi.editor.event.EditorMouseEvent
 import com.intellij.openapi.editor.event.EditorMouseListener
 import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.openapi.editor.ex.FocusChangeListener
 import com.intellij.openapi.fileTypes.StdFileTypes
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
@@ -35,8 +34,6 @@ import com.valb3r.bpmn.intellij.plugin.core.render.currentIconProvider
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ViewRectangleChangeEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
-import java.awt.AWTEvent
-import java.awt.Event
 import java.awt.event.*
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -364,17 +361,33 @@ class ScrollBarInteractionHandler(project: Project, private val canvas: Canvas, 
     }
 }
 
-class JExpandableArea(private var originalText: String = ""): JBTextArea() {
+class JExpandableArea(private var fullText: String = ""): JBTextArea() {
     private val maxLen = 30
+    private var keyTyped: Int? = null
 
     init {
         isEditable = false
-        text = originalText
+        text = fullText
         font = JBTextField("").font
+        addKeyListener(object: KeyListener {
+            override fun keyTyped(e: KeyEvent?) {
+                keyTyped = e?.keyCode
+            }
+
+            override fun keyPressed(e: KeyEvent?) {
+                // NOP
+            }
+
+            override fun keyReleased(e: KeyEvent?) {
+                if (null == keyTyped && e?.keyCode == KeyEvent.VK_TAB) {
+                    transferFocus()
+                }
+            }
+        })
     }
 
     override fun setText(text: String) {
-        originalText = text
+        fullText = text
         if (text.length < maxLen) {
             super.setText(text)
             return
@@ -390,13 +403,16 @@ class JExpandableArea(private var originalText: String = ""): JBTextArea() {
             return super.getText()
         }
 
-        return originalText
+        return fullText
     }
 
     override fun processFocusEvent(e: FocusEvent?) {
         if (e?.id == FocusEvent.FOCUS_GAINED) {
-            super.setText(originalText)
+            keyTyped = null
+            super.setText(fullText)
             isEditable = true
+        } else if (e?.id == FocusEvent.FOCUS_LOST && isEditable) {
+            fullText = super.getText()
         }
 
         super.processFocusEvent(e)
