@@ -194,7 +194,7 @@ open class BpmnPluginToolWindow(
     // JavaCodeFragmentFactory - important
     private fun createEditorForClass(project: Project, bpmnFile: PsiFile, text: String?): TextValueAccessor {
         val document = JavaReferenceEditorUtil.createDocument(text, project, true)!!
-        val textField: EditorTextField = JavaEditorTextField(document, project)
+        val textField: EditorTextField = JavaClassEditorTextField(document, project)
         textField.setOneLineMode(true)
 
         return object: TextValueAccessor {
@@ -224,6 +224,23 @@ open class BpmnPluginToolWindow(
             currentUiEventBus(project).clearSubscriptionsOf(ViewRectangleChangeEvent::class, this.scrollHandler)
         }
         this.scrollHandler = ScrollBarInteractionHandler(project, canvas, canvasPanel, canvasHScroll, canvasVScroll)
+    }
+
+    class JavaClassEditorTextField(document: Document, project: Project): EditorTextField(document, project, StdFileTypes.JAVA) {
+
+        override fun createEditor(): EditorEx {
+            val editorEx: EditorEx = super.createEditor()
+            return editorEx
+        }
+
+        // If not overridden causes NPE when calling editCellAt of JTable (when changing selected cell with TAB fast)
+        override fun requestFocus() {
+            val currEditor = editor ?: return
+            IdeFocusManager.getGlobalInstance().doWhenFocusSettlesDown {
+                IdeFocusManager.getGlobalInstance().requestFocus(currEditor.contentComponent, true)
+            }
+            currEditor.scrollingModel.scrollToCaret(ScrollType.RELATIVE)
+        }
     }
 
     class JavaEditorTextField(document: Document, project: Project): EditorTextField(document, project, StdFileTypes.JAVA) {
