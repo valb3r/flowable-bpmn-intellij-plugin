@@ -314,7 +314,10 @@
         <fileType name="Activiti BPMN 2.0 Engine XML process" implementationClass="com.valb3r.bpmn.intellij.activiti.plugin.meta.ActivitiFileType"
                   fieldName="INSTANCE" language="Activiti BPMN Engine XML process definition" extensions="bpmn20.xml"/>
     </extensions>
-
+    <!-- File templates registration -->
+    <extensions defaultExtensionNs="com.intellij">
+        <internalFileTemplate name="new-activiti-diagram.bpmn20.xml"/> <!-- Note - no .ft here -->
+    </extensions>
     <!-- Extensions which the plugin adds to extension points defined by the IntelliJ Platform or by other plugins.
          The "defaultExtensionNs " attribute must be set to the ID of the plugin defining the extension point,
          or to "com.intellij" if the extension point is defined by the IntelliJ Platform. The name of the tag

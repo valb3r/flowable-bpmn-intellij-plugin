@@ -279,6 +279,10 @@
         <fileType name="Camunda BPMN 2.0 Engine XML process" implementationClass="com.valb3r.bpmn.intellij.plugin.camunda.meta.CamundaFileType"
                   fieldName="INSTANCE" language="Camunda BPMN Engine XML process definition" extensions="bpmn"/>
     </extensions>
+    <!-- File templates registration -->
+    <extensions defaultExtensionNs="com.intellij">
+        <internalFileTemplate name="new-camunda-diagram.bpmn"/> <!-- Note - no .ft here -->
+    </extensions>
     <!-- Extensions which the plugin adds to extension points defined by the IntelliJ Platform or by other plugins.
          The "defaultExtensionNs " attribute must be set to the ID of the plugin defining the extension point,
          or to "com.intellij" if the extension point is defined by the IntelliJ Platform. The name of the tag
