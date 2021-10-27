@@ -388,12 +388,12 @@ class JExpandableArea(private var fullText: String = ""): JBTextArea() {
 
     override fun setText(text: String) {
         fullText = text
-        if (text.length < maxLen) {
+        val eolIndex = text.indexOf("\n")
+        if (text.length < maxLen && eolIndex < 0) {
             super.setText(text)
             return
         }
 
-        val eolIndex = text.indexOf("\n")
         val ellipsisIndex = if (eolIndex < 0) maxLen else eolIndex
         super.setText("${text.substring(0, ellipsisIndex)}...")
     }

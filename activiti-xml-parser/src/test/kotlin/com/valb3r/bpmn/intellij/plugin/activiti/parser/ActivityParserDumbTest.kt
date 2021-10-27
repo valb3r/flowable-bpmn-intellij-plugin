@@ -275,12 +275,12 @@ internal class ActivityParserDumbTest {
     fun `Empty CDATA is removed`() {
         val updated = ActivitiParser().update(
                 "popurri.bpmn20.xml".asResource()!!,
-                listOf(StringValueUpdatedEvent(BpmnElementId("onGatewayOk"), PropertyType.CONDITION_EXPR_VALUE, ""))
+                listOf(StringValueUpdatedEvent(BpmnElementId("sid-2CF229A2-6399-4510-AED6-45B5C553458C"), PropertyType.CONDITION_EXPR_VALUE, ""))
         )
 
         updated.shouldNotBeNull()
         val updatedProcess = ActivitiParser().parse(updated)
-        val sequenceFlow = updatedProcess.process.body!!.sequenceFlow!!.filter { it.id.id == "onGatewayOk"}.shouldHaveSingleItem()
+        val sequenceFlow = updatedProcess.process.body!!.sequenceFlow!!.filter { it.id.id == "sid-2CF229A2-6399-4510-AED6-45B5C553458C"}.shouldHaveSingleItem()
         sequenceFlow.conditionExpression!!.text.shouldBeNull()
     }
 
@@ -288,12 +288,12 @@ internal class ActivityParserDumbTest {
     fun `Empty text is removed`() {
         val updated = ActivitiParser().update(
                 "popurri.bpmn20.xml".asResource()!!,
-                listOf(StringValueUpdatedEvent(BpmnElementId("onGatewayNokId"), PropertyType.CONDITION_EXPR_VALUE, ""))
+                listOf(StringValueUpdatedEvent(BpmnElementId("sid-BFF510EA-1AD5-4353-AB11-DF8B2090A9FD"), PropertyType.CONDITION_EXPR_VALUE, ""))
         )
 
         updated.shouldNotBeNull()
         val updatedProcess = ActivitiParser().parse(updated)
-        val sequenceFlow = updatedProcess.process.body!!.sequenceFlow!!.filter { it.id.id == "onGatewayNokId"}.shouldHaveSingleItem()
+        val sequenceFlow = updatedProcess.process.body!!.sequenceFlow!!.filter { it.id.id == "sid-BFF510EA-1AD5-4353-AB11-DF8B2090A9FD"}.shouldHaveSingleItem()
         sequenceFlow.conditionExpression!!.text.shouldBeNull()
     }
 }
