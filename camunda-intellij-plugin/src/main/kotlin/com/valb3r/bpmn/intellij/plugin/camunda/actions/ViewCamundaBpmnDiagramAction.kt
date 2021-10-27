@@ -7,7 +7,9 @@ import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.wm.ToolWindowManager
 import com.valb3r.bpmn.intellij.plugin.core.BpmnActionContext
 import com.valb3r.bpmn.intellij.plugin.camunda.CamundaBpmnPluginToolWindowProjectService
+import com.valb3r.bpmn.intellij.plugin.camunda.settings.CamundaBpmnPluginSettingsState
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
 
 class ViewCamundaBpmnDiagramAction : AnAction() {
 
@@ -31,6 +33,8 @@ class ViewCamundaBpmnDiagramAction : AnAction() {
     }
 
     override fun update(anActionEvent: AnActionEvent) {
+        // FIXME - Is rather a hack, as PreloadingActivity is invoked only on plugin start and is mostly for caching, correct alternative to initialize plugin is 'DynamicPluginListener' but it appears on 2020+ IDEs
+        currentSettingsStateProvider.compareAndSet(null) { ServiceManager.getService(CamundaBpmnPluginSettingsState::class.java) }
         val project = anActionEvent.project
         val psiElement = psiElement(anActionEvent)
         anActionEvent.presentation.isEnabledAndVisible = project != null && isValidFileName(psiElement?.containingFile?.name)
