@@ -47,7 +47,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
 
         var dataFontSize = 12
         var dataFontName = "Consolas"
-        var openExtensions = setOf("bpmn20.xml")
+        var openExtensions = mutableSetOf("bpmn20.xml")
 
         var enableFps = false
 

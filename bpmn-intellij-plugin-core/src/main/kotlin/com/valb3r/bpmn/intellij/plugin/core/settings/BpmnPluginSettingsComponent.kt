@@ -106,7 +106,7 @@ class BpmnPluginSettingsComponent() {
         dataFontSize.addChangeListener { state.dataFontSize = dataFontSize.value as Int }
         openExtensions.addFocusListener(object : FocusListener {
             override fun focusGained(e: FocusEvent?) { /* NOP */}
-            override fun focusLost(e: FocusEvent?) { state.openExtensions = extensions()
+            override fun focusLost(e: FocusEvent?) { state.openExtensions = extensions().toMutableSet()
             }
         })
         enableFps.addChangeListener { state.enableFps = enableFps.isSelected }

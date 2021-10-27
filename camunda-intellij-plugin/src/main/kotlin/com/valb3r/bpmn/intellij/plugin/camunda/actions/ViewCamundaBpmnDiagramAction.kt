@@ -7,13 +7,14 @@ import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.wm.ToolWindowManager
 import com.valb3r.bpmn.intellij.plugin.core.BpmnActionContext
 import com.valb3r.bpmn.intellij.plugin.camunda.CamundaBpmnPluginToolWindowProjectService
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 
 class ViewCamundaBpmnDiagramAction : AnAction() {
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project ?: return
         val file = psiElement(anActionEvent)?.containingFile ?: return
-        if (!file.name.contains("bpmn")) {
+        if (!isValidFileName(file.name)) {
             return
         }
 
@@ -32,10 +33,15 @@ class ViewCamundaBpmnDiagramAction : AnAction() {
     override fun update(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project
         val psiElement = psiElement(anActionEvent)
-        anActionEvent.presentation.isEnabledAndVisible = project != null
-                && (psiElement?.containingFile?.name?.contains("bpmn") ?: false)
+        anActionEvent.presentation.isEnabledAndVisible = project != null && isValidFileName(psiElement?.containingFile?.name)
     }
 
     private fun psiElement(anActionEvent: AnActionEvent) =
             anActionEvent.getData(CommonDataKeys.PSI_FILE)
+
+    private fun isValidFileName(fileName: String?): Boolean {
+        val name = fileName ?: return false
+        val allowedExt = currentSettings().openExtensions
+        return allowedExt.any { name.endsWith(it) }
+    }
 }
