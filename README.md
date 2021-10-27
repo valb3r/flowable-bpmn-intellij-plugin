@@ -94,7 +94,7 @@ If you want just to run the plugin in the `sandbox` you can execute
 ./gradlew clean :activiti-intellij-plugin:runIde
 ```
 
-**Activiti:**
+**Camunda:**
 
 ```shell script
 ./gradlew clean :camunda-intellij-plugin:runIde
