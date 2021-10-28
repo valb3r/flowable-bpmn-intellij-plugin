@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.flowable.meta
 
 import com.intellij.ide.highlighter.XmlLikeFileType
 import com.intellij.lang.Language
+import com.intellij.lang.xml.XMLLanguage
 import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
 
@@ -28,7 +29,7 @@ class FlowableFileType private constructor() : XmlLikeFileType(FlowableBpmnLangu
   }
 }
 
-class FlowableBpmnLanguage : Language("Flowable BPMN Engine XML process definition") {
+class FlowableBpmnLanguage : XMLLanguage(XMLLanguage.INSTANCE, "Flowable BPMN Engine XML process definition") {
 
   companion object Language {
     val INSTANCE: FlowableBpmnLanguage = FlowableBpmnLanguage()

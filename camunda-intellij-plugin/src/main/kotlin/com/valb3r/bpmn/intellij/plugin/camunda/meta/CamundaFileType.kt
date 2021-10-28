@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.camunda.meta
 
 import com.intellij.ide.highlighter.XmlLikeFileType
 import com.intellij.lang.Language
+import com.intellij.lang.xml.XMLLanguage
 import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
 
@@ -28,7 +29,7 @@ class CamundaFileType private constructor() : XmlLikeFileType(CamundaBpmnLanguag
     }
 }
 
-class CamundaBpmnLanguage : Language("Camunda BPMN Engine XML process definition") {
+class CamundaBpmnLanguage : XMLLanguage(XMLLanguage.INSTANCE, "Camunda BPMN Engine XML process definition") {
 
     companion object Language {
         val INSTANCE: CamundaBpmnLanguage = CamundaBpmnLanguage()
