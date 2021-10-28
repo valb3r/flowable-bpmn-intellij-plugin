@@ -6,7 +6,7 @@ import com.intellij.lang.xml.XMLLanguage
 import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
 
-class FlowableFileType private constructor() : XmlLikeFileType(FlowableBpmnLanguage.INSTANCE) {
+class FlowableFileType private constructor() : XmlLikeFileType(XMLLanguage.INSTANCE) {
 
   override fun getName(): String {
     return "Flowable BPMN 2.0 Engine XML process"
@@ -26,12 +26,5 @@ class FlowableFileType private constructor() : XmlLikeFileType(FlowableBpmnLangu
 
   companion object Instance {
     val INSTANCE = FlowableFileType()
-  }
-}
-
-class FlowableBpmnLanguage : XMLLanguage(XMLLanguage.INSTANCE, "Flowable BPMN Engine XML process definition") {
-
-  companion object Language {
-    val INSTANCE: FlowableBpmnLanguage = FlowableBpmnLanguage()
   }
 }

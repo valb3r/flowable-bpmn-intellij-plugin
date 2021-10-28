@@ -32,6 +32,7 @@ class FlowableBpmnPluginToolWindowFactory: ToolWindowFactory {
         val bpmnWindow = BpmnPluginToolWindow(
             project,
             { showNotificationBalloon(project, it, NotificationType.ERROR) },
+            { showNotificationBalloon(project, it, NotificationType.WARNING) },
             {
                 registerPopupMenuProvider(project, FlowableCanvasPopupMenuProvider(project))
                 registerParser(project, FlowableParser())

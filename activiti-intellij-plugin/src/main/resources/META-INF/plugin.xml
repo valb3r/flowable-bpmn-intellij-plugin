@@ -315,7 +315,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Activiti BPMN 2.0 Engine XML process" implementationClass="com.valb3r.bpmn.intellij.activiti.plugin.meta.ActivitiFileType"
-                  fieldName="INSTANCE" language="Activiti BPMN Engine XML process definition" patterns="*.bpmn20.xml"/>
+                  fieldName="INSTANCE" language="XML" patterns="*.bpmn20.xml"/>
     </extensions>
     <!-- File templates registration -->
     <extensions defaultExtensionNs="com.intellij">

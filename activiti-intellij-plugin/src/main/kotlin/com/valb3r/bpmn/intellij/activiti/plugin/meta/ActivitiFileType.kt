@@ -6,7 +6,7 @@ import com.intellij.lang.xml.XMLLanguage
 import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
 
-class ActivitiFileType private constructor() : XmlLikeFileType(ActivitiBpmnLanguage.INSTANCE) {
+class ActivitiFileType private constructor() : XmlLikeFileType(XMLLanguage.INSTANCE) {
 
     override fun getName(): String {
         return "Activiti BPMN 2.0 Engine XML process"
@@ -26,12 +26,5 @@ class ActivitiFileType private constructor() : XmlLikeFileType(ActivitiBpmnLangu
 
     companion object Instance {
         val INSTANCE = ActivitiFileType()
-    }
-}
-
-class ActivitiBpmnLanguage : XMLLanguage(XMLLanguage.INSTANCE, "Activiti BPMN Engine XML process definition") {
-
-    companion object Language {
-        val INSTANCE: ActivitiBpmnLanguage = ActivitiBpmnLanguage()
     }
 }

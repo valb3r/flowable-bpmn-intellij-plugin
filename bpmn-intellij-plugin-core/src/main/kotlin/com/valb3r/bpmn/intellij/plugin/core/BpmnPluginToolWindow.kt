@@ -45,7 +45,8 @@ import kotlin.math.abs
 
 open class BpmnPluginToolWindow(
     private val project: Project,
-    private val onBadContentCallback: ((String) -> Unit)? = null,
+    private val onBadContentErrorCallback: ((String) -> Unit)? = null,
+    private val onBadContentWarningCallback: ((String) -> Unit)? = null,
     private val onBeforeFileOpen: (PsiFile) -> Unit,
     private val onFileOpenCallback: (PsiFile) -> Unit
 ) {
@@ -59,7 +60,7 @@ open class BpmnPluginToolWindow(
     private lateinit var canvasVScroll: JScrollBar
     private lateinit var canvasHScroll: JScrollBar
 
-    private val canvasBuilder = CanvasBuilder(DefaultBpmnProcessRenderer(project, currentIconProvider()), onBadContentCallback)
+    private val canvasBuilder = CanvasBuilder(DefaultBpmnProcessRenderer(project, currentIconProvider()), onBadContentErrorCallback, onBadContentWarningCallback)
     private val canvas: Canvas = currentCanvas(project)
     private lateinit var scrollHandler: ScrollBarInteractionHandler
 
@@ -81,7 +82,7 @@ open class BpmnPluginToolWindow(
     fun run(bpmnFile: PsiFile, context: BpmnActionContext) {
         onBeforeFileOpen(bpmnFile)
         val bpmnParser = currentParser(project)
-        if (this.canvasBuilder.assertFileContentAndShowError(bpmnParser, bpmnFile.virtualFile, onBadContentCallback)) return
+        if (this.canvasBuilder.assertFileContentAndShowErrorOrWarning(bpmnParser, bpmnFile.virtualFile, onBadContentErrorCallback, onBadContentWarningCallback)) return
 
         val table = MultiEditJTable(DefaultTableModel())
         table.autoResizeMode = JTable.AUTO_RESIZE_OFF

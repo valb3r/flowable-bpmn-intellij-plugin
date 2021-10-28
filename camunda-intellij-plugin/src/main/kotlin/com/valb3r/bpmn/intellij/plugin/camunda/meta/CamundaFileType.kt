@@ -6,7 +6,7 @@ import com.intellij.lang.xml.XMLLanguage
 import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
 
-class CamundaFileType private constructor() : XmlLikeFileType(CamundaBpmnLanguage.INSTANCE) {
+class CamundaFileType private constructor() : XmlLikeFileType(XMLLanguage.INSTANCE) {
 
     override fun getName(): String {
         return "Camunda BPMN 2.0 Engine XML process"
@@ -26,12 +26,5 @@ class CamundaFileType private constructor() : XmlLikeFileType(CamundaBpmnLanguag
 
     companion object Instance {
         val INSTANCE = CamundaFileType()
-    }
-}
-
-class CamundaBpmnLanguage : XMLLanguage(XMLLanguage.INSTANCE, "Camunda BPMN Engine XML process definition") {
-
-    companion object Language {
-        val INSTANCE: CamundaBpmnLanguage = CamundaBpmnLanguage()
     }
 }

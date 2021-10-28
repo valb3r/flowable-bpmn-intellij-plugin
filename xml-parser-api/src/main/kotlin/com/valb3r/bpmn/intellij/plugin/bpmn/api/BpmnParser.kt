@@ -5,7 +5,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 interface BpmnParser {
 
     fun parse(input: String): BpmnProcessObject
-    fun validate(input: String): String?
+    fun validateForErrors(input: String): String?
+    fun validateForWarnings(input: String): String?
 
     // Keeping update model simple by following:
     // https://www.jetbrains.org/intellij/sdk/docs/tutorials/editor_basics/working_with_text.html#safely-replacing-selected-text-in-the-document
