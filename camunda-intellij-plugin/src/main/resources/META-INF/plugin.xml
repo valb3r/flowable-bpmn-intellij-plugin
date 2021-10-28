@@ -4,7 +4,7 @@
     <name>Camunda BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.4.7.4</version>
+    <version>0.4.7.5</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->

@@ -4,7 +4,7 @@
     <name>Activiti BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.4.7.4</version>
+    <version>0.4.7.5</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -315,7 +315,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Activiti BPMN 2.0 Engine XML process" implementationClass="com.valb3r.bpmn.intellij.activiti.plugin.meta.ActivitiFileType"
-                  fieldName="INSTANCE" language="Activiti BPMN Engine XML process definition" extensions="bpmn20.xml"/>
+                  fieldName="INSTANCE" language="Activiti BPMN Engine XML process definition" patterns="*.bpmn20.xml"/>
     </extensions>
     <!-- File templates registration -->
     <extensions defaultExtensionNs="com.intellij">
