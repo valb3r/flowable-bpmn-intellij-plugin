@@ -12,6 +12,9 @@ interface IconProvider {
     val zoomIn: Icon
     val zoomOut: Icon
     val zoomReset: Icon
+    val grid: Icon
+    val gridDense: Icon
+    val noGrid: Icon
     val gear: Icon
     val script: Icon
     val businessRule: Icon
@@ -89,6 +92,9 @@ data class IconProviderImpl(
         override val zoomIn: Icon = IconLoader.getIcon("/icons/actions/zoom_in.png"),
         override val zoomOut: Icon = IconLoader.getIcon("/icons/actions/zoom_out.png"),
         override val zoomReset: Icon = IconLoader.getIcon("/icons/actions/zoom_reset.png"),
+        override val grid: Icon = IconLoader.getIcon("/icons/actions/small-grid.png"),
+        override val gridDense: Icon = IconLoader.getIcon("/icons/actions/grid.png"),
+        override val noGrid: Icon = IconLoader.getIcon("/icons/actions/no-grid.png"),
         override val gear: Icon = IconLoader.getIcon("/icons/ui-icons/gear.png"),
         override val script: Icon = IconLoader.getIcon("/icons/ui-icons/script.png"),
         override val businessRule: Icon = IconLoader.getIcon("/icons/ui-icons/business-rule.png"),

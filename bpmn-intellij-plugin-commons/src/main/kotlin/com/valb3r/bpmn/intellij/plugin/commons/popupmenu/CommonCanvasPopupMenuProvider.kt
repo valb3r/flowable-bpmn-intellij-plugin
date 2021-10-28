@@ -8,6 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnShapeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
+import com.valb3r.bpmn.intellij.plugin.core.render.snapToGridIfNecessary
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.geom.Point2D
@@ -17,10 +18,11 @@ private fun <T: WithBpmnId> newShapeElement(project: Project, sceneLocation: Poi
     val templateShape = newElementsFactory(project).newDiagramObject(ShapeElement::class, forObject)
 
     val bounds = templateShape.rectBounds()
+    val snappedLocation = snapToGridIfNecessary(sceneLocation.x, sceneLocation.y)
     return templateShape.copy(
             bounds = BoundsElement(
-                    sceneLocation.x,
-                    sceneLocation.y,
+                    snappedLocation.x,
+                    snappedLocation.y,
                     bounds.width,
                     bounds.height
             )

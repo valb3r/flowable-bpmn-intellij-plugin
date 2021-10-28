@@ -86,6 +86,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     private val zoomOutId = DiagramElementId(":ZOOM-OUT")
     private val zoomResetId = DiagramElementId(":ZOOM-RESET")
     private val centerImageId = DiagramElementId(":CENTER-IMAGE")
+    private val gridStateId = DiagramElementId(":GRID-STATE-IMAGE")
     private val undoId = DiagramElementId(":UNDO")
     private val redoId = DiagramElementId(":REDO")
 
@@ -127,7 +128,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
         // Overlay system elements on top of rendered BPMN diagram
         ctx.interactionContext.anchorsHit?.apply { drawAnchorsHit(ctx.canvas, this) }
-        drawUndoRedoAndZoomIcons(ctx.project, state, rendered)
+        drawUndoRedoAndZoomIconsAndControls(ctx.project, state, rendered)
         drawSelectionRect(ctx)
         drawMultiremovalRect(state, rendered)
 
@@ -311,7 +312,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         }
     }
 
-    private fun drawUndoRedoAndZoomIcons(
+    private fun drawUndoRedoAndZoomIconsAndControls(
             project: Project,
             state: RenderState,
             renderedArea: MutableMap<DiagramElementId, AreaWithZindex>
@@ -338,7 +339,15 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         locationY += drawIconWithAction(state, zoomOutId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(ZoomOutEvent()) }, icons.zoomOut).second + iconMargin
         locationX = undoRedoStartMargin
         locationX += drawIconWithAction(state, zoomResetId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(ResetAndCenterEvent()) }, icons.zoomReset).first + iconMargin
-        drawIconWithAction(state, centerImageId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(CenterModelEvent()) }, icons.centerImage).first + iconMargin
+        locationY += drawIconWithAction(state, centerImageId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(CenterModelEvent()) }, icons.centerImage).first + iconMargin
+        locationX = undoRedoStartMargin
+        val currentGridState = gridState.get()
+        val gridIcon = gridIcons[currentGridState]()
+        val nextGridStep = { _: ProcessModelUpdateEvents ->
+            if (gridSteps.size - 1 == currentGridState) gridState.set(0)
+            else gridState.set(currentGridState + 1)
+        }
+        drawIconWithAction(state, gridStateId, locationX, locationY, renderedArea, nextGridStep, gridIcon).first + iconMargin
     }
 
     private fun drawIconWithAction(

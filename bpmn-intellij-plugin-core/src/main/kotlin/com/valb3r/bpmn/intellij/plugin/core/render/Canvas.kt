@@ -303,7 +303,18 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         val anchorY = anchors.filter { it.type == AnchorType.VERTICAL }
             .minBy { it.anchor.distance(it.objectAnchor) }
 
-        val selectedAnchors: AnchorHit = if (null == pointAnchor) applyOrthoAnchors(anchorX, anchorY, ctx) else applyPointAnchor(pointAnchor, ctx)
+        val selectedAnchors: AnchorHit = if (null == pointAnchor) {
+            if (null == anchorX && null == anchorY) {
+                val snappedDelta = snapToGridIfNecessary(ctx.dragCurrent.x - ctx.dragStart.x, ctx.dragCurrent.y - ctx.dragStart.y)
+                val x = ctx.dragStart.x + snappedDelta.x
+                val y = ctx.dragStart.y + snappedDelta.y
+                AnchorHit(Point2D.Float(x, y), Point2D.Float(x, y), emptyMap(), emptyList())
+            } else {
+                applyOrthoAnchors(anchorX, anchorY, ctx)
+            }
+        } else {
+            applyPointAnchor(pointAnchor, ctx)
+        }
         val allAnchors = selectedAnchors.copy(closeAnchors = closeAnchors.toList())
 
         return ctx.copy(
