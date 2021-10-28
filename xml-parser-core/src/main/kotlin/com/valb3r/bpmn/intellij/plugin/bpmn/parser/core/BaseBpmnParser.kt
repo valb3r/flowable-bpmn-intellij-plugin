@@ -55,7 +55,7 @@ abstract class BaseBpmnParser: BpmnParser {
 
     abstract override fun parse(input: String): BpmnProcessObject
 
-    override fun validate(input: String): String? {
+    override fun validateForErrors(input: String): String? {
         if (!input.contains("BPMNDiagram")) {
             return "Unable to parse, missing <b>BPMNDiagram</b> XML tag that is required to build diagram<br>" +
                     "For details see:<br>" +
@@ -68,6 +68,23 @@ abstract class BaseBpmnParser: BpmnParser {
         }
 
         return null
+    }
+
+    override fun validateForWarnings(input: String): String? {
+        if (input.contains(engineNs().url)) {
+            return null
+        }
+
+        for (otherEngine in knownEnginesNs()) {
+            if (input.contains(otherEngine.url)) {
+                return "This file may contain namespace for different engine (${otherEngine.namePrefix}).<br>" +
+                        "It is better download relevant plugin for it:<br>" +
+                        "<b>${otherEngine.namePrefix}</b> as described here: <br>" +
+                        "<a href=\"https://github.com/valb3r/flowable-bpmn-intellij-plugin#installation\">https://github.com/valb3r/flowable-bpmn-intellij-plugin#installation</a>"
+            }
+        }
+
+        return "This file does not seem to contain engine-specific dialect - this may lead to wrong namespaces or missing features"
     }
 
     /**
@@ -97,6 +114,14 @@ abstract class BaseBpmnParser: BpmnParser {
             }
         }
         toRemove.forEach { it.parent.remove(it) }
+    }
+
+    protected open fun knownEnginesNs(): List<NS> {
+        return listOf(
+            NS("activiti", "http://activiti.org/bpmn"),
+            NS("camunda", "http://camunda.org/schema/1.0/bpmn"),
+            NS("flowable", "http://flowable.org/bpmn")
+        )
     }
 
     protected abstract fun modelNs(): NS

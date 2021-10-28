@@ -33,6 +33,7 @@ class ActivitiBpmnPluginToolWindowFactory: ToolWindowFactory {
         val bpmnWindow = BpmnPluginToolWindow(
             project,
             { showNotificationBalloon(project, it, NotificationType.ERROR) },
+            { showNotificationBalloon(project, it, NotificationType.WARNING) },
             {
                 registerPopupMenuProvider(project, ActivitiCanvasPopupMenuProvider(project))
                 if (isActiviti7(it.virtualFile)) {
