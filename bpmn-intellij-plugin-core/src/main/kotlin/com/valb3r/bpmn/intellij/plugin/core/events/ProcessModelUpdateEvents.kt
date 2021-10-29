@@ -167,7 +167,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
     fun addElementRemovedEvent(diagram: List<DiagramElementRemovedEvent>, bpmn: List<BpmnElementRemovedEvent>, other: List<PropertyUpdateWithId> = emptyList()) {
         disableRedo()
         val current = allBeforeThis
-        val blockSize = diagram.size + bpmn.size
+        val blockSize = diagram.size + bpmn.size + other.size
         allBeforeThis += blockSize
 
         diagram.forEachIndexed {index, event ->
