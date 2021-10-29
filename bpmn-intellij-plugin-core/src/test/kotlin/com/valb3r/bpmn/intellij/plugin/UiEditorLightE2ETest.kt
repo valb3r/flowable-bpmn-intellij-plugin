@@ -696,11 +696,11 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(5)
+            lastValue.shouldHaveSize(7)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val removeEdgeBpmn = lastValue.filterIsInstance<BpmnElementRemovedEvent>().first()
             val removeEdgeDiagram = lastValue.filterIsInstance<DiagramElementRemovedEvent>().first()
-            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(4).toTypedArray()
             propUpdate.map { it.property }.shouldContainAll(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
             lastValue.shouldContainSame(listOf(edgeBpmn, removeEdgeDiagram, removeEdgeBpmn, *propUpdate))
 
@@ -1105,8 +1105,8 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
-            lastValue.shouldHaveSize(5)
-            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
+            lastValue.shouldHaveSize(7)
+            val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(4).toTypedArray()
             propUpdate.map { it.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val removeShapeBpmn = lastValue.filterIsInstance<BpmnElementRemovedEvent>().shouldHaveSingleItem()
