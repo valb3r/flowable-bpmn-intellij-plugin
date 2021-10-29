@@ -19,7 +19,6 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElemen
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.BaseEdgeRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
-import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsState
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import java.awt.Color
 import java.awt.Graphics
@@ -304,14 +303,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
             .minBy { it.anchor.distance(it.objectAnchor) }
 
         val selectedAnchors: AnchorHit = if (null == pointAnchor) {
-            if (null == anchorX && null == anchorY) {
-                val snappedDelta = snapToGridIfNecessary(ctx.dragCurrent.x - ctx.dragStart.x, ctx.dragCurrent.y - ctx.dragStart.y)
-                val x = ctx.dragStart.x + snappedDelta.x
-                val y = ctx.dragStart.y + snappedDelta.y
-                AnchorHit(Point2D.Float(x, y), Point2D.Float(x, y), emptyMap(), emptyList())
-            } else {
-                applyOrthoAnchors(anchorX, anchorY, ctx)
-            }
+            applyOrthoOrNoneAnchors(anchorX, anchorY, ctx)
         } else {
             applyPointAnchor(pointAnchor, ctx)
         }
@@ -340,7 +332,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         val target = dragTargettableElements(cursorRect(point))
             .filter { !ctx.draggedIds.contains(it) }
             .filter { areas[it]?.areaType == AreaType.SHAPE || areas[it]?.areaType == AreaType.SHAPE_THAT_NESTS }
-            .maxBy { it: DiagramElementId -> areas[it]?.index ?: ICON_Z_INDEX }
+            .maxBy { areas[it]?.index ?: ICON_Z_INDEX }
 
         return ctx.copy(dragTargetedIds = if (null != target) setOf(target) else emptySet())
     }
@@ -418,10 +410,12 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         return parentableElemUnderCursor(point)
     }
 
-    private fun applyOrthoAnchors(anchorX: AnchorDetails?, anchorY: AnchorDetails?, ctx: ElementInteractionContext): AnchorHit {
+    private fun applyOrthoOrNoneAnchors(anchorX: AnchorDetails?, anchorY: AnchorDetails?, ctx: ElementInteractionContext): AnchorHit {
         val selectedAnchors: MutableMap<AnchorType, Point2D.Float> = mutableMapOf()
-        val targetX = anchorX?.let { ctx.dragCurrent.x + it.anchor.x - it.objectAnchor.x } ?: ctx.dragCurrent.x
-        val targetY = anchorY?.let { ctx.dragCurrent.y + it.anchor.y - it.objectAnchor.y } ?: ctx.dragCurrent.y
+        val snappedDelta = snapToGridIfNecessary(ctx.dragCurrent.x - ctx.dragStart.x, ctx.dragCurrent.y - ctx.dragStart.y)
+        val targetX = anchorX?.let { ctx.dragCurrent.x + it.anchor.x - it.objectAnchor.x } ?: (ctx.dragStart.x + snappedDelta.x)
+        val targetY = anchorY?.let { ctx.dragCurrent.y + it.anchor.y - it.objectAnchor.y } ?: (ctx.dragStart.y + snappedDelta.y)
+
         val objectAnchorX = anchorX?.objectAnchor?.x ?: ctx.dragCurrent.x
         val objectAnchorY = anchorY?.objectAnchor?.y ?: ctx.dragCurrent.y
         anchorX?.apply { selectedAnchors[AnchorType.HORIZONTAL] = this.anchor }

@@ -9,7 +9,7 @@ val gridIcons = listOf(
     {currentIconProvider().noGrid}
 )
 
-val gridSteps = listOf(10, 20, 0)
+val gridSteps = listOf(5, 10, 0)
 val gridState = AtomicInteger()
 
 fun snapToGridIfNecessary(x: Float, y: Float): Point2D.Float {
