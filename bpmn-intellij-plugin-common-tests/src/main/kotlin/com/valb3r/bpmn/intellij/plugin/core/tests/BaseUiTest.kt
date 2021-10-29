@@ -569,6 +569,28 @@ abstract class BaseUiTest {
         initializeCanvas()
     }
 
+    protected fun prepareOneSubProcessAndOnRootServiceTaskWithAttachedBoundaryEventView() {
+        val boundaryEventOnServiceTask = BpmnBoundaryErrorEvent(optionalBoundaryErrorEventBpmnId, null, serviceTaskStartBpmnId, null)
+        val boundaryEventOnServiceTaskShape = ShapeElement(
+            optionalBoundaryErrorEventDiagramId,
+            optionalBoundaryErrorEventBpmnId,
+            BoundsElement(startElemX + serviceTaskSize / 5.0f, startElemX + serviceTaskSize / 5.0f, boundaryEventSize, boundaryEventSize)
+        )
+
+        val process = basicProcess.copy(
+            basicProcess.process.copy(
+                body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart), boundaryErrorEvent = listOf(boundaryEventOnServiceTask), subProcess = listOf(bpmnSubProcess)),
+                children = mapOf(subprocessBpmnId to basicProcessBody)
+            ),
+            listOf(DiagramElement(
+                diagramMainElementId,
+                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSubProcess, diagramServiceTaskStart, boundaryEventOnServiceTaskShape), listOf()))
+            )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
     protected fun prepareOneSubProcessWithServiceTaskAndAttachedBoundaryEventOneNestedSubprocessAndServiceTaskWithSequence() {
         val boundaryEventOnServiceTask = BpmnBoundaryErrorEvent(optionalBoundaryErrorEventBpmnId, null, serviceTaskStartBpmnId, null)
         val boundaryEventOnServiceTaskShape = ShapeElement(

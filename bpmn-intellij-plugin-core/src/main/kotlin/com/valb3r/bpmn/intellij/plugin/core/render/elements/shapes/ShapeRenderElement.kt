@@ -98,7 +98,15 @@ abstract class ShapeRenderElement(
         val result = doOnDragEndWithoutChildren(compensated.x, compensated.y, null, allDroppedOnAreas)
         val alreadyDraggedLocations = result.filterIsInstance<LocationUpdateWithId>().map { it.diagramElementId }.toMutableSet()
         children.forEach {
-            for (event in it.onDragEnd(compensated.x, compensated.y, null, emptySortedMap)) { // Children do not change parent - sortedMapOf()
+            val parentChange = result.filterIsInstance<BpmnParentChangedEvent>().firstOrNull()
+            val events = it.onDragEnd(compensated.x, compensated.y, null, emptySortedMap) +
+                    if (it is AnyShapeNestableIconShape && null != parentChange) {
+                        it.handleParentNestingChange(parentChange.newParentId)
+                    } else {
+                        emptyList()
+                    }
+
+            for (event in events) { // Children do not change parent - sortedMapOf()
                 handleChildDrag(event, alreadyDraggedLocations, result)
             }
         }
