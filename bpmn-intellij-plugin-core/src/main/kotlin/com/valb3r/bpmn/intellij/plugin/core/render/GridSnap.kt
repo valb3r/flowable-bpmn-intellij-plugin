@@ -5,11 +5,10 @@ import java.util.concurrent.atomic.AtomicInteger
 
 val gridIcons = listOf(
     {currentIconProvider().gridDense},
-    {currentIconProvider().grid},
     {currentIconProvider().noGrid}
 )
 
-val gridSteps = listOf(5, 10, 0)
+val gridSteps = listOf(5, 0)
 val gridState = AtomicInteger()
 
 fun snapToGridIfNecessary(x: Float, y: Float): Point2D.Float {
