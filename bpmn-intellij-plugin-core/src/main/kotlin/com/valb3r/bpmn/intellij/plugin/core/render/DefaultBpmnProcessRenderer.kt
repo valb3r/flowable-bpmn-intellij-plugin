@@ -87,6 +87,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     private val zoomResetId = DiagramElementId(":ZOOM-RESET")
     private val centerImageId = DiagramElementId(":CENTER-IMAGE")
     private val gridStateId = DiagramElementId(":GRID-STATE-IMAGE")
+    private val anchorEnabled = DiagramElementId(":ANCHOR-ENABLED")
     private val undoId = DiagramElementId(":UNDO")
     private val redoId = DiagramElementId(":REDO")
 
@@ -347,7 +348,9 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             if (gridSteps.size - 1 == currentGridState) gridState.set(0)
             else gridState.set(currentGridState + 1)
         }
-        drawIconWithAction(state, gridStateId, locationX, locationY, renderedArea, nextGridStep, gridIcon).first + iconMargin
+        locationX += drawIconWithAction(state, gridStateId, locationX, locationY, renderedArea, nextGridStep, gridIcon).first + iconMargin
+        val verticalAnchors = verticalAnchorsEnabled.get()
+        drawIconWithAction(state, anchorEnabled, locationX, locationY, renderedArea, { verticalAnchorsEnabled.set(!verticalAnchors)}, if (verticalAnchors) icons.anchorOff else icons.anchorOn).first + iconMargin
     }
 
     private fun drawIconWithAction(

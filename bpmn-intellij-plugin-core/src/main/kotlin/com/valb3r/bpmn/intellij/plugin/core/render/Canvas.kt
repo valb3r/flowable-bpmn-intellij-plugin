@@ -437,8 +437,11 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
 
         val objectAnchorX = anchorX?.objectAnchor?.x ?: ctx.dragCurrent.x
         val objectAnchorY = anchorY?.objectAnchor?.y ?: ctx.dragCurrent.y
-        anchorX?.apply { selectedAnchors[AnchorType.HORIZONTAL] = this.anchor }
-        anchorY?.apply { selectedAnchors[AnchorType.VERTICAL] = this.anchor }
+        val verticalAnchors = verticalAnchorsEnabled.get()
+        if (verticalAnchors) {
+            anchorX?.apply { selectedAnchors[AnchorType.HORIZONTAL] = this.anchor }
+            anchorY?.apply { selectedAnchors[AnchorType.VERTICAL] = this.anchor }
+        }
         return AnchorHit(Point2D.Float(targetX, targetY), Point2D.Float(objectAnchorX, objectAnchorY), selectedAnchors, emptyList())
     }
 

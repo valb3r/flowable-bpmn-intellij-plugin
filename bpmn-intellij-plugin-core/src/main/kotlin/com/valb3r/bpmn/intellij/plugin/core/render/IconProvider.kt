@@ -34,6 +34,8 @@ interface IconProvider {
     val dragToResizeTop: Icon
     val dragToResizeBottom: Icon
     val sequence: Icon
+    val anchorOn: Icon
+    val anchorOff: Icon
     val exclusiveGateway: String
     val parallelGateway: String
     val inclusiveGateway: String
@@ -114,6 +116,8 @@ data class IconProviderImpl(
         override val dragToResizeTop: Icon = IconLoader.getIcon("/icons/ui-icons/drag-to-resize-top.png"),
         override val dragToResizeBottom: Icon = IconLoader.getIcon("/icons/ui-icons/drag-to-resize-bottom.png"),
         override val sequence: Icon = IconLoader.getIcon("/icons/ui-icons/sequence.png"),
+        override val anchorOn: Icon = IconLoader.getIcon("/icons/actions/anchor.png"),
+        override val anchorOff: Icon = IconLoader.getIcon("/icons/actions/anchor-off.png"),
         override val plus: Icon = IconLoader.getIcon("/icons/ui-icons/plus.png"),
         override val minus: Icon = IconLoader.getIcon("/icons/ui-icons/minus.png"),
         override val exclusiveGateway: String = "/icons/ui-icons/svg/exclusive-gateway.svg".asResource()!!,

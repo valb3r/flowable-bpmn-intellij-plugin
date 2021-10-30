@@ -11,13 +11,15 @@ import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.DraggedToEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.NewWaypointsEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.core.render.*
+import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
+import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
+import com.valb3r.bpmn.intellij.plugin.core.render.DefaultCanvasConstants
+import com.valb3r.bpmn.intellij.plugin.core.render.ICON_Z_INDEX
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.ACTIONS_ICO_SIZE
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.computeCascadeChangeOfBpmnIncomingOutgoingIndex
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.ResizeViewTransform
-import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import java.awt.geom.Point2D
 
 val orthoIconIdPrefix = ":ORTHO"

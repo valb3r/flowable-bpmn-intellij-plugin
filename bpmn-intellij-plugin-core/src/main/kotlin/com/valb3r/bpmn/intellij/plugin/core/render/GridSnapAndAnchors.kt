@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.render
 
 import java.awt.geom.Point2D
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 val gridIcons = listOf(
@@ -10,6 +11,8 @@ val gridIcons = listOf(
 
 val gridSteps = listOf(5, 0)
 val gridState = AtomicInteger()
+
+val verticalAnchorsEnabled = AtomicBoolean(true)
 
 fun snapToGridIfNecessary(x: Float, y: Float): Point2D.Float {
     val gridSize = gridSteps[gridState.get()]
