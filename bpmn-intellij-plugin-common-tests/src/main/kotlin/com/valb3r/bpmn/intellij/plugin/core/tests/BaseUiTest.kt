@@ -209,6 +209,8 @@ abstract class BaseUiTest {
         whenever(icons.zoomOut).thenReturn(mock())
         whenever(icons.zoomReset).thenReturn(mock())
         whenever(icons.centerImage).thenReturn(mock())
+        whenever(icons.anchorOff).thenReturn(mock())
+        whenever(icons.anchorOn).thenReturn(mock())
 
         doAnswer {
             val result = it.callRealMethod()!! as RenderResult
