@@ -65,7 +65,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
 
     @Test
     fun `Boundary event attaches to service task in subprocess`() {
-        prepareServiceTaskInSubprocesskWithBoundaryEventOnRootView()
+        prepareServiceTaskInSubprocessWithBoundaryEventOnRootView()
         val target = clickOnId(serviceTaskStartDiagramId)
 
         val start = clickOnId(optionalBoundaryErrorEventDiagramId)
@@ -98,18 +98,51 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
     }
 
     @Test
-    fun `Boundary event detaches from service task (plain) to subprocess`() {
-        prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView()
-        val target = clickOnId(subprocessDiagramId)
+    fun `Boundary event attaches to subprocess`() {
+        prepareServiceTaskInSubprocessWithBoundaryEventOnRootView()
 
         val start = clickOnId(optionalBoundaryErrorEventDiagramId)
         canvas.paintComponent(graphics)
         canvas.startSelectionOrSelectedDrag(start)
         canvas.paintComponent(graphics)
-        canvas.dragOrSelectWithLeftButton(start, target)
+        canvas.dragOrSelectWithLeftButton(start, elementCenter(subprocessDiagramId))
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
+
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            val draggedTo = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
+            val xmlParentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
+            val parentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
+            val attachedRef = firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            firstValue.indexOf(xmlParentChanged).shouldBeLessThan(firstValue.indexOf(parentChanged))
+            firstValue.shouldHaveSize(4)
+
+            draggedTo.diagramElementId.shouldBeEqualTo(optionalBoundaryErrorEventDiagramId)
+            xmlParentChanged.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
+            xmlParentChanged.newParentId.shouldBeEqualTo(parentProcessBpmnId)
+            parentChanged.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
+            parentChanged.newParentId.shouldBeEqualTo(subprocessBpmnId)
+            attachedRef.property.shouldBeEqualTo(PropertyType.ATTACHED_TO_REF)
+            attachedRef.newValue.shouldBeEqualTo(subprocessBpmnId.id)
+        }
+    }
+
+    @Test
+    fun `Boundary event attaches to subprocess in subprocess`() {
+        prepareOneSubProcessThenNestedSubProcessWithOneServiceTaskViewWithBoundaryErrorOnRoot()
+
+        val start = clickOnId(optionalBoundaryErrorEventDiagramId)
+        canvas.paintComponent(graphics)
+        canvas.startSelectionOrSelectedDrag(start)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(start, elementCenter(subprocessInSubProcessDiagramId))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parent.shouldBeEqualTo(subprocessInSubProcessBpmnId)
         lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
@@ -124,6 +157,41 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
             draggedTo.diagramElementId.shouldBeEqualTo(optionalBoundaryErrorEventDiagramId)
             xmlParentChanged.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
             xmlParentChanged.newParentId.shouldBeEqualTo(subprocessBpmnId)
+            parentChanged.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
+            parentChanged.newParentId.shouldBeEqualTo(subprocessInSubProcessBpmnId)
+            attachedRef.property.shouldBeEqualTo(PropertyType.ATTACHED_TO_REF)
+            attachedRef.newValue.shouldBeEqualTo(subprocessInSubProcessBpmnId.id)
+        }
+    }
+
+    @Test
+    fun `Boundary event detaches from service task (plain) to subprocess`() {
+        prepareOneSubProcessServiceTaskWithAttachedBoundaryEventView()
+        val target = clickOnId(subprocessDiagramId)
+
+        val start = clickOnId(optionalBoundaryErrorEventDiagramId)
+        canvas.paintComponent(graphics)
+        canvas.startSelectionOrSelectedDrag(start)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(start, target)
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parent.shouldBeEqualTo(subprocessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
+
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            val draggedTo = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
+            val xmlParentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
+            val parentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
+            val attachedRef = firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            firstValue.indexOf(xmlParentChanged).shouldBeLessThan(firstValue.indexOf(parentChanged))
+            firstValue.shouldHaveSize(4)
+
+            draggedTo.diagramElementId.shouldBeEqualTo(optionalBoundaryErrorEventDiagramId)
+            xmlParentChanged.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
+            xmlParentChanged.newParentId.shouldBeEqualTo(parentProcessBpmnId)
             parentChanged.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
             parentChanged.newParentId.shouldBeEqualTo(subprocessBpmnId)
             attachedRef.property.shouldBeEqualTo(PropertyType.ATTACHED_TO_REF)

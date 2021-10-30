@@ -42,27 +42,37 @@ class AnyShapeNestableIconShape(
     }
 
     override fun handlePossibleNestingTo(allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>, cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {
-        val allDroppedOn = linkedMapOf<AreaType, BpmnElementId>()
-        allDroppedOnAreas.forEach { if (!allDroppedOn.containsKey(it.value.areaType)) allDroppedOn[it.value.areaType] = it.key}
-        val nests = listOfNotNull(allDroppedOn[AreaType.SHAPE], allDroppedOn[AreaType.SHAPE_THAT_NESTS], allDroppedOn[AreaType.PARENT_PROCESS_SHAPE])
-        val xmlNest = allDroppedOn[AreaType.SHAPE_THAT_NESTS] ?: allDroppedOn[AreaType.PARENT_PROCESS_SHAPE]!!
+        val allDroppedOnByAreaType = linkedMapOf<AreaType, MutableList<BpmnElementId>>()
+        allDroppedOnAreas.forEach { if (!allDroppedOnByAreaType.containsKey(it.value.areaType)) allDroppedOnByAreaType.computeIfAbsent (it.value.areaType) { mutableListOf() } += it.key}
+
+        val extractParentAndElement = { elements: MutableList<BpmnElementId> ->
+            val targetShape = elements[0]
+            val shapeParent = state().ctx.cachedDom?.elementsById?.get(targetShape)?.parents?.get(0) ?: TODO()
+            arrayOf(shapeParent.bpmnElementId, targetShape)
+        }
+
+        val (xmlNest: BpmnElementId, nestTo: BpmnElementId) = with (allDroppedOnByAreaType) {
+            when {
+                containsKey(AreaType.SHAPE) -> extractParentAndElement(this[AreaType.SHAPE]!!)
+                containsKey(AreaType.SHAPE_THAT_NESTS) -> extractParentAndElement(this[AreaType.SHAPE_THAT_NESTS]!!)
+                containsKey(AreaType.PARENT_PROCESS_SHAPE) -> {
+                    val targetShape = this[AreaType.PARENT_PROCESS_SHAPE]!![0]
+                    arrayOf(targetShape, targetShape)
+                }
+                else -> return@handlePossibleNestingTo mutableListOf()
+            }
+        }
+
         val currentParent = parents.firstOrNull()
         val newEvents = mutableListOf<Event>()
 
-        if (allDroppedOn[allDroppedOn.keys.first()] == currentParent?.bpmnElementId) {
+        if (nestTo == currentParent?.bpmnElementId) {
             return newEvents
         }
 
-        for (nestTo in nests) {
-            if (nestTo == currentParent?.bpmnElementId) {
-                continue
-            }
-
-            newEvents += BpmnParentChangedEvent(shape.bpmnElement, xmlNest, true)
-            newEvents += BpmnParentChangedEvent(shape.bpmnElement, nestTo, false)
-            newEvents += StringValueUpdatedEvent(shape.bpmnElement, PropertyType.ATTACHED_TO_REF, nestTo.id)
-            break
-        }
+        newEvents += BpmnParentChangedEvent(shape.bpmnElement, xmlNest, true)
+        newEvents += BpmnParentChangedEvent(shape.bpmnElement, nestTo, false)
+        newEvents += StringValueUpdatedEvent(shape.bpmnElement, PropertyType.ATTACHED_TO_REF, nestTo.id)
 
         return newEvents
     }

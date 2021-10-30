@@ -435,6 +435,38 @@ abstract class BaseUiTest {
         initializeCanvas()
     }
 
+    protected fun prepareOneSubProcessThenNestedSubProcessWithOneServiceTaskViewWithBoundaryErrorOnRoot() {
+        val boundaryEventOnRoot = BpmnBoundaryErrorEvent(optionalBoundaryErrorEventBpmnId, null, parentProcessBpmnId, null)
+        val boundaryEventOnRootShape = ShapeElement(
+            optionalBoundaryErrorEventDiagramId,
+            optionalBoundaryErrorEventBpmnId,
+            BoundsElement(startElemX + serviceTaskSize * 50.0f, startElemX + serviceTaskSize * 50.0f, boundaryEventSize, boundaryEventSize)
+        )
+
+        val process = basicProcess.copy(
+            basicProcess.process.copy(
+                body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd), subProcess = listOf(bpmnSubProcess), boundaryErrorEvent = listOf(boundaryEventOnRoot)),
+                children = mapOf(
+                    subprocessBpmnId to basicProcessBody.copy(subProcess = listOf(bpmnNestedSubProcess)),
+                    subprocessInSubProcessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart))
+                )
+            ),
+            listOf(
+                DiagramElement(
+                    diagramMainElementId,
+                    PlaneElement(
+                        diagramMainPlaneElementId,
+                        basicProcess.process.id,
+                        listOf(diagramSubProcess, diagramNestedSubProcess, diagramServiceTaskStart, boundaryEventOnRootShape),
+                        listOf()
+                    )
+                )
+            )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
     protected fun prepareOneSubProcessThenNestedSubProcessWithReversedChildParentOrder() {
         val process = basicProcess.copy(
                 basicProcess.process.copy(
@@ -521,7 +553,7 @@ abstract class BaseUiTest {
         initializeCanvas()
     }
 
-    protected fun prepareServiceTaskInSubprocesskWithBoundaryEventOnRootView() {
+    protected fun prepareServiceTaskInSubprocessWithBoundaryEventOnRootView() {
         val boundaryEventOnRoot = BpmnBoundaryErrorEvent(optionalBoundaryErrorEventBpmnId, null, parentProcessBpmnId, null)
         val boundaryEventOnRootShape = ShapeElement(
                 optionalBoundaryErrorEventDiagramId,
