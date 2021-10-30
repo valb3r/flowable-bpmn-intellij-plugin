@@ -35,7 +35,10 @@ class AnyShapeNestableIconShape(
             return newEvents
         }
 
-        return mutableListOf(BpmnParentChangedEvent(shape.bpmnElement, droppedOn, true))
+        return mutableListOf(
+            BpmnParentChangedEvent(shape.bpmnElement, droppedOn, true),
+            BpmnParentChangedEvent(shape.bpmnElement, currentParent?.bpmnElementId!!, false) // compensate parent change for UI only (it still stays a child of its parent)
+        )
     }
 
     override fun handlePossibleNestingTo(allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>, cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {

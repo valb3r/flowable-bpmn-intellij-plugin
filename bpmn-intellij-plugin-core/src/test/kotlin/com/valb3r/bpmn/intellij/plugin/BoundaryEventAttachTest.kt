@@ -185,23 +185,22 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
             val draggedToServiceTask = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSize(2)[0]
             val draggedBoundaryEvent = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSize(2)[1]
-            val xmlParentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSize(2)
-            val parentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSize(2)
+            val xmlParentChangedServiceTask = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSize(2)[0]
+            val xmlParentChangedBoundaryEvent = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSize(2)[1]
+            val uiParentChangedBoundaryEvent = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
             firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldBeEmpty()
-            firstValue.indexOf(xmlParentChanged[0]).shouldBeLessThan(firstValue.indexOf(parentChanged[1]))
-            firstValue.indexOf(xmlParentChanged[1]).shouldBeLessThan(firstValue.indexOf(parentChanged[1]))
-            firstValue.shouldHaveSize(4)
+            firstValue.indexOf(xmlParentChangedServiceTask).shouldBeLessThan(firstValue.indexOf(uiParentChangedBoundaryEvent))
+            firstValue.indexOf(xmlParentChangedBoundaryEvent).shouldBeLessThan(firstValue.indexOf(uiParentChangedBoundaryEvent))
+            firstValue.shouldHaveSize(5)
 
             draggedToServiceTask.diagramElementId.shouldBeEqualTo(serviceTaskStartDiagramId)
             draggedBoundaryEvent.diagramElementId.shouldBeEqualTo(optionalBoundaryErrorEventDiagramId)
-            xmlParentChanged[0].bpmnElementId.shouldBeEqualTo(serviceTaskStartDiagramId)
-            xmlParentChanged[0].newParentId.shouldBeEqualTo(subprocessBpmnId)
-            parentChanged[0].bpmnElementId.shouldBeEqualTo(serviceTaskStartDiagramId)
-            parentChanged[0].newParentId.shouldBeEqualTo(subprocessBpmnId)
-            xmlParentChanged[1].bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
-            xmlParentChanged[1].newParentId.shouldBeEqualTo(subprocessBpmnId)
-            parentChanged[1].bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
-            parentChanged[1].newParentId.shouldBeEqualTo(subprocessBpmnId)
+            xmlParentChangedServiceTask.bpmnElementId.shouldBeEqualTo(serviceTaskStartBpmnId)
+            xmlParentChangedServiceTask.newParentId.shouldBeEqualTo(subprocessBpmnId)
+            xmlParentChangedBoundaryEvent.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
+            xmlParentChangedBoundaryEvent.newParentId.shouldBeEqualTo(subprocessBpmnId)
+            uiParentChangedBoundaryEvent.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId) // Compensates xml change of parent
+            uiParentChangedBoundaryEvent.newParentId.shouldBeEqualTo(serviceTaskStartBpmnId)
         }
     }
 
