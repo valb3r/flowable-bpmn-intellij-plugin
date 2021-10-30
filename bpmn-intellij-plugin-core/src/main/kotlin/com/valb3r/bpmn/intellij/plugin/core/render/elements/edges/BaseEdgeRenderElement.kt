@@ -1,11 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin.core.render.elements.edges
 
-import com.jetbrains.rd.util.firstOrNull
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.IdentifiableWaypoint
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
@@ -114,7 +112,7 @@ abstract class BaseEdgeRenderElement(
         val name = state().currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.NAME)?.value as String? ?: return
         val longestSegment = waypoints
                 .mapIndexedNotNull {pos, it -> if (0 == pos) null else Pair(waypoints[pos - 1], it)}
-            .maxBy { it: Pair<Point2D.Float, Point2D.Float> -> it.first.distance(it.second) } ?: return
+            .maxBy { it.first.distance(it.second) } ?: return
         state().ctx.canvas.drawWrappedSingleLine(longestSegment.first, longestSegment.second, name, color)
     }
 
@@ -148,7 +146,7 @@ abstract class BaseEdgeRenderElement(
         return (leftAnchorActive && rightAnchorActive) || (anyAnchorActive && endPos == activeAnchors.size - 1) || (anyAnchorActive && endPos - 1 == 0)
     }
 
-    private fun computeAnchors(): List<AnchorElement> {
+    private fun computeAnchors(): MutableList<AnchorElement> {
         val numPhysicals = edge.waypoint.filter { it.physical }.size
         var physicalPos = -1
         return edge.waypoint.map {
@@ -158,7 +156,7 @@ abstract class BaseEdgeRenderElement(
             } else {
                 VirtualWaypoint(it.id, edge.id, edge, Point2D.Float(it.x, it.y), state).let { it.parents.add(this); it }
             }
-        }
+        }.toMutableList()
     }
 
     private fun findAttachedToElement(physicalPos: Int, numPhysicals: Int): DiagramElementId? {

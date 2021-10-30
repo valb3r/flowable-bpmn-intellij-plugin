@@ -165,6 +165,46 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
     }
 
     @Test
+    fun `Boundary event follows service task when it is dragged to subprocess`() {
+        prepareOneSubProcessAndOnRootServiceTaskWithAttachedBoundaryEventView()
+
+        val start = clickOnId(serviceTaskStartDiagramId)
+        canvas.paintComponent(graphics)
+        canvas.startSelectionOrSelectedDrag(start)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(start, elementCenter(subprocessDiagramId))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[serviceTaskStartBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[serviceTaskStartBpmnId]!!.parent.shouldBeEqualTo(subprocessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parent.shouldBeEqualTo(serviceTaskStartBpmnId)
+
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            val draggedToServiceTask = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSize(2)[0]
+            val draggedBoundaryEvent = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSize(2)[1]
+            val xmlParentChangedServiceTask = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSize(2)[0]
+            val xmlParentChangedBoundaryEvent = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSize(2)[1]
+            val uiParentChangedBoundaryEvent = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
+            firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldBeEmpty()
+            firstValue.indexOf(xmlParentChangedServiceTask).shouldBeLessThan(firstValue.indexOf(uiParentChangedBoundaryEvent))
+            firstValue.indexOf(xmlParentChangedBoundaryEvent).shouldBeLessThan(firstValue.indexOf(uiParentChangedBoundaryEvent))
+            firstValue.shouldHaveSize(5)
+
+            draggedToServiceTask.diagramElementId.shouldBeEqualTo(serviceTaskStartDiagramId)
+            draggedBoundaryEvent.diagramElementId.shouldBeEqualTo(optionalBoundaryErrorEventDiagramId)
+            xmlParentChangedServiceTask.bpmnElementId.shouldBeEqualTo(serviceTaskStartBpmnId)
+            xmlParentChangedServiceTask.newParentId.shouldBeEqualTo(subprocessBpmnId)
+            xmlParentChangedBoundaryEvent.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
+            xmlParentChangedBoundaryEvent.newParentId.shouldBeEqualTo(subprocessBpmnId)
+            uiParentChangedBoundaryEvent.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId) // Compensates xml change of parent
+            uiParentChangedBoundaryEvent.newParentId.shouldBeEqualTo(serviceTaskStartBpmnId)
+        }
+    }
+
+    @Test
     fun `New edge element should be addable out of boundary element on plain process`() {
         prepareServiceTaskWithBoundaryEventOnRootView()
 

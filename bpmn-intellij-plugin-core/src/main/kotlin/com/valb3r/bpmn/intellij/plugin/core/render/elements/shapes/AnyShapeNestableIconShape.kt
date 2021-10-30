@@ -27,6 +27,20 @@ class AnyShapeNestableIconShape(
     override val areaType: AreaType
         get() = AreaType.SELECTS_DRAG_TARGET
 
+    fun handleParentNestingChange(droppedOn: BpmnElementId): MutableList<Event> {
+        val newEvents = mutableListOf<Event>()
+        val currentParent = parents.firstOrNull()
+
+        if (droppedOn == currentParent?.bpmnElementId) {
+            return newEvents
+        }
+
+        return mutableListOf(
+            BpmnParentChangedEvent(shape.bpmnElement, droppedOn, true),
+            BpmnParentChangedEvent(shape.bpmnElement, currentParent?.bpmnElementId!!, false) // compensate parent change for UI only (it still stays a child of its parent)
+        )
+    }
+
     override fun handlePossibleNestingTo(allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>, cascadeTargets: List<CascadeTranslationOrChangesToWaypoint>): MutableList<Event> {
         val allDroppedOn = linkedMapOf<AreaType, BpmnElementId>()
         allDroppedOnAreas.forEach { if (!allDroppedOn.containsKey(it.value.areaType)) allDroppedOn[it.value.areaType] = it.key}
