@@ -100,13 +100,13 @@ abstract class ShapeRenderElement(
         children.forEach {
             val parentChange = result.filterIsInstance<BpmnParentChangedEvent>().firstOrNull()
             val events = it.onDragEnd(compensated.x, compensated.y, null, emptySortedMap) +
-                    if (it is AnyShapeNestableIconShape && null != parentChange) {
+                    if (it is AnyShapeNestableIconShape && null != parentChange) { // Boundary-event alike elements follow special parent-change logic as they are on same XML level
                         it.handleParentNestingChange(parentChange.newParentId)
                     } else {
                         emptyList()
                     }
 
-            for (event in events) { // Children do not change parent - sortedMapOf()
+            for (event in events) { // Post process events
                 handleChildDrag(event, alreadyDraggedLocations, result)
             }
         }
