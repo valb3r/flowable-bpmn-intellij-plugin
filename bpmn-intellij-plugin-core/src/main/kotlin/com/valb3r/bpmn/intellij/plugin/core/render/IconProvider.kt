@@ -69,6 +69,7 @@ interface IconProvider {
     val boundaryTimerEvent: String
     val recycleBin: String
     val rightAngle: String
+    val selectParentSequence: String
 }
 
 private val currentIconProvider = AtomicReference<IconProvider>()
@@ -150,4 +151,5 @@ data class IconProviderImpl(
         override val boundaryTimerEvent: String = "/icons/ui-icons/svg/timer-boundary-event.svg".asResource()!!,
         override val recycleBin: String = "/icons/ui-icons/svg/recycle-bin.svg".asResource()!!,
         override val rightAngle: String = "/icons/ui-icons/svg/angle-right.svg".asResource()!!,
+        override val selectParentSequence: String = "/icons/ui-icons/svg/select-parent-sequence.svg".asResource()!!,
 ): IconProvider

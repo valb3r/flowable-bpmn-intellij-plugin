@@ -60,7 +60,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
     private var selectedElements: MutableSet<DiagramElementId> = mutableSetOf()
     private var camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
 
-    private var interactionCtx: ElementInteractionContext = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
+    private var interactionCtx: ElementInteractionContext = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), mutableMapOf(), null, Point2D.Float(), Point2D.Float())
     private var renderer: BpmnProcessRenderer? = null
     private var areaByElement: Map<DiagramElementId, AreaWithZindex>? = null
     private var propsVisualizer: PropertiesVisualizer? = null
@@ -105,6 +105,12 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
             }
             latestOnScreenModelDimensions = it.onScreenModel
         }
+
+        currentUiEventBus(project).subscribe(SelectElements::class) {
+            selectElements(it.elementIds)
+            repaint()
+            updatePropertyVisualizer(it.elementIds)
+        }
     }
 
     @VisibleForTesting
@@ -147,7 +153,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
                 )
             )
         }
-        val interactionContext = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
+        val interactionContext = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), mutableMapOf(), null, Point2D.Float(), Point2D.Float())
         val dummyImage = UIUtil.createImage(1, 1, BufferedImage.TYPE_INT_RGB)
         val dimensions = doRender(dummyImage, interactionContext, Camera(Point2D.Float(0.0f, 0.0f), Point2D.Float(1.0f, 1.0f)))?.areas ?: return null
         val maxX = dimensions.map { it.value.area.bounds2D.maxX }.max()?.toInt() ?: return null
@@ -190,21 +196,18 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         propsVisualizer?.clear()
         val clickedElements = elemUnderCursor(location)
         clickedElements.forEach { interactionCtx.clickCallbacks[it]?.invoke(updateEventsRegistry(project)) }
+        val invokeAfter = clickedElements.mapNotNull { interactionCtx.postClickCallbacks[it] }
 
         this.selectedElements.clear()
-        interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
+        interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), mutableMapOf(), null, Point2D.Float(), Point2D.Float())
         this.selectedElements.addAll(clickedElements)
 
         repaint()
 
-        val propertiesForElement = if (selectedElements.isEmpty()) elemUnderCursor(location, setOf()) else selectedElements
-        val elementIdForPropertiesTable = propertiesForElement.firstOrNull()
-        val state = stateProvider.currentState()
-        state
-                .elementByDiagramId[elementIdForPropertiesTable]
-                ?.let { elemId ->
-                    state.elemPropertiesByStaticElementId[elemId]?.let { propsVisualizer?.visualize(newElementsFactory(project), state.elemPropertiesByStaticElementId, elemId) }
-                } ?: propsVisualizer?.clear()
+        val propertiesForElement =
+            if (selectedElements.isEmpty()) elemUnderCursor(location, setOf()) else selectedElements
+        updatePropertyVisualizer(propertiesForElement)
+        invokeAfter.forEach { it.invoke(updateEventsRegistry(project)) }
     }
 
     fun dragCanvas(start: Point2D.Float, current: Point2D.Float) {
@@ -220,7 +223,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         val point = camera.fromCameraView(current)
         val elemsUnderCursor = elemUnderCursor(current)
         if (selectedElements.intersect(elemsUnderCursor).isEmpty()) {
-            interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, point, point)
+            interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), mutableMapOf(), null, point, point)
             return
         }
     }
@@ -234,7 +237,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         }
 
         if (elemsUnderCursor.isEmpty()) {
-            interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), SelectionRect(current, current), mutableMapOf(), null, point, point)
+            interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), SelectionRect(current, current), mutableMapOf(), mutableMapOf(), null, point, point)
             return
         }
 
@@ -317,7 +320,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
 
     fun clearSelection() {
         this.selectedElements.clear()
-        interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), null, Point2D.Float(), Point2D.Float())
+        interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), mutableMapOf(), null, Point2D.Float(), Point2D.Float())
     }
 
     fun selectElements(elements: Set<DiagramElementId>) {
@@ -408,6 +411,22 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
 
     fun parentableElementAt(point: Point2D.Float): BpmnElementId {
         return parentableElemUnderCursor(point)
+    }
+
+    private fun updatePropertyVisualizer(propertiesForElement: Collection<DiagramElementId>) {
+        val elementIdForPropertiesTable = propertiesForElement.firstOrNull()
+        val state = stateProvider.currentState()
+        state
+            .elementByDiagramId[elementIdForPropertiesTable]
+            ?.let { elemId ->
+                state.elemPropertiesByStaticElementId[elemId]?.let {
+                    propsVisualizer?.visualize(
+                        newElementsFactory(
+                            project
+                        ), state.elemPropertiesByStaticElementId, elemId
+                    )
+                }
+            } ?: propsVisualizer?.clear()
     }
 
     private fun applyOrthoOrNoneAnchors(anchorX: AnchorDetails?, anchorY: AnchorDetails?, ctx: ElementInteractionContext): AnchorHit {

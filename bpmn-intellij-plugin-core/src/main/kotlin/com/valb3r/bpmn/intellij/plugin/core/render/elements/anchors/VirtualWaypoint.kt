@@ -2,12 +2,14 @@ package com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.NewWaypointsEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.core.render.Camera
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.ACTIONS_ICO_SIZE
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import java.awt.geom.Point2D
@@ -35,6 +37,13 @@ class VirtualWaypoint(
                         .toList(),
                 edge.epoch + 1
         ))
+    }
+
+    override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
+        val result = mutableMapOf<DiagramElementId, AreaWithZindex>()
+        val targetBounds = BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE)
+        addEdgeSelectionButton(targetBounds, result)
+        return result
     }
 
     override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
