@@ -4,8 +4,8 @@ import java.awt.geom.Point2D
 import java.util.concurrent.atomic.AtomicInteger
 
 val gridIcons = listOf(
-    {currentIconProvider().gridDense},
-    {currentIconProvider().noGrid}
+    {currentIconProvider().noGrid},
+    {currentIconProvider().gridDense}
 )
 
 val gridSteps = listOf(5, 0)
