@@ -200,6 +200,8 @@ abstract class BaseUiTest {
         whenever(icons.recycleBin).thenReturn(icon)
         whenever(icons.exclusiveGateway).thenReturn(icon)
         whenever(icons.boundaryErrorEvent).thenReturn(icon)
+        whenever(icons.rightAngle).thenReturn(icon)
+        whenever(icons.selectParentSequence).thenReturn(icon)
         whenever(icons.gear).thenReturn(mock())
         whenever(icons.redo).thenReturn(mock())
         whenever(icons.undo).thenReturn(mock())
