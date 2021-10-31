@@ -70,7 +70,7 @@ abstract class CircleAnchorElement(
         return mutableMapOf(elementId to AreaWithZindex(area, areaType, waypointAnchors(ctx.canvas.camera), index = zIndex()))
     }
 
-    protected fun addEdgeSelectionButton(lastMenuElem: BoundsElement, result: MutableMap<DiagramElementId, AreaWithZindex>) {
+    protected fun addEdgeSelectionButton(lastMenuElem: BoundsElement, result: MutableMap<DiagramElementId, AreaWithZindex>): BoundsElement {
         val lastIconLeft = state().ctx.canvas.camera.toCameraView(Point2D.Float(lastMenuElem.x, lastMenuElem.y))
         val lastIconEndInCamera = state().ctx.canvas.camera.fromCameraView(Point2D.Float(lastIconLeft.x, lastIconLeft.y + lastMenuElem.height))
         val bounds = BoundsElement(lastIconEndInCamera.x, lastIconEndInCamera.y, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE)
@@ -81,6 +81,7 @@ abstract class CircleAnchorElement(
         }
 
         result += edgeSelectionId to AreaWithZindex(rightAngleIcon, areaType, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
+        return bounds
     }
 
     override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {

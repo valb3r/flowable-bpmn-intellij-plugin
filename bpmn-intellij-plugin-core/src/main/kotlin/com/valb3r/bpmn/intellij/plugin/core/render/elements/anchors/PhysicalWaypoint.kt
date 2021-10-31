@@ -65,8 +65,8 @@ class PhysicalWaypoint(
             delId to AreaWithZindex(deleteIconArea, areaType, mutableSetOf(), mutableSetOf(),  ICON_Z_INDEX, elementId),
         )
 
-        val lastButton = addMakeRightAngleIconIfPossible(deleteBounds, result)
-        addEdgeSelectionButton(lastButton, result)
+        val lastButton = addEdgeSelectionButton(deleteBounds, result)
+        addMakeRightAngleIconIfPossible(lastButton, result)
         return result
     }
 
