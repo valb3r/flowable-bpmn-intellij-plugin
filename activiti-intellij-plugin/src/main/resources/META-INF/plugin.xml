@@ -4,7 +4,7 @@
     <name>Activiti BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.4.7.5</version>
+    <version>0.4.8</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -36,6 +36,24 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+      <p>0.4.8:</p>
+        <ul>
+          <li>
+            Fixed bug with boundary event wrong attach behavior in subprocess
+          </li>
+          <li>
+            Fixed bug - unable to save settings (i.e. to add custom extension) in 2021.2.3
+          </li>
+          <li>
+            Snap to grid feature
+          </li>
+          <li>
+            Ability to disable vertical/horizontal anchors
+          </li>
+          <li>
+            Ability to select parent edge from waypoint
+          </li>
+        </ul>
       <p>0.4.7.4:</p>
         <ul>
           <li>
@@ -58,24 +76,6 @@
           </li>
           <li>
             Fixed the regression - Activiti 7 parser was used by default, leading to less features supported
-          </li>
-        </ul>
-      <p>0.4.6.3:</p>
-        <ul>
-          <li>
-            Minimum IntelliJ version is now 2019.3 due to build pipeline upgrade
-          </li>
-          <li>
-            Initial support for Activiti 7 (very basic)
-          </li>
-          <li>
-            Allow to configure BPMN file extension in settings
-          </li>
-          <li>
-            Fixed save to PNG functionality with negative coordinates
-          </li>
-          <li>
-            Added BPMN file validity check
           </li>
         </ul>
     ]]></change-notes>
