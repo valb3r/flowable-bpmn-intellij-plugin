@@ -146,7 +146,7 @@ select 'Paste' popup menu item
 
 **A**: Navigate to **File** > **Settings** > **Tools** > **Activiti BPMN Plugin config** (or **Flowable BPMN Plugin config**). 
 In the field supported extensions add `bpmn`, so that field value is `bpmn20.xml,bpmn`. Now you should be able to open it.
-![Configuring plugin to open file with custom extension](docs/img/faq/how-to-open-bpmn.gif)
+[Animation to configure plugin for opening files with custom extension](docs/img/faq/how-to-open-bpmn.gif)
 
 
 **Q**: Some feature/bug was closed, but I can't find new release.
