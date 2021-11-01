@@ -145,7 +145,7 @@ select 'Paste' popup menu item
 ### Q: My files for Activiti/Flowable engine have `.bpmn` extension and not `bpmn20.xml`, how can I open them.
 
 **A**: Navigate to **File** > **Settings** > **Tools** > **Activiti BPMN Plugin config** (or **Flowable BPMN Plugin config**). 
-In the field supported extensions add `bpmn`, so that field value is `bpmn20.xml,bpmn`. Now you should be able to open it.
+In the field **Supported extensions** add `bpmn`, so that field value is `bpmn20.xml,bpmn`. Now you should be able to open it.
 [Animation to configure plugin for opening files with custom extension](docs/img/faq/how-to-open-bpmn.gif)
 
 
