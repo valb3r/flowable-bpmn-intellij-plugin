@@ -32,7 +32,7 @@ abstract class BaseEdgeRenderElement(
 
     private val anchors = computeAnchors()
 
-    override val children: MutableList<BaseDiagramRenderElement> = anchors as MutableList<BaseDiagramRenderElement>
+    override val children: List<BaseDiagramRenderElement> = anchors as MutableList<BaseDiagramRenderElement> + innerElements
 
     val edgeElem: EdgeWithIdentifiableWaypoints
         get() = edge

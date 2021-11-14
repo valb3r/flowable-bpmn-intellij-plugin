@@ -31,11 +31,10 @@ abstract class ResizeableShapeRenderElement(
             ShapeResizeAnchorBottom(DiagramElementId("BOTTOM:" + shape.id.id), elementId, Point2D.Float(shape.bounds().second.x, shape.bounds().second.y), { doComputeLocationChangesBasedOnTransformationWithCascade() }, state)
     )
 
-    override val children: MutableList<BaseDiagramRenderElement> = mutableListOf(
-            anchors.first,
-            anchors.second,
-            edgeExtractionAnchor
-    )
+    protected val actions = mutableListOf(anchors.first, anchors.second, edgeExtractionAnchor)
+
+    override val children: List<BaseDiagramRenderElement>
+        get() = actions + innerElements
 
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         val spaceCoeff = 1.5f

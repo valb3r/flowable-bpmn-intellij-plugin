@@ -31,7 +31,8 @@ abstract class BaseDiagramRenderElement(
     var isVisible: Boolean? = null
 
     abstract val areaType: AreaType
-    open val children: MutableList<BaseDiagramRenderElement> = mutableListOf()
+    val innerElements: MutableList<BaseDiagramRenderElement> = mutableListOf()
+    open val children: List<BaseDiagramRenderElement> = innerElements
 
     /**
      * Parents in the order: direct parent, parent of direct parent...

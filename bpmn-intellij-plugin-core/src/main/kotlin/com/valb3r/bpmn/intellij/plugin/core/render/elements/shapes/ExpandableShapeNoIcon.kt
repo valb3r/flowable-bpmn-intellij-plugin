@@ -37,13 +37,10 @@ class ExpandableShapeNoIcon(
             state
     )
 
-    override val children: MutableList<BaseDiagramRenderElement> = (
-            super.children + expandButton
-
-    ).toMutableList()
+    override val children: List<BaseDiagramRenderElement>
+        get() = ((if (!isCollapsed()) innerElements else mutableListOf()) + actions + expandButton)
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
-
         val area = ctx.canvas.drawRoundedRect(
                 shapeCtx.shape,
                 shapeCtx.name,

@@ -19,8 +19,7 @@ import java.awt.geom.Rectangle2D
 class PlaneRenderElement(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
-        state: () -> RenderState,
-        override val children: MutableList<BaseDiagramRenderElement> = mutableListOf()
+        state: () -> RenderState
 ): BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 
     override val areaType: AreaType

@@ -167,7 +167,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     }
 
     private fun createRootProcessElem(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>): BaseBpmnRenderElement {
-        val processElem = PlaneRenderElement(state().currentState.processDiagramId(), state().currentState.processId, state, mutableListOf())
+        val processElem = PlaneRenderElement(state().currentState.processDiagramId(), state().currentState.processId, state)
         elements += processElem
         elementsById[state().currentState.processId] = processElem
         return processElem
@@ -197,7 +197,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         elementsById.forEach { (id, renderElem) ->
             val elem = state().currentState.elementByBpmnId[id]
             elem?.parent?.let {elementsById[it]}?.let { if (it is BaseBpmnRenderElement) it else null }?.let { parent ->
-                parent.children.add(renderElem)
+                parent.innerElements.add(renderElem)
                 parent.let { renderElem.parents.add(it) }
             }
         }

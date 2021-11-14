@@ -46,7 +46,7 @@ abstract class ShapeRenderElement(
         cascadeTo = computeCascadables()
     }
 
-    override val children: MutableList<BaseDiagramRenderElement> = mutableListOf(edgeExtractionAnchor)
+    override val children: List<BaseDiagramRenderElement> = mutableListOf(edgeExtractionAnchor) + innerElements
 
     val shapeElem: ShapeElement
         get() = shape
