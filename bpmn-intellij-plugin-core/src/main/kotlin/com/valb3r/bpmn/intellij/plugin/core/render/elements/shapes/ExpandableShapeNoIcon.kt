@@ -19,7 +19,6 @@ import javax.swing.Icon
 class ExpandableShapeNoIcon(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
-        private val collapsed: Boolean,
         plusIcon: Icon,
         minusIcon: Icon,
         shape: ShapeElement,
@@ -33,8 +32,8 @@ class ExpandableShapeNoIcon(
     private val expandButton = ButtonWithAnchor(
             DiagramElementId("EXPAND:" + shape.id.id),
             Point2D.Float((shape.bounds().first.x + shape.bounds().second.x) / 2.0f, shape.bounds().second.y),
-            if (collapsed) plusIcon else minusIcon,
-            { mutableListOf(BooleanUiOnlyValueUpdatedEvent(bpmnElementId, UiOnlyPropertyType.EXPANDED, !collapsed)) },
+            if (isCollapsed()) plusIcon else minusIcon,
+            { mutableListOf(BooleanUiOnlyValueUpdatedEvent(bpmnElementId, UiOnlyPropertyType.EXPANDED, isCollapsed())) },
             state
     )
 
@@ -57,7 +56,7 @@ class ExpandableShapeNoIcon(
     }
 
     override fun createIfNeededExpandViewTransform() {
-        if (this.collapsed) {
+        if (isCollapsed()) {
             return
         }
 
@@ -71,5 +70,9 @@ class ExpandableShapeNoIcon(
                 enumerateChildrenRecursively().map { it.elementId }.toSet()
         ))
         super.createIfNeededExpandViewTransform()
+    }
+
+    private fun isCollapsed(): Boolean {
+        return !(state().currentState.elemUiOnlyPropertiesByStaticElementId[bpmnElementId]?.get(UiOnlyPropertyType.EXPANDED)?.value as Boolean? ?: false)
     }
 }
