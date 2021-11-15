@@ -161,7 +161,7 @@ class ExpandViewTransform(
         if (rectTransformationIntrospection.type == AreaType.POINT) {
             quirkFound = quirkForRectangles[rectTransformationIntrospection.attachedTo]
         } else if (!rectTransformationIntrospection.parentElements.contains(expandOnElementLevel)) {
-            quirkFound = rectTransformationIntrospection.parentElements.map { quirkForRectangles[it] }.first()
+            quirkFound = rectTransformationIntrospection.parentElements.map { quirkForRectangles[it] }.firstOrNull()
         }
 
         return if (null != quirkFound) {
