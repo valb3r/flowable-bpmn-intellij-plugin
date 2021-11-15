@@ -31,6 +31,7 @@ class ShapeResizeAnchorBottom(
                                 icon.iconHeight.toFloat()
                         ),
                         AreaType.SHAPE,
+                        parents.map { it.elementId }.toSet(),
                         parent
                 )
         )

@@ -36,6 +36,7 @@ class ShapeResizeAnchorTop(
                                 height
                         ),
                         AreaType.SHAPE,
+                        parents.map { it.elementId }.toSet(),
                         parent
                 )
         )

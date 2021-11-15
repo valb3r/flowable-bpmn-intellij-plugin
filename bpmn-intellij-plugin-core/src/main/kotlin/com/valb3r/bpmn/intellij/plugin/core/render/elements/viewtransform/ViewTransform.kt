@@ -8,7 +8,7 @@ import java.awt.geom.Rectangle2D
 import kotlin.math.abs
 import kotlin.random.Random.Default.nextFloat
 
-data class RectangleTransformationIntrospection(val rect: Rectangle2D.Float, val type: AreaType, val attachedTo: DiagramElementId? = null)
+data class RectangleTransformationIntrospection(val rect: Rectangle2D.Float, val type: AreaType, val parentElements: Set<DiagramElementId>, val attachedTo: DiagramElementId? = null)
 data class PointTransformationIntrospection(val attachedTo: DiagramElementId? = null)
 
 interface PreTransformable {
@@ -114,6 +114,7 @@ data class ResizeViewTransform(
 }
 
 class ExpandViewTransform(
+        private val expandOnElementLevel: DiagramElementId,
         private val expandedElementId: DiagramElementId,
         private val shape: Rectangle2D.Float,
         private val cx: Float,
@@ -140,11 +141,9 @@ class ExpandViewTransform(
 
         val center = transformPoint(Point2D.Float(transformed.x + halfWidth, transformed.y  + halfHeight))
 
-        if (rectTransformationIntrospection.type == AreaType.POINT) {
-            val quirkFound = quirkForRectangles[rectTransformationIntrospection.attachedTo]
-            if (null != quirkFound) {
-                return Rectangle2D.Float(transformed.x + quirkFound.displacement.x, transformed.y + quirkFound.displacement.y, rect.width, rect.height)
-            }
+        val managedTransform = transformManagedByParent(transformed, rect, rectTransformationIntrospection)
+        if (null != managedTransform) {
+           return managedTransform
         }
 
         if (elementId == expandedElementId) {
@@ -155,6 +154,21 @@ class ExpandViewTransform(
 
         fillRectangleQuirkIfNeeded(rectTransformationIntrospection, elementId, rect, center, transformed, halfWidth, halfHeight)
         return Rectangle2D.Float(center.x - halfWidth, center.y - halfHeight, rect.width, rect.height)
+    }
+
+    private fun transformManagedByParent(transformed: Rectangle2D.Float, rect: Rectangle2D.Float, rectTransformationIntrospection: RectangleTransformationIntrospection): Rectangle2D.Float? {
+        var quirkFound: RectangleQuirk? = null
+        if (rectTransformationIntrospection.type == AreaType.POINT) {
+            quirkFound = quirkForRectangles[rectTransformationIntrospection.attachedTo]
+        } else if (!rectTransformationIntrospection.parentElements.contains(expandOnElementLevel)) {
+            quirkFound = rectTransformationIntrospection.parentElements.map { quirkForRectangles[it] }.first()
+        }
+
+        if (null != quirkFound) {
+            return Rectangle2D.Float(transformed.x + quirkFound.displacement.x, transformed.y + quirkFound.displacement.y, rect.width, rect.height)
+        } else {
+            return null
+        }
     }
 
     private fun fillRectangleQuirkIfNeeded(rectTransformationIntrospection: RectangleTransformationIntrospection, elementId: DiagramElementId, rect: Rectangle2D.Float, center: Point2D.Float, transformed: Rectangle2D.Float, halfWidth: Float, halfHeight: Float) {
