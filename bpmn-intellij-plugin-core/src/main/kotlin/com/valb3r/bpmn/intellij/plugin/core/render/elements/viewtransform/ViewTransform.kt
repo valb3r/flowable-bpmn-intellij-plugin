@@ -114,8 +114,8 @@ data class ResizeViewTransform(
 }
 
 class ExpandViewTransform(
-        private val expandOnElementLevel: DiagramElementId,
         private val expandedElementId: DiagramElementId,
+        private val expandOnElementLevel: DiagramElementId,
         private val shape: Rectangle2D.Float,
         private val cx: Float,
         private val cy: Float,
@@ -164,10 +164,10 @@ class ExpandViewTransform(
             quirkFound = rectTransformationIntrospection.parentElements.map { quirkForRectangles[it] }.first()
         }
 
-        if (null != quirkFound) {
-            return Rectangle2D.Float(transformed.x + quirkFound.displacement.x, transformed.y + quirkFound.displacement.y, rect.width, rect.height)
+        return if (null != quirkFound) {
+            Rectangle2D.Float(transformed.x + quirkFound.displacement.x, transformed.y + quirkFound.displacement.y, rect.width, rect.height)
         } else {
-            return null
+            null
         }
     }
 
