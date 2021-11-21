@@ -180,7 +180,7 @@ abstract class ShapeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        return state().viewTransform(elementId).transform(elementId, RectangleTransformationIntrospection(shape.rectBounds(), AreaType.SHAPE, parents.map { it.elementId }.toSet()))
+        return state().viewTransform(elementId).transform(elementId, RectangleTransformationIntrospection(shape.rectBounds(), AreaType.SHAPE, parents.map { it.elementId }))
     }
 
     override fun currentRect(): Rectangle2D.Float {

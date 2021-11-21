@@ -10,8 +10,8 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.random.Random.Default.nextFloat
 
-data class RectangleTransformationIntrospection(val rect: Rectangle2D.Float, val type: AreaType, val parentElements: Set<DiagramElementId>, val attachedTo: DiagramElementId? = null)
-data class PointTransformationIntrospection(val attachedTo: DiagramElementId? = null, val selectCloseQuirkWithin: Float? = null)
+data class RectangleTransformationIntrospection(val rect: Rectangle2D.Float, val type: AreaType, val parentElements: List<DiagramElementId>, val attachedTo: DiagramElementId? = null)
+data class PointTransformationIntrospection(val attachedTo: DiagramElementId? = null, val parentsOfParentElements: List<DiagramElementId> = emptyList(), val selectCloseQuirkWithin: Float? = null)
 
 interface PreTransformable {
     fun preTransform(elementId: DiagramElementId, rectTransformationIntrospection: RectangleTransformationIntrospection): Rectangle2D.Float
@@ -206,6 +206,10 @@ class ExpandViewTransform(
         }
 
         var quirkFound = quirkForRectangles[introspection.attachedTo]
+        // Managed quirk
+        if (null == quirkFound) {
+            quirkFound = introspection.parentsOfParentElements.map { quirkForRectangles[it] }.firstOrNull()
+        }
         if (null == quirkFound && null != introspection.selectCloseQuirkWithin) {
             fun quirkDistance(it: RectangleQuirk) = (point.x - it.originalRectangle2D.x).pow(2) + (point.y - it.originalRectangle2D.y).pow(2)
             val bestQuirk = quirkForRectangles.values.minBy { quirkDistance(it) }

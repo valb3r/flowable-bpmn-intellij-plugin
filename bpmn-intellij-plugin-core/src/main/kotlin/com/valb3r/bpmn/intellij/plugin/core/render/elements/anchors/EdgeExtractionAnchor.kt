@@ -39,7 +39,7 @@ class EdgeExtractionAnchor(
                                 imageHeight
                         ),
                         AreaType.POINT,
-                        parents.map { it.elementId }.toSet(),
+                        parents.map { it.elementId },
                         parent
                 )
         )
