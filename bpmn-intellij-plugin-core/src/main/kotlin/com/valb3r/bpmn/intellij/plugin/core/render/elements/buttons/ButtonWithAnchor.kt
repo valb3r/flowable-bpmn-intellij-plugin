@@ -42,7 +42,8 @@ class ButtonWithAnchor(
                                 imageHeight
                         ),
                         AreaType.POINT,
-                        parents.map { it.elementId }
+                        parents.map { it.elementId },
+                        parents.flatMap { it.parents }.map { it.elementId },
                 )
         )
     }

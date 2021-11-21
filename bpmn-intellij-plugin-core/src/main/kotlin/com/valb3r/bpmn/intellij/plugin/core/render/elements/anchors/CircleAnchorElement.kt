@@ -40,7 +40,8 @@ abstract class CircleAnchorElement(
                                 2.0f * radius
                         ),
                         AreaType.POINT,
-                        parents.map { it.elementId }
+                        parents.map { it.elementId },
+                        parents.flatMap { it.parents }.map { it.elementId }
                 )
         )
     }

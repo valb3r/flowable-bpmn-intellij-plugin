@@ -10,7 +10,7 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.random.Random.Default.nextFloat
 
-data class RectangleTransformationIntrospection(val rect: Rectangle2D.Float, val type: AreaType, val parentElements: List<DiagramElementId>, val attachedTo: DiagramElementId? = null)
+data class RectangleTransformationIntrospection(val rect: Rectangle2D.Float, val type: AreaType, val parentElements: List<DiagramElementId>, val parentsOfParentElements: List<DiagramElementId> = emptyList(), val attachedTo: DiagramElementId? = null)
 data class PointTransformationIntrospection(val attachedTo: DiagramElementId? = null, val parentsOfParentElements: List<DiagramElementId> = emptyList(), val selectCloseQuirkWithin: Float? = null)
 
 interface PreTransformable {
@@ -164,6 +164,10 @@ class ExpandViewTransform(
             quirkFound = quirkForRectangles[rectTransformationIntrospection.attachedTo]
         } else if (!rectTransformationIntrospection.parentElements.contains(expandOnElementLevel)) {
             quirkFound = rectTransformationIntrospection.parentElements.map { quirkForRectangles[it] }.firstOrNull()
+        }
+
+        if (null == quirkFound) {
+            quirkFound = rectTransformationIntrospection.parentsOfParentElements.map { quirkForRectangles[it] }.firstOrNull()
         }
 
         return if (null != quirkFound) {
