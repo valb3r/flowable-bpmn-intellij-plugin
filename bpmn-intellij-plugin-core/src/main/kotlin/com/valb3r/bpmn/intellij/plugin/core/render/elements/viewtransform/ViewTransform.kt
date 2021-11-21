@@ -216,7 +216,7 @@ class ExpandViewTransform(
         return when {
             abs(point.x - cx) < EPSILON && abs(point.y - cy) < EPSILON -> point
 
-            // rectangle edges:
+            // rectangle forming points:
             // top-left
             abs(point.x - shape.x) < EPSILON && abs(point.y - shape.y) < EPSILON -> Point2D.Float(point.x - dx, point.y - dy)
             // bottom-left
@@ -302,19 +302,19 @@ class ViewTransformInverter {
      * Minimizes (rect.x - transform(return.x)) ^ 2 + (rect.y - transform(return.y)) ^ 2 metric
      * shape changes are ignored so far
      */
-    fun invert(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch): Point2D.Float {
+    fun invert(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch, introspection: PointTransformationIntrospection? = null): Point2D.Float {
         if (batch.isEmpty()) {
             return target
         }
 
-        return invert(elementId, target, initialGuess, batch, PointTransformationIntrospection())
+        return doInvert(elementId, target, initialGuess, batch, introspection ?: PointTransformationIntrospection())
     }
 
     /**
      * Minimizes (rect.x - transform(return.x)) ^ 2 + (rect.y - transform(return.y)) ^ 2 metric
      * shape changes are ignored so far
      */
-    private fun invert(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch, introspection: PointTransformationIntrospection): Point2D.Float {
+    private fun doInvert(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch, introspection: PointTransformationIntrospection): Point2D.Float {
         val range = 0..randomInitializationGuesses
         fun randomFromAreaRange(): Float {
             return (nextFloat() * 2.0f - 1.0f) * randomInitializationAreaSpan

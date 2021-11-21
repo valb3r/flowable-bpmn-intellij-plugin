@@ -255,10 +255,10 @@ abstract class BaseDiagramRenderElement(
         return Point2D.Float(inverted.x - rect.x, inverted.y - rect.y)
     }
 
-    protected fun compensateExpansionViewOnLocation(targetElement: DiagramElementId, location: Point2D.Float, initialGuess: Point2D.Float): Point2D.Float {
+    protected fun compensateExpansionViewOnLocation(elementToCompensate: DiagramElementId, location: Point2D.Float, initialGuess: Point2D.Float, target: DiagramElementId?): Point2D.Float {
         val batch = findExpansionViewTransformationsToCompensate()
 
-        val inverted = ViewTransformInverter().invert(targetElement, location, initialGuess, batch)
+        val inverted = ViewTransformInverter().invert(elementToCompensate, location, initialGuess, batch, PointTransformationIntrospection(target))
 
         return Point2D.Float(inverted.x, inverted.y)
     }

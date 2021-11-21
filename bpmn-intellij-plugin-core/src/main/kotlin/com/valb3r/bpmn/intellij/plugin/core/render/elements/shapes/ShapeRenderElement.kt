@@ -300,8 +300,8 @@ abstract class ShapeRenderElement(
         val anchors = findSequenceAnchors(targetArea) ?: return mutableListOf()
         val notYetExistingDiagramId = DiagramElementId("")
         val sourceBounds = shape.rectBounds()
-        val firstAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.first, Point2D.Float(sourceBounds.centerX.toFloat(), sourceBounds.centerY.toFloat()))
-        val secondAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.second, initialGuess(targetElem, anchors.second))
+        val firstAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.first, Point2D.Float(sourceBounds.centerX.toFloat(), sourceBounds.centerY.toFloat()), elementId)
+        val secondAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.second, initialGuess(targetElem, anchors.second), targetElem?.elementId)
         val newSequenceDiagram = newElementsFactory(state().ctx.project).newDiagramObject(EdgeElement::class, newSequenceBpmn)
                 .copy(waypoint = listOf(
                         WaypointElement(firstAnchorCompensated.x, firstAnchorCompensated.y),
