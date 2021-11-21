@@ -42,6 +42,10 @@ intellij {
     plugins = intellijPlatformPlugins
 }
 
+runIde {
+    jbrVersion = runIdeJbrVersion
+}
+
 publishPlugin {
     token = intellijPublishToken
 }
