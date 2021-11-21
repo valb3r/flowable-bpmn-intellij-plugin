@@ -122,6 +122,8 @@ abstract class BaseDiagramRenderElement(
         return result
     }
 
+    abstract fun currentRect(): Rectangle2D.Float
+
     protected open fun rootAndEnumerateChildrenRecursively(root: BaseDiagramRenderElement) : List<BaseDiagramRenderElement> {
         val result = mutableListOf<BaseDiagramRenderElement>()
         result += root
@@ -220,7 +222,6 @@ abstract class BaseDiagramRenderElement(
     abstract fun doResizeWithoutChildren(dw: Float, dh: Float)
     abstract fun doResizeEndWithoutChildren(dw: Float, dh: Float): MutableList<Event>
 
-    protected abstract fun currentRect(): Rectangle2D.Float
     protected abstract fun currentOnScreenRect(camera: Camera): Rectangle2D.Float
 
     protected abstract fun waypointAnchors(camera: Camera): MutableSet<Anchor>

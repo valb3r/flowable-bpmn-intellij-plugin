@@ -292,7 +292,7 @@ class ViewTransformInverter {
     private val initialStepSize = 1.0f
     private val successMultiplier = 2.0f
     private val failMultiplier = 10.0f
-    private val diffStep = 1.0f
+    private val diffStep = 0.1f
     private val epsilon = 1.0f
     private val maxIter = 10
     private val randomInitializationGuesses = 10
