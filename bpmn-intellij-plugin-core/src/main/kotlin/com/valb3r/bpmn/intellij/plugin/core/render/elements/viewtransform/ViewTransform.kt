@@ -162,12 +162,9 @@ class ExpandViewTransform(
         var quirkFound: RectangleQuirk? = null
         if (rectTransformationIntrospection.type == AreaType.POINT) {
             quirkFound = quirkForRectangles[rectTransformationIntrospection.attachedTo]
+                ?: rectTransformationIntrospection.parentElements.map { quirkForRectangles[it] }.firstOrNull()
         } else if (!rectTransformationIntrospection.parentElements.contains(expandOnElementLevel)) {
             quirkFound = rectTransformationIntrospection.parentElements.map { quirkForRectangles[it] }.firstOrNull()
-        }
-
-        if (null == quirkFound) {
-            quirkFound = rectTransformationIntrospection.parentsOfParentElements.map { quirkForRectangles[it] }.firstOrNull()
         }
 
         return if (null != quirkFound) {

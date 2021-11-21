@@ -273,7 +273,7 @@ abstract class ShapeRenderElement(
     }
 
     private fun computeAnchorLocation(currentElementId: DiagramElementId, state: () -> RenderState): EdgeExtractionAnchor {
-        return EdgeExtractionAnchor(
+        val anchor = EdgeExtractionAnchor(
                 DiagramElementId("NEW-SEQUENCE:" + shape.id.id),
                 currentElementId,
                 actionsAnchorTopEnd(Rectangle2D.Float(
@@ -285,6 +285,8 @@ abstract class ShapeRenderElement(
                 { droppedOn, allDroppedOn -> onWaypointAnchorDragEnd(droppedOn, allDroppedOn) },
                 state
         )
+        anchor.parents += this
+        return anchor
     }
 
     private fun onWaypointAnchorDragEnd(droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {

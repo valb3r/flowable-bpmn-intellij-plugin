@@ -17,6 +17,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors.AnchorElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors.PhysicalWaypoint
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors.VirtualWaypoint
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.RectangleTransformationIntrospection
 import java.awt.Color
 import java.awt.geom.Area
 import java.awt.geom.Point2D
@@ -95,12 +96,19 @@ abstract class BaseEdgeRenderElement(
         val maxX = edge.waypoint.maxBy { it.x }?.x ?: 0.0f
         val maxY = edge.waypoint.maxBy { it.y }?.y ?: 0.0f
 
-        // Edge itself can't be translated, so no viewTransform
-        return Rectangle2D.Float(
-                minX,
-                minY,
-                maxX - minX,
-                maxY - minY
+        return state().viewTransform(elementId).transform(
+            elementId,
+            RectangleTransformationIntrospection(
+                Rectangle2D.Float(
+                    minX,
+                    minY,
+                    maxX - minX,
+                    maxY - minY
+                ),
+                AreaType.POINT,
+                parents.map { it.elementId },
+                parents.flatMap { it.parents }.map { it.elementId },
+            )
         )
     }
 
