@@ -41,7 +41,8 @@ abstract class CircleAnchorElement(
                         ),
                         AreaType.POINT,
                         parents.map { it.elementId },
-                        parents.flatMap { it.parents }.map { it.elementId }
+                        parents.flatMap { it.parents }.map { it.elementId },
+                        attachedTo = attachedTo
                 )
         )
     }
