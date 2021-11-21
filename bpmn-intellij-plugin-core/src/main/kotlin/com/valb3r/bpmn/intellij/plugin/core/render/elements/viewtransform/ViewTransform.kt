@@ -5,11 +5,13 @@ import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.EPSILON
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
+import java.lang.Math.pow
 import kotlin.math.abs
+import kotlin.math.pow
 import kotlin.random.Random.Default.nextFloat
 
 data class RectangleTransformationIntrospection(val rect: Rectangle2D.Float, val type: AreaType, val parentElements: Set<DiagramElementId>, val attachedTo: DiagramElementId? = null)
-data class PointTransformationIntrospection(val attachedTo: DiagramElementId? = null)
+data class PointTransformationIntrospection(val attachedTo: DiagramElementId? = null, val selectCloseQuirkWithin: Float? = null)
 
 interface PreTransformable {
     fun preTransform(elementId: DiagramElementId, rectTransformationIntrospection: RectangleTransformationIntrospection): Rectangle2D.Float
@@ -203,7 +205,15 @@ class ExpandViewTransform(
             return transformPoint(transformed)
         }
 
-        val quirkFound = quirkForRectangles[introspection.attachedTo]
+        var quirkFound = quirkForRectangles[introspection.attachedTo]
+        if (null == quirkFound && null != introspection.selectCloseQuirkWithin) {
+            fun quirkDistance(it: RectangleQuirk) = (point.x - it.originalRectangle2D.x).pow(2) + (point.y - it.originalRectangle2D.y).pow(2)
+            val bestQuirk = quirkForRectangles.values.minBy { quirkDistance(it) }
+            if (null != bestQuirk && (quirkDistance(bestQuirk) < introspection.selectCloseQuirkWithin)) {
+                quirkFound = bestQuirk
+            }
+        }
+
         if (null != quirkFound) {
             return Point2D.Float(transformed.x + quirkFound.displacement.x, transformed.y + quirkFound.displacement.y)
         }
@@ -297,6 +307,7 @@ class ViewTransformInverter {
     private val maxIter = 10
     private val randomInitializationGuesses = 10
     private val randomInitializationAreaSpan = 100.0f
+    private val minQuirkDistSq = 100.0f
 
     /**
      * Minimizes (rect.x - transform(return.x)) ^ 2 + (rect.y - transform(return.y)) ^ 2 metric
@@ -322,7 +333,7 @@ class ViewTransformInverter {
 
         val result = range.map {
             val guess = if (0 != it) Point2D.Float(initialGuess.x - randomFromAreaRange(), initialGuess.y - randomFromAreaRange()) else initialGuess
-            minimizeGradientDescent(elementId, target, guess, batch, introspection)
+            minimizeGradientDescent(elementId, target, guess, batch, introspection.copy(selectCloseQuirkWithin = minQuirkDistSq))
         }
 
         return result.minBy { it.residual }!!.point
