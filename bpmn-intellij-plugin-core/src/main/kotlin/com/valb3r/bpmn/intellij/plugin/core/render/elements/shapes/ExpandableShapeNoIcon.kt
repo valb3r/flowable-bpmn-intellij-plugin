@@ -8,7 +8,9 @@ import com.valb3r.bpmn.intellij.plugin.core.events.BooleanUiOnlyValueUpdatedEven
 import com.valb3r.bpmn.intellij.plugin.core.properties.uionly.UiOnlyPropertyType
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
+import com.valb3r.bpmn.intellij.plugin.core.render.Camera
 import com.valb3r.bpmn.intellij.plugin.core.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.buttons.ButtonWithAnchor
@@ -68,6 +70,27 @@ class ExpandableShapeNoIcon(
                 enumerateChildrenRecursively().map { it.elementId }.toSet()
         ))
         super.createIfNeededExpandViewTransform()
+    }
+
+    // Simplifying anchor model as inversion of view transform of intermediate anchors is not stable
+    override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
+        val rect = currentOnScreenRect(camera)
+        val halfWidth = rect.width / 2.0f
+        val halfHeight = rect.height / 2.0f
+
+        val cx = rect.x + rect.width / 2.0f
+        val cy = rect.y + rect.height / 2.0f
+        return mutableSetOf(
+            Anchor(Point2D.Float(cx - halfWidth, cy), 10),
+            Anchor(Point2D.Float(cx + halfWidth, cy), 10),
+            Anchor(Point2D.Float(cx, cy - halfHeight), 10),
+            Anchor(Point2D.Float(cx, cy + halfHeight), 10),
+        )
+    }
+
+    // Central anchor does not make sense for this kind of shape
+    override fun shapeAnchors(camera: Camera): MutableSet<Anchor> {
+        return mutableSetOf()
     }
 
     private fun isCollapsed(): Boolean {
