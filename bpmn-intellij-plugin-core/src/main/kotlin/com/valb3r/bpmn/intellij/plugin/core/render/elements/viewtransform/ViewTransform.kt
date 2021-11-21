@@ -315,13 +315,13 @@ class ViewTransformInverter {
      * shape changes are ignored so far
      */
     private fun invert(elementId: DiagramElementId, target: Point2D.Float, initialGuess: Point2D.Float, batch: ViewTransformBatch, introspection: PointTransformationIntrospection): Point2D.Float {
-        val range = 1..randomInitializationGuesses
+        val range = 0..randomInitializationGuesses
         fun randomFromAreaRange(): Float {
             return (nextFloat() * 2.0f - 1.0f) * randomInitializationAreaSpan
         }
 
         val result = range.map {
-            val guess = Point2D.Float(initialGuess.x - randomFromAreaRange(), initialGuess.y - randomFromAreaRange())
+            val guess = if (0 != it) Point2D.Float(initialGuess.x - randomFromAreaRange(), initialGuess.y - randomFromAreaRange()) else initialGuess
             minimizeGradientDescent(elementId, target, guess, batch, introspection)
         }
 
