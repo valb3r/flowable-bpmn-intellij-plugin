@@ -1,6 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors
 
-import com.intellij.sql.indexOf
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
@@ -56,7 +55,7 @@ class VirtualWaypoint(
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
         val edge = state().elemMap[parentElementId] as BaseEdgeRenderElement
         val edgeElems = edge.children.filter { it is PhysicalWaypoint || it.elementId == elementId }
-        val indexOfCurrentPoint = edgeElems.indexOf { it.elementId == elementId }
+        val indexOfCurrentPoint = edgeElems.indexOfFirst { it.elementId == elementId }
         val prevRect = edgeElems[indexOfCurrentPoint - 1].currentOnScreenRect(camera)
         val nextRect = edgeElems[indexOfCurrentPoint + 1].currentOnScreenRect(camera)
         val currentPointLocation = Point2D.Float((prevRect.centerX.toFloat() + nextRect.centerX.toFloat()) / 2.0f, (prevRect.centerY.toFloat() + nextRect.centerY.toFloat()) / 2.0f)
