@@ -69,6 +69,11 @@ class PlaneRenderElement(
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         return mutableMapOf()
     }
+
+    override fun addInnerElement(elem: BaseDiagramRenderElement) {
+        elem.viewTransformLevel = this.elementId
+        innerElements.add(elem)
+    }
 }
 
 private class InfiniteShape: Area() {

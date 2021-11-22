@@ -31,8 +31,7 @@ class ShapeResizeAnchorBottom(
                                 icon.iconHeight.toFloat()
                         ),
                         AreaType.SHAPE,
-                        parents.map { it.elementId },
-                        parents.flatMap { it.parents }.map { it.elementId },
+                        viewTransformLevel,
                         attachedTo = parent
                 )
         )

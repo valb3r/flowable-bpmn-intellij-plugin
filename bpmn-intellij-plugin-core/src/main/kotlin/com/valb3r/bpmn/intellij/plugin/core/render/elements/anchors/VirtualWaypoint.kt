@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors
 
+import com.intellij.sql.indexOf
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
@@ -12,7 +13,9 @@ import com.valb3r.bpmn.intellij.plugin.core.render.Camera
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.ACTIONS_ICO_SIZE
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.BaseEdgeRenderElement
 import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
 
 private const val RADIUS = 3.0f
 
@@ -48,5 +51,20 @@ class VirtualWaypoint(
 
     override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
         return if (isActiveOrDragged()) return super.waypointAnchors(camera) else mutableSetOf()
+    }
+
+    override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
+        val edge = state().elemMap[parentElementId] as BaseEdgeRenderElement
+        val edgeElems = edge.children.filter { it is PhysicalWaypoint || it.elementId == elementId }
+        val indexOfCurrentPoint = edgeElems.indexOf { it.elementId == elementId }
+        val prevRect = edgeElems[indexOfCurrentPoint - 1].currentOnScreenRect(camera)
+        val nextRect = edgeElems[indexOfCurrentPoint + 1].currentOnScreenRect(camera)
+        val currentPointLocation = Point2D.Float((prevRect.centerX.toFloat() + nextRect.centerX.toFloat()) / 2.0f, (prevRect.centerY.toFloat() + nextRect.centerY.toFloat()) / 2.0f)
+        return Rectangle2D.Float(
+            currentPointLocation.x - radius,
+            currentPointLocation.y - radius,
+            2.0f * radius,
+            2.0f * radius
+        )
     }
 }

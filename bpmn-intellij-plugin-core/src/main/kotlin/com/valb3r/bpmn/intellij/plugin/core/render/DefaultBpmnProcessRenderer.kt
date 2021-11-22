@@ -197,7 +197,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         elementsById.forEach { (id, renderElem) ->
             val elem = state().currentState.elementByBpmnId[id]
             elem?.parent?.let {elementsById[it]}?.let { if (it is BaseBpmnRenderElement) it else null }?.let { parent ->
-                parent.innerElements.add(renderElem)
+                parent.addInnerElement(renderElem)
                 parent.let { renderElem.parents.add(it) }
             }
         }

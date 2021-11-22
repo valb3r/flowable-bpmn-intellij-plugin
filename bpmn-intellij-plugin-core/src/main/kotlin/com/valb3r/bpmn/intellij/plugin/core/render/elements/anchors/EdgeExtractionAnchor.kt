@@ -39,8 +39,7 @@ class EdgeExtractionAnchor(
                                 imageHeight
                         ),
                         AreaType.POINT,
-                        parents.map { it.elementId },
-                        parents.flatMap { it.parents }.map { it.elementId },
+                        viewTransformLevel,
                         attachedTo = parent
                 )
         )

@@ -49,6 +49,14 @@ abstract class ShapeRenderElement(
     val shapeElem: ShapeElement
         get() = shape
 
+    override var viewTransformLevel: DiagramElementId? = null
+        get() = super.viewTransformLevel
+        set(value) {
+            super.viewTransformLevel = value
+            field = value
+            edgeExtractionAnchor.viewTransformLevel = viewTransformLevel
+        }
+
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val elem = state().currentState.elementByDiagramId[shape.id]
         val props = state().currentState.elemPropertiesByStaticElementId[elem]
@@ -180,7 +188,7 @@ abstract class ShapeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        return state().viewTransform(elementId).transform(elementId, RectangleTransformationIntrospection(shape.rectBounds(), AreaType.SHAPE, parents.map { it.elementId }))
+        return state().viewTransform(elementId).transform(elementId, RectangleTransformationIntrospection(shape.rectBounds(), AreaType.SHAPE, viewTransformLevel))
     }
 
     override fun currentRect(): Rectangle2D.Float {

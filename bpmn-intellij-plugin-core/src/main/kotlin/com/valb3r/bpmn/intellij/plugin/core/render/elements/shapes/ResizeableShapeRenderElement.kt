@@ -33,6 +33,13 @@ abstract class ResizeableShapeRenderElement(
 
     protected val actions = mutableListOf(anchors.first, anchors.second, edgeExtractionAnchor)
 
+    override var viewTransformLevel: DiagramElementId?
+        get() = super.viewTransformLevel
+        set(value) {
+            super.viewTransformLevel = value
+            actions.forEach { it.viewTransformLevel = viewTransformLevel }
+        }
+
     override val children: List<BaseDiagramRenderElement>
         get() = actions + innerElements
 

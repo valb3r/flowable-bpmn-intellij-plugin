@@ -31,6 +31,11 @@ class ExpandableShapeNoIcon(
         override val areaType: AreaType = AreaType.SHAPE
 ) : ResizeableShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
+    override fun addInnerElement(elem: BaseDiagramRenderElement) {
+        elem.viewTransformLevel = this.elementId
+        innerElements.add(elem)
+    }
+
     private val expandButton = ButtonWithAnchor(
             DiagramElementId("EXPAND:" + shape.id.id),
             Point2D.Float((shape.bounds().first.x + shape.bounds().second.x) / 2.0f, shape.bounds().second.y),
@@ -61,13 +66,12 @@ class ExpandableShapeNoIcon(
 
         state().baseTransform.addPreTransform(ExpandViewTransform(
                 elementId,
-                parents.firstOrNull()?.elementId ?: DiagramElementId(""),
+                viewTransformLevel!!,
                 shape.rectBounds(),
                 shape.rectBounds().centerX.toFloat(),
                 shape.rectBounds().centerY.toFloat(),
                 100.0f,
                 100.0f,
-                enumerateChildrenRecursively().map { it.elementId }.toSet()
         ))
         super.createIfNeededExpandViewTransform()
     }
