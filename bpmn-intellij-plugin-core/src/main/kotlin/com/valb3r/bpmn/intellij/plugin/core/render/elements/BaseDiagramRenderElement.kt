@@ -258,9 +258,10 @@ abstract class BaseDiagramRenderElement(
         val batch = findExpansionViewTransformationsToCompensate()
 
         val trackingPoint = Point2D.Float(rect.x, rect.y)
-        val viewTransformedPoint = batch.transform(elementId, trackingPoint)
+        val transform = PointTransformationIntrospection(applyTransformationAt = viewTransformLevel)
+        val viewTransformedPoint = batch.transform(elementId, trackingPoint, transform)
         val currentPoint = Point2D.Float(viewTransformedPoint.x + dx, viewTransformedPoint.y + dy)
-        val inverted = ViewTransformInverter().invert(elementId, currentPoint, trackingPoint, batch)
+        val inverted = ViewTransformInverter().invert(elementId, currentPoint, trackingPoint, batch, transform)
 
         return Point2D.Float(inverted.x - rect.x, inverted.y - rect.y)
     }
