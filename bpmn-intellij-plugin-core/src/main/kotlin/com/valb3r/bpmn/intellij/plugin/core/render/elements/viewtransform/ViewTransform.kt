@@ -300,7 +300,7 @@ class ViewTransformInverter {
     private val epsilon = 1.0f
     private val maxIter = 10
     private val randomInitializationGuesses = 10
-    private val randomInitializationAreaSpan = 100.0f
+    private val randomInitializationAreaSpan = 1000.0f
     private val minQuirkDistSq = 100.0f
 
     /**
