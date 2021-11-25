@@ -30,6 +30,6 @@ data class SequenceFlow(
 }
 
 data class ConditionExpression(
-        val type: String?  = null,
+        @JacksonXmlProperty(isAttribute = true) val type: String?  = null,
         @JsonProperty(CDATA_FIELD) @JacksonXmlText @JacksonXmlCData val text: String? = null
 )
