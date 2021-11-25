@@ -24,7 +24,7 @@ internal class EmptyCondExpressionParseable {
 
         val sequenceFlow = processObject.process.body!!.sequenceFlow!![0]
         sequenceFlow.id.shouldBeEqualTo(sequenceFlowElem)
-        sequenceFlow.conditionExpression.shouldBeEqualTo(ConditionExpression(null, null))
+        sequenceFlow.conditionExpression.shouldBeEqualTo(ConditionExpression(null, ""))
 
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[sequenceFlow.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(sequenceFlowElem.id)
