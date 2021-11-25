@@ -27,7 +27,7 @@ internal class EmptyCondExpressionParseable {
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[sequenceFlow.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(sequenceFlowElem.id)
         props[PropertyType.CONDITION_EXPR_TYPE]!!.value.shouldBeNull()
-        props[PropertyType.CONDITION_EXPR_VALUE]!!.value.shouldBeNull()
+        props[PropertyType.CONDITION_EXPR_VALUE]!!.value.shouldBeEqualTo("")
     }
 
     @Test
@@ -41,6 +41,6 @@ internal class EmptyCondExpressionParseable {
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(Activiti7ObjectFactory()).elemPropertiesByElementId[sequenceFlow.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(sequenceFlowElem.id)
         props[PropertyType.CONDITION_EXPR_TYPE]!!.value.shouldBeNull()
-        props[PropertyType.CONDITION_EXPR_VALUE]!!.value.shouldBeNull()
+        props[PropertyType.CONDITION_EXPR_VALUE]!!.value.shouldBeEqualTo("")
     }
 }
