@@ -31,6 +31,7 @@
         <li>Copy/Paste Ctrl-C/Ctrl-V/Ctrl-X</li>
       </ul>
       <p><strong>Plugin status: Work in progress. Please use issue tracker to report any problems found</strong></p>
+      <p><a href="https://github.com/valb3r/flowable-bpmn-intellij-plugin">Github</a> Welcome to star</p>
     ]]></description>
 
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
