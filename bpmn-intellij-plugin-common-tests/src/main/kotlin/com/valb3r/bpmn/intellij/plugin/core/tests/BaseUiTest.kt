@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.tests
 
+import com.google.common.hash.Hashing
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.messages.MessageBus
@@ -674,5 +675,8 @@ abstract class BaseUiTest {
     protected fun findExactlyOneNewLinkElem() = renderResult?.areas?.keys?.filter { it.id.contains(newLink) }?.shouldHaveSize(1)?.first()
     protected fun findExactlyOneDeleteElem() = renderResult?.areas?.keys?.filter { it.id.contains(doDel) }?.shouldHaveSize(1)?.first()
 
-    protected fun String.asResource(): String? = BaseUiTest::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)
+    protected fun String.asResource(): SvgIcon {
+        val txt = BaseUiTest::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)!!
+        return SvgIcon(txt, Hashing.goodFastHash(64).hashString(txt, StandardCharsets.UTF_8).asLong())
+    }
 }

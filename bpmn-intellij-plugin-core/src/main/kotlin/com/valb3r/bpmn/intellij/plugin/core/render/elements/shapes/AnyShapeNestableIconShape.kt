@@ -10,6 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.core.render.Camera
+import com.valb3r.bpmn.intellij.plugin.core.render.SvgIcon
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
@@ -17,11 +18,11 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.internal.CascadeTran
 import java.awt.geom.Point2D
 
 class AnyShapeNestableIconShape(
-        elementId: DiagramElementId,
-        bpmnElementId: BpmnElementId,
-        val icon: String,
-        shape: ShapeElement,
-        state: () -> RenderState
+    elementId: DiagramElementId,
+    bpmnElementId: BpmnElementId,
+    val icon: SvgIcon,
+    shape: ShapeElement,
+    state: () -> RenderState
 ) : IconShape(elementId, bpmnElementId, icon, shape, state) {
 
     override val areaType: AreaType

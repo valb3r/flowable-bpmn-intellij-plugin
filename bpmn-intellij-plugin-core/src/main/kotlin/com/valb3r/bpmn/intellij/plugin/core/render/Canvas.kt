@@ -68,7 +68,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
     private val cachedIcons = CacheBuilder.newBuilder()
             .expireAfterAccess(10L, TimeUnit.SECONDS)
             .maximumSize(100)
-            .build<String, BufferedImage>()
+            .build<Long, BufferedImage>()
 
     private var latestOnScreenModelDimensions: Rectangle2D.Float? = null
 

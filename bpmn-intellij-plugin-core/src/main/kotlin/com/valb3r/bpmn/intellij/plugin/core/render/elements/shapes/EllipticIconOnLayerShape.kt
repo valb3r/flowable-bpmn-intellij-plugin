@@ -7,13 +7,14 @@ import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.core.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.core.render.SvgIcon
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import java.awt.geom.Ellipse2D
 
 class EllipticIconOnLayerShape(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
-        private val icon: String,
+        private val icon: SvgIcon,
         shape: ShapeElement,
         state: () -> RenderState,
         private val layerColor: Colors
