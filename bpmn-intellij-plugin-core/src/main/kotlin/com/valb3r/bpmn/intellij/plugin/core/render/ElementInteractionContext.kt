@@ -15,6 +15,7 @@ data class ElementInteractionContext(
         val dragEndCallbacks: MutableMap<DiagramElementId, (dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>) -> List<Event>>,
         val dragSelectionRect: SelectionRect?,
         val clickCallbacks: MutableMap<DiagramElementId, (dest: ProcessModelUpdateEvents) -> Unit>,
+        val postClickCallbacks: MutableMap<DiagramElementId, (dest: ProcessModelUpdateEvents) -> Unit>,
         val anchorsHit: AnchorHit?,
         val dragStart: Point2D.Float,
         val dragCurrent: Point2D.Float

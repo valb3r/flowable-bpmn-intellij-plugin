@@ -142,7 +142,14 @@ select 'Paste' popup menu item
 
 # FAQ
 
-**Q**: Some feature/bug was closed, but I can't find new release.
+### Q: My files for Activiti/Flowable engine have `.bpmn` extension and not `bpmn20.xml`, how can I open them.
+
+**A**: Navigate to **File** > **Settings** > **Tools** > **Activiti BPMN Plugin config** (or **Flowable BPMN Plugin config**). 
+In the field **Supported extensions** add `bpmn`, so that field value is `bpmn20.xml,bpmn`. Now you should be able to open it.
+[Animation to configure plugin for opening files with custom extension](docs/img/faq/how-to-open-bpmn.gif)
+
+
+### Q: Some feature/bug was closed, but I can't find new release.
 
 **A**: Check [this link](https://github.com/valb3r/flowable-bpmn-intellij-plugin/projects/1) for the status of your feature. 
 If it is in 'Done' (or Closed) column this doesn't mean it is released - it must proceed to next columns to appear in 

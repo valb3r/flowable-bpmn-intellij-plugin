@@ -11,13 +11,15 @@ import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.DraggedToEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.NewWaypointsEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.core.render.*
+import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
+import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
+import com.valb3r.bpmn.intellij.plugin.core.render.DefaultCanvasConstants
+import com.valb3r.bpmn.intellij.plugin.core.render.ICON_Z_INDEX
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.ACTIONS_ICO_SIZE
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.computeCascadeChangeOfBpmnIncomingOutgoingIndex
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.ResizeViewTransform
-import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import java.awt.geom.Point2D
 
 val orthoIconIdPrefix = ":ORTHO"
@@ -63,7 +65,8 @@ class PhysicalWaypoint(
             delId to AreaWithZindex(deleteIconArea, areaType, mutableSetOf(), mutableSetOf(),  ICON_Z_INDEX, elementId),
         )
 
-        addMakeRightAngleIconIfPossible(deleteBounds, result)
+        val lastButton = addEdgeSelectionButton(deleteBounds, result)
+        addMakeRightAngleIconIfPossible(lastButton, result)
         return result
     }
 
@@ -155,9 +158,9 @@ class PhysicalWaypoint(
         }
     }
 
-    private fun addMakeRightAngleIconIfPossible(deleteBounds: BoundsElement, result: MutableMap<DiagramElementId, AreaWithZindex>) {
+    private fun addMakeRightAngleIconIfPossible(deleteBounds: BoundsElement, result: MutableMap<DiagramElementId, AreaWithZindex>): BoundsElement {
         if (physicalPos == 0 || physicalPos == edgePhysicalSize - 1) {
-            return
+            return deleteBounds
         }
 
         val pos = edge.waypoint.withIndex().filter { it.value.id == elementId }.map { it.index }.first()
@@ -166,13 +169,14 @@ class PhysicalWaypoint(
         val selectedCandidates = listOf(Point2D.Float(prev.x, next.y), Point2D.Float(next.x, prev.y))
         if (selectedCandidates.map { it.distanceSq(prev.x.toDouble(), prev.y.toDouble()) }.min()!! < DefaultCanvasConstants().epsilon
             || selectedCandidates.map { it.distanceSq(next.x.toDouble(), next.y.toDouble()) }.min()!! < DefaultCanvasConstants().epsilon) {
-            return
+            return deleteBounds
         }
         val displacements = selectedCandidates.map { Point2D.Float(it.x - location.x, it.y - location.y) }
 
         val deleteIconLeft = state().ctx.canvas.camera.toCameraView(Point2D.Float(deleteBounds.x, deleteBounds.y))
         val deleteEndInCamera = state().ctx.canvas.camera.fromCameraView(Point2D.Float(deleteIconLeft.x, deleteIconLeft.y + deleteBounds.height))
-        val rightAngleIcon = state().ctx.canvas.drawIcon(BoundsElement(deleteEndInCamera.x, deleteEndInCamera.y, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.rightAngle)
+        val bounds = BoundsElement(deleteEndInCamera.x, deleteEndInCamera.y, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE)
+        val rightAngleIcon = state().ctx.canvas.drawIcon(bounds, state().icons.rightAngle)
         val orthoIconId = DiagramElementId(orthoIconIdPrefix + elementId.id)
         state().ctx.interactionContext.clickCallbacks[orthoIconId] = { dest ->
             val selectedOrtho = displacements.minBy { it.distanceSq(0.0, 0.0) }!!
@@ -180,5 +184,6 @@ class PhysicalWaypoint(
         }
 
         result += orthoIconId to AreaWithZindex(rightAngleIcon, areaType, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
+        return bounds
     }
 }

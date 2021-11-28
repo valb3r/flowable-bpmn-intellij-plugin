@@ -87,6 +87,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     private val zoomResetId = DiagramElementId(":ZOOM-RESET")
     private val centerImageId = DiagramElementId(":CENTER-IMAGE")
     private val gridStateId = DiagramElementId(":GRID-STATE-IMAGE")
+    private val anchorEnabled = DiagramElementId(":ANCHOR-ENABLED")
     private val undoId = DiagramElementId(":UNDO")
     private val redoId = DiagramElementId(":REDO")
 
@@ -347,7 +348,9 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             if (gridSteps.size - 1 == currentGridState) gridState.set(0)
             else gridState.set(currentGridState + 1)
         }
-        drawIconWithAction(state, gridStateId, locationX, locationY, renderedArea, nextGridStep, gridIcon).first + iconMargin
+        locationX += drawIconWithAction(state, gridStateId, locationX, locationY, renderedArea, nextGridStep, gridIcon).first + iconMargin
+        val verticalAnchors = verticalAnchorsEnabled.get()
+        drawIconWithAction(state, anchorEnabled, locationX, locationY, renderedArea, { verticalAnchorsEnabled.set(!verticalAnchors)}, if (verticalAnchors) icons.anchorOff else icons.anchorOn).first + iconMargin
     }
 
     private fun drawIconWithAction(
@@ -384,10 +387,11 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
     private fun computeModelRect(allRendered: Collection<AreaWithZindex>): Rectangle2D.Float {
         val filter = { it: AreaWithZindex -> it.areaType != AreaType.PARENT_PROCESS_SHAPE }
-        val minX = allRendered.filter(filter).map { it.area.bounds2D.x }.min() ?: 0.0
-        val minY = allRendered.filter(filter).map { it.area.bounds2D.y }.min() ?: 0.0
-        val maxX = allRendered.filter(filter).map { it.area.bounds2D.x + it.area.bounds2D.width }.max() ?: 0.0
-        val maxY = allRendered.filter(filter).map { it.area.bounds2D.y + it.area.bounds2D.height }.max() ?: 0.0
+        val areaBounds = allRendered.filter(filter).map { it.area.bounds2D }
+        val minX = areaBounds.map { it.bounds2D.x }.min() ?: 0.0
+        val minY = areaBounds.map { it.bounds2D.y }.min() ?: 0.0
+        val maxX = areaBounds.map { it.bounds2D.x + it.bounds2D.width }.max() ?: 0.0
+        val maxY = areaBounds.map { it.bounds2D.y + it.bounds2D.height }.max() ?: 0.0
 
         val cx = (maxX + minX).toFloat() / 2.0f
         val cy = (maxY + minY).toFloat() / 2.0f

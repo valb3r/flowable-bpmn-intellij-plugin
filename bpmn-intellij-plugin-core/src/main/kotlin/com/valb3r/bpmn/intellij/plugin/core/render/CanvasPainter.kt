@@ -2,7 +2,6 @@ package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.google.common.cache.Cache
 import com.google.common.hash.Hashing
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.ui.UIUtil
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
@@ -19,6 +18,7 @@ import java.awt.geom.*
 import java.awt.geom.AffineTransform.getTranslateInstance
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets
 import java.nio.charset.StandardCharsets.UTF_8
 import java.text.AttributedCharacterIterator
 import java.text.AttributedString
@@ -26,7 +26,7 @@ import java.text.BreakIterator
 import javax.swing.Icon
 
 
-class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCachedIcons: Cache<String, BufferedImage>) {
+class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCachedIcons: Cache<Long, BufferedImage>) {
 
     private val iconMargin = 5.0f
     private val textMargin = 5.0f
@@ -297,7 +297,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(shape)
     }
 
-    fun drawIconNoCameraTransform(bounds: BoundsElement, svgIcon: String): Area {
+    fun drawIconNoCameraTransform(bounds: BoundsElement, svgIcon: SvgIcon): Area {
         val width = bounds.width.toInt()
         val height = bounds.height.toInt()
 
@@ -318,7 +318,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(highlightedShape)
     }
 
-    fun drawIcon(bounds: BoundsElement, svgIcon: String): Area {
+    fun drawIcon(bounds: BoundsElement, svgIcon: SvgIcon): Area {
         val leftTop = camera.toCameraView(Point2D.Float(bounds.x, bounds.y))
 
         val width = bounds.width.toInt()
@@ -341,7 +341,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(highlightedShape)
     }
 
-    fun drawWrappedIconWithLayer(shape: Rectangle2D.Float, svgIcon: String, selected: Boolean, selectedColor: Color, layer: (Rectangle2D.Float) -> Shape, layerColor: Color): Area {
+    fun drawWrappedIconWithLayer(shape: Rectangle2D.Float, svgIcon: SvgIcon, selected: Boolean, selectedColor: Color, layer: (Rectangle2D.Float) -> Shape, layerColor: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.x, shape.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.x + shape.width, shape.y + shape.height))
 
@@ -373,7 +373,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(iconRect)
     }
 
-    fun drawWrappedIcon(shape: Rectangle2D.Float, svgIcon: String, selected: Boolean, selectedColor: Color): Area {
+    fun drawWrappedIcon(shape: Rectangle2D.Float, svgIcon: SvgIcon, selected: Boolean, selectedColor: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.x, shape.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.x + shape.width, shape.y + shape.height))
 
@@ -567,16 +567,14 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         )
     }
 
-    fun rasterizeSvg(svgFile: String, width: Float, height: Float, invertColors: Boolean): BufferedImage {
-        val cacheKey = Hashing.goodFastHash(32).hashString(svgFile + ":" + width.toInt() + "@" + height.toInt() + "@" + invertColors, UTF_8).toString()
-
-        return svgCachedIcons.get(cacheKey) {
+    fun rasterizeSvg(svgFile: SvgIcon, width: Float, height: Float, invertColors: Boolean): BufferedImage {
+        return svgCachedIcons.get(Hashing.goodFastHash(64).hashString("${svgFile.hash}:${(width).toInt()}:${(height).toInt()}@${invertColors}", UTF_8).asLong()) {
             val imageScaleFactor = if (isJreHiDPIEnabledOnWindows()) 2.0f else 1.0f // This resolves issue with Windows icons in HiDPI
             val imageTranscoder = BufferedImageTranscoder()
             imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, width * imageScaleFactor)
             imageTranscoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, height * imageScaleFactor)
 
-            val input = TranscoderInput(ByteArrayInputStream(svgFile.toByteArray(UTF_8)))
+            val input = TranscoderInput(ByteArrayInputStream(svgFile.icon.toByteArray(UTF_8)))
             imageTranscoder.transcode(input, null)
 
             if (!invertColors) {
