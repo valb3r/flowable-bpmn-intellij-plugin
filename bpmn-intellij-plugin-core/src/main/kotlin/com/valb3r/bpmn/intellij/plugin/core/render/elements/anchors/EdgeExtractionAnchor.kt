@@ -39,7 +39,8 @@ class EdgeExtractionAnchor(
                                 imageHeight
                         ),
                         AreaType.POINT,
-                        parent
+                        viewTransformLevel,
+                        attachedTo = parent
                 )
         )
     }

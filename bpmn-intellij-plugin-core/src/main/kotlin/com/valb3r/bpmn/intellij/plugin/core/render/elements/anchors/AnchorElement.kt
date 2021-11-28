@@ -16,7 +16,7 @@ import java.awt.geom.Rectangle2D
 
 abstract class AnchorElement(
         elementId: DiagramElementId,
-        private val attachedTo: DiagramElementId?,
+        protected val attachedTo: DiagramElementId?,
         protected val currentLocation: Point2D.Float,
         state: () -> RenderState
 ): BaseDiagramRenderElement(elementId, state) {
@@ -25,7 +25,7 @@ abstract class AnchorElement(
         get() = currentLocation
 
     val transformedLocation: Point2D.Float
-        get() = state().viewTransform(elementId).transform(elementId, currentLocation, PointTransformationIntrospection(attachedTo))
+        get() = state().viewTransform(elementId).transform(elementId, currentLocation, PointTransformationIntrospection(attachedTo, viewTransformLevel))
 
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         // NOP

@@ -8,6 +8,7 @@ plugins {
 ext {
     intellijPlatform = 'IU-2019.3'
     intellijPlatformPlugins = ['java', 'DatabaseTools'] // DatabaseTools is for BPMN process 'debugging'
+    runIdeJbrVersion = 'jbr_dcevm-11_0_13b1751.16'
 
     kotlinStdlib = '1.5.30'
     kotlinApiVersion = '1.3' // It must be same as JB supplied Kotlin STDLIB i.e. for 2018 = 1.3. See https://youtrack.jetbrains.com/issue/KT-37435

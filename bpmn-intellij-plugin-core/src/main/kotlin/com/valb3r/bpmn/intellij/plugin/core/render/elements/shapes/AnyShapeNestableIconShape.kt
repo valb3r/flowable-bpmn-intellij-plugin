@@ -13,6 +13,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.Camera
 import com.valb3r.bpmn.intellij.plugin.core.render.SvgIcon
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElement
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.internal.CascadeTranslationOrChangesToWaypoint
 import java.awt.geom.Point2D
@@ -27,6 +28,11 @@ class AnyShapeNestableIconShape(
 
     override val areaType: AreaType
         get() = AreaType.SELECTS_DRAG_TARGET
+
+    override fun addInnerElement(elem: BaseDiagramRenderElement) {
+        elem.viewTransformLevel = this.elementId
+        innerElements.add(elem)
+    }
 
     fun handleParentNestingChange(droppedOn: BpmnElementId): MutableList<Event> {
         val newEvents = mutableListOf<Event>()

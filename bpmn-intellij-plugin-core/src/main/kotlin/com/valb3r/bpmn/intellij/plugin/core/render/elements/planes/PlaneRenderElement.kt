@@ -19,8 +19,7 @@ import java.awt.geom.Rectangle2D
 class PlaneRenderElement(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
-        state: () -> RenderState,
-        override val children: MutableList<BaseDiagramRenderElement> = mutableListOf()
+        state: () -> RenderState
 ): BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 
     override val areaType: AreaType
@@ -69,6 +68,11 @@ class PlaneRenderElement(
 
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
         return mutableMapOf()
+    }
+
+    override fun addInnerElement(elem: BaseDiagramRenderElement) {
+        elem.viewTransformLevel = this.elementId
+        innerElements.add(elem)
     }
 }
 

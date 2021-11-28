@@ -4,10 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.LocationUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
@@ -22,6 +19,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.*
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.*
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors.EdgeExtractionAnchor
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.internal.CascadeTranslationOrChangesToWaypoint
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.NullViewTransform
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.RectangleTransformationIntrospection
 import com.valb3r.bpmn.intellij.plugin.core.state.CurrentState
@@ -46,10 +44,18 @@ abstract class ShapeRenderElement(
         cascadeTo = computeCascadables()
     }
 
-    override val children: MutableList<BaseDiagramRenderElement> = mutableListOf(edgeExtractionAnchor)
+    override val children: List<BaseDiagramRenderElement> = mutableListOf(edgeExtractionAnchor) + innerElements
 
     val shapeElem: ShapeElement
         get() = shape
+
+    override var viewTransformLevel: DiagramElementId? = null
+        get() = super.viewTransformLevel
+        set(value) {
+            super.viewTransformLevel = value
+            field = value
+            edgeExtractionAnchor.viewTransformLevel = viewTransformLevel
+        }
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val elem = state().currentState.elementByDiagramId[shape.id]
@@ -182,7 +188,7 @@ abstract class ShapeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        return state().viewTransform(elementId).transform(elementId, RectangleTransformationIntrospection(shape.rectBounds(), AreaType.SHAPE))
+        return state().viewTransform(elementId).transform(elementId, RectangleTransformationIntrospection(shape.rectBounds(), AreaType.SHAPE, viewTransformLevel))
     }
 
     override fun currentRect(): Rectangle2D.Float {
@@ -275,7 +281,7 @@ abstract class ShapeRenderElement(
     }
 
     private fun computeAnchorLocation(currentElementId: DiagramElementId, state: () -> RenderState): EdgeExtractionAnchor {
-        return EdgeExtractionAnchor(
+        val anchor = EdgeExtractionAnchor(
                 DiagramElementId("NEW-SEQUENCE:" + shape.id.id),
                 currentElementId,
                 actionsAnchorTopEnd(Rectangle2D.Float(
@@ -287,6 +293,8 @@ abstract class ShapeRenderElement(
                 { droppedOn, allDroppedOn -> onWaypointAnchorDragEnd(droppedOn, allDroppedOn) },
                 state
         )
+        anchor.parents += this
+        return anchor
     }
 
     private fun onWaypointAnchorDragEnd(droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
@@ -296,13 +304,14 @@ abstract class ShapeRenderElement(
         }
 
         val sourceElem = state().currentState.elementByBpmnId[bpmnElementId] ?: return mutableListOf()
+        val targetElem = state().currentState.diagramByElementId[droppedOn]?.let { state().elemMap[it] }
 
         val newSequenceBpmn = newElementsFactory(state().ctx.project).newOutgoingSequence(sourceElem.element)
         val anchors = findSequenceAnchors(targetArea) ?: return mutableListOf()
         val notYetExistingDiagramId = DiagramElementId("")
         val sourceBounds = shape.rectBounds()
-        val firstAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.first, Point2D.Float(sourceBounds.centerX.toFloat(), sourceBounds.centerY.toFloat()))
-        val secondAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.second, anchors.second)
+        val firstAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.first, Point2D.Float(sourceBounds.centerX.toFloat(), sourceBounds.centerY.toFloat()), elementId)
+        val secondAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.second, initialGuess(targetElem, anchors.second), targetElem?.elementId)
         val newSequenceDiagram = newElementsFactory(state().ctx.project).newDiagramObject(EdgeElement::class, newSequenceBpmn)
                 .copy(waypoint = listOf(
                         WaypointElement(firstAnchorCompensated.x, firstAnchorCompensated.y),
@@ -321,6 +330,14 @@ abstract class ShapeRenderElement(
                 StringValueUpdatedEvent(bpmnElementId, PropertyType.BPMN_OUTGOING, newSequenceBpmn.id.id, propertyIndex = listOf(newSequenceBpmn.id.id)),
                 StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_INCOMING, newSequenceBpmn.id.id, propertyIndex = listOf(newSequenceBpmn.id.id))
         )
+    }
+
+    private fun initialGuess(targetElem: BaseDiagramRenderElement?, pos: Point2D.Float): Point2D.Float {
+        if (targetElem is PlaneRenderElement || null == targetElem) {
+            return pos
+        }
+
+        return Point2D.Float(targetElem.currentRect().centerX.toFloat(), targetElem.currentRect().centerY.toFloat())
     }
 
     private fun findSequenceAnchors(droppedOnTarget: AreaWithZindex): Pair<Point2D.Float, Point2D.Float>? {

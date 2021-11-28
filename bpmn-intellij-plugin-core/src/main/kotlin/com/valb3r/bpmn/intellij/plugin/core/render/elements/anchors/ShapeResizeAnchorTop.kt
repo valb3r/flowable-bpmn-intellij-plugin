@@ -36,7 +36,8 @@ class ShapeResizeAnchorTop(
                                 height
                         ),
                         AreaType.SHAPE,
-                        parent
+                        viewTransformLevel,
+                        attachedTo = parent
                 )
         )
     }

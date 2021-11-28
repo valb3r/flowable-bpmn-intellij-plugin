@@ -41,7 +41,8 @@ class ButtonWithAnchor(
                                 imageWidth,
                                 imageHeight
                         ),
-                        AreaType.POINT
+                        AreaType.POINT,
+                        viewTransformLevel
                 )
         )
     }

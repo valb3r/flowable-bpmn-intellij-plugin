@@ -21,7 +21,7 @@ abstract class CircleAnchorElement(
         elementId: DiagramElementId,
         attachedTo: DiagramElementId?,
         currentLocation: Point2D.Float,
-        private val radius: Float,
+        protected val radius: Float,
         private val bodyColor: Colors,
         state: () -> RenderState
 ) : AnchorElement(elementId, attachedTo, currentLocation, state) {
@@ -39,7 +39,9 @@ abstract class CircleAnchorElement(
                                 2.0f * radius,
                                 2.0f * radius
                         ),
-                        AreaType.POINT
+                        AreaType.POINT,
+                        viewTransformLevel,
+                        attachedTo = attachedTo
                 )
         )
     }

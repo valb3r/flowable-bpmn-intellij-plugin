@@ -17,6 +17,8 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors.AnchorElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors.PhysicalWaypoint
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors.VirtualWaypoint
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.PointTransformationIntrospection
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.RectangleTransformationIntrospection
 import java.awt.Color
 import java.awt.geom.Area
 import java.awt.geom.Point2D
@@ -32,7 +34,15 @@ abstract class BaseEdgeRenderElement(
 
     private val anchors = computeAnchors()
 
-    override val children: MutableList<BaseDiagramRenderElement> = anchors as MutableList<BaseDiagramRenderElement>
+    override var viewTransformLevel: DiagramElementId? = null
+        get() = super.viewTransformLevel
+        set(value) {
+            super.viewTransformLevel = value
+            field = value
+            anchors.forEach { it.viewTransformLevel = value}
+        }
+
+    override val children: List<BaseDiagramRenderElement> = anchors as MutableList<BaseDiagramRenderElement> + innerElements
 
     val edgeElem: EdgeWithIdentifiableWaypoints
         get() = edge
@@ -90,17 +100,17 @@ abstract class BaseEdgeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        val minX = edge.waypoint.minBy { it.x }?.x ?: 0.0f
-        val minY = edge.waypoint.minBy { it.y }?.y ?: 0.0f
-        val maxX = edge.waypoint.maxBy { it.x }?.x ?: 0.0f
-        val maxY = edge.waypoint.maxBy { it.y }?.y ?: 0.0f
+        val elems = anchors.filterIsInstance<PhysicalWaypoint>().map { it.transformedLocation }
+        val stX = elems.minBy { it.x }?.x ?: 0.0f
+        val stY = elems.minBy { it.y }?.y ?: 0.0f
+        val enX = elems.maxBy { it.x }?.x ?: 0.0f
+        val enY = elems.maxBy { it.y }?.y ?: 0.0f
 
-        // Edge itself can't be translated, so no viewTransform
         return Rectangle2D.Float(
-                minX,
-                minY,
-                maxX - minX,
-                maxY - minY
+            stX,
+            stY,
+            enX - stX,
+            enY - stY
         )
     }
 
@@ -150,12 +160,14 @@ abstract class BaseEdgeRenderElement(
         val numPhysicals = edge.waypoint.filter { it.physical }.size
         var physicalPos = -1
         return edge.waypoint.map {
-            if (it.physical) {
+            val result = if (it.physical) {
                 physicalPos++
                 PhysicalWaypoint(it.id, findAttachedToElement(physicalPos, numPhysicals), edge.id, edge.bpmnElement, edge, physicalPos, numPhysicals, Point2D.Float(it.x, it.y), state).let { it.parents.add(this); it }
             } else {
                 VirtualWaypoint(it.id, edge.id, edge, Point2D.Float(it.x, it.y), state).let { it.parents.add(this); it }
             }
+            result.viewTransformLevel = viewTransformLevel
+            return@map result
         }.toMutableList()
     }
 

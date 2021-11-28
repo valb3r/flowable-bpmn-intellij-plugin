@@ -8,18 +8,21 @@ import com.valb3r.bpmn.intellij.plugin.core.events.BooleanUiOnlyValueUpdatedEven
 import com.valb3r.bpmn.intellij.plugin.core.properties.uionly.UiOnlyPropertyType
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
+import com.valb3r.bpmn.intellij.plugin.core.render.Camera
 import com.valb3r.bpmn.intellij.plugin.core.render.RenderContext
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.buttons.ButtonWithAnchor
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.DragViewTransform
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.ExpandViewTransform
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.PreTransformHandler
 import java.awt.geom.Point2D
 import javax.swing.Icon
 
 class ExpandableShapeNoIcon(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
-        private val collapsed: Boolean,
         plusIcon: Icon,
         minusIcon: Icon,
         shape: ShapeElement,
@@ -30,21 +33,28 @@ class ExpandableShapeNoIcon(
         override val areaType: AreaType = AreaType.SHAPE
 ) : ResizeableShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
+    override fun addInnerElement(elem: BaseDiagramRenderElement) {
+        elem.viewTransformLevel = this.elementId
+        innerElements.add(elem)
+        state().viewTransforms[elem.elementId] = DragViewTransform(
+            shape.bounds().first.x,
+            shape.bounds().first.y,
+            PreTransformHandler(mutableListOf(state().viewTransform(elem.elementId)))
+        )
+    }
+
     private val expandButton = ButtonWithAnchor(
             DiagramElementId("EXPAND:" + shape.id.id),
             Point2D.Float((shape.bounds().first.x + shape.bounds().second.x) / 2.0f, shape.bounds().second.y),
-            if (collapsed) plusIcon else minusIcon,
-            { mutableListOf(BooleanUiOnlyValueUpdatedEvent(bpmnElementId, UiOnlyPropertyType.EXPANDED, !collapsed)) },
+            if (isCollapsed()) plusIcon else minusIcon,
+            { mutableListOf(BooleanUiOnlyValueUpdatedEvent(bpmnElementId, UiOnlyPropertyType.EXPANDED, isCollapsed())) },
             state
     )
 
-    override val children: MutableList<BaseDiagramRenderElement> = (
-            super.children + expandButton
-
-    ).toMutableList()
+    override val children: List<BaseDiagramRenderElement>
+        get() = ((if (!isCollapsed()) innerElements else mutableListOf()) + actions + expandButton)
 
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
-
         val area = ctx.canvas.drawRoundedRect(
                 shapeCtx.shape,
                 shapeCtx.name,
@@ -57,19 +67,44 @@ class ExpandableShapeNoIcon(
     }
 
     override fun createIfNeededExpandViewTransform() {
-        if (this.collapsed) {
+        if (isCollapsed()) {
             return
         }
 
         state().baseTransform.addPreTransform(ExpandViewTransform(
                 elementId,
+                viewTransformLevel!!,
                 shape.rectBounds(),
                 shape.rectBounds().centerX.toFloat(),
                 shape.rectBounds().centerY.toFloat(),
                 100.0f,
                 100.0f,
-                enumerateChildrenRecursively().map { it.elementId }.toSet()
         ))
         super.createIfNeededExpandViewTransform()
+    }
+
+    // Simplifying anchor model as inversion of view transform of intermediate anchors is not stable
+    override fun waypointAnchors(camera: Camera): MutableSet<Anchor> {
+        val rect = currentOnScreenRect(camera)
+        val halfWidth = rect.width / 2.0f
+        val halfHeight = rect.height / 2.0f
+
+        val cx = rect.x + rect.width / 2.0f
+        val cy = rect.y + rect.height / 2.0f
+        return mutableSetOf(
+            Anchor(Point2D.Float(cx - halfWidth, cy), 10),
+            Anchor(Point2D.Float(cx + halfWidth, cy), 10),
+            Anchor(Point2D.Float(cx, cy - halfHeight), 10),
+            Anchor(Point2D.Float(cx, cy + halfHeight), 10),
+        )
+    }
+
+    // Central anchor does not make sense for this kind of shape
+    override fun shapeAnchors(camera: Camera): MutableSet<Anchor> {
+        return mutableSetOf()
+    }
+
+    private fun isCollapsed(): Boolean {
+        return !(state().currentState.elemUiOnlyPropertiesByStaticElementId[bpmnElementId]?.get(UiOnlyPropertyType.EXPANDED)?.value as Boolean? ?: false)
     }
 }

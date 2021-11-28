@@ -31,13 +31,19 @@ abstract class BaseDiagramRenderElement(
     var isVisible: Boolean? = null
 
     abstract val areaType: AreaType
-    open val children: MutableList<BaseDiagramRenderElement> = mutableListOf()
+    protected val innerElements: MutableList<BaseDiagramRenderElement> = mutableListOf()
+    open val children: List<BaseDiagramRenderElement> = innerElements
 
     /**
      * Parents in the order: direct parent, parent of direct parent...
      * Typically 'direct parent' is sufficient and is only provided
      */
     open val parents: MutableList<BaseBpmnRenderElement> = mutableListOf()
+
+    /**
+     * View transformation level for this element (will limit scoped view transformation to this level)
+     */
+    open var viewTransformLevel: DiagramElementId? = null
 
     open fun multipleElementsSelected(): Boolean {
         return state().ctx.selectedIds.size > 1
@@ -120,6 +126,13 @@ abstract class BaseDiagramRenderElement(
         result += children.flatMap { rootAndEnumerateChildrenRecursively(it) }
         return result
     }
+
+    open fun addInnerElement(elem: BaseDiagramRenderElement) {
+        elem.viewTransformLevel = this.viewTransformLevel
+        innerElements.add(elem)
+    }
+
+    abstract fun currentRect(): Rectangle2D.Float
 
     protected open fun rootAndEnumerateChildrenRecursively(root: BaseDiagramRenderElement) : List<BaseDiagramRenderElement> {
         val result = mutableListOf<BaseDiagramRenderElement>()
@@ -219,8 +232,7 @@ abstract class BaseDiagramRenderElement(
     abstract fun doResizeWithoutChildren(dw: Float, dh: Float)
     abstract fun doResizeEndWithoutChildren(dw: Float, dh: Float): MutableList<Event>
 
-    protected abstract fun currentRect(): Rectangle2D.Float
-    protected abstract fun currentOnScreenRect(camera: Camera): Rectangle2D.Float
+    abstract fun currentOnScreenRect(camera: Camera): Rectangle2D.Float
 
     protected abstract fun waypointAnchors(camera: Camera): MutableSet<Anchor>
     protected abstract fun shapeAnchors(camera: Camera): MutableSet<Anchor>
@@ -246,17 +258,18 @@ abstract class BaseDiagramRenderElement(
         val batch = findExpansionViewTransformationsToCompensate()
 
         val trackingPoint = Point2D.Float(rect.x, rect.y)
-        val viewTransformedPoint = batch.transform(elementId, trackingPoint)
+        val transform = PointTransformationIntrospection(applyTransformationAt = viewTransformLevel)
+        val viewTransformedPoint = batch.transform(elementId, trackingPoint, transform)
         val currentPoint = Point2D.Float(viewTransformedPoint.x + dx, viewTransformedPoint.y + dy)
-        val inverted = ViewTransformInverter().invert(elementId, currentPoint, trackingPoint, batch)
+        val inverted = ViewTransformInverter().invert(elementId, currentPoint, trackingPoint, batch, transform)
 
         return Point2D.Float(inverted.x - rect.x, inverted.y - rect.y)
     }
 
-    protected fun compensateExpansionViewOnLocation(targetElement: DiagramElementId, location: Point2D.Float, initialGuess: Point2D.Float): Point2D.Float {
+    protected fun compensateExpansionViewOnLocation(elementToCompensate: DiagramElementId, location: Point2D.Float, initialGuess: Point2D.Float, target: DiagramElementId?): Point2D.Float {
         val batch = findExpansionViewTransformationsToCompensate()
 
-        val inverted = ViewTransformInverter().invert(targetElement, location, initialGuess, batch)
+        val inverted = ViewTransformInverter().invert(elementToCompensate, location, initialGuess, batch, PointTransformationIntrospection(target, applyTransformationAt = this.viewTransformLevel))
 
         return Point2D.Float(inverted.x, inverted.y)
     }
