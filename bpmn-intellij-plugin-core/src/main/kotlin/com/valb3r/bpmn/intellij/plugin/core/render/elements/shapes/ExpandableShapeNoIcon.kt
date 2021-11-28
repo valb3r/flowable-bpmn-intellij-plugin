@@ -14,7 +14,9 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.Anchor
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseDiagramRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.buttons.ButtonWithAnchor
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.DragViewTransform
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.ExpandViewTransform
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.PreTransformHandler
 import java.awt.geom.Point2D
 import javax.swing.Icon
 
@@ -34,6 +36,11 @@ class ExpandableShapeNoIcon(
     override fun addInnerElement(elem: BaseDiagramRenderElement) {
         elem.viewTransformLevel = this.elementId
         innerElements.add(elem)
+        state().viewTransforms[elem.elementId] = DragViewTransform(
+            shape.bounds().first.x,
+            shape.bounds().first.y,
+            PreTransformHandler(mutableListOf(state().viewTransform(elem.elementId)))
+        )
     }
 
     private val expandButton = ButtonWithAnchor(

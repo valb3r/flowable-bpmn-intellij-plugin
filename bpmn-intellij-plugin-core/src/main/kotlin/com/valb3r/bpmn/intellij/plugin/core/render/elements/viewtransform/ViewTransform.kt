@@ -70,7 +70,9 @@ class NullViewTransform(private val preTransform: PreTransformHandler = PreTrans
 }
 
 data class DragViewTransform(
-        val dx: Float, val dy: Float, private val preTransform: PreTransformHandler = PreTransformHandler()
+        private val dx: Float,
+        private val dy: Float,
+        private val preTransform: PreTransformHandler = PreTransformHandler()
 ): ViewTransform, PreTransformable by preTransform {
 
     override fun transform(elementId: DiagramElementId, rectTransformationIntrospection: RectangleTransformationIntrospection): Rectangle2D.Float {
