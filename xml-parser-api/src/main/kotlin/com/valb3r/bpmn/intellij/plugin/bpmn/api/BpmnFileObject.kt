@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api
 
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnCollaboration
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
@@ -11,37 +12,42 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 
 // TODO - move to some implementation module
-data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<DiagramElement>) {
+data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: List<BpmnCollaboration>, val diagram: List<DiagramElement>) {
 
-    fun toView(factory: BpmnObjectFactory) : BpmnProcessObjectView {
+    fun toView(factory: BpmnObjectFactory) : List<BpmnProcessObjectView> {
         val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
         val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
         val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
 
-        fillFor(BpmnElementId(""), factory, process, elementByStaticId, propertiesById)
-        elementByDiagramId[DiagramElementId(process.id.id)] = process.id
+        val result = mutableListOf<BpmnProcessObjectView>()
+        for (process in processes) {
+            fillFor(BpmnElementId(""), factory, process, elementByStaticId, propertiesById)
+            elementByDiagramId[DiagramElementId(process.id.id)] = process.id
 
-        // 1st pass
-        process.body?.let { extractElementsFromBody(process.id, it, factory, elementByStaticId, propertiesById) }
-        process.children?.forEach { (id, body) -> extractElementsFromBody(id, body, factory, elementByStaticId, propertiesById)}
-        // 2nd pass
-        process.body?.let { reassignParentsBasedOnTargetRef(process.id, it, factory, elementByStaticId, propertiesById) }
-        process.children?.forEach { (id, body) -> reassignParentsBasedOnTargetRef(id, body, factory, elementByStaticId, propertiesById)}
+            // 1st pass
+            process.body?.let { extractElementsFromBody(process.id, it, factory, elementByStaticId, propertiesById) }
+            process.children?.forEach { (id, body) -> extractElementsFromBody(id, body, factory, elementByStaticId, propertiesById) }
+            // 2nd pass
+            process.body?.let { reassignParentsBasedOnTargetRef(process.id, it, factory, elementByStaticId, propertiesById) }
+            process.children?.forEach { (id, body) -> reassignParentsBasedOnTargetRef(id, body, factory, elementByStaticId, propertiesById) }
 
-        diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList()}
+            diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList() }
                 .filter { null != it.bpmnElement }
                 .forEach { elementByDiagramId[it.id] = it.bpmnElement!! }
 
-        diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() }
+            diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() }
                 .forEach { elementByDiagramId[it.id] = it.bpmnElement }
 
-        return BpmnProcessObjectView(
+            result += BpmnProcessObjectView(
                 process.id,
                 elementByDiagramId,
                 elementByStaticId,
                 propertiesById,
                 diagram
-        )
+            )
+        }
+
+        return result
     }
 
     private fun extractElementsFromBody(

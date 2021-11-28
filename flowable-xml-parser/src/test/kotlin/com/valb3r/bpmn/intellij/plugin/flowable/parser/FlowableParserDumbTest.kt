@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
@@ -25,7 +25,7 @@ internal class FlowableParserDumbTest {
     
     @Test
     fun `XML process with all Flowable elements is parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("popurri.bpmn20.xml".asResource()!!)
 
@@ -34,7 +34,7 @@ internal class FlowableParserDumbTest {
 
     @Test
     fun `XML process without name should be parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("empty-process-name.bpmn20.xml".asResource()!!)
 
@@ -44,7 +44,7 @@ internal class FlowableParserDumbTest {
 
     @Test
     fun `XML process with interlaced elements of same type should be parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("duplicates.bpmn20.xml".asResource()!!)
 
@@ -53,7 +53,7 @@ internal class FlowableParserDumbTest {
 
     @Test
     fun `XML process with nested subprocess elements of same type should be parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("nested.bpmn20.xml".asResource()!!)
 
@@ -62,7 +62,7 @@ internal class FlowableParserDumbTest {
 
     @Test
     fun `XML process with nested subprocess elements that have interlaced subelems of same type should be parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("nested-interlaced.bpmn20.xml".asResource()!!)
 
@@ -74,7 +74,7 @@ internal class FlowableParserDumbTest {
 
     @Test
     fun `XML process with nested adhoc subprocess elements that have interlaced subelems of same type should be parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("nested-interlaced.bpmn20.xml".asResource()!!)
 
@@ -86,7 +86,7 @@ internal class FlowableParserDumbTest {
 
     @Test
     fun `XML process with nested transactional subprocess elements that have interlaced subelems of same type should be parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("nested-interlaced.bpmn20.xml".asResource()!!)
 

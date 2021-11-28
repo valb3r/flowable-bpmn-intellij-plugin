@@ -5,7 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
@@ -30,7 +30,7 @@ internal class ActivitiUsereventWithNestedExtensionTest {
         val event = readStartEventWithExtensions(processObject)
         event.id.shouldBeEqualTo(elementId)
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[event.id]!!
+        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[event.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(event.id.id)
 
         props.getAll(PropertyType.FORM_PROPERTY_ID).shouldContainSame(arrayOf(
@@ -81,7 +81,7 @@ internal class ActivitiUsereventWithNestedExtensionTest {
         return readStartEventWithExtensions(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue, propertyIndex = propertyIndex.split(","))))
     }
 
-    private fun readStartEventWithExtensions(processObject: BpmnProcessObject): BpmnStartEvent {
+    private fun readStartEventWithExtensions(processObject: BpmnFileObject): BpmnStartEvent {
         return processObject.process.body!!.startEvent!!.shouldHaveSize(1)[0]
     }
 }

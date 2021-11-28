@@ -60,9 +60,9 @@ class CanvasBuilder(
 
         initializeUpdateEventsRegistry(project, committerFactory.invoke(parser))
         val data = readFile(bpmnFile)
-        val process = parser.parse(data)
+        val processes = parser.parse(data)
         newPropertiesVisualizer(project, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, multiLineExpandableTextFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory)
-        canvas.reset(data, process.toView(newElementsFactory(project)), bpmnProcessRenderer)
+        canvas.reset(data, processes.toView(newElementsFactory(project))[0], bpmnProcessRenderer) // FIXME - wrapper class for processes
 
         currentVfsConnection?.let { it.disconnect(); it.dispose() }
         currentPaintConnection?.let { it.disconnect(); it.dispose() }

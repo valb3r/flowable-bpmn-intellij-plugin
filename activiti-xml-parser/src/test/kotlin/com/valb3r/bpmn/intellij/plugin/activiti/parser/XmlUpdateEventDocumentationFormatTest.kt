@@ -2,7 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.activiti.parser
 
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BpmnShapeObjectAddedEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
@@ -72,13 +72,13 @@ class XmlUpdateEventDocumentationFormatTest {
             .shouldBeEqualTo(originalProcess.process.body!!.scriptTask!![0].documentation)
     }
 
-    private fun readProcess(): BpmnProcessObject {
+    private fun readProcess(): BpmnFileObject {
         val process = parser.parse(documentationProcessName.asResource()!!)
         process.shouldNotBeNull()
         return process
     }
 
-    private fun readAndUpdateProcess(event: EventPropagatableToXml): BpmnProcessObject {
+    private fun readAndUpdateProcess(event: EventPropagatableToXml): BpmnFileObject {
         val updated = parser.update(
             documentationProcessName.asResource()!!,
             listOf(event)

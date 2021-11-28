@@ -12,6 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnLaneSet
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 
@@ -108,7 +109,8 @@ data class BpmnProcess(
         // Using flat data approach as CycleAvoidingMappingContext seem to be an issue with @KotlinBuilder
         // Child BPMN processes in rendering order, flattened, so that i.e. subProcess is flat simple object (id, docs, ...)
         // and not recursion object
-        val children: Map<BpmnElementId, BpmnProcessBody>?
+        val children: Map<BpmnElementId, BpmnProcessBody>?,
+        val laneSets: List<BpmnLaneSet>?
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

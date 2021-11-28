@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
@@ -394,7 +394,7 @@ internal class XmlUpdateEventBpmnObjectAddedTest {
         return ctor.call(*args.toTypedArray())
     }
 
-    private fun readAndUpdateProcess(event: EventPropagatableToXml): BpmnProcessObject {
+    private fun readAndUpdateProcess(event: EventPropagatableToXml): BpmnFileObject {
         val updated = parser.update(
                 "simple-nested.bpmn20.xml".asResource()!!,
                 listOf(event)

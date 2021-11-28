@@ -6,13 +6,12 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnMailTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 private const val FILE = "custom-service-tasks/mail-task.bpmn20.xml"
 
@@ -42,7 +41,7 @@ internal class ActivityMailTaskTest {
         task.html.shouldBeEqualTo("<html>Hello</html>")
         task.charset.shouldBeEqualTo("UTF-8")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -104,7 +103,7 @@ internal class ActivityMailTaskTest {
         return readMailTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readMailTask(processObject: BpmnProcessObject): BpmnMailTask {
+    private fun readMailTask(processObject: BpmnFileObject): BpmnMailTask {
         return processObject.process.body!!.mailTask!!.shouldHaveSingleItem()
     }
 }

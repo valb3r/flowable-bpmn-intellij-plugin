@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldHaveSingleItem
 import org.amshove.kluent.shouldNotBeNull
@@ -10,7 +10,7 @@ internal class CollapsedSubprocessTest {
 
     @Test
     fun `Collapsed subprocess is readable and mapped`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("simple-collapsed-subprocess.bpmn20.xml".asResource()!!)
 
@@ -21,7 +21,7 @@ internal class CollapsedSubprocessTest {
 
     @Test
     fun `Collapsed transactional subprocess is readable and mapped`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("transactional-collapsed-subprocess.bpmn20.xml".asResource()!!)
 

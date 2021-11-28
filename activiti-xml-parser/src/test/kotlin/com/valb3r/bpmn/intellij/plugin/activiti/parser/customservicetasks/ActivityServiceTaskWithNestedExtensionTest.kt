@@ -2,7 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.activiti.parser.customservicetasks
 
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.*
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
@@ -28,7 +28,7 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
         task.documentation.shouldBeNull()
         task.failedJobRetryTimeCycle?.shouldBeEqualTo("R10/PT5M")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -67,7 +67,7 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
     fun `Add nested extension element`() {
         val process = readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = listOf("")))
         val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
-        val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        val props = BpmnFileObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
         props[PropertyType.FIELD_NAME]!!.shouldBeEqualTo(Property("new name", listOf("new name")))
     }
 
@@ -82,7 +82,7 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
             )
         )
         val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
-        val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        val props = BpmnFileObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
         props[PropertyType.FIELD_NAME]?.value.shouldBeNull()
     }
 
@@ -98,7 +98,7 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
             )
         )
         val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
-        val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        val props = BpmnFileObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
         props[PropertyType.FIELD_NAME]!!.shouldBeEqualTo(Property("other new name", listOf("other new name")))
     }
 
@@ -113,7 +113,7 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
             )
         )
         val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
-        val props = BpmnProcessObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        val props = BpmnFileObject(process.process, process.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
         props[PropertyType.FIELD_NAME]!!.shouldBeEqualTo(Property("new name", listOf("new name")))
         props[PropertyType.FIELD_EXPRESSION]!!.shouldBeEqualTo(Property("expression 1", listOf("new name")))
     }
@@ -129,7 +129,7 @@ internal class ActivityServiceTaskWithNestedExtensionTest {
         return readServiceTaskWithExtensions(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue, propertyIndex = listOf(propertyIndex))))
     }
 
-    private fun readServiceTaskWithExtensions(processObject: BpmnProcessObject): BpmnServiceTask {
+    private fun readServiceTaskWithExtensions(processObject: BpmnFileObject): BpmnServiceTask {
         return processObject.process.body!!.serviceTask!!.shouldHaveSize(3)[0]
     }
 }

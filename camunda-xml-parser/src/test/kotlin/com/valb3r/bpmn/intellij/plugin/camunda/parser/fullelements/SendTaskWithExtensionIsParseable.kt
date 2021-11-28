@@ -1,11 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.camunda.parser.fullelements
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendTask
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaObjectFactory
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaParser
@@ -13,7 +10,6 @@ import com.valb3r.bpmn.intellij.plugin.camunda.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldContainSame
 import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.Test
 
@@ -34,7 +30,7 @@ internal class SendTaskWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Single send task")
         task.documentation.shouldBeEqualTo("Single send task docs")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -57,7 +53,7 @@ internal class SendTaskWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Multi send task")
         task.documentation.shouldBeEqualTo("Multi send task docs")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -74,7 +70,7 @@ internal class SendTaskWithExtensionIsParseable {
         return readSingleIntermediateLinkCatchingEventSingleProp(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(singlePropElementId, property, newValue, propertyIndex = propertyIndex.split(","))))
     }
 
-    private fun readSingleIntermediateLinkCatchingEventSingleProp(processObject: BpmnProcessObject): BpmnSendTask {
+    private fun readSingleIntermediateLinkCatchingEventSingleProp(processObject: BpmnFileObject): BpmnSendTask {
         return processObject.process.body!!.sendTask!!.shouldHaveSize(2)[0]
     }
 
@@ -82,7 +78,7 @@ internal class SendTaskWithExtensionIsParseable {
         return readStartEventMultiIntermediateLinkCatchingEvent(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(multiplePropElementId, property, newValue, propertyIndex = propertyIndex.split(","))))
     }
 
-    private fun readStartEventMultiIntermediateLinkCatchingEvent(processObject: BpmnProcessObject): BpmnSendTask {
+    private fun readStartEventMultiIntermediateLinkCatchingEvent(processObject: BpmnFileObject): BpmnSendTask {
         return processObject.process.body!!.sendTask!!.shouldHaveSize(2)[1]
     }
 }

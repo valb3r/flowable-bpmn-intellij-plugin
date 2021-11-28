@@ -180,14 +180,14 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         return renderedImage
     }
 
-    fun reset(fileContent: String, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
+    fun reset(fileContent: String, processObjects: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
         this.cachedTreeState = null
         this.renderer = renderer
         this.latestOnScreenModelDimensions = null
         this.camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
         this.propsVisualizer = propertiesVisualizer(project)
         this.propsVisualizer?.clear()
-        this.stateProvider.resetStateTo(fileContent, processObject)
+        this.stateProvider.resetStateTo(fileContent, processObjects)
         selectedElements = mutableSetOf()
         repaint()
     }

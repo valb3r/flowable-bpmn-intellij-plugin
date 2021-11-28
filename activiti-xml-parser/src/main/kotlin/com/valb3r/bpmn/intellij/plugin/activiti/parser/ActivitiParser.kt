@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnFile
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.DiagramNode
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.ProcessNode
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.NS
@@ -110,18 +110,18 @@ open class ActivitiParser : BaseBpmnParser() {
 
     private val mapper: XmlMapper = mapper()
 
-    override fun parse(input: String): BpmnProcessObject {
+    override fun parse(input: String): BpmnFileObject {
         val dto = mapper.readValue<BpmnFile>(input)
         return toProcessObject(dto)
     }
 
-    private fun toProcessObject(dto: BpmnFile): BpmnProcessObject {
+    private fun toProcessObject(dto: BpmnFile): BpmnFileObject {
         // TODO - Multi process support?
         markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
         val process = dto.processes[0].toElement()
         val diagrams = dto.diagrams!!.map { it.toElement() }
 
-        return BpmnProcessObject(process, diagrams)
+        return BpmnFileObject(process, diagrams)
     }
 
     override fun modelNs(): NS {
