@@ -3,7 +3,7 @@
   <collaboration id="Collaboration">
     <participant id="sid-789AB5B6-6F9C-4CE3-BC49-42B072B3AD8E" processRef="process"></participant>
     <participant id="sid-43816C08-BEAA-40F0-B7D8-8844D4DABA22" processRef="process2"></participant>
-    <participant id="sid-6FEC7EF9-5230-449C-B696-1FBED41EB03E" processRef="process"></participant>
+    <participant id="sid-6FEC7EF9-5230-449C-B696-1FBED41EB03E" processRef="process3"></participant>
   </collaboration>
   <process id="process" isExecutable="true">
     <laneSet id="laneSet_process">
@@ -37,8 +37,8 @@
     <sequenceFlow id="sid-9DF8CA19-AC71-40D5-855A-929F6434184A" sourceRef="sid-D62875C4-5D78-4A09-BDA8-375C7379460A" targetRef="sid-0D8FDC6C-4718-4790-B91E-2C79478BB8AC"></sequenceFlow>
     <sequenceFlow id="sid-8DE5712B-13BC-45A1-907E-CAC736EF51D6" sourceRef="sid-D62875C4-5D78-4A09-BDA8-375C7379460A" targetRef="sid-61C9C6F3-E51E-4C1B-B33C-9AA190A211B6"></sequenceFlow>
   </process>
-  <process id="process" isExecutable="true">
-    <laneSet id="laneSet_process">
+  <process id="process3" isExecutable="true">
+    <laneSet id="laneSet_process3">
       <lane id="sid-6764BBDD-5804-4E8D-8328-B3B857363292">
         <flowNodeRef>sid-B568CF5B-C8F5-472C-8E46-FF7D32675CEE</flowNodeRef>
         <flowNodeRef>sid-E06ADE70-0BA1-45FB-AE4A-EE1C14E816C8</flowNodeRef>
