@@ -30,7 +30,7 @@ internal class ServiceTaskWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Service task with single extension")
         task.documentation.shouldBeEqualTo("Some docs")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -76,7 +76,7 @@ internal class ServiceTaskWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Service task with multiple extensions")
         task.documentation.shouldBeEqualTo("Some docs")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -124,7 +124,7 @@ internal class ServiceTaskWithExtensionIsParseable {
     }
 
     private fun readStartEventSingleProp(processObject: BpmnFileObject): BpmnServiceTask {
-        return processObject.process.body!!.serviceTask!!.shouldHaveSize(2)[0]
+        return processObject.processes[0].body!!.serviceTask!!.shouldHaveSize(2)[0]
     }
 
     private fun readAndUpdateMultiPropTask(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnServiceTask {
@@ -132,6 +132,6 @@ internal class ServiceTaskWithExtensionIsParseable {
     }
 
     private fun readStartEventMultiProp(processObject: BpmnFileObject): BpmnServiceTask {
-        return processObject.process.body!!.serviceTask!!.shouldHaveSize(2)[1]
+        return processObject.processes[0].body!!.serviceTask!!.shouldHaveSize(2)[1]
     }
 }

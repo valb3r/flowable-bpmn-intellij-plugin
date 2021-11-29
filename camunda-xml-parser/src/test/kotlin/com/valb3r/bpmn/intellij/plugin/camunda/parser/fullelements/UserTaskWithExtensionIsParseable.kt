@@ -30,7 +30,7 @@ internal class UserTaskWithExtensionIsParseable {
         task.name.shouldBeEqualTo("User task with single extension")
         task.documentation.shouldBeEqualTo("Some docs")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -105,7 +105,7 @@ internal class UserTaskWithExtensionIsParseable {
         task.name.shouldBeEqualTo("User task with multiple extension")
         task.documentation.shouldBeEqualTo("Some docs")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -182,7 +182,7 @@ internal class UserTaskWithExtensionIsParseable {
     }
 
     private fun readStartEventSingleProp(processObject: BpmnFileObject): BpmnUserTask {
-        return processObject.process.body!!.userTask!!.shouldHaveSize(2)[0]
+        return processObject.processes[0].body!!.userTask!!.shouldHaveSize(2)[0]
     }
 
     private fun readAndUpdateMultiPropTask(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnUserTask {
@@ -190,6 +190,6 @@ internal class UserTaskWithExtensionIsParseable {
     }
 
     private fun readStartEventMultiProp(processObject: BpmnFileObject): BpmnUserTask {
-        return processObject.process.body!!.userTask!!.shouldHaveSize(2)[1]
+        return processObject.processes[0].body!!.userTask!!.shouldHaveSize(2)[1]
     }
 }

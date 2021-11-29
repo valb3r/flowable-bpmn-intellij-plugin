@@ -30,7 +30,7 @@ internal class StartEventWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Start event (single)")
         task.documentation.shouldBeEqualTo("As full as possible start event\nmultiline")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -105,7 +105,7 @@ internal class StartEventWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Start event(multi)")
         task.documentation.shouldBeEqualTo("As full as possible start event\nmultiline")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -182,7 +182,7 @@ internal class StartEventWithExtensionIsParseable {
     }
 
     private fun readStartEventSingleProp(processObject: BpmnFileObject): BpmnStartEvent {
-        return processObject.process.body!!.startEvent!!.shouldHaveSize(2)[0]
+        return processObject.processes[0].body!!.startEvent!!.shouldHaveSize(2)[0]
     }
 
     private fun readAndUpdateMultiPropTask(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnStartEvent {
@@ -190,6 +190,6 @@ internal class StartEventWithExtensionIsParseable {
     }
 
     private fun readStartEventMultiProp(processObject: BpmnFileObject): BpmnStartEvent {
-        return processObject.process.body!!.startEvent!!.shouldHaveSize(2)[1]
+        return processObject.processes[0].body!!.startEvent!!.shouldHaveSize(2)[1]
     }
 }

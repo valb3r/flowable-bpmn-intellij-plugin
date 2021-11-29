@@ -30,7 +30,7 @@ internal class ComplexGatewayWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Single complex gateway")
         task.documentation.shouldBeEqualTo("Single complex gateway docs")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -53,7 +53,7 @@ internal class ComplexGatewayWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Multi complex gateway")
         task.documentation.shouldBeEqualTo("Mutli complex gateway docs")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -71,7 +71,7 @@ internal class ComplexGatewayWithExtensionIsParseable {
     }
 
     private fun readSingleIntermediateLinkCatchingEventSingleProp(processObject: BpmnFileObject): BpmnComplexGateway {
-        return processObject.process.body!!.complexGateway!!.shouldHaveSize(2)[0]
+        return processObject.processes[0].body!!.complexGateway!!.shouldHaveSize(2)[0]
     }
 
     private fun readAndUpdateMultiPropIntermediateLinkCatchingEvent(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnComplexGateway {
@@ -79,6 +79,6 @@ internal class ComplexGatewayWithExtensionIsParseable {
     }
 
     private fun readStartEventMultiIntermediateLinkCatchingEvent(processObject: BpmnFileObject): BpmnComplexGateway {
-        return processObject.process.body!!.complexGateway!!.shouldHaveSize(2)[1]
+        return processObject.processes[0].body!!.complexGateway!!.shouldHaveSize(2)[1]
     }
 }

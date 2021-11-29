@@ -121,7 +121,7 @@ open class ActivitiParser : BaseBpmnParser() {
         val process = dto.processes[0].toElement()
         val diagrams = dto.diagrams!!.map { it.toElement() }
 
-        return BpmnFileObject(process, diagrams)
+        TODO()
     }
 
     override fun modelNs(): NS {

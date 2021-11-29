@@ -30,7 +30,7 @@ internal class SendTaskWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Single send task")
         task.documentation.shouldBeEqualTo("Single send task docs")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -53,7 +53,7 @@ internal class SendTaskWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Multi send task")
         task.documentation.shouldBeEqualTo("Multi send task docs")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -71,7 +71,7 @@ internal class SendTaskWithExtensionIsParseable {
     }
 
     private fun readSingleIntermediateLinkCatchingEventSingleProp(processObject: BpmnFileObject): BpmnSendTask {
-        return processObject.process.body!!.sendTask!!.shouldHaveSize(2)[0]
+        return processObject.processes[0].body!!.sendTask!!.shouldHaveSize(2)[0]
     }
 
     private fun readAndUpdateMultiPropIntermediateLinkCatchingEvent(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnSendTask {
@@ -79,6 +79,6 @@ internal class SendTaskWithExtensionIsParseable {
     }
 
     private fun readStartEventMultiIntermediateLinkCatchingEvent(processObject: BpmnFileObject): BpmnSendTask {
-        return processObject.process.body!!.sendTask!!.shouldHaveSize(2)[1]
+        return processObject.processes[0].body!!.sendTask!!.shouldHaveSize(2)[1]
     }
 }

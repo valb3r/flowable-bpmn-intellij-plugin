@@ -22,11 +22,11 @@ internal class EmptyCondExpressionParseable {
     fun `Sequence flow with empty conditional flow element parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
 
-        val sequenceFlow = processObject.process.body!!.sequenceFlow!![0]
+        val sequenceFlow = processObject.processes[0].body!!.sequenceFlow!![0]
         sequenceFlow.id.shouldBeEqualTo(sequenceFlowElem)
         sequenceFlow.conditionExpression.shouldBeEqualTo(ConditionExpression(null, ""))
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[sequenceFlow.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[sequenceFlow.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(sequenceFlowElem.id)
         props[PropertyType.CONDITION_EXPR_TYPE]!!.value.shouldBeNull()
         props[PropertyType.CONDITION_EXPR_VALUE]!!.value.shouldBeEqualTo("")

@@ -132,10 +132,11 @@ class CamundaParser : BaseBpmnParser() {
     private fun toProcessObject(dto: BpmnFile): BpmnFileObject {
         // TODO - Multi process support?
         markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
-        val process = dto.processes[0].toElement()
+        val processes = dto.processes.map { it.toElement() }
+        val collaborations = dto.collaborations!!.map { it.toElement() }
         val diagrams = dto.diagrams!!.map { it.toElement() }
 
-        return BpmnFileObject(process, diagrams)
+        return BpmnFileObject(processes, collaborations, diagrams)
     }
 
     override fun modelNs(): NS {
