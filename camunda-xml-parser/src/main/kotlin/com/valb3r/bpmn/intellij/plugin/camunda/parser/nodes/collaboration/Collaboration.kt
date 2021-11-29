@@ -28,7 +28,7 @@ data class Collaboration(
 data class Participant(
     @JacksonXmlProperty(isAttribute = true) val id: String,
     @JacksonXmlProperty(isAttribute = true) val name: String?,
-    @JacksonXmlProperty(isAttribute = true) val processRef: String,
+    @JacksonXmlProperty(isAttribute = true) val processRef: String?,
     val documentation: String?
 )
 
@@ -36,7 +36,7 @@ data class MessageFlow(
     @JacksonXmlProperty(isAttribute = true) val id: String,
     @JacksonXmlProperty(isAttribute = true) val name: String?,
     val documentation: String?,
-    @JacksonXmlProperty(isAttribute = true) val sourceRef: String,
-    @JacksonXmlProperty(isAttribute = true) val targetRef: String,
+    @JacksonXmlProperty(isAttribute = true) val sourceRef: String?,
+    @JacksonXmlProperty(isAttribute = true) val targetRef: String?,
 )
 

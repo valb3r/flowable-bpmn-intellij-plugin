@@ -14,14 +14,15 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnLaneSet
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.collaboration.Collaboration
-import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.*
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.diagram.DiagramElementIdMapper
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.diagram.Plane
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.*
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Mappings
@@ -187,7 +188,8 @@ class ProcessNode : BpmnMappable<BpmnProcess>, ProcessBody() {
 
         return result.copy(
             body = mappedBody,
-            children = extractNestedProcesses(this)
+            children = extractNestedProcesses(this),
+            laneSets = laneSet?.map { mapLaneSet(it) } ?: emptyList()
         )
     }
 
@@ -214,6 +216,11 @@ class ProcessNode : BpmnMappable<BpmnProcess>, ProcessBody() {
     private fun mapBody(body: ProcessBody): BpmnProcessBody {
         val bodyMapper = cachedMapper(BodyMapping::class.java)
         return fillBodyWithDedicatedElements(bodyMapper.convertToDto(body))
+    }
+
+    private fun mapLaneSet(laneSet: LaneSet): BpmnLaneSet {
+        val laneMapper = cachedMapper(LaneSetMapping::class.java)
+        return laneMapper.convertToDto(laneSet)
     }
 
     private fun fillBodyWithDedicatedElements(processBody: BpmnProcessBody): BpmnProcessBody {
@@ -474,6 +481,13 @@ class ProcessNode : BpmnMappable<BpmnProcess>, ProcessBody() {
             Mapping(source = "transaction", target = "collapsedTransaction") // will be post-filtered
         )
         fun convertToDto(input: ProcessBody): BpmnProcessBody
+    }
+
+    @Mapper
+    interface LaneSetMapping {
+
+        @Mapping(source = "lane", target = "lanes")
+        fun convertToDto(input: LaneSet): BpmnLaneSet
     }
 
     @Mapper

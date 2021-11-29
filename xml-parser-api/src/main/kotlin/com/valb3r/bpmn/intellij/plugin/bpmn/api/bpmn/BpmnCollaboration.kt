@@ -10,7 +10,7 @@ data class BpmnCollaboration(
 data class BpmnParticipant(
     val id: String,
     val name: String?,
-    val processRef: String,
+    val processRef: String?,
     val documentation: String?
 )
 
@@ -18,6 +18,6 @@ data class BpmnMessageFlow(
     val id: String,
     val name: String?,
     val documentation: String?,
-    val sourceRef: String,
-    val targetRef: String,
+    val sourceRef: String?,
+    val targetRef: String?,
 )
