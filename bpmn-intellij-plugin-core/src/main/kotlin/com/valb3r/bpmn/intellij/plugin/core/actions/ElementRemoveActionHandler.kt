@@ -28,7 +28,7 @@ class ElementRemoveActionHandler(private val project: Project) {
 
         updateEventsRegistry(project).addElementRemovedEvent(
             targetIds.map { DiagramElementRemovedEvent(it) },
-            targetIds.mapNotNull { state.currentState.elementByDiagramId[it] }.map { BpmnElementRemovedEvent(it) }
+            targetIds.mapNotNull { state.currentState.allElementsByDiagramId[it] }.map { BpmnElementRemovedEvent(it) }
         )
 
         currentCanvas(project).repaint()

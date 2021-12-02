@@ -6,8 +6,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.Colors
-import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementRemovedEvent
-import com.valb3r.bpmn.intellij.plugin.core.events.DiagramElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.core.render.ICON_Z_INDEX
@@ -30,7 +28,7 @@ class EdgeRenderElement(
         val delId = elementId.elemIdToRemove()
         val deleteIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.recycleBin)
         state().ctx.interactionContext.clickCallbacks[delId] = { dest ->
-            val currentProps = state().currentState.propertyWithElementByPropertyType
+            val currentProps = state().currentState.processPropertyWithElementByPropertyType
             val cascadeEvents = computeCascadeChangeOfBpmnIncomingOutgoingIndex(bpmnElementId, currentProps, PropertyType.BPMN_INCOMING).toMutableList() +
                     computeCascadeChangeOfBpmnIncomingOutgoingIndex(bpmnElementId, currentProps, PropertyType.BPMN_OUTGOING)
             dest.addElementRemovedEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement(), cascadeEvents)

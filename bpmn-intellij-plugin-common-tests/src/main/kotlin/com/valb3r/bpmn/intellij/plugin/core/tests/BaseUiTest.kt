@@ -49,7 +49,6 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.swing.Icon
 import javax.swing.JButton
-import javax.swing.JComponent
 import javax.swing.JTable
 import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.TableColumn
@@ -237,7 +236,7 @@ abstract class BaseUiTest {
         clickOnId(diagramElementId)
         propertiesVisualizer(project).visualize(
                 newElementsFactory(project),
-                currentStateProvider(project).currentState().elemPropertiesByStaticElementId,
+                currentStateProvider(project).currentState().processElemPropertiesByStaticElementId,
                 elementId
         )
         whenever(textFieldsConstructed[id]!!.text).thenReturn(newId)
@@ -248,7 +247,7 @@ abstract class BaseUiTest {
         val id = Pair(elementId, PropertyType.ID)
         propertiesVisualizer(project).visualize(
                 newElementsFactory(project),
-                currentStateProvider(project).currentState().elemPropertiesByStaticElementId,
+                currentStateProvider(project).currentState().processElemPropertiesByStaticElementId,
                 elementId
         )
         whenever(textFieldsConstructed[id]!!.text).thenReturn(newId)

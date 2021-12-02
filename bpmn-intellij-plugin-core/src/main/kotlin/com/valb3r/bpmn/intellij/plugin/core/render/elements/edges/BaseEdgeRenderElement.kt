@@ -109,7 +109,7 @@ abstract class BaseEdgeRenderElement(
     }
 
     private fun drawNameIfAvailable(waypoints: List<Point2D.Float>, color: Color) {
-        val name = state().currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.NAME)?.value as String? ?: return
+        val name = state().currentState.processElemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.NAME)?.value as String? ?: return
         val longestSegment = waypoints
                 .mapIndexedNotNull {pos, it -> if (0 == pos) null else Pair(waypoints[pos - 1], it)}
             .maxBy { it.first.distance(it.second) } ?: return
@@ -127,7 +127,7 @@ abstract class BaseEdgeRenderElement(
     }
 
     private fun renderDefaultMarkIfNeeded(ctx: RenderContext, anchors: List<Point2D.Float>): Area {
-        val sourceRefOfExists = state().currentState.propertyWithElementByPropertyType[PropertyType.DEFAULT_FLOW]?.any { it.value.value == bpmnElementId.id } ?: false
+        val sourceRefOfExists = state().currentState.processPropertyWithElementByPropertyType[PropertyType.DEFAULT_FLOW]?.any { it.value.value == bpmnElementId.id } ?: false
         if (!sourceRefOfExists) {
             return Area()
         }
@@ -162,12 +162,12 @@ abstract class BaseEdgeRenderElement(
     private fun findAttachedToElement(physicalPos: Int, numPhysicals: Int): DiagramElementId? {
         return when (physicalPos) {
             0 -> {
-                val bpmnElemId = state().currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.SOURCE_REF)?.value as String?
-                bpmnElemId?.let {state().currentState.diagramByElementId[BpmnElementId(it)] }
+                val bpmnElemId = state().currentState.processElemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.SOURCE_REF)?.value as String?
+                bpmnElemId?.let {state().currentState.allDiagramByElementId[BpmnElementId(it)] }
             }
             numPhysicals - 1 -> {
-                val bpmnElemId = state().currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.TARGET_REF)?.value as String?
-                bpmnElemId?.let {state().currentState.diagramByElementId[BpmnElementId(it)] }
+                val bpmnElemId = state().currentState.processElemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.TARGET_REF)?.value as String?
+                bpmnElemId?.let {state().currentState.allDiagramByElementId[BpmnElementId(it)] }
             }
             else -> null
         }

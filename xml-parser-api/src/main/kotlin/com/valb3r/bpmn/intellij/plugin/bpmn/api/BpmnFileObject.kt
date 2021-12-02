@@ -15,12 +15,12 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: List<BpmnCollaboration>, val diagram: List<DiagramElement>) {
 
     fun toView(factory: BpmnObjectFactory) : List<BpmnProcessObjectView> {
-        val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
-        val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
-        val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
-
         val result = mutableListOf<BpmnProcessObjectView>()
         for (process in processes) {
+            val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
+            val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
+            val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
+
             fillFor(BpmnElementId(""), factory, process, elementByStaticId, propertiesById)
             elementByDiagramId[DiagramElementId(process.id.id)] = process.id
 
@@ -175,11 +175,11 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
 }
 
 data class BpmnProcessObjectView(
-        val processId: BpmnElementId,
-        val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
-        val elementByStaticId: Map<BpmnElementId, WithParentId>,
-        val elemPropertiesByElementId: Map<BpmnElementId, PropertyTable>,
-        val diagram: List<DiagramElement>
+    val processId: BpmnElementId,
+    val allElementsByDiagramId: Map<DiagramElementId, BpmnElementId>,
+    val processElementByStaticId: Map<BpmnElementId, WithParentId>,
+    val processElemPropertiesByElementId: Map<BpmnElementId, PropertyTable>,
+    val diagram: List<DiagramElement>
 )
 
 data class PropertyTable(private val properties: MutableMap<PropertyType, MutableList<Property>>) {

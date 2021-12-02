@@ -47,7 +47,7 @@ data class RenderedState(val state: RenderState, val elementsById: Map<BpmnEleme
 
     fun canCopyOrCut(): Boolean {
         return state.ctx.selectedIds
-                .mapNotNull { state.currentState.elementByDiagramId[it] }
+                .mapNotNull { state.currentState.allElementsByDiagramId[it] }
                 .mapNotNull { elementsById[it] }
                 .isNotEmpty()
     }
@@ -55,7 +55,7 @@ data class RenderedState(val state: RenderState, val elementsById: Map<BpmnEleme
     fun allChildrenOf(elem: Set<DiagramElementId>): Set<DiagramElementId> {
         val result = mutableSetOf<DiagramElementId>()
 
-        result += elem.map { state.currentState.elementByDiagramId[it] }
+        result += elem.map { state.currentState.allElementsByDiagramId[it] }
                 .mapNotNull { elementsById[it] }
                 .flatMap { allChildrenOf(it) }
 
@@ -175,7 +175,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
     private fun createShapes(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
         state().currentState.shapes.forEach {
-            val elem = state().currentState.elementByBpmnId[it.bpmnElement]
+            val elem = state().currentState.processElementByBpmnId[it.bpmnElement]
             elem?.let { bpmn ->
                 mapFromShape(state, it.id, it, bpmn.element).let { shape ->
                     elements += shape
@@ -195,7 +195,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
     private fun linkChildrenToParent(state: () -> RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
         elementsById.forEach { (id, renderElem) ->
-            val elem = state().currentState.elementByBpmnId[id]
+            val elem = state().currentState.processElementByBpmnId[id]
             elem?.parent?.let {elementsById[it]}?.let { if (it is BaseBpmnRenderElement) it else null }?.let { parent ->
                 parent.children.add(renderElem)
                 parent.let { renderElem.parents.add(it) }
@@ -270,7 +270,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     }
 
     private fun isCollapsed(id: BpmnElementId, state: () -> RenderState): Boolean {
-        return !(state().currentState.elemUiOnlyPropertiesByStaticElementId[id]?.get(UiOnlyPropertyType.EXPANDED)?.value as Boolean? ?: false)
+        return !(state().currentState.processElemUiOnlyPropertiesByStaticElementId[id]?.get(UiOnlyPropertyType.EXPANDED)?.value as Boolean? ?: false)
     }
 
     private fun drawSelectionRect(state: RenderContext) {

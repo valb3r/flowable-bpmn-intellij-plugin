@@ -26,7 +26,7 @@ internal class CondExpressionWithoutTypeParseable {
         sequenceFlow.id.shouldBeEqualTo(sequenceFlowElem)
         sequenceFlow.conditionExpression.shouldBeEqualTo(ConditionExpression(null, "\${evection.num<3} "))
 
-        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[sequenceFlow.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].processElemPropertiesByElementId[sequenceFlow.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(sequenceFlowElem.id)
         props[PropertyType.CONDITION_EXPR_TYPE]!!.value.shouldBeNull()
         props[PropertyType.CONDITION_EXPR_VALUE]!!.value.shouldBeEqualTo("\${evection.num<3} ")

@@ -30,7 +30,7 @@ internal class UserTaskWithExtensionIsParseable {
         task.name.shouldBeEqualTo("User task with single extension")
         task.documentation.shouldBeEqualTo("Some docs")
 
-        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -105,7 +105,7 @@ internal class UserTaskWithExtensionIsParseable {
         task.name.shouldBeEqualTo("User task with multiple extension")
         task.documentation.shouldBeEqualTo("Some docs")
 
-        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)

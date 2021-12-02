@@ -81,7 +81,7 @@ class PhysicalWaypoint(
         }
 
         val state = state().currentState
-        val currentProps = state.propertyWithElementByPropertyType
+        val currentProps = state.processPropertyWithElementByPropertyType
         val rootProcessId = state.processId
         if (null != droppedOn && !multipleElementsSelected() && !multipleElementsDragged()) {
             if (edgePhysicalSize - 1 == physicalPos) {
@@ -128,8 +128,8 @@ class PhysicalWaypoint(
 
     private fun isEdgeBegin() = 0 == physicalPos
     private fun isEdgeEnd() = edgePhysicalSize - 1 == physicalPos
-    private fun isSourceRefAttached() = null != state().currentState.elemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.SOURCE_REF)?.value
-    private fun isTargetRefAttached() = null != state().currentState.elemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.TARGET_REF)?.value
+    private fun isSourceRefAttached() = null != state().currentState.processElemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.SOURCE_REF)?.value
+    private fun isTargetRefAttached() = null != state().currentState.processElemPropertiesByStaticElementId[parentElementBpmnId]?.get(PropertyType.TARGET_REF)?.value
     private fun isEdgeBeginOrEnd() = edgePhysicalSize - 1 == physicalPos || 0 == physicalPos
 
     private fun handleBpmnOutgoingCascade(
