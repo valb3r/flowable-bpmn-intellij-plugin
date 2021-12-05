@@ -133,7 +133,7 @@ class CamundaParser : BaseBpmnParser() {
         // TODO - Multi process support?
         markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
         val processes = dto.processes.map { it.toElement() }
-        val collaborations = dto.collaborations!!.map { it.toElement() }
+        val collaborations = dto.collaborations?.map { it.toElement() } ?: emptyList()
         val diagrams = dto.diagrams!!.map { it.toElement() }
 
         return BpmnFileObject(processes, collaborations, diagrams)
