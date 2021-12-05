@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.state
 
 import com.intellij.openapi.project.Project
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -60,8 +61,9 @@ class CurrentStateProvider(private val project: Project) {
     private var currentState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet(), 0L)
     private val version = AtomicLong(0L)
 
-    fun resetStateTo(fileContent: String, processObject: BpmnProcessObjectView) {
+    fun resetStateTo(fileContent: String, view: BpmnFileView) {
         version.set(0L)
+        val processObject = view.processes[0]
         fileState = CurrentState(
                 processObject.processId,
                 processObject.diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() },

@@ -6,7 +6,7 @@ import com.google.common.collect.EvictingQueue
 import com.google.common.math.Quantiles.percentiles
 import com.intellij.openapi.project.Project
 import com.intellij.util.ui.UIUtil
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -180,14 +180,14 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         return renderedImage
     }
 
-    fun reset(fileContent: String, processObjects: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
+    fun reset(fileContent: String, view: BpmnFileView, renderer: BpmnProcessRenderer) {
         this.cachedTreeState = null
         this.renderer = renderer
         this.latestOnScreenModelDimensions = null
         this.camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
         this.propsVisualizer = propertiesVisualizer(project)
         this.propsVisualizer?.clear()
-        this.stateProvider.resetStateTo(fileContent, processObjects)
+        this.stateProvider.resetStateTo(fileContent, view)
         selectedElements = mutableSetOf()
         repaint()
     }

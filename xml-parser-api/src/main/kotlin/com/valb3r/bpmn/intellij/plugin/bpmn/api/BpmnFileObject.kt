@@ -14,8 +14,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 // TODO - move to some implementation module
 data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: List<BpmnCollaboration>, val diagram: List<DiagramElement>) {
 
-    fun toView(factory: BpmnObjectFactory) : List<BpmnProcessObjectView> {
-        val result = mutableListOf<BpmnProcessObjectView>()
+    fun toView(factory: BpmnObjectFactory) : BpmnFileView {
+        val mappedProcesses = mutableListOf<BpmnProcessObjectView>()
         for (process in processes) {
             val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
             val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
@@ -38,7 +38,7 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
             diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() }
                 .forEach { elementByDiagramId[it.id] = it.bpmnElement }
 
-            result += BpmnProcessObjectView(
+            mappedProcesses += BpmnProcessObjectView(
                 process.id,
                 elementByDiagramId,
                 elementByStaticId,
@@ -47,7 +47,7 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
             )
         }
 
-        return result
+        return BpmnFileView(mappedProcesses, emptyList())
     }
 
     private fun extractElementsFromBody(
@@ -173,6 +173,16 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
         elementById[activity.id] = WithParentId(parentId, activity, defaultParentId)
     }
 }
+
+data class BpmnFileView(
+    val processes: List<BpmnProcessObjectView>,
+    val collaborations: List<BpmnCollaborationView>
+)
+
+data class BpmnCollaborationView(
+    val collaborationElementByStaticId: Map<BpmnElementId, WithParentId>,
+    val collaborationElemPropertiesByElementId: Map<BpmnElementId, PropertyTable>
+)
 
 data class BpmnProcessObjectView(
     val processId: BpmnElementId,
