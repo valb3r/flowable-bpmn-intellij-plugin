@@ -184,6 +184,7 @@ class EditorTextFieldCellRenderer(val field: EditorTextField): TableCellRenderer
 
     override fun getTableCellRendererComponent(
             table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
+        // MacOS renders EditorTextField as empty cells when they are not edited, so replacing them with label instead
         return macOsLabel ?: field
     }
 }
