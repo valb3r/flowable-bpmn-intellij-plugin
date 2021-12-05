@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.ui.components
 
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextArea
@@ -179,9 +180,11 @@ class JBComboBoxCellEditor(val field: ComboBox<*>): AbstractTableCellEditor() {
 
 class EditorTextFieldCellRenderer(val field: EditorTextField): TableCellRenderer {
 
+    private val macOsLabel: JLabel? = if (SystemInfoRt.isMac) JLabel(field.text) else null
+
     override fun getTableCellRendererComponent(
             table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
-        return field
+        return macOsLabel ?: field
     }
 }
 
