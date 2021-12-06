@@ -43,7 +43,7 @@ intellij {
 }
 
 publishPlugin {
-    token = intellijPublishToken
+    token = System.getenv("INTELLIJ_PLUGIN_PUBLISH_TOKEN")
 }
 
 compileKotlin {
