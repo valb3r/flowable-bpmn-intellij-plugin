@@ -23,8 +23,3 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         flags: unittests
         fail_ci_if_error: false # Observing frequent failures of code coverage uploads
-    - name: Release plugin(s)
-      if: ${{ startsWith(github.ref_name, 'refs/tags/v') }}
-      run: ./gradlew publishPlugin
-      env:
-        INTELLIJ_PLUGIN_PUBLISH_TOKEN: ${{ secrets.INTELLIJ_PLUGIN_PUBLISH_TOKEN }}
