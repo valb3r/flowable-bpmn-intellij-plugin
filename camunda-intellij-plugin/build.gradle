@@ -42,8 +42,13 @@ intellij {
     plugins = intellijPlatformPlugins
 }
 
+verifyPlugin {
+    ignoreWarnings = true
+}
+
 publishPlugin {
     token = System.getenv("INTELLIJ_PLUGIN_PUBLISH_TOKEN")
+    channels = ['alpha']
 }
 
 compileKotlin {

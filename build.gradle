@@ -36,6 +36,10 @@ intellij {
     plugins = intellijPlatformPlugins
 }
 
+patchPluginXml.enabled = false
+verifyPlugin.enabled = false
+publishPlugin.enabled = false
+
 allprojects {
     apply plugin: 'jacoco'
 
