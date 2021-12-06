@@ -12,9 +12,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: master
       - name: Exit if not on master branch
         run: |
-          if [ git --no-pager branch --format='%(refname:short)' --contains $(git rev-parse "$TAG_NAME") | grep -E '^master$' ]; then
+          if [ $(git --no-pager branch --format='%(refname:short)' --contains $(git rev-parse "$TAG_NAME") | grep -E '^master$') ]; then
               echo "Releasing $TAG_NAME"
           else
               echo "Tag $TAG_NAME is not on master branch"
