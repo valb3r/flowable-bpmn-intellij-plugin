@@ -31,8 +31,8 @@ jobs:
           java-version: 11
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Build with Gradle
-        run: ./gradlew clean build
+      - name: Build, test with Gradle
+        run: ./gradlew clean build buildPlugin
       - name: Release plugin(s)
         run: ./gradlew publishPlugin
         env:
