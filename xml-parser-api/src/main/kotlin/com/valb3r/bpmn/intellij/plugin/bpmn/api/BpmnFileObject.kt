@@ -15,6 +15,36 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: List<BpmnCollaboration>, val diagram: List<DiagramElement>) {
 
     fun toView(factory: BpmnObjectFactory) : BpmnFileView {
+        val mappedProcesses = mapProcesses(factory)
+        val mappedCollaborations = mapCollaborations(factory)
+
+        return BpmnFileView(mappedProcesses, mappedCollaborations)
+    }
+
+    private fun mapCollaborations(factory: BpmnObjectFactory): List<BpmnCollaborationView> {
+        val mappedCollaborations = mutableListOf<BpmnCollaborationView>()
+        for (collaboration in collaborations) {
+            val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
+            val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
+            val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
+
+            fillFor(BpmnElementId(""), factory, collaboration, elementByStaticId, propertiesById)
+            elementByDiagramId[DiagramElementId(collaboration.id.id)] = collaboration.id
+
+            collaboration.participant?.forEach { fillFor(collaboration.id, factory, it, elementByStaticId, propertiesById)}
+            collaboration.messageFlow?.forEach { fillFor(collaboration.id, factory, it, elementByStaticId, propertiesById)}
+
+            mappedCollaborations += BpmnCollaborationView(
+                collaboration.id,
+                elementByStaticId,
+                propertiesById
+            )
+        }
+
+        return mappedCollaborations
+    }
+
+    private fun mapProcesses(factory: BpmnObjectFactory): List<BpmnProcessObjectView> {
         val mappedProcesses = mutableListOf<BpmnProcessObjectView>()
         for (process in processes) {
             val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
@@ -47,7 +77,7 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
             )
         }
 
-        return BpmnFileView(mappedProcesses, emptyList())
+        return mappedProcesses
     }
 
     private fun extractElementsFromBody(
@@ -180,6 +210,7 @@ data class BpmnFileView(
 )
 
 data class BpmnCollaborationView(
+    val collaborationId: BpmnElementId,
     val collaborationElementByStaticId: Map<BpmnElementId, WithParentId>,
     val collaborationElemPropertiesByElementId: Map<BpmnElementId, PropertyTable>
 )

@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.NullNode
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnObjectFactory
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ConditionExpression
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
@@ -136,7 +135,8 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             is BpmnExclusiveGateway, is BpmnParallelGateway, is BpmnInclusiveGateway, is BpmnEventGateway, is BpmnComplexGateway,
             is BpmnIntermediateTimerCatchingEvent, is BpmnIntermediateMessageCatchingEvent, is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent,
             is BpmnIntermediateNoneThrowingEvent, is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent, is BpmnIntermediateLinkCatchingEvent,
-            is BpmnProcess
+            is BpmnProcess,
+            is BpmnCollaboration, is BpmnParticipant, is BpmnMessageFlow
             -> processDtoToPropertyMap(obj)
 
             is BpmnCallActivity -> fillForCallActivity(obj)

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnCollaboration
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.BpmnElementIdMapper
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -19,7 +20,7 @@ data class Collaboration(
         return Mappers.getMapper(Mapping::class.java).convertToDto(this)
     }
 
-    @Mapper
+    @Mapper(uses = [BpmnElementIdMapper::class])
     interface Mapping {
         fun convertToDto(input: Collaboration): BpmnCollaboration
     }
