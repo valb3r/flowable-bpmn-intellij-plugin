@@ -36,6 +36,7 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
 
             mappedCollaborations += BpmnCollaborationView(
                 collaboration.id,
+                collaboration.participant?.first()?.id,
                 elementByStaticId,
                 propertiesById
             )
@@ -211,6 +212,7 @@ data class BpmnFileView(
 
 data class BpmnCollaborationView(
     val collaborationId: BpmnElementId,
+    val primaryProcessId: BpmnElementId?,
     val collaborationElementByStaticId: Map<BpmnElementId, WithParentId>,
     val collaborationElemPropertiesByElementId: Map<BpmnElementId, PropertyTable>
 )

@@ -63,7 +63,7 @@ class CurrentStateProvider(private val project: Project) {
 
     fun resetStateTo(fileContent: String, view: BpmnFileView) {
         version.set(0L)
-        val processObject = view.processes[0]
+        val processObject = findProcessFromCollaborations(view) ?: view.processes[0]
         fileState = CurrentState(
                 processObject.processId,
                 processObject.diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() },
@@ -346,5 +346,9 @@ class CurrentStateProvider(private val project: Project) {
 
     private fun updateWaypointLocation(elem: EdgeWithIdentifiableWaypoints, update: NewWaypoints): EdgeWithIdentifiableWaypoints {
         return EdgeElementState(elem, update.waypoints, update.epoch)
+    }
+
+    private fun findProcessFromCollaborations(view: BpmnFileView): BpmnProcessObjectView? {
+        return view.collaborations.firstOrNull()?.primaryProcessId?.let { processId -> view.processes.firstOrNull { processId == it.processId } }
     }
 }
