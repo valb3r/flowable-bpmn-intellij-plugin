@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.state
 
+import com.intellij.database.dialects.base.introspector.group
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
@@ -66,11 +67,11 @@ class CurrentStateProvider(private val project: Project) {
         val primaryProcessObject = findPrimaryProcessFromCollaborations(view) ?: view.processes[0]
         fileState = CurrentState(
                 primaryProcessObject.processId,
-                primaryProcessObject.diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() },
-                primaryProcessObject.diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList() }.map { EdgeElementState(it) },
-                primaryProcessObject.allElementsByDiagramId,
-                primaryProcessObject.processElementByStaticId,
-                primaryProcessObject.processElemPropertiesByElementId,
+                view.processes.flatMap { proc -> proc.diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() } },
+                view.processes.flatMap { proc -> proc.diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList() }.map { EdgeElementState(it) } },
+                view.processes.flatMap { proc -> proc.allElementsByDiagramId.entries }.groupBy { it.key }.mapValues { it.value.first().value },
+                view.processes.flatMap { proc -> proc.processElementByStaticId.entries }.groupBy { it.key }.mapValues { it.value.first().value },
+                view.processes.flatMap { proc -> proc.processElemPropertiesByElementId.entries }.groupBy { it.key }.mapValues { it.value.first().value },
                 emptyMap(),
                 emptyMap(),
                 emptySet(),
