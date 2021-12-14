@@ -52,7 +52,7 @@ abstract class ShapeRenderElement(
         get() = shape
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
-        val elem = state().currentState.allElementsByDiagramId[shape.id]
+        val elem = state().currentState.elementsByDiagramId[shape.id]
         val props = state().currentState.processElemPropertiesByStaticElementId[elem]
         val name = props?.get(PropertyType.NAME)?.value as String?
 
@@ -204,12 +204,12 @@ abstract class ShapeRenderElement(
         if (null != nests && nests != currentParent?.bpmnElementId) {
             newEvents += BpmnParentChangedEvent(shape.bpmnElement, nests)
             // Cascade parent change to waypoint owning edge
-            newEvents += cascadeTargets.mapNotNull { state().currentState.allElementsByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, nests) }
+            newEvents += cascadeTargets.mapNotNull { state().currentState.elementsByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, nests) }
 
         } else if (null != parentProcess && parentProcess != parents.firstOrNull()?.bpmnElementId) {
             newEvents += BpmnParentChangedEvent(shape.bpmnElement, parentProcess)
             // Cascade parent change to waypoint owning edge
-            newEvents += cascadeTargets.mapNotNull { state().currentState.allElementsByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, parentProcess) }
+            newEvents += cascadeTargets.mapNotNull { state().currentState.elementsByDiagramId[it.parentEdgeId] }.map { BpmnParentChangedEvent(it, parentProcess) }
         }
         return newEvents
     }
@@ -218,7 +218,7 @@ abstract class ShapeRenderElement(
         val idCascadesTo = setOf(PropertyType.SOURCE_REF, PropertyType.TARGET_REF)
         val result = mutableSetOf<CascadeTranslationOrChangesToWaypoint>()
         val elemToDiagramId = mutableMapOf<BpmnElementId, MutableSet<DiagramElementId>>()
-        state().currentState.allElementsByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
+        state().currentState.elementsByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
         state().currentState.processElemPropertiesByStaticElementId.forEach { (owner, props) ->
             idCascadesTo.intersect(props.keys).filter { props[it]?.value == shape.bpmnElement.id }.forEach { type ->
                 when (state().currentState.processElementByBpmnId[owner]?.element) {

@@ -417,7 +417,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         val elementIdForPropertiesTable = propertiesForElement.firstOrNull()
         val state = stateProvider.currentState()
         state
-            .allElementsByDiagramId[elementIdForPropertiesTable]
+            .elementsByDiagramId[elementIdForPropertiesTable]
             ?.let { elemId ->
                 state.processElemPropertiesByStaticElementId[elemId]?.let {
                     propsVisualizer?.visualize(
@@ -472,7 +472,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
                 continue
             }
 
-            val bpmnId = setOf(stateProvider.currentState().allElementsByDiagramId[elem.first], elem.second.bpmnElementId).filterNotNull().firstOrNull() ?: continue
+            val bpmnId = setOf(stateProvider.currentState().elementsByDiagramId[elem.first], elem.second.bpmnElementId).filterNotNull().firstOrNull() ?: continue
             val bpmnElem = stateProvider.currentState().processElementByBpmnId[bpmnId]
             if (bpmnElem?.element is BpmnSequenceFlow) {
                 continue

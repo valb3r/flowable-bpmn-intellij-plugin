@@ -47,7 +47,7 @@ data class RenderedState(val state: RenderState, val elementsById: Map<BpmnEleme
 
     fun canCopyOrCut(): Boolean {
         return state.ctx.selectedIds
-                .mapNotNull { state.currentState.allElementsByDiagramId[it] }
+                .mapNotNull { state.currentState.elementsByDiagramId[it] }
                 .mapNotNull { elementsById[it] }
                 .isNotEmpty()
     }
@@ -55,7 +55,7 @@ data class RenderedState(val state: RenderState, val elementsById: Map<BpmnEleme
     fun allChildrenOf(elem: Set<DiagramElementId>): Set<DiagramElementId> {
         val result = mutableSetOf<DiagramElementId>()
 
-        result += elem.map { state.currentState.allElementsByDiagramId[it] }
+        result += elem.map { state.currentState.elementsByDiagramId[it] }
                 .mapNotNull { elementsById[it] }
                 .flatMap { allChildrenOf(it) }
 
@@ -105,7 +105,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     private fun doRender(ctx: RenderContext, onlyDiagram: Boolean = false): RenderResult {
         val elementsByDiagramId = mutableMapOf<DiagramElementId, BaseDiagramRenderElement>()
         val currentState = ctx.stateProvider.currentState()
-        val history = currentDebugger(project)?.executionSequence(project, currentState.processId.id)?.history ?: emptyList()
+        val history = currentDebugger(project)?.executionSequence(project, currentState.primaryProcessId.id)?.history ?: emptyList()
         val state = RenderState(
             elementsByDiagramId,
             mutableMapOf(),
@@ -167,9 +167,9 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     }
 
     private fun createRootProcessElem(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>): BaseBpmnRenderElement {
-        val processElem = PlaneRenderElement(state().currentState.processDiagramId(), state().currentState.processId, state, mutableListOf())
+        val processElem = PlaneRenderElement(state().currentState.processDiagramId(), state().currentState.primaryProcessId, state, mutableListOf())
         elements += processElem
-        elementsById[state().currentState.processId] = processElem
+        elementsById[state().currentState.primaryProcessId] = processElem
         return processElem
     }
 

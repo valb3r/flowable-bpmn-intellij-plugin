@@ -1235,7 +1235,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         canvas.click(onlyRootProcessPoint)
         lastRenderedState(project)!!.state.ctx.selectedIds.shouldBeEmpty()
         lastRenderedState(project)!!.state.ctx.stateProvider.currentState()
-                .allElementsByDiagramId[CurrentState.processDiagramId(BpmnElementId(newRootProcessId))].shouldNotBeNull()
+                .elementsByDiagramId[CurrentState.processDiagramId(BpmnElementId(newRootProcessId))].shouldNotBeNull()
 
 
         val anotherNewRootProcessId = "another-new-root-process-id"
@@ -1247,6 +1247,6 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         canvas.click(onlyRootProcessPoint)
         lastRenderedState(project)!!.state.ctx.selectedIds.shouldBeEmpty()
         lastRenderedState(project)!!.state.ctx.stateProvider.currentState()
-                .allElementsByDiagramId[CurrentState.processDiagramId(BpmnElementId(anotherNewRootProcessId))].shouldNotBeNull()
+                .elementsByDiagramId[CurrentState.processDiagramId(BpmnElementId(anotherNewRootProcessId))].shouldNotBeNull()
     }
 }

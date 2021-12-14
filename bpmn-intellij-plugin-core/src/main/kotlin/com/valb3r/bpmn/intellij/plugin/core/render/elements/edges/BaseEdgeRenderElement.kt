@@ -163,11 +163,11 @@ abstract class BaseEdgeRenderElement(
         return when (physicalPos) {
             0 -> {
                 val bpmnElemId = state().currentState.processElemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.SOURCE_REF)?.value as String?
-                bpmnElemId?.let {state().currentState.allDiagramByElementId[BpmnElementId(it)] }
+                bpmnElemId?.let {state().currentState.diagramByElementId[BpmnElementId(it)] }
             }
             numPhysicals - 1 -> {
                 val bpmnElemId = state().currentState.processElemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.TARGET_REF)?.value as String?
-                bpmnElemId?.let {state().currentState.allDiagramByElementId[BpmnElementId(it)] }
+                bpmnElemId?.let {state().currentState.diagramByElementId[BpmnElementId(it)] }
             }
             else -> null
         }

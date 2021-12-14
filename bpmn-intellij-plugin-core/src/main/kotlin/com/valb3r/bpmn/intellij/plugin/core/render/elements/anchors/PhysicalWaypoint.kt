@@ -82,7 +82,7 @@ class PhysicalWaypoint(
 
         val state = state().currentState
         val currentProps = state.processPropertyWithElementByPropertyType
-        val rootProcessId = state.processId
+        val rootProcessId = state.primaryProcessId
         if (null != droppedOn && !multipleElementsSelected() && !multipleElementsDragged()) {
             if (edgePhysicalSize - 1 == physicalPos) {
                 events += StringValueUpdatedEvent(parentElementBpmnId, PropertyType.TARGET_REF, droppedOn.id)

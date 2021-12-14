@@ -1,6 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.core.state
 
-import com.intellij.database.dialects.base.introspector.group
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
@@ -31,20 +30,20 @@ fun currentStateProvider(project: Project): CurrentStateProvider {
 }
 
 data class CurrentState(
-    var processId: BpmnElementId,
+    var primaryProcessId: BpmnElementId,
     val shapes: List<ShapeElement>,
     val edges: List<EdgeWithIdentifiableWaypoints>,
-    val allElementsByDiagramId: Map<DiagramElementId, BpmnElementId>,
+    val elementsByDiagramId: Map<DiagramElementId, BpmnElementId>,
     val processElementByBpmnId: Map<BpmnElementId, WithParentId>,
     val processElemPropertiesByStaticElementId: Map<BpmnElementId, PropertyTable>,
     val processPropertyWithElementByPropertyType: Map<PropertyType, Map<BpmnElementId, Property>>,
     val processElemUiOnlyPropertiesByStaticElementId: Map<BpmnElementId, Map<UiOnlyPropertyType, Property>>,
     val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>,
     val version: Long,
-    val allDiagramByElementId: Map<BpmnElementId, DiagramElementId> = allElementsByDiagramId.map { Pair(it.value, it.key) }.toMap(),
+    val diagramByElementId: Map<BpmnElementId, DiagramElementId> = elementsByDiagramId.map { Pair(it.value, it.key) }.toMap(),
 ) {
     fun processDiagramId(): DiagramElementId {
-        return processDiagramId(processId)
+        return processDiagramId(primaryProcessId)
     }
 
     companion object {
@@ -88,12 +87,12 @@ class CurrentStateProvider(private val project: Project) {
     private fun handleUpdates(state: CurrentState): CurrentState {
         var updatedShapes = state.shapes.toMutableList()
         var updatedEdges = state.edges.toMutableList()
-        val updatedElementByDiagramId = state.allElementsByDiagramId.toMutableMap()
+        val updatedElementByDiagramId = state.elementsByDiagramId.toMutableMap()
         val updatedElementByStaticId = state.processElementByBpmnId.toMutableMap()
         val updatedElemPropertiesByStaticElementId = state.processElemPropertiesByStaticElementId.mapValues { it.value.copy() }.toMutableMap()
         val updatedPropertyWithElementByPropertyType = mutableMapOf<PropertyType, MutableMap<BpmnElementId, Property>>()
         val updatedElemUiOnlyPropertiesByStaticElementId = state.processElemUiOnlyPropertiesByStaticElementId.toMutableMap()
-        var updatedProcessId = state.processId
+        var updatedProcessId = state.primaryProcessId
 
         val updateEventsRegistry: ProcessModelUpdateEvents = updateEventsRegistry(project)
         val undoRedoStatus = updateEventsRegistry.undoRedoStatus()

@@ -89,7 +89,7 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
 
         val alreadyRemovedBpmn = mutableSetOf<BpmnElementId>()
         val elemsToDelete = elementIdsToCopyOrCut(ctx)
-                .mapNotNull { ctx.currentState.allElementsByDiagramId[it] }
+                .mapNotNull { ctx.currentState.elementsByDiagramId[it] }
                 .filter { if (alreadyRemovedBpmn.contains(it)) false else { alreadyRemovedBpmn += it; true } }
                 .mapNotNull { elementsById[it] }
 
@@ -263,7 +263,7 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
 
     private fun ensureRootElementsComeFirst(idsToCopy: MutableList<DiagramElementId>, ctx: RenderState, elementsById: Map<BpmnElementId, BaseDiagramRenderElement>): MutableList<DiagramElementId> {
         return idsToCopy
-                .sortedByDescending { ctx.currentState.allElementsByDiagramId[it]?.let { id -> elementsById[id] }?.zIndex() ?: 0 }
+                .sortedByDescending { ctx.currentState.elementsByDiagramId[it]?.let { id -> elementsById[id] }?.zIndex() ?: 0 }
                 .toMutableList()
     }
 
@@ -292,7 +292,7 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
             idReplacements: MutableMap<BpmnElementId, BpmnElementId>,
             processedElementIds: MutableSet<BpmnElementId>
     ) {
-        val bpmnId = ctx.currentState.allElementsByDiagramId[diagramId] ?: return
+        val bpmnId = ctx.currentState.elementsByDiagramId[diagramId] ?: return
         val withParentId = ctx.currentState.processElementByBpmnId[bpmnId] ?: return
         val props = ctx.currentState.processElemPropertiesByStaticElementId[bpmnId] ?: return
         if (processedElementIds.contains(bpmnId)) {
