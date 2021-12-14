@@ -2,7 +2,6 @@ package com.valb3r.bpmn.intellij.plugin.core.state
 
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileView
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
@@ -42,12 +41,12 @@ data class CurrentState(
     val version: Long,
     val diagramByElementId: Map<BpmnElementId, DiagramElementId> = elementsByDiagramId.map { Pair(it.value, it.key) }.toMap(),
 ) {
-    fun processDiagramId(): DiagramElementId {
-        return processDiagramId(primaryProcessId)
+    fun primaryProcessDiagramId(): DiagramElementId {
+        return primaryProcessDiagramId(primaryProcessId)
     }
 
     companion object {
-        fun processDiagramId(processId: BpmnElementId): DiagramElementId {
+        fun primaryProcessDiagramId(processId: BpmnElementId): DiagramElementId {
             return DiagramElementId(processId.id)
         }
     }
@@ -63,9 +62,8 @@ class CurrentStateProvider(private val project: Project) {
 
     fun resetStateTo(fileContent: String, view: BpmnFileView) {
         version.set(0L)
-        val primaryProcessObject = findPrimaryProcessFromCollaborations(view) ?: view.processes[0]
         fileState = CurrentState(
-                primaryProcessObject.processId,
+                view.primaryProcessId,
                 view.processes.flatMap { proc -> proc.diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() } },
                 view.processes.flatMap { proc -> proc.diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList() }.map { EdgeElementState(it) } },
                 view.processes.flatMap { proc -> proc.allElementsByDiagramId.entries }.groupBy { it.key }.mapValues { it.value.first().value },
@@ -325,7 +323,7 @@ class CurrentStateProvider(private val project: Project) {
         updatedElemPropertiesByStaticElementId[newElementId] = elemPropUpdated
 
         if (elementId == processId) {
-            updatedElementByDiagramId[CurrentState.processDiagramId(newElementId)] = newElementId
+            updatedElementByDiagramId[CurrentState.primaryProcessDiagramId(newElementId)] = newElementId
             return newElementId
         }
 
@@ -346,9 +344,5 @@ class CurrentStateProvider(private val project: Project) {
 
     private fun updateWaypointLocation(elem: EdgeWithIdentifiableWaypoints, update: NewWaypoints): EdgeWithIdentifiableWaypoints {
         return EdgeElementState(elem, update.waypoints, update.epoch)
-    }
-
-    private fun findPrimaryProcessFromCollaborations(view: BpmnFileView): BpmnProcessObjectView? {
-        return view.collaborations.firstOrNull()?.primaryProcessId?.let { processId -> view.processes.firstOrNull { processId == it.processId } }
     }
 }

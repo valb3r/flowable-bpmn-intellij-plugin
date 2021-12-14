@@ -15,10 +15,11 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: List<BpmnCollaboration>, val diagram: List<DiagramElement>) {
 
     fun toView(factory: BpmnObjectFactory) : BpmnFileView {
-        val mappedProcesses = mapProcesses(factory)
         val mappedCollaborations = mapCollaborations(factory)
+        val primaryProcessId = mappedCollaborations.firstOrNull()?.primaryProcessId ?: processes[0].id
+        val mappedProcesses = mapProcesses(factory, primaryProcessId)
 
-        return BpmnFileView(mappedProcesses, mappedCollaborations)
+        return BpmnFileView(primaryProcessId, mappedProcesses, mappedCollaborations)
     }
 
     private fun mapCollaborations(factory: BpmnObjectFactory): List<BpmnCollaborationView> {
@@ -36,7 +37,7 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
 
             mappedCollaborations += BpmnCollaborationView(
                 collaboration.id,
-                collaboration.participant?.first()?.id,
+                collaboration.participant?.first()?.processRef?.let { BpmnElementId(it) },
                 elementByStaticId,
                 propertiesById
             )
@@ -45,14 +46,14 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
         return mappedCollaborations
     }
 
-    private fun mapProcesses(factory: BpmnObjectFactory): List<BpmnProcessObjectView> {
+    private fun mapProcesses(factory: BpmnObjectFactory, primaryProcessId: BpmnElementId): List<BpmnProcessObjectView> {
         val mappedProcesses = mutableListOf<BpmnProcessObjectView>()
         for (process in processes) {
             val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
             val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
             val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
 
-            fillFor(BpmnElementId(""), factory, process, elementByStaticId, propertiesById)
+            fillFor(if (process.id == primaryProcessId) BpmnElementId("") else primaryProcessId, factory, process, elementByStaticId, propertiesById)
             elementByDiagramId[DiagramElementId(process.id.id)] = process.id
 
             // 1st pass
@@ -206,6 +207,7 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
 }
 
 data class BpmnFileView(
+    val primaryProcessId: BpmnElementId,
     val processes: List<BpmnProcessObjectView>,
     val collaborations: List<BpmnCollaborationView>
 )

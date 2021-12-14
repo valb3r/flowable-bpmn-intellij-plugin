@@ -155,6 +155,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
         val result = TreeState(state, elementsById, elementsByDiagramId, version)
 
+        TODO("Create collaboration processes")
         val root = createRootProcessElem({ result.state }, elements, elementsById)
         createShapes({ result.state }, elements, elementsById)
         createEdges({ result.state }, elements, elementsById)
@@ -167,7 +168,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     }
 
     private fun createRootProcessElem(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>): BaseBpmnRenderElement {
-        val processElem = PlaneRenderElement(state().currentState.processDiagramId(), state().currentState.primaryProcessId, state, mutableListOf())
+        val processElem = PlaneRenderElement(state().currentState.primaryProcessDiagramId(), state().currentState.primaryProcessId, state, mutableListOf())
         elements += processElem
         elementsById[state().currentState.primaryProcessId] = processElem
         return processElem
