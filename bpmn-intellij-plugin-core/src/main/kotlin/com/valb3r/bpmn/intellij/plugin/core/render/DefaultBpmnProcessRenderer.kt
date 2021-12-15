@@ -155,8 +155,8 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
         val result = TreeState(state, elementsById, elementsByDiagramId, version)
 
-        TODO("Create collaboration processes")
         val root = createRootProcessElem({ result.state }, elements, elementsById)
+        createCollaborationProcesses({ result.state }, elements, elementsById)
         createShapes({ result.state }, elements, elementsById)
         createEdges({ result.state }, elements, elementsById)
         linkChildrenToParent({ result.state }, elementsById)
@@ -174,9 +174,20 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         return processElem
     }
 
+    private fun createCollaborationProcesses(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+        val rootProcessId = state().currentState.primaryProcessId
+        val collaborations = state().currentState.processes.filter { it !=  rootProcessId }
+        collaborations.forEach {
+            val id = DiagramElementId("__process_${it.id}")
+            val processElem = ShapeSetInFixedBoundary(id, it, ShapeElement(id, it, BoundsElement(0.0f, 0.0f, 10.0f, 10.0f)), state)
+            elements += processElem
+            elementsById[it] = processElem
+        }
+    }
+
     private fun createShapes(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
         state().currentState.shapes.forEach {
-            val elem = state().currentState.processElementByBpmnId[it.bpmnElement]
+            val elem = state().currentState.elementByBpmnId[it.bpmnElement]
             elem?.let { bpmn ->
                 mapFromShape(state, it.id, it, bpmn.element).let { shape ->
                     elements += shape
@@ -196,8 +207,8 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
     private fun linkChildrenToParent(state: () -> RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
         elementsById.forEach { (id, renderElem) ->
-            val elem = state().currentState.processElementByBpmnId[id]
-            elem?.parent?.let {elementsById[it]}?.let { if (it is BaseBpmnRenderElement) it else null }?.let { parent ->
+            val elem = state().currentState.elementByBpmnId[id]
+            elem?.parent?.let { elementsById[it] }?.let { if (it is BaseBpmnRenderElement) it else null }?.let { parent ->
                 parent.children.add(renderElem)
                 parent.let { renderElem.parents.add(it) }
             }
@@ -271,7 +282,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     }
 
     private fun isCollapsed(id: BpmnElementId, state: () -> RenderState): Boolean {
-        return !(state().currentState.processElemUiOnlyPropertiesByStaticElementId[id]?.get(UiOnlyPropertyType.EXPANDED)?.value as Boolean? ?: false)
+        return !(state().currentState.elemUiOnlyPropertiesByStaticElementId[id]?.get(UiOnlyPropertyType.EXPANDED)?.value as Boolean? ?: false)
     }
 
     private fun drawSelectionRect(state: RenderContext) {

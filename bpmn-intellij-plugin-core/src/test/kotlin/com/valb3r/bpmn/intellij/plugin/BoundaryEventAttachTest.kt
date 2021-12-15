@@ -42,7 +42,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
-        lastRenderedState(project)!!.state.currentState.processElementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
@@ -76,7 +76,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
-        lastRenderedState(project)!!.state.currentState.processElementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
@@ -109,7 +109,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
-        lastRenderedState(project)!!.state.currentState.processElementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
@@ -142,8 +142,8 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
-        lastRenderedState(project)!!.state.currentState.processElementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parent.shouldBeEqualTo(subprocessInSubProcessBpmnId)
-        lastRenderedState(project)!!.state.currentState.processElementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parent.shouldBeEqualTo(subprocessInSubProcessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
@@ -177,8 +177,8 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
-        lastRenderedState(project)!!.state.currentState.processElementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parent.shouldBeEqualTo(subprocessBpmnId)
-        lastRenderedState(project)!!.state.currentState.processElementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parent.shouldBeEqualTo(subprocessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
@@ -211,7 +211,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
-        lastRenderedState(project)!!.state.currentState.processElementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
@@ -244,10 +244,10 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
-        lastRenderedState(project)!!.state.currentState.processElementByBpmnId[serviceTaskStartBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
-        lastRenderedState(project)!!.state.currentState.processElementByBpmnId[serviceTaskStartBpmnId]!!.parent.shouldBeEqualTo(subprocessBpmnId)
-        lastRenderedState(project)!!.state.currentState.processElementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
-        lastRenderedState(project)!!.state.currentState.processElementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parent.shouldBeEqualTo(serviceTaskStartBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[serviceTaskStartBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[serviceTaskStartBpmnId]!!.parent.shouldBeEqualTo(subprocessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parent.shouldBeEqualTo(serviceTaskStartBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())

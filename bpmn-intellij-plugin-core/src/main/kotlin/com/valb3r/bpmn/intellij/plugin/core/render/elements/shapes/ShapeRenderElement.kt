@@ -53,7 +53,7 @@ abstract class ShapeRenderElement(
 
     override fun doRenderWithoutChildren(ctx: RenderContext): Map<DiagramElementId, AreaWithZindex> {
         val elem = state().currentState.elementsByDiagramId[shape.id]
-        val props = state().currentState.processElemPropertiesByStaticElementId[elem]
+        val props = state().currentState.elemPropertiesByStaticElementId[elem]
         val name = props?.get(PropertyType.NAME)?.value as String?
 
         state().ctx.interactionContext.dragEndCallbacks[elementId] = {
@@ -219,9 +219,9 @@ abstract class ShapeRenderElement(
         val result = mutableSetOf<CascadeTranslationOrChangesToWaypoint>()
         val elemToDiagramId = mutableMapOf<BpmnElementId, MutableSet<DiagramElementId>>()
         state().currentState.elementsByDiagramId.forEach { elemToDiagramId.computeIfAbsent(it.value) { mutableSetOf() }.add(it.key) }
-        state().currentState.processElemPropertiesByStaticElementId.forEach { (owner, props) ->
+        state().currentState.elemPropertiesByStaticElementId.forEach { (owner, props) ->
             idCascadesTo.intersect(props.keys).filter { props[it]?.value == shape.bpmnElement.id }.forEach { type ->
-                when (state().currentState.processElementByBpmnId[owner]?.element) {
+                when (state().currentState.elementByBpmnId[owner]?.element) {
                     is BpmnSequenceFlow -> { result += computeCascadeToWaypoint(state().currentState, shape.bpmnElement, owner, type) }
                 }
             }
@@ -295,7 +295,7 @@ abstract class ShapeRenderElement(
             return mutableListOf()
         }
 
-        val sourceElem = state().currentState.processElementByBpmnId[bpmnElementId] ?: return mutableListOf()
+        val sourceElem = state().currentState.elementByBpmnId[bpmnElementId] ?: return mutableListOf()
 
         val newSequenceBpmn = newElementsFactory(state().ctx.project).newOutgoingSequence(sourceElem.element)
         val anchors = findSequenceAnchors(targetArea) ?: return mutableListOf()

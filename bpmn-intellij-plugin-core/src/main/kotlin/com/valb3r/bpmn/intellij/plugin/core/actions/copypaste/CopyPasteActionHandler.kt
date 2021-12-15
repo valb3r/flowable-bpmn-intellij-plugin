@@ -293,8 +293,8 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
             processedElementIds: MutableSet<BpmnElementId>
     ) {
         val bpmnId = ctx.currentState.elementsByDiagramId[diagramId] ?: return
-        val withParentId = ctx.currentState.processElementByBpmnId[bpmnId] ?: return
-        val props = ctx.currentState.processElemPropertiesByStaticElementId[bpmnId] ?: return
+        val withParentId = ctx.currentState.elementByBpmnId[bpmnId] ?: return
+        val props = ctx.currentState.elemPropertiesByStaticElementId[bpmnId] ?: return
         if (processedElementIds.contains(bpmnId)) {
             return
         }

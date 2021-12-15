@@ -9,7 +9,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.Translatable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import java.awt.geom.Point2D
 
@@ -50,6 +49,11 @@ interface BpmnElementRemoved: EventPropagatableToXml {
 interface BpmnShapeObjectAdded: EventPropagatableToXml {
     val bpmnObject: WithParentId
     val shape: ShapeElement
+    val props: PropertyTable
+}
+
+interface BpmnProcessObjectAdded: EventPropagatableToXml {
+    val bpmnObject: WithParentId
     val props: PropertyTable
 }
 

@@ -236,7 +236,7 @@ abstract class BaseUiTest {
         clickOnId(diagramElementId)
         propertiesVisualizer(project).visualize(
                 newElementsFactory(project),
-                currentStateProvider(project).currentState().processElemPropertiesByStaticElementId,
+                currentStateProvider(project).currentState().elemPropertiesByStaticElementId,
                 elementId
         )
         whenever(textFieldsConstructed[id]!!.text).thenReturn(newId)
@@ -247,7 +247,7 @@ abstract class BaseUiTest {
         val id = Pair(elementId, PropertyType.ID)
         propertiesVisualizer(project).visualize(
                 newElementsFactory(project),
-                currentStateProvider(project).currentState().processElemPropertiesByStaticElementId,
+                currentStateProvider(project).currentState().elemPropertiesByStaticElementId,
                 elementId
         )
         whenever(textFieldsConstructed[id]!!.text).thenReturn(newId)

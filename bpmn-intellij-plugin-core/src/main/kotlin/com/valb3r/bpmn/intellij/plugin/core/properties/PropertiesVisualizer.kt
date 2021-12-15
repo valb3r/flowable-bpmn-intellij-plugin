@@ -302,7 +302,7 @@ class PropertiesVisualizer(
             val supportedTypes = newElemsProvider.propertyTypes().map { it.name }.toSet()
             events += type.actionUiOnlyResult.filter { supportedTypes.contains(it.propertyType) }.map { UiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = propertyIndex + it.uiOnlyaddedIndex) }
             updateEventsRegistry(project).addEvents(events)
-            visualize(newElementsFactory(project), currentStateProvider(project).currentState().processElemPropertiesByStaticElementId, bpmnElementId, expandedElems.toSet())
+            visualize(newElementsFactory(project), currentStateProvider(project).currentState().elemPropertiesByStaticElementId, bpmnElementId, expandedElems.toSet())
         }
     }
 
