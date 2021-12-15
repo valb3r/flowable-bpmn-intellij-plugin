@@ -6,6 +6,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnLaneSet
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
@@ -59,10 +60,10 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
             // 1st pass
             process.body?.let { extractElementsFromBody(process.id, it, factory, elementByStaticId, propertiesById) }
             process.children?.forEach { (id, body) -> extractElementsFromBody(id, body, factory, elementByStaticId, propertiesById) }
+            process.laneSets?.forEach { extractElementsFromLanes(process.id, it, factory, elementByStaticId, propertiesById) }
             // 2nd pass
             process.body?.let { reassignParentsBasedOnTargetRef(process.id, it, factory, elementByStaticId, propertiesById) }
             process.children?.forEach { (id, body) -> reassignParentsBasedOnTargetRef(id, body, factory, elementByStaticId, propertiesById) }
-
             diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList() }
                 .filter { null != it.bpmnElement }
                 .forEach { elementByDiagramId[it.id] = it.bpmnElement!! }
@@ -158,6 +159,16 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
 
         // Linking elements
         body.sequenceFlow?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+    }
+
+    private fun extractElementsFromLanes(
+        parentId: BpmnElementId,
+        laneSet: BpmnLaneSet,
+        factory: BpmnObjectFactory,
+        elementByStaticId: MutableMap<BpmnElementId, WithParentId>,
+        propertiesById: MutableMap<BpmnElementId, PropertyTable>) {
+        fillFor(parentId, factory, laneSet, elementByStaticId, propertiesById)
+        laneSet.lanes?.forEach { fillFor(laneSet.id, factory, it, elementByStaticId, propertiesById) }
     }
 
     private fun reassignParentsBasedOnTargetRef(

@@ -483,7 +483,7 @@ class ProcessNode : BpmnMappable<BpmnProcess>, ProcessBody() {
         fun convertToDto(input: ProcessBody): BpmnProcessBody
     }
 
-    @Mapper
+    @Mapper(uses = [BpmnElementIdMapper::class])
     interface LaneSetMapping {
 
         @Mapping(source = "lane", target = "lanes")
