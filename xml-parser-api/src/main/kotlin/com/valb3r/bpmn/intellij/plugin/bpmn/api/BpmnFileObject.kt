@@ -49,13 +49,13 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
 
     private fun mapProcesses(factory: BpmnObjectFactory, primaryProcessId: BpmnElementId): List<BpmnProcessObjectView> {
         val mappedProcesses = mutableListOf<BpmnProcessObjectView>()
+        val allElementsByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
         for (process in processes) {
-            val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
             val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
             val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
 
             fillFor(if (process.id == primaryProcessId) BpmnElementId("") else primaryProcessId, factory, process, elementByStaticId, propertiesById)
-            elementByDiagramId[DiagramElementId(process.id.id)] = process.id
+            allElementsByDiagramId[DiagramElementId(process.id.id)] = process.id
 
             // 1st pass
             process.body?.let { extractElementsFromBody(process.id, it, factory, elementByStaticId, propertiesById) }
@@ -66,14 +66,14 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
             process.children?.forEach { (id, body) -> reassignParentsBasedOnTargetRef(id, body, factory, elementByStaticId, propertiesById) }
             diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList() }
                 .filter { null != it.bpmnElement }
-                .forEach { elementByDiagramId[it.id] = it.bpmnElement!! }
+                .forEach { allElementsByDiagramId[it.id] = it.bpmnElement!! }
 
             diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() }
-                .forEach { elementByDiagramId[it.id] = it.bpmnElement }
+                .forEach { allElementsByDiagramId[it.id] = it.bpmnElement }
 
             mappedProcesses += BpmnProcessObjectView(
                 process.id,
-                elementByDiagramId,
+                allElementsByDiagramId,
                 elementByStaticId,
                 propertiesById,
                 diagram
@@ -167,8 +167,7 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
         factory: BpmnObjectFactory,
         elementByStaticId: MutableMap<BpmnElementId, WithParentId>,
         propertiesById: MutableMap<BpmnElementId, PropertyTable>) {
-        fillFor(parentId, factory, laneSet, elementByStaticId, propertiesById)
-        laneSet.lanes?.forEach { fillFor(laneSet.id, factory, it, elementByStaticId, propertiesById) }
+        laneSet.lanes?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
     }
 
     private fun reassignParentsBasedOnTargetRef(
