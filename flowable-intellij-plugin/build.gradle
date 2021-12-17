@@ -42,6 +42,11 @@ intellij {
     plugins = intellijPlatformPlugins
 }
 
+runIde {
+    jbrVersion = jbrJdkVersion
+    jvmArgs("-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition")
+}
+
 publishPlugin {
     token = intellijPublishToken
 }

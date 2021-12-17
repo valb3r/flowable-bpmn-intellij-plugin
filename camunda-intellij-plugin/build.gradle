@@ -43,6 +43,7 @@ intellij {
 }
 
 runIde {
+    jbrVersion = jbrJdkVersion
     jvmArgs("-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition")
 }
 

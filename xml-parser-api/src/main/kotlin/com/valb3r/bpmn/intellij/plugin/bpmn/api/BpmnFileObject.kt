@@ -26,19 +26,18 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
     private fun mapCollaborations(factory: BpmnObjectFactory): List<BpmnCollaborationView> {
         val mappedCollaborations = mutableListOf<BpmnCollaborationView>()
         for (collaboration in collaborations) {
-            val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
             val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
             val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
+            val primaryProcessId = collaboration.participant?.first()?.processRef?.let { BpmnElementId(it) } ?: BpmnElementId("")
 
-            fillFor(BpmnElementId(""), factory, collaboration, elementByStaticId, propertiesById)
-            elementByDiagramId[DiagramElementId(collaboration.id.id)] = collaboration.id
+            fillFor(primaryProcessId, factory, collaboration, elementByStaticId, propertiesById)
 
             collaboration.participant?.forEach { fillFor(collaboration.id, factory, it, elementByStaticId, propertiesById)}
             collaboration.messageFlow?.forEach { fillFor(collaboration.id, factory, it, elementByStaticId, propertiesById)}
 
             mappedCollaborations += BpmnCollaborationView(
                 collaboration.id,
-                collaboration.participant?.first()?.processRef?.let { BpmnElementId(it) },
+                primaryProcessId,
                 elementByStaticId,
                 propertiesById
             )

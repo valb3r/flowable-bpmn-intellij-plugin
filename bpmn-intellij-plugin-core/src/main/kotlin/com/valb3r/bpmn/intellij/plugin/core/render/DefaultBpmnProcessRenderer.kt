@@ -1,7 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.intellij.openapi.project.Project
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnCollaboration
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnParticipant
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
@@ -29,6 +31,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseDiagramRenderEle
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.EdgeRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.internal.InvisibleShape
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.shapes.*
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
@@ -158,7 +161,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         val result = TreeState(state, elementsById, elementsByDiagramId, version)
 
         val root = createRootProcessElem({ result.state }, elements, elementsById)
-        createCollaborationProcesses({ result.state }, elements, elementsById)
+        createCollaborationAndCollaborationProcesses({ result.state }, elements, elementsById)
         createShapes({ result.state }, elements, elementsById)
         createEdges({ result.state }, elements, elementsById)
         linkChildrenToParent({ result.state }, elementsById)
@@ -176,9 +179,15 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         return processElem
     }
 
-    private fun createCollaborationProcesses(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+    private fun createCollaborationAndCollaborationProcesses(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+        state().currentState.elementByBpmnId.values.map { it.element }.filterIsInstance<BpmnCollaboration>().forEach {
+            val processElem = InvisibleShape(DiagramElementId("__collaboration_${it.id}"), it.id, state)
+            elements += processElem
+            elementsById[it.id] = processElem
+        }
+
         val rootProcessId = state().currentState.primaryProcessId
-        val collaborations = state().currentState.processes.filter { it !=  rootProcessId }
+        val collaborations = state().currentState.processes.filter { it != rootProcessId }
         collaborations.forEach {
             val id = DiagramElementId("__process_${it.id}")
             val processElem = ShapeSetInFixedBoundary(id, it, ShapeElement(id, it, BoundsElement(0.0f, 0.0f, 10.0f, 10.0f)), state)
@@ -263,6 +272,8 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             is BpmnAdHocSubProcess -> BottomMiddleIconShape(id, bpmn.id, icons.tilde, shape, state, areaType = AreaType.SHAPE_THAT_NESTS)
             is BpmnLaneSet -> ShapeSetInFixedBoundary(id, bpmn.id, shape, state, Colors.PROCESS_COLOR, Colors.ELEMENT_BORDER_COLOR, Colors.SUBPROCESS_TEXT_COLOR, areaType = AreaType.SHAPE_THAT_NESTS)
             is BpmnLane -> NamedShape(id, bpmn.id, shape, state, Colors.PROCESS_COLOR, Colors.ELEMENT_BORDER_COLOR, Colors.SUBPROCESS_TEXT_COLOR, areaType = AreaType.SHAPE_THAT_NESTS)
+            is BpmnParticipant -> NamedShape(id, bpmn.id, shape, state, Colors.PROCESS_COLOR, Colors.ELEMENT_BORDER_COLOR, Colors.SUBPROCESS_TEXT_COLOR, areaType = AreaType.SHAPE_THAT_NESTS)
+            is BpmnCollaboration -> InvisibleShape(id, bpmn.id, state)
             is BpmnExclusiveGateway -> IconShape(id, bpmn.id, icons.exclusiveGateway, shape, state)
             is BpmnParallelGateway -> IconShape(id, bpmn.id, icons.parallelGateway, shape, state)
             is BpmnInclusiveGateway -> IconShape(id, bpmn.id, icons.inclusiveGateway, shape, state)

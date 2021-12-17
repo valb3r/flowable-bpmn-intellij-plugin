@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1grmag6" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.10.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
-  <bpmn:collaboration id="laneInParticipant2">
+  <bpmn:collaboration id="collaborationId">
     <bpmn:participant id="participant" name="participant1" processRef="Process_1f2g5n1" />
     <bpmn:participant id="participant2" name="Participant 2" processRef="Process_07fjg5b">
       <bpmn:documentation>Some docs</bpmn:documentation>
@@ -99,7 +99,7 @@
     <bpmn:task id="task4participant3" name="Task 4 participant 3" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="laneInParticipant2">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="collaborationId">
       <bpmndi:BPMNShape id="Participant_1mnoo29_di" bpmnElement="participant" isHorizontal="true">
         <dc:Bounds x="160" y="110" width="980" height="570" />
       </bpmndi:BPMNShape>

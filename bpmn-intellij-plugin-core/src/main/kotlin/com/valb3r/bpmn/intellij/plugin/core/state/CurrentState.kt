@@ -70,9 +70,9 @@ class CurrentStateProvider(private val project: Project) {
                 view.processes.map { it.processId }.toSet(),
                 view.processes.flatMap { proc -> proc.diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() } },
                 view.processes.flatMap { proc -> proc.diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList() }.map { EdgeElementState(it) } },
-                view.processes.flatMap { proc -> proc.allElementsByDiagramId.entries }.groupBy { it.key }.mapValues { it.value.first().value },
-                view.processes.flatMap { proc -> proc.processElementByStaticId.entries }.groupBy { it.key }.mapValues { it.value.first().value },
-                view.processes.flatMap { proc -> proc.processElemPropertiesByElementId.entries }.groupBy { it.key }.mapValues { it.value.first().value },
+                extractDiagramElementToBpmnIds(view),
+                extractBpmnElements(view),
+                extractProperties(view),
                 emptyMap(),
                 emptyMap(),
                 emptySet(),
@@ -85,6 +85,17 @@ class CurrentStateProvider(private val project: Project) {
     fun currentState(): CurrentState {
         return handleUpdates(currentState)
     }
+
+    private fun extractProperties(view: BpmnFileView) =
+        view.processes.flatMap { proc -> proc.processElemPropertiesByElementId.entries }.groupBy { it.key }.mapValues { it.value.first().value } +
+                view.collaborations.flatMap { coll -> coll.collaborationElemPropertiesByElementId.entries }.groupBy { it.key }.mapValues { it.value.first().value }
+
+    private fun extractBpmnElements(view: BpmnFileView) =
+        view.processes.flatMap { proc -> proc.processElementByStaticId.entries }.groupBy { it.key }.mapValues { it.value.first().value } +
+                view.collaborations.flatMap { coll -> coll.collaborationElementByStaticId.entries }.groupBy { it.key }.mapValues { it.value.first().value }
+
+    private fun extractDiagramElementToBpmnIds(view: BpmnFileView) =
+        view.processes.flatMap { proc -> proc.allElementsByDiagramId.entries }.groupBy { it.key }.mapValues { it.value.first().value }
 
     private fun handleUpdates(state: CurrentState): CurrentState {
         var updatedShapes = state.shapes.toMutableList()
