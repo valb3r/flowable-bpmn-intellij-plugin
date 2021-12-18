@@ -35,6 +35,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.internal.InvisibleSh
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.shapes.*
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import groovy.lang.Tuple2
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
@@ -367,7 +368,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         locationY += drawIconWithAction(state, zoomOutId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(ZoomOutEvent()) }, icons.zoomOut).second + iconMargin
         locationX = undoRedoStartMargin
         locationX += drawIconWithAction(state, zoomResetId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(ResetAndCenterEvent()) }, icons.zoomReset).first + iconMargin
-        locationY += drawIconWithAction(state, centerImageId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(CenterModelEvent()) }, icons.centerImage).first + iconMargin
+        locationY += drawIconWithAction(state, centerImageId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(CenterModelEvent()) }, icons.centerImage).second + iconMargin
         locationX = undoRedoStartMargin
         val currentGridState = gridState.get()
         val gridIcon = gridIcons[currentGridState]()
@@ -377,7 +378,11 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         }
         locationX += drawIconWithAction(state, gridStateId, locationX, locationY, renderedArea, nextGridStep, gridIcon).first + iconMargin
         val verticalAnchors = verticalAnchorsEnabled.get()
-        drawIconWithAction(state, anchorEnabled, locationX, locationY, renderedArea, { verticalAnchorsEnabled.set(!verticalAnchors)}, if (verticalAnchors) icons.anchorOff else icons.anchorOn).first + iconMargin
+        locationY += drawIconWithAction(state, anchorEnabled, locationX, locationY, renderedArea, { verticalAnchorsEnabled.set(!verticalAnchors)}, if (verticalAnchors) icons.anchorOff else icons.anchorOn).second + iconMargin
+
+        if (currentSettings().enableDevelopmentFunctions) {
+            locationX += drawIconWithAction(state, DiagramElementId("__development_tool_render_tree_state"), locationX, locationY, renderedArea, { dumpRenderTree(project) }, icons.dumpRenderTree).first + iconMargin
+        }
     }
 
     private fun drawIconWithAction(
