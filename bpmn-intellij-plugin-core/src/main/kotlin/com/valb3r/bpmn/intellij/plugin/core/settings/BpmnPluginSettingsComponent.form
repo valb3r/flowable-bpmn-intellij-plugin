@@ -204,7 +204,7 @@
           <text value="FPS"/>
         </properties>
       </component>
-      <component id="a14cc" class="javax.swing.JCheckBox" binding="checkBox1" default-binding="true">
+      <component id="a14cc" class="javax.swing.JCheckBox" binding="enableDevelopmentFunctions">
         <constraints>
           <grid row="11" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>

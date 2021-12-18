@@ -379,6 +379,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         locationX += drawIconWithAction(state, gridStateId, locationX, locationY, renderedArea, nextGridStep, gridIcon).first + iconMargin
         val verticalAnchors = verticalAnchorsEnabled.get()
         locationY += drawIconWithAction(state, anchorEnabled, locationX, locationY, renderedArea, { verticalAnchorsEnabled.set(!verticalAnchors)}, if (verticalAnchors) icons.anchorOff else icons.anchorOn).second + iconMargin
+        locationX = undoRedoStartMargin
 
         if (currentSettings().enableDevelopmentFunctions) {
             locationX += drawIconWithAction(state, DiagramElementId("__development_tool_render_tree_state"), locationX, locationY, renderedArea, { dumpRenderTree(project) }, icons.dumpRenderTree).first + iconMargin
