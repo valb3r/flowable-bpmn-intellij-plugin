@@ -24,6 +24,9 @@ import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
+import java.awt.geom.AffineTransform
+import java.awt.geom.Area
+import java.awt.geom.PathIterator.SEG_CLOSE
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
@@ -503,15 +506,30 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
         val maxZindex = intersection?.maxBy { it: Map.Entry<DiagramElementId, AreaWithZindex> -> it.value.index }
         val result = mutableListOf<DiagramElementId>()
-        val centerRect = Point2D.Float(withinRect.centerX.toFloat(), withinRect.centerY.toFloat())
+        val minDistSq = fun (area: Area, pt: Point2D.Float): Float {
+            var minDist = Float.MAX_VALUE
+            val pts = FloatArray(6)
+            val iter = area.getPathIterator(AffineTransform())
+            while (!iter.isDone) {
+                if (SEG_CLOSE == iter.currentSegment(pts)) {
+                    iter.next()
+                    continue
+                }
+                val curvePt = Point2D.Float(pts[0], pts[1])
+                val dist = curvePt.distanceSq(pt).toFloat()
+                if (dist < minDist) {
+                    minDist = dist
+                }
+                iter.next()
+            }
+            return minDist
+        }
+
         intersection
             ?.filter { !excludeAreas.contains(it.value.areaType) }
-            ?.filter { it.value.index == maxZindex?.value?.index }
+            ?.filter { it.value.index == maxZindex?.value?.index || it.value.areaType == AreaType.EDGE }
             ?.minBy { it: Map.Entry<DiagramElementId, AreaWithZindex> ->
-                Point2D.Float(
-                    it.value.area.bounds2D.centerX.toFloat(),
-                    it.value.area.bounds2D.centerY.toFloat()
-                ).distance(centerRect)
+                minDistSq(it.value.area, cursorPoint)
             }
             ?.let { result += it.key; it.value.parentToSelect?.apply { result += this } }
         return result
