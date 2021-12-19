@@ -34,6 +34,16 @@ private fun rootToElemsByParent(state: RenderedState, root: BaseBpmnRenderElemen
 private fun dumpTree(elemsByParent: Map<String, Set<String>>) {
     val childElems = elemsByParent.values.flatten().toSet()
     val roots = elemsByParent.keys.filter { !childElems.contains(it) }.toSet()
+    if (roots.isEmpty()) {
+        println("Cyclic structure detected, none of ${elemsByParent.keys} is standalone root")
+        elemsByParent.keys.forEach { possibleRoot ->
+            elemsByParent.forEach { (k, v) ->
+                if (v.contains(possibleRoot)) {
+                    println("Possible root $possibleRoot is child of $k")
+                }
+            }
+        }
+    }
     println("{")
     dumpTree(roots, elemsByParent)
     println("}")
