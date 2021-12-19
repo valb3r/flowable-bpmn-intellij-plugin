@@ -17,10 +17,14 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
 
     fun toView(factory: BpmnObjectFactory) : BpmnFileView {
         val mappedCollaborations = mapCollaborations(factory)
-        val primaryProcessId = mappedCollaborations.firstOrNull()?.primaryProcessId ?: processes[0].id
-        val mappedProcesses = mapProcesses(factory, primaryProcessId)
+        val rootProcessOrCollaborationId = mappedCollaborations.firstOrNull()?.collaborationId ?: processes.firstOrNull()?.id ?: BpmnElementId("")
+        val collaborationProcessRoots = collaborations.flatMap { it.participant ?: emptyList() }
+            .filter { null != it.processRef }
+            .groupBy { it.processRef!! }
+            .mapValues { entry -> entry.value.first().id }
+        val mappedProcesses = mapProcesses(factory, rootProcessOrCollaborationId, collaborationProcessRoots)
 
-        return BpmnFileView(primaryProcessId, mappedProcesses, mappedCollaborations)
+        return BpmnFileView(rootProcessOrCollaborationId, mappedProcesses, mappedCollaborations)
     }
 
     private fun mapCollaborations(factory: BpmnObjectFactory): List<BpmnCollaborationView> {
@@ -28,16 +32,14 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
         for (collaboration in collaborations) {
             val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
             val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
-            val primaryProcessId = collaboration.participant?.first()?.processRef?.let { BpmnElementId(it) } ?: BpmnElementId("")
 
-            fillFor(primaryProcessId, factory, collaboration, elementByStaticId, propertiesById)
+            fillFor(BpmnElementId(""), factory, collaboration, elementByStaticId, propertiesById)
 
             collaboration.participant?.forEach { fillFor(collaboration.id, factory, it, elementByStaticId, propertiesById)}
             collaboration.messageFlow?.forEach { fillFor(collaboration.id, factory, it, elementByStaticId, propertiesById)}
 
             mappedCollaborations += BpmnCollaborationView(
                 collaboration.id,
-                primaryProcessId,
                 elementByStaticId,
                 propertiesById
             )
@@ -46,14 +48,14 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
         return mappedCollaborations
     }
 
-    private fun mapProcesses(factory: BpmnObjectFactory, primaryProcessId: BpmnElementId): List<BpmnProcessObjectView> {
+    private fun mapProcesses(factory: BpmnObjectFactory, rootId: BpmnElementId, collaborationByProcess: Map<String, BpmnElementId>): List<BpmnProcessObjectView> {
         val mappedProcesses = mutableListOf<BpmnProcessObjectView>()
         val allElementsByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
         for (process in processes) {
             val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
             val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
 
-            fillFor(if (process.id == primaryProcessId) BpmnElementId("") else primaryProcessId, factory, process, elementByStaticId, propertiesById)
+            fillFor(collaborationByProcess.getOrDefault(process.id.id, rootId), factory, process, elementByStaticId, propertiesById)
             allElementsByDiagramId[DiagramElementId(process.id.id)] = process.id
 
             // 1st pass
@@ -223,7 +225,6 @@ data class BpmnFileView(
 
 data class BpmnCollaborationView(
     val collaborationId: BpmnElementId,
-    val primaryProcessId: BpmnElementId?,
     val collaborationElementByStaticId: Map<BpmnElementId, WithParentId>,
     val collaborationElemPropertiesByElementId: Map<BpmnElementId, PropertyTable>
 )

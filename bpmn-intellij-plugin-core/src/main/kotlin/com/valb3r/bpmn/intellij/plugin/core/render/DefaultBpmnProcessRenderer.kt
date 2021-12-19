@@ -164,8 +164,8 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         val result = TreeState(state, elementsById, elementsByDiagramId, version)
 
         val root = createRootProcessElem({ result.state }, elements, elementsById)
-        createCollaborationAndCollaborationProcesses({ result.state }, elements, elementsById)
-        createShapes({ result.state }, elements, elementsById)
+        createCollaborationAndCollaborationProcesses({ result.state }, root, elements, elementsById)
+        createShapes({ result.state }, root, elements, elementsById)
         createEdges({ result.state }, elements, elementsById)
         linkChildrenToParent({ result.state }, elementsById)
         // Not all elements have BpmnElementId, but they have DiagramElementId
@@ -182,8 +182,8 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         return processElem
     }
 
-    private fun createCollaborationAndCollaborationProcesses(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
-        state().currentState.elementByBpmnId.values.map { it.element }.filterIsInstance<BpmnCollaboration>().forEach {
+    private fun createCollaborationAndCollaborationProcesses(state: () -> RenderState, root: BaseBpmnRenderElement, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+        state().currentState.elementByBpmnId.values.map { it.element }.filterIsInstance<BpmnCollaboration>().filter { it.id != root.bpmnElementId }.forEach {
             val processElem = InvisibleShape(DiagramElementId("__collaboration_${it.id}"), it.id, state)
             elements += processElem
             elementsById[it.id] = processElem
@@ -199,8 +199,8 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         }
     }
 
-    private fun createShapes(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
-        state().currentState.shapes.forEach {
+    private fun createShapes(state: () -> RenderState, root: BaseBpmnRenderElement, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+        state().currentState.shapes.filter { it.bpmnElement !=  root.bpmnElementId }.forEach {
             val elem = state().currentState.elementByBpmnId[it.bpmnElement]
             elem?.let { bpmn ->
                 mapFromShape(state, it.id, it, bpmn.element).let { shape ->
