@@ -6,6 +6,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnLane
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnLaneSet
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -72,6 +73,8 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
             diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() }
                 .forEach { allElementsByDiagramId[it.id] = it.bpmnElement }
 
+            remapElementsToLanes(elementByStaticId)
+
             mappedProcesses += BpmnProcessObjectView(
                 process.id,
                 allElementsByDiagramId,
@@ -82,6 +85,18 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
         }
 
         return mappedProcesses
+    }
+
+    private fun remapElementsToLanes(elems: MutableMap<BpmnElementId, WithParentId>) {
+        val lanes = elems.values.map { it.element }.filterIsInstance<BpmnLane>()
+        val elementByParentLane = lanes.flatMap { lane -> lane.flowNodeRef?.map { it to lane.id } ?: emptyList() }
+            .groupBy { it.first.ref }
+            .mapValues { it.value.first().second.id }
+
+        elems.replaceAll { k, v ->
+            val laneId = elementByParentLane[k.id]?.let { BpmnElementId(it) }
+            return@replaceAll v.copy(parent = laneId ?: v.parent)
+        }
     }
 
     private fun extractElementsFromBody(
