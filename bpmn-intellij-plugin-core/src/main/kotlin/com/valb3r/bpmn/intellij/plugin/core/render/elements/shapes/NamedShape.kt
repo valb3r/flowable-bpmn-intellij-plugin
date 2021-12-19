@@ -35,4 +35,8 @@ class NamedShape(
 
         return mapOf(shapeCtx.diagramId to AreaWithZindex(area, areaType, waypointAnchors(ctx.canvas.camera), shapeAnchors(ctx.canvas.camera), index = zIndex(), bpmnElementId = shape.bpmnElement))
     }
+
+    override fun zIndex(): Int {
+        return (parents.firstOrNull()?.zIndex() ?: -1) + 1
+    }
 }
