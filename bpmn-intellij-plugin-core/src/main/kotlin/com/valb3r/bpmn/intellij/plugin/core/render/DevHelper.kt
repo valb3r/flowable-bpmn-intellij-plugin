@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.render
 
+import com.intellij.grazie.utils.toLinkedSet
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElement
 
@@ -8,7 +9,7 @@ fun dumpRenderTree(project: Project) {
     println("===== Mapped XML tree: =====")
     val parentToElems = renderState.state.currentState.elementByBpmnId.entries
         .groupBy { it.value.parent.id }
-        .mapValues { entry -> entry.value.map { it.key.id }.toSet() }
+        .mapValues { entry -> entry.value.map { it.key.id }.toLinkedSet() }
     dumpTree(parentToElems)
     println("=====   End XML tree   =====")
 
@@ -19,8 +20,8 @@ fun dumpRenderTree(project: Project) {
 
 private fun rootToElemsByParent(state: RenderedState, root: BaseBpmnRenderElement): Map<String, Set<String>> {
     val elemMap = state.state.elemMap
-    val front = mutableSetOf(root)
-    val result = mutableMapOf<String, MutableSet<String>>()
+    val front = linkedSetOf(root)
+    val result = linkedMapOf<String, MutableSet<String>>()
     while (front.isNotEmpty()) {
         front.forEach { result.computeIfAbsent(it.parents.firstOrNull()?.bpmnElementId?.id ?: "") { mutableSetOf() }.add(it.bpmnElementId.id) }
         val newFront = front.flatMap { it.children }.map { elemMap[it.elementId] }.filterIsInstance<BaseBpmnRenderElement>()
@@ -32,8 +33,8 @@ private fun rootToElemsByParent(state: RenderedState, root: BaseBpmnRenderElemen
 }
 
 private fun dumpTree(elemsByParent: Map<String, Set<String>>) {
-    val childElems = elemsByParent.values.flatten().toSet()
-    val roots = elemsByParent.keys.filter { !childElems.contains(it) }.toSet()
+    val childElems = elemsByParent.values.flatten().toLinkedSet()
+    val roots = elemsByParent.keys.filter { !childElems.contains(it) }.toLinkedSet()
     if (roots.isEmpty()) {
         println("Cyclic structure detected, none of ${elemsByParent.keys} is standalone root")
         elemsByParent.keys.forEach { possibleRoot ->
