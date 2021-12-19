@@ -192,8 +192,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         val rootProcessId = state().currentState.primaryProcessId
         val collaborations = state().currentState.processes.filter { it != rootProcessId }
         collaborations.forEach {
-            val id = DiagramElementId("__process_${it.id}")
-            val processElem = ShapeSetInFixedBoundary(id, it, ShapeElement(id, it, BoundsElement(0.0f, 0.0f, 10.0f, 10.0f)), state)
+            val processElem = InvisibleShape(DiagramElementId("__collaboration_process_${it.id}"), it, state)
             elements += processElem
             elementsById[it] = processElem
         }

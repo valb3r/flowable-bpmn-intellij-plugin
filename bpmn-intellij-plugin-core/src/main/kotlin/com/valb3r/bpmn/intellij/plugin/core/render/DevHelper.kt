@@ -2,7 +2,9 @@ package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.intellij.grazie.utils.toLinkedSet
 import com.intellij.openapi.project.Project
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElement
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseDiagramRenderElement
 
 fun dumpRenderTree(project: Project) {
     val renderState = lastRenderedState(project)!!
@@ -10,11 +12,11 @@ fun dumpRenderTree(project: Project) {
     val parentToElems = renderState.state.currentState.elementByBpmnId.entries
         .groupBy { it.value.parent.id }
         .mapValues { entry -> entry.value.map { it.key.id }.toLinkedSet() }
-    dumpTree(parentToElems)
+    dumpTree(renderState.elementsById, parentToElems)
     println("=====   End XML tree   =====")
 
     println("=====   Render tree:  =====")
-    dumpTree(rootToElemsByParent(renderState, renderState.state.ctx.cachedDom!!.domRoot))
+    dumpTree(renderState.elementsById, rootToElemsByParent(renderState, renderState.state.ctx.cachedDom!!.domRoot))
     println("===== End Render tree =====")
 }
 
@@ -32,7 +34,7 @@ private fun rootToElemsByParent(state: RenderedState, root: BaseBpmnRenderElemen
     return result
 }
 
-private fun dumpTree(elemsByParent: Map<String, Set<String>>) {
+private fun dumpTree(elementsById: Map<BpmnElementId, BaseDiagramRenderElement>, elemsByParent: Map<String, Set<String>>) {
     val childElems = elemsByParent.values.flatten().toLinkedSet()
     val roots = elemsByParent.keys.filter { !childElems.contains(it) }.toLinkedSet()
     if (roots.isEmpty()) {
@@ -46,22 +48,22 @@ private fun dumpTree(elemsByParent: Map<String, Set<String>>) {
         }
     }
     println("{")
-    dumpTree(roots, elemsByParent)
+    dumpTree(elementsById, roots, elemsByParent)
     println("}")
 }
 
-private fun dumpTree(front: Set<String>, elemsByParent: Map<String, Set<String>>, prefix: Int = 4) {
+private fun dumpTree(elementsById: Map<BpmnElementId, BaseDiagramRenderElement>, front: Set<String>, elemsByParent: Map<String, Set<String>>, prefix: Int = 4) {
     fun separatorIfNeeded(ind: Int) = if (ind != front.size - 1) "," else ""
     val prefixStr = " ".repeat(prefix)
     front.forEachIndexed { ind, elem ->
         val children = elemsByParent[elem]
         if (null != children) {
-            println("$prefixStr\"$elem\":")
+            println("$prefixStr\"$elem (diagram id: ${elementsById[BpmnElementId(elem)]?.elementId?.id})\":")
             println("$prefixStr{")
-            dumpTree(children, elemsByParent, prefix + 4)
+            dumpTree(elementsById, children, elemsByParent, prefix + 4)
             println("$prefixStr}${separatorIfNeeded(ind)}")
         } else {
-            println("$prefixStr\"$elem\"${separatorIfNeeded(ind)}")
+            println("$prefixStr\"$elem (diagram id: ${elementsById[BpmnElementId(elem)]?.elementId?.id})\"${separatorIfNeeded(ind)}")
         }
 
     }
