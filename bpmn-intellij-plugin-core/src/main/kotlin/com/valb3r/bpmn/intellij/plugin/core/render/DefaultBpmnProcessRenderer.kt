@@ -74,6 +74,8 @@ data class RenderedState(val state: RenderState, val elementsById: Map<BpmnEleme
         result += elem.children.flatMap { allChildrenOf(it) }
         return result
     }
+
+    override fun toString(): String = "" // To prevent StackOverflow during debug
 }
 
 fun lastRenderedState(project: Project): RenderedState? {

@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.intellij.openapi.project.Project
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElement
 
 fun dumpRenderTree(project: Project) {
     val renderState = lastRenderedState(project)!!
@@ -12,11 +13,22 @@ fun dumpRenderTree(project: Project) {
     println("=====   End XML tree   =====")
 
     println("=====   Render tree:  =====")
-    val treeElems = renderState.elementsById.entries
-        .groupBy { it.value.parents.map { it.bpmnElementId.id }.firstOrNull() ?: "" }
-        .mapValues { entry -> entry.value.map { it.key.id }.toSet() }
-    dumpTree(treeElems)
+    dumpTree(rootToElemsByParent(renderState, renderState.state.ctx.cachedDom!!.domRoot))
     println("===== End Render tree =====")
+}
+
+private fun rootToElemsByParent(state: RenderedState, root: BaseBpmnRenderElement): Map<String, Set<String>> {
+    val elemMap = state.state.elemMap
+    val front = mutableSetOf(root)
+    val result = mutableMapOf<String, MutableSet<String>>()
+    while (front.isNotEmpty()) {
+        front.forEach { result.computeIfAbsent(it.parents.firstOrNull()?.bpmnElementId?.id ?: "") { mutableSetOf() }.add(it.bpmnElementId.id) }
+        val newFront = front.flatMap { it.children }.map { elemMap[it.elementId] }.filterIsInstance<BaseBpmnRenderElement>()
+        front.clear()
+        front.addAll(newFront)
+    }
+
+    return result
 }
 
 private fun dumpTree(elemsByParent: Map<String, Set<String>>) {
