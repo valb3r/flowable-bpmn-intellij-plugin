@@ -17,7 +17,7 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
 
     fun toView(factory: BpmnObjectFactory) : BpmnFileView {
         val mappedCollaborations = mapCollaborations(factory)
-        val rootProcessOrCollaborationId = mappedCollaborations.firstOrNull()?.collaborationId ?: processes.firstOrNull()?.id ?: BpmnElementId("")
+        val rootProcessOrCollaborationId = mappedCollaborations.firstOrNull()?.collaborationId ?: BpmnElementId("")
         val collaborationProcessRoots = collaborations.flatMap { it.participant ?: emptyList() }
             .filter { null != it.processRef }
             .groupBy { it.processRef!! }
