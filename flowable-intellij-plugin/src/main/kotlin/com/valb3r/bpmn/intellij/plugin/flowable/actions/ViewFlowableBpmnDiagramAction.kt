@@ -21,12 +21,9 @@ class ViewFlowableBpmnDiagramAction : AnAction() {
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("BPMN-Flowable-Diagram")!!
         toolWindow.title = file.name
         toolWindow.activate {
-            ServiceManager.getService(project, FlowableBpmnPluginToolWindowProjectService::class.java)
-                    .bpmnToolWindow
-                    .run(
-                            file,
-                            BpmnActionContext(project)
-                    )
+            val window = ServiceManager.getService(project, FlowableBpmnPluginToolWindowProjectService::class.java).bpmnToolWindow
+            window.hackFixForMacOsScrollbars()
+            window.run(file, BpmnActionContext(project))
         }
     }
 
