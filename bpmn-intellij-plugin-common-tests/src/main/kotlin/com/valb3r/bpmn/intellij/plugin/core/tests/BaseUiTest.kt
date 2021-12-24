@@ -49,7 +49,6 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.swing.Icon
 import javax.swing.JButton
-import javax.swing.JComponent
 import javax.swing.JTable
 import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.TableColumn
