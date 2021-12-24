@@ -548,7 +548,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
         val begin = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
         canvas.paintComponent(graphics)
-        canvas.startSelectionOrSelectedDrag(begin)
+        canvas.startSelectionAndDrag(begin)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize, endElemY  + serviceTaskSize))
         canvas.paintComponent(graphics)
@@ -558,7 +558,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         val startCenterX = startElemX + serviceTaskSize / 2.0f
         val startCenterY = startElemY
         val dragDelta = Point2D.Float(100.0f, 100.0f)
-        canvas.startSelectionOrSelectedDrag(Point2D.Float(startCenterX, startCenterY))
+        canvas.startSelectionAndDrag(Point2D.Float(startCenterX, startCenterY))
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startCenterX + dragDelta.x, startCenterY + dragDelta.y))
         canvas.paintComponent(graphics)
@@ -591,7 +591,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         val begin = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
         canvas.click(begin) // unselect service task
         canvas.paintComponent(graphics)
-        canvas.startSelectionOrSelectedDrag(begin)
+        canvas.startSelectionAndDrag(begin)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startElemX + serviceTaskSize + 10.0f, startElemY + serviceTaskSize + 10.0f))
         canvas.paintComponent(graphics)
@@ -601,7 +601,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         val startCenterX = startElemX + serviceTaskSize / 2.0f
         val startCenterY = startElemY
         val dragDelta = Point2D.Float(100.0f, 100.0f)
-        canvas.startSelectionOrSelectedDrag(Point2D.Float(startCenterX, startCenterY))
+        canvas.startSelectionAndDrag(Point2D.Float(startCenterX, startCenterY))
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startCenterX + dragDelta.x, startCenterY + dragDelta.y))
         canvas.paintComponent(graphics)
@@ -650,7 +650,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
     private fun selectRectDragAndVerify() {
         val begin = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
         canvas.paintComponent(graphics)
-        canvas.startSelectionOrSelectedDrag(begin)
+        canvas.startSelectionAndDrag(begin)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize, endElemY + serviceTaskSize))
         canvas.paintComponent(graphics)
@@ -660,7 +660,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         val startCenterX = startElemX + serviceTaskSize / 2.0f
         val startCenterY = startElemY
         val dragDelta = Point2D.Float(100.0f, 100.0f)
-        canvas.startSelectionOrSelectedDrag(Point2D.Float(startCenterX, startCenterY))
+        canvas.startSelectionAndDrag(Point2D.Float(startCenterX, startCenterY))
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startCenterX + dragDelta.x, startCenterY + dragDelta.y))
         canvas.paintComponent(graphics)
@@ -773,10 +773,10 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         val begin = Point2D.Float(-10.0f, -10.0f)
         val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce()
         canvas.click(begin) // de-select rectangle
-        canvas.startSelectionOrSelectedDrag(begin)
+        canvas.startSelectionAndDrag(begin)
         canvas.paintComponent(graphics)
 
-        canvas.startSelectionOrSelectedDrag(begin)
+        canvas.startSelectionAndDrag(begin)
         // Stepped selection to allow waypoints to reveal
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startElemX + serviceTaskSize + 10.0f, startElemX + serviceTaskSize + 10.0f))
@@ -989,14 +989,14 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         // Select rectangle
         val begin = Point2D.Float(-10.0f, -10.0f)
         canvas.click(begin)
-        canvas.startSelectionOrSelectedDrag(begin)
+        canvas.startSelectionAndDrag(begin)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize + 10.0f, endElemY + serviceTaskSize + 10.0f))
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
         // Drag rectangle
         val dragStart = elementCenter(serviceTaskStartDiagramId)
-        canvas.startSelectionOrSelectedDrag(dragStart)
+        canvas.startSelectionAndDrag(dragStart)
         canvas.dragOrSelectWithLeftButton(dragStart, Point2D.Float(dragStart.x + dx, dragStart.y + dy))
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
@@ -1049,14 +1049,14 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         // Select rectangle
         val begin = Point2D.Float(-10.0f, -10.0f)
         canvas.click(begin)
-        canvas.startSelectionOrSelectedDrag(begin)
+        canvas.startSelectionAndDrag(begin)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize + 10.0f, endElemY + serviceTaskSize + 10.0f))
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
         // Drag rectangle
         val dragStart = elementCenter(serviceTaskStartDiagramId)
-        canvas.startSelectionOrSelectedDrag(dragStart)
+        canvas.startSelectionAndDrag(dragStart)
         canvas.dragOrSelectWithLeftButton(dragStart, Point2D.Float(dragStart.x + dx, dragStart.y + dy))
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
@@ -1084,7 +1084,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         canvas.click(begin)
         canvas.paintComponent(graphics)
         // Drag rectangle
-        canvas.startSelectionOrSelectedDrag(begin)
+        canvas.startSelectionAndDrag(begin)
         canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(begin.x + dx, begin.y + dy))
         canvas.paintComponent(graphics)
 
