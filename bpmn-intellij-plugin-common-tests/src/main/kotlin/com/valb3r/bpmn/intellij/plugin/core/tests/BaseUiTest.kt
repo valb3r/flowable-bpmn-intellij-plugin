@@ -49,7 +49,6 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.swing.Icon
 import javax.swing.JButton
-import javax.swing.JComponent
 import javax.swing.JTable
 import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.TableColumn
@@ -276,7 +275,7 @@ abstract class BaseUiTest {
     }
 
     protected fun dragToButDontStop(point: Point2D.Float, target: Point2D.Float) {
-        canvas.startSelectionOrSelectedDrag(point)
+        canvas.startSelectionOrDrag(point)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(point, target)
         canvas.paintComponent(graphics)
@@ -323,7 +322,7 @@ abstract class BaseUiTest {
     protected fun clickOnId(elemId: DiagramElementId): Point2D.Float {
         val point = elementCenter(elemId)
         // imitate real event cycle
-        canvas.startSelectionOrSelectedDrag(point)
+        canvas.startSelectionOrDrag(point)
         canvas.stopDragOrSelect()
         canvas.click(point)
         canvas.paintComponent(graphics)

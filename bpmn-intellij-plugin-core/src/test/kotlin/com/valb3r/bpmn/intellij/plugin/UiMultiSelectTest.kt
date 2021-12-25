@@ -41,7 +41,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
         prepareOneSubProcessWithServiceTaskAndAttachedBoundaryEventOneNestedSubprocessAndServiceTaskWithSequence()
 
         val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
-        canvas.startSelectionOrSelectedDrag(selectionStart)
+        canvas.startSelectionOrDrag(selectionStart)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(endElemX + serviceTaskSize + 10.0f, endElemY + serviceTaskSize + 10.0f))
         canvas.paintComponent(graphics)
@@ -59,7 +59,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
 
         val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
         canvas.click(selectionStart)
-        canvas.startSelectionOrSelectedDrag(selectionStart)
+        canvas.startSelectionOrDrag(selectionStart)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(endElemX + serviceTaskSize, endElemX + serviceTaskSize))
         canvas.paintComponent(graphics)
@@ -68,7 +68,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
 
         val dragBegin = elementCenter(serviceTaskStartDiagramId)
         val delta = 10000.0f
-        canvas.startSelectionOrSelectedDrag(dragBegin)
+        canvas.startSelectionOrDrag(dragBegin)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(dragBegin, Point2D.Float(dragBegin.x + delta, dragBegin.x + delta))
         canvas.paintComponent(graphics)
@@ -110,7 +110,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
 
         val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
         canvas.click(selectionStart)
-        canvas.startSelectionOrSelectedDrag(selectionStart)
+        canvas.startSelectionOrDrag(selectionStart)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(subProcessSize * 2.0f, subProcessSize * 2.0f))
         canvas.paintComponent(graphics)
@@ -119,7 +119,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
 
         val dragBegin = elementCenter(subprocessDiagramId) // child elements are also standalone click capturing players
         val delta = 10.0f
-        canvas.startSelectionOrSelectedDrag(dragBegin)
+        canvas.startSelectionOrDrag(dragBegin)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(dragBegin, Point2D.Float(dragBegin.x + delta, dragBegin.x + delta))
         canvas.paintComponent(graphics)
@@ -156,7 +156,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
 
         val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
         canvas.click(selectionStart)
-        canvas.startSelectionOrSelectedDrag(selectionStart)
+        canvas.startSelectionOrDrag(selectionStart)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(subProcessSize + 100.0f, subProcessSize + 100.0f))
         canvas.paintComponent(graphics)
@@ -165,7 +165,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
 
         val dragBegin = elementCenter(subprocessDiagramId) // child elements are also standalone click capturing players
         val delta = 10.0f
-        canvas.startSelectionOrSelectedDrag(dragBegin)
+        canvas.startSelectionOrDrag(dragBegin)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(dragBegin, Point2D.Float(dragBegin.x + delta, dragBegin.x + delta))
         canvas.paintComponent(graphics)
@@ -202,7 +202,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
 
         val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
         canvas.click(selectionStart)
-        canvas.startSelectionOrSelectedDrag(selectionStart)
+        canvas.startSelectionOrDrag(selectionStart)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(nestedSubProcessSize + 20.0f, nestedSubProcessSize + 20.0f))
         canvas.paintComponent(graphics)
@@ -211,7 +211,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
 
         val dragBegin = elementCenter(subprocessInSubProcessDiagramId)
         val delta = 10.0f
-        canvas.startSelectionOrSelectedDrag(dragBegin)
+        canvas.startSelectionOrDrag(dragBegin)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(dragBegin, Point2D.Float(dragBegin.x + delta, dragBegin.x + delta))
         canvas.paintComponent(graphics)
@@ -236,7 +236,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
 
         val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
         canvas.click(selectionStart)
-        canvas.startSelectionOrSelectedDrag(selectionStart)
+        canvas.startSelectionOrDrag(selectionStart)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(subProcessSize + 100.0f, subProcessSize + 100.0f))
         canvas.paintComponent(graphics)
@@ -245,7 +245,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
 
         val dragBegin = elementCenter(subprocessDiagramId) // child elements are also standalone click capturing players
         val delta = 10.0f
-        canvas.startSelectionOrSelectedDrag(dragBegin)
+        canvas.startSelectionOrDrag(dragBegin)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(dragBegin, Point2D.Float(dragBegin.x + delta, dragBegin.x + delta))
         canvas.paintComponent(graphics)
