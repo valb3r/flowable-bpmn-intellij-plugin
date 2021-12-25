@@ -78,6 +78,10 @@ open class BpmnPluginToolWindow(
         this.canvasPanel.add(this.canvas)
         canvasAndProperties.dividerLocation = (canvasAndProperties.height * 0.8f).toInt()
 
+        hackFixForMacOsScrollbars()
+    }
+
+    fun hackFixForMacOsScrollbars() {
         // Preventing scrollbar thumb disappearing on MacOS, it is default behavior there, but is undesired for diagram
         if (SystemInfo.isMac) {
             canvasVScroll.setUI(MacScrollBar())

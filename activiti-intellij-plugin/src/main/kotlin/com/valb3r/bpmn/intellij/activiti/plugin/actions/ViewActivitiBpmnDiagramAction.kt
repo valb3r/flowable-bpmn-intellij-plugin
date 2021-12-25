@@ -21,12 +21,9 @@ class ViewActivitiBpmnDiagramAction : AnAction() {
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("BPMN-Activiti-Diagram")!!
         toolWindow.title = file.name
         toolWindow.activate {
-            ServiceManager.getService(project, ActivitiBpmnPluginToolWindowProjectService::class.java)
-                    .bpmnToolWindow
-                    .run(
-                            file,
-                            BpmnActionContext(project)
-                    )
+            val window = ServiceManager.getService(project, ActivitiBpmnPluginToolWindowProjectService::class.java).bpmnToolWindow
+            window.hackFixForMacOsScrollbars()
+            window.run(file, BpmnActionContext(project))
         }
     }
 
