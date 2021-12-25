@@ -236,7 +236,8 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         }
 
         if (selectedElements.intersect(elemsUnderCursor).isEmpty() && elemsUnderCursor.isNotEmpty()) {
-            updateSelectedElements(elemsUnderCursor)
+            this.selectedElements.clear()
+            this.selectedElements.addAll(elemsUnderCursor)
         }
 
         if (selectedElements.intersect(elemsUnderCursor).isNotEmpty()) {
