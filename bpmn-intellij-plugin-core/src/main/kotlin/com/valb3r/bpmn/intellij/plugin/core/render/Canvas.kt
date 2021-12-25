@@ -226,9 +226,14 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         }
     }
 
-    fun startSelectionAndDrag(current: Point2D.Float) {
+    fun startSelectionOrDrag(current: Point2D.Float) {
         val point = camera.fromCameraView(current)
         val elemsUnderCursor = elemUnderCursor(current).toSet()
+
+        if (elemsUnderCursor.isEmpty()) {
+            interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), SelectionRect(current, current), mutableMapOf(), mutableMapOf(), null, point, point)
+            return
+        }
 
         if (selectedElements.intersect(elemsUnderCursor).isEmpty() && elemsUnderCursor.isNotEmpty()) {
             updateSelectedElements(elemsUnderCursor)
@@ -236,11 +241,6 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
 
         if (selectedElements.intersect(elemsUnderCursor).isNotEmpty()) {
             dragSelectedElements(point)
-            return
-        }
-
-        if (elemsUnderCursor.isEmpty()) {
-            interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), SelectionRect(current, current), mutableMapOf(), mutableMapOf(), null, point, point)
             return
         }
 

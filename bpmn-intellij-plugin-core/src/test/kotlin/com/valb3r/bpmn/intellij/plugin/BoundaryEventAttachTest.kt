@@ -36,7 +36,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
 
         val start = clickOnId(optionalBoundaryErrorEventDiagramId)
         canvas.paintComponent(graphics)
-        canvas.startSelectionAndDrag(start)
+        canvas.startSelectionOrDrag(start)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(start, target)
         canvas.paintComponent(graphics)
@@ -70,7 +70,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
 
         val start = clickOnId(optionalBoundaryErrorEventDiagramId)
         canvas.paintComponent(graphics)
-        canvas.startSelectionAndDrag(start)
+        canvas.startSelectionOrDrag(start)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(start, target)
         canvas.paintComponent(graphics)
@@ -103,7 +103,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
 
         val start = clickOnId(optionalBoundaryErrorEventDiagramId)
         canvas.paintComponent(graphics)
-        canvas.startSelectionAndDrag(start)
+        canvas.startSelectionOrDrag(start)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(start, elementCenter(subprocessDiagramId))
         canvas.paintComponent(graphics)
@@ -136,7 +136,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
 
         val start = clickOnId(optionalBoundaryErrorEventDiagramId)
         canvas.paintComponent(graphics)
-        canvas.startSelectionAndDrag(start)
+        canvas.startSelectionOrDrag(start)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(start, elementCenter(subprocessInSubProcessDiagramId))
         canvas.paintComponent(graphics)
@@ -171,7 +171,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
 
         val start = clickOnId(optionalBoundaryErrorEventDiagramId)
         canvas.paintComponent(graphics)
-        canvas.startSelectionAndDrag(start)
+        canvas.startSelectionOrDrag(start)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(start, target)
         canvas.paintComponent(graphics)
@@ -205,7 +205,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
 
         val start = clickOnId(optionalBoundaryErrorEventDiagramId)
         canvas.paintComponent(graphics)
-        canvas.startSelectionAndDrag(start)
+        canvas.startSelectionOrDrag(start)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(start, onProcessDragEnd)
         canvas.paintComponent(graphics)
@@ -238,7 +238,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
 
         val start = clickOnId(serviceTaskStartDiagramId)
         canvas.paintComponent(graphics)
-        canvas.startSelectionAndDrag(start)
+        canvas.startSelectionOrDrag(start)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(start, elementCenter(subprocessDiagramId))
         canvas.paintComponent(graphics)
