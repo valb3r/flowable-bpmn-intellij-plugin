@@ -4,6 +4,11 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task.Backgroundable
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiFile
@@ -22,10 +27,22 @@ abstract class BaseViewBpmnDiagramAction : AnAction() {
         }
 
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(toolWindowName)!!
-        toolWindow.title = file.name
-        toolWindow.activate {
-            generateContent(project, file)
+
+        val task = object : Backgroundable(project, "Loading ${file.name}") {
+            override fun run(indicator: ProgressIndicator) {
+                generateContent(project, file)
+                indicator.text = "Successfully opened ${file.name}"
+                invokeLater {
+                    toolWindow.activate {}
+                }
+            }
         }
+
+        val indicator = BackgroundableProcessIndicator(task)
+        indicator.isIndeterminate = true
+
+        toolWindow.title = file.name
+        ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, indicator)
     }
 
     override fun update(anActionEvent: AnActionEvent) {
