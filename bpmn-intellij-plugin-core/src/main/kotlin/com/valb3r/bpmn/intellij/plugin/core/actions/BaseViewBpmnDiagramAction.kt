@@ -27,23 +27,21 @@ abstract class BaseViewBpmnDiagramAction : AnAction() {
         }
 
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(toolWindowName)!!
-
-        val task = object : Backgroundable(project, "Loading Tool Window") {
-            override fun run(indicator: ProgressIndicator) {
-                indicator.text = "Opening ${file.name}"
-                generateContent(project, file)
-                indicator.text = "Successfully opened ${file.name}"
-                invokeLater {
-                    toolWindow.activate {}
+        toolWindow.activate {
+            val task = object : Backgroundable(project, "Loading Tool Window") {
+                override fun run(indicator: ProgressIndicator) {
+                    indicator.text = "Opening ${file.name}"
+                    generateContent(project, file)
+                    indicator.text = "Successfully opened ${file.name}"
                 }
             }
+
+            val indicator = BackgroundableProcessIndicator(task)
+            indicator.isIndeterminate = true
+
+            toolWindow.title = file.name
+            ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, indicator)
         }
-
-        val indicator = BackgroundableProcessIndicator(task)
-        indicator.isIndeterminate = true
-
-        toolWindow.title = file.name
-        ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, indicator)
     }
 
     override fun update(anActionEvent: AnActionEvent) {
