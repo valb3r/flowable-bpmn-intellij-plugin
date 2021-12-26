@@ -20,7 +20,7 @@ class ViewCamundaBpmnDiagramAction : BaseViewBpmnDiagramAction() {
     override fun generateContent(project: Project, file: PsiFile) {
         val window = ServiceManager.getService(project, CamundaBpmnPluginToolWindowProjectService::class.java).bpmnToolWindow
         window.hackFixForMacOsScrollbars()
-        window.run(file, BpmnActionContext(project))
+        window.openFileAndRender(file, BpmnActionContext(project))
     }
 
     override fun notificationBalloon(project: Project, message: String, type: NotificationType) {
