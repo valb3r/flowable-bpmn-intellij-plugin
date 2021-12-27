@@ -39,6 +39,15 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+      <p>0.4.9.2:</p>
+        <ul>
+          <li>
+            Dragging or performing action on element now does not require it to be active
+          </li>
+          <li>
+            Added loading spinner for Open Diagram action
+          </li>
+        </ul>
       <p>0.4.9.1:</p>
         <ul>
           <li>
@@ -55,24 +64,6 @@
           </li>
           <li>
             Minor rendering performance improvement
-          </li>
-        </ul>
-      <p>0.4.8:</p>
-        <ul>
-          <li>
-            Fixed bug with boundary event wrong attach behavior in subprocess
-          </li>
-          <li>
-            Fixed bug - unable to save settings (i.e. to add custom extension) in 2021.2.3
-          </li>
-          <li>
-            Snap to grid feature
-          </li>
-          <li>
-            Ability to disable vertical/horizontal anchors
-          </li>
-          <li>
-            Ability to select parent edge from waypoint
           </li>
         </ul>
     ]]></change-notes>
