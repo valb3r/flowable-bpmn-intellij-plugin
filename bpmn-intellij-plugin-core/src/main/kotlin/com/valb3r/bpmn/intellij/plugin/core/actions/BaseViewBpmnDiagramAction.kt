@@ -33,13 +33,14 @@ abstract class BaseViewBpmnDiagramAction : AnAction() {
                     indicator.text = "Opening ${file.name}"
                     generateContent(project, file)
                     indicator.text = "Successfully opened ${file.name}"
+                    invokeLater { toolWindow.title = file.name }
                 }
             }
 
             val indicator = BackgroundableProcessIndicator(task)
             indicator.isIndeterminate = true
 
-            toolWindow.title = file.name
+            invokeLater { toolWindow.title = "[Loading...] ${file.name}" }
             ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, indicator)
         }
     }
