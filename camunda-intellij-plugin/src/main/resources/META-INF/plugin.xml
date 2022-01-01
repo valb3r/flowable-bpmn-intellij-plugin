@@ -304,6 +304,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Camunda BPMN 2.0 Engine XML process" implementationClass="com.valb3r.bpmn.intellij.plugin.camunda.meta.CamundaFileType"
                   fieldName="INSTANCE" language="XML" extensions="bpmn"/>
+        <xml.schemaProvider implementation="com.valb3r.bpmn.intellij.plugin.camunda.schemas.CamundaBpmnFileSchemasProvider"/>
     </extensions>
     <!-- File templates registration -->
     <extensions defaultExtensionNs="com.intellij">
