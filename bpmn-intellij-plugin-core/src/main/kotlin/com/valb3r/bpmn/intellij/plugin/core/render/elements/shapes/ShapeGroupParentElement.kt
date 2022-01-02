@@ -10,7 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import java.awt.Stroke
 
-class NamedShape(
+class ShapeGroupParentElement(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
         shape: ShapeElement,

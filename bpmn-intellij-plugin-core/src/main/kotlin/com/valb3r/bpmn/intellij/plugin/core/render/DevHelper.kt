@@ -57,13 +57,15 @@ private fun dumpTree(elementsById: Map<BpmnElementId, BaseDiagramRenderElement>,
     val prefixStr = " ".repeat(prefix)
     front.forEachIndexed { ind, elem ->
         val children = elemsByParent[elem]
+        val diagramElem = elementsById[BpmnElementId(elem)]
+        val clazz = if (null != diagramElem) diagramElem::class.simpleName else null
         if (null != children) {
-            println("$prefixStr\"$elem (diagram id: ${elementsById[BpmnElementId(elem)]?.elementId?.id})\":")
+            println("$prefixStr\"$elem [$clazz] (diagram id: ${diagramElem?.elementId?.id})\":")
             println("$prefixStr{")
             dumpTree(elementsById, children, elemsByParent, prefix + 4)
             println("$prefixStr}${separatorIfNeeded(ind)}")
         } else {
-            println("$prefixStr\"$elem (diagram id: ${elementsById[BpmnElementId(elem)]?.elementId?.id})\"${separatorIfNeeded(ind)}")
+            println("$prefixStr\"$elem [$clazz] (diagram id: ${diagramElem?.elementId?.id})\"${separatorIfNeeded(ind)}")
         }
 
     }
