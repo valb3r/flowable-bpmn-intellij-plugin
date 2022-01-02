@@ -201,9 +201,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         clickedElements.forEach { interactionCtx.clickCallbacks[it]?.invoke(updateEventsRegistry(project)) }
         val invokeAfter = clickedElements.mapNotNull { interactionCtx.postClickCallbacks[it] }
 
-        this.selectedElements.clear()
-        interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), mutableMapOf(), null, Point2D.Float(), Point2D.Float())
-        this.selectedElements.addAll(clickedElements)
+        updateSelectedElements(clickedElements)
 
         repaint()
 
@@ -231,16 +229,22 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         }
     }
 
-    fun startSelectionOrSelectedDrag(current: Point2D.Float) {
+    fun startSelectionOrDrag(current: Point2D.Float) {
         val point = camera.fromCameraView(current)
-        val elemsUnderCursor = elemUnderCursor(current)
-        if (selectedElements.isNotEmpty() && selectedElements.intersect(elemsUnderCursor).isNotEmpty()) {
-            dragSelectedElements(point)
-            return
-        }
+        val elemsUnderCursor = elemUnderCursor(current).toSet()
 
         if (elemsUnderCursor.isEmpty()) {
             interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), SelectionRect(current, current), mutableMapOf(), mutableMapOf(), null, point, point)
+            return
+        }
+
+        if (selectedElements.intersect(elemsUnderCursor).isEmpty() && elemsUnderCursor.isNotEmpty()) {
+            this.selectedElements.clear()
+            this.selectedElements.addAll(elemsUnderCursor)
+        }
+
+        if (selectedElements.intersect(elemsUnderCursor).isNotEmpty()) {
+            dragSelectedElements(point)
             return
         }
 
@@ -430,6 +434,12 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
                     )
                 }
             } ?: propsVisualizer?.clear()
+    }
+
+    private fun updateSelectedElements(clickedElements: Collection<DiagramElementId>) {
+        this.selectedElements.clear()
+        interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), mutableMapOf(), null, Point2D.Float(), Point2D.Float())
+        this.selectedElements.addAll(clickedElements)
     }
 
     private fun applyOrthoOrNoneAnchors(anchorX: AnchorDetails?, anchorY: AnchorDetails?, ctx: ElementInteractionContext): AnchorHit {

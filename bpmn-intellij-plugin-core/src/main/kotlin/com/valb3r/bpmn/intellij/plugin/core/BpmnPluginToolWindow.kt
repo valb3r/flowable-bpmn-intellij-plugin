@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core
 
+import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -17,7 +18,10 @@ import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.*
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.JavaReferenceEditorUtil
-import com.intellij.ui.components.*
+import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.components.JBTextArea
+import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.ButtonlessScrollBarUI
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
@@ -33,14 +37,11 @@ import com.valb3r.bpmn.intellij.plugin.core.render.currentIconProvider
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ViewRectangleChangeEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
-import java.awt.Adjustable
 import java.awt.event.*
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.*
 import javax.swing.plaf.basic.BasicArrowButton
-import javax.swing.plaf.basic.BasicScrollBarUI
-import javax.swing.plaf.metal.MetalScrollBarUI
 import javax.swing.table.DefaultTableModel
 import kotlin.math.abs
 
@@ -78,8 +79,16 @@ open class BpmnPluginToolWindow(
         this.canvasPanel.add(this.canvas)
         canvasAndProperties.dividerLocation = (canvasAndProperties.height * 0.8f).toInt()
 
+        hackFixForMacOsScrollbars()
+    }
+
+    fun hackFixForMacOsScrollbars() {
         // Preventing scrollbar thumb disappearing on MacOS, it is default behavior there, but is undesired for diagram
-        if (SystemInfo.isMac) {
+        if (!SystemInfo.isMac) {
+            return
+        }
+        
+        invokeAndWaitIfNeeded {
             canvasVScroll.setUI(MacScrollBar())
             canvasHScroll.setUI(MacScrollBar())
         }
@@ -87,27 +96,31 @@ open class BpmnPluginToolWindow(
 
     fun getContent() = this.mainToolWindowForm
 
-    fun run(bpmnFile: PsiFile, context: BpmnActionContext) {
+    fun openFileAndRender(bpmnFile: PsiFile, context: BpmnActionContext) {
         onBeforeFileOpen(bpmnFile)
         val bpmnParser = currentParser(project)
         if (this.canvasBuilder.assertFileContentAndShowErrorOrWarning(bpmnParser, bpmnFile.virtualFile, onBadContentErrorCallback, onBadContentWarningCallback)) return
 
-        val table = MultiEditJTable(DefaultTableModel())
-        table.autoResizeMode = JTable.AUTO_RESIZE_OFF
-        table.rowHeight = 24
+        val multiEditJTable = invokeAndWaitIfNeeded {
+            val table = MultiEditJTable(DefaultTableModel())
+            table.autoResizeMode = JTable.AUTO_RESIZE_OFF
+            table.rowHeight = 24
 
-        val scrollPane = JBScrollPane(table)
-        propertiesPanel.removeAll()
-        propertiesPanel.add(scrollPane)
-        canvasAndProperties.dividerLocation = (canvasAndProperties.height * 0.8f).toInt()
+            val scrollPane = JBScrollPane(table)
+            propertiesPanel.removeAll()
+            propertiesPanel.add(scrollPane)
+            canvasAndProperties.dividerLocation = (canvasAndProperties.height * 0.8f).toInt()
 
-        setupUiBeforeRun()
+            setupUiBeforeRun()
+            return@invokeAndWaitIfNeeded table
+        }
+
         val virtualFile = bpmnFile.virtualFile
         onFileOpenCallback(bpmnFile)
         this.canvasBuilder.build(
                 { IntelliJFileCommitter(it, context.project, virtualFile) },
                 bpmnParser,
-                table,
+                multiEditJTable,
                 { _: BpmnElementId, _: PropertyType, value: String, allowableValues: Set<String> -> createDropdown(value, allowableValues) },
                 { _: BpmnElementId, _: PropertyType, value: String -> createEditorForClass(context.project, bpmnFile, value) },
                 { _: BpmnElementId, _: PropertyType, value: String -> createEditor(context.project, bpmnFile, value) },
@@ -120,7 +133,8 @@ open class BpmnPluginToolWindow(
                 bpmnFile.project,
                 virtualFile
         )
-        setupUiAfterRun()
+
+        invokeAndWaitIfNeeded { setupUiAfterRun() }
     }
 
     private fun createMultiLineTextField(value: String): TextValueAccessor {

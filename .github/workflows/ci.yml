@@ -1,4 +1,4 @@
-name: Java CI
+name: Plugin CI
 
 on: [push]
 

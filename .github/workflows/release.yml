@@ -1,0 +1,39 @@
+name: Plugin release
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: master
+          fetch-depth: 0
+      - name: Exit if not on master branch
+        run: |
+          if [ $(git --no-pager branch --format='%(refname:short)' --contains $(git rev-parse "$TAG_NAME") | grep -E '^master$') ]; then
+              echo "Releasing $TAG_NAME"
+          else
+              echo "Tag $TAG_NAME is not on master branch"
+              exit -1
+          fi
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build, test with Gradle
+        run: ./gradlew clean build buildPlugin
+      - name: Release plugin(s)
+        run: ./gradlew publishPlugin
+        env:
+          INTELLIJ_PLUGIN_PUBLISH_TOKEN: ${{ secrets.INTELLIJ_PLUGIN_PUBLISH_TOKEN }}

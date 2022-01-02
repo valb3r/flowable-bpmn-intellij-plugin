@@ -447,4 +447,6 @@ data class TreeState (
     internal val version: Long,
 ) {
     internal lateinit var domRoot: BaseBpmnRenderElement
+
+    override fun toString() = "" // Prevent debugger hanging and StackOverflow errors
 }

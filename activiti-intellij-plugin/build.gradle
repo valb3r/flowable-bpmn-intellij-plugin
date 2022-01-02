@@ -47,8 +47,12 @@ runIde {
     jvmArgs("-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition", "-Xmx2G")
 }
 
+verifyPlugin {
+    ignoreWarnings = true
+}
+
 publishPlugin {
-    token = intellijPublishToken
+    token = System.getenv("INTELLIJ_PLUGIN_PUBLISH_TOKEN")
 }
 
 compileKotlin {

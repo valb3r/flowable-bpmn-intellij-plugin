@@ -42,6 +42,10 @@ intellij {
     plugins = intellijPlatformPlugins
 }
 
+patchPluginXml.enabled = false
+verifyPlugin.enabled = false
+publishPlugin.enabled = false
+
 compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"

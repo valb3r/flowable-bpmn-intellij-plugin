@@ -117,7 +117,7 @@ internal class ElementRemovalTest: BaseUiTest() {
     fun `Multiselect rectangle can remove subprocess and other elements`() {
         val selectionStart = Point2D.Float(startElemX - 10.0f, startElemY - 10.0f)
         canvas.click(selectionStart)
-        canvas.startSelectionOrSelectedDrag(selectionStart)
+        canvas.startSelectionOrDrag(selectionStart)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(selectionStart, Point2D.Float(nestedSubProcessSize + 20.0f, nestedSubProcessSize + 20.0f))
         canvas.paintComponent(graphics)

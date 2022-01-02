@@ -275,7 +275,7 @@ abstract class BaseUiTest {
     }
 
     protected fun dragToButDontStop(point: Point2D.Float, target: Point2D.Float) {
-        canvas.startSelectionOrSelectedDrag(point)
+        canvas.startSelectionOrDrag(point)
         canvas.paintComponent(graphics)
         canvas.dragOrSelectWithLeftButton(point, target)
         canvas.paintComponent(graphics)
@@ -322,7 +322,7 @@ abstract class BaseUiTest {
     protected fun clickOnId(elemId: DiagramElementId): Point2D.Float {
         val point = elementCenter(elemId)
         // imitate real event cycle
-        canvas.startSelectionOrSelectedDrag(point)
+        canvas.startSelectionOrDrag(point)
         canvas.stopDragOrSelect()
         canvas.click(point)
         canvas.paintComponent(graphics)

@@ -1,47 +1,26 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.actions
 
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.ServiceManager
-import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiFile
+import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.plugin.core.BpmnActionContext
-import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
+import com.valb3r.bpmn.intellij.plugin.core.actions.BaseViewBpmnDiagramAction
 import com.valb3r.bpmn.intellij.plugin.flowable.FlowableBpmnPluginToolWindowProjectService
 
-class ViewFlowableBpmnDiagramAction : AnAction() {
+class ViewFlowableBpmnDiagramAction : BaseViewBpmnDiagramAction() {
 
-    override fun actionPerformed(anActionEvent: AnActionEvent) {
-        val project = anActionEvent.project ?: return
-        val file = psiElement(anActionEvent)?.containingFile ?: return
-        if (!isValidFileName(file.name)) {
-            return
-        }
+    override val toolWindowName: String
+        get() = "BPMN-Flowable-Diagram"
 
-        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("BPMN-Flowable-Diagram")!!
-        toolWindow.title = file.name
-        toolWindow.activate {
-            ServiceManager.getService(project, FlowableBpmnPluginToolWindowProjectService::class.java)
-                    .bpmnToolWindow
-                    .run(
-                            file,
-                            BpmnActionContext(project)
-                    )
-        }
+    override fun generateContent(project: Project, file: PsiFile) {
+        val window = ServiceManager.getService(project, FlowableBpmnPluginToolWindowProjectService::class.java).bpmnToolWindow
+        window.hackFixForMacOsScrollbars()
+        window.openFileAndRender(file, BpmnActionContext(project))
     }
 
-    override fun update(anActionEvent: AnActionEvent) {
-        val project = anActionEvent.project
-        val psiElement = psiElement(anActionEvent)
-        anActionEvent.presentation.isEnabledAndVisible = project != null && isValidFileName(psiElement?.containingFile?.name)
-    }
-
-    private fun psiElement(anActionEvent: AnActionEvent) =
-            anActionEvent.getData(CommonDataKeys.PSI_FILE)
-
-    private fun isValidFileName(fileName: String?): Boolean {
-        val name = fileName ?: return false
-        val allowedExt = currentSettings().openExtensions
-        return allowedExt.any { name.endsWith(it) }
+    override fun notificationBalloon(project: Project, message: String, type: NotificationType) {
+        showNotificationBalloon(project, message, type)
     }
 }
