@@ -38,7 +38,11 @@ class ShapeGroupElement(
     }
 
     override fun onDragEnd(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
-        return mutableListOf()
+        if (null != droppedOn) {
+            return mutableListOf()
+        }
+
+        return super.onDragEnd(dx, dy, droppedOn, allDroppedOnAreas)
     }
 
     override fun zIndex(): Int {
