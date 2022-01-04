@@ -48,7 +48,8 @@ const val CDATA_FIELD = "CDATA"
 data class PropertyTypeDetails(
     val propertyType: PropertyType,
     val xmlPath: String,
-    val type: XmlType
+    val type: XmlType,
+    val forceFirst: Boolean = false
 )
 
 abstract class BaseBpmnParser: BpmnParser {
@@ -526,7 +527,16 @@ abstract class BaseBpmnParser: BpmnParser {
                     return
                 }
 
-                val newElem = currentNode.addElement(name)
+                // Sorting data in CustomizedXmlWriter is expensive performance-wise
+                val newElem = if (details.forceFirst) {
+                    val newElem = currentNode.addElement(name)
+                    currentNode.remove(newElem)
+                    currentNode.content().add(0, newElem)
+                    newElem
+                } else {
+                    currentNode.addElement(name)
+                }
+
                 currentNode = newElem
                 // TODO Handle this with setAttributeOrValueOrCdataOrRemoveIfNull ?
                 if (attrName != "\$") {
