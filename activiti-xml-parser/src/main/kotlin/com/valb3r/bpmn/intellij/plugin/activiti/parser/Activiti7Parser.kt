@@ -8,7 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.XmlType
 enum class Activiti7PropertyTypeDetails(val details: PropertyTypeDetails) {
     ID(PropertyTypeDetails(PropertyType.ID, "id", XmlType.ATTRIBUTE)),
     NAME(PropertyTypeDetails(PropertyType.NAME,"name", XmlType.ATTRIBUTE)),
-    DOCUMENTATION(PropertyTypeDetails(PropertyType.DOCUMENTATION, "documentation.text", XmlType.CDATA)),
+    DOCUMENTATION(PropertyTypeDetails(PropertyType.DOCUMENTATION, "documentation.text", XmlType.CDATA, forceFirst = true)),
     ASYNC(PropertyTypeDetails(PropertyType.ASYNC, "activiti:async", XmlType.ATTRIBUTE)),
     ASSIGNEE(PropertyTypeDetails(PropertyType.ASSIGNEE, "activiti:assignee", XmlType.ATTRIBUTE)),
     CALLED_ELEM(PropertyTypeDetails(PropertyType.CALLED_ELEM, "calledElement", XmlType.ATTRIBUTE)),

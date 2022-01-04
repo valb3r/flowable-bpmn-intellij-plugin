@@ -1,7 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.ui.components
 
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextArea
@@ -13,8 +12,10 @@ import java.awt.Component
 import java.awt.Font
 import java.awt.event.ActionEvent
 import javax.swing.*
-import javax.swing.table.*
-import javax.swing.text.JTextComponent
+import javax.swing.table.DefaultTableModel
+import javax.swing.table.TableCellEditor
+import javax.swing.table.TableCellRenderer
+import javax.swing.table.TableModel
 import javax.swing.text.View
 import kotlin.math.max
 
@@ -180,12 +181,10 @@ class JBComboBoxCellEditor(val field: ComboBox<*>): AbstractTableCellEditor() {
 
 class EditorTextFieldCellRenderer(val field: EditorTextField): TableCellRenderer {
 
-    private val macOsLabel: JLabel? = if (SystemInfoRt.isMac) JLabel(field.text) else null
-
     override fun getTableCellRendererComponent(
             table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
-        // MacOS renders EditorTextField as empty cells when they are not edited, so replacing them with label instead
-        return macOsLabel ?: field
+        // FIXME Recent IntelliJ's (2021.3) renders EditorTextField as empty cells when they are not edited, so replacing them with label instead
+        return JLabel(field.text)
     }
 }
 
