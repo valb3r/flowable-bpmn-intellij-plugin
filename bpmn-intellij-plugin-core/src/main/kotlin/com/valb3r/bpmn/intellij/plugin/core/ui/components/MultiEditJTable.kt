@@ -184,7 +184,7 @@ class EditorTextFieldCellRenderer(val field: EditorTextField): TableCellRenderer
     override fun getTableCellRendererComponent(
             table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
         // FIXME Recent IntelliJ's (2021.3) renders EditorTextField as empty cells when they are not edited, so replacing them with label instead
-        return JLabel(field.text)
+        return field
     }
 }
 
