@@ -42,6 +42,10 @@ intellij {
     plugins = intellijPlatformPlugins
 }
 
+runPluginVerifier {
+    ideVersions = ["IU-2019.3.5"]
+}
+
 verifyPlugin {
     ignoreWarnings = true
 }
