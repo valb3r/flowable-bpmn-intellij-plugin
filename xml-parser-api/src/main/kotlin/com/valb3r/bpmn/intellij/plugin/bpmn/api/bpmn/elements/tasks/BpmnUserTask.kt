@@ -14,6 +14,8 @@ data class BpmnUserTask(
     val asyncAfter: Boolean? = null,
     val isForCompensation: Boolean? = null,
     val assignee: String? = null,
+    val candidateUsers: String? = null,
+    val candidateGroups: String? = null,
     val dueDate: String? = null,
     val category: String? = null,
     val formKey: String? = null,
