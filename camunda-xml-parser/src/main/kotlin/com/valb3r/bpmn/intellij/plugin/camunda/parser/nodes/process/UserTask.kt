@@ -21,6 +21,8 @@ data class UserTask(
         @JacksonXmlProperty(isAttribute = true) val asyncAfter: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val assignee: String?,
+        @JacksonXmlProperty(isAttribute = true) val candidateUsers: String?,
+        @JacksonXmlProperty(isAttribute = true) val candidateGroups: String?,
         @JacksonXmlProperty(isAttribute = true) val dueDate: String?,
         @JacksonXmlProperty(isAttribute = true) val category: String?,
         @JacksonXmlProperty(isAttribute = true) val formKey: String?,
