@@ -433,7 +433,7 @@
         </annotation>
     </attribute>
 
-    <attribute name="candidateUsers" type="string">
+    <attribute name="candidateUsers">
         <annotation>
             <documentation>
                 User Task attribute to set the potential owners of a user task.
@@ -444,7 +444,7 @@
         </annotation>
     </attribute>
 
-    <attribute name="candidateGroups" type="string">
+    <attribute name="candidateGroups">
         <annotation>
             <documentation>
                 User Task attribute to set the potential owners of a user task.
