@@ -170,6 +170,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         var result = process
         result = extractTasksBasedOnType(result, "camel",  cachedMapper(CamelMapper::class.java)) { updates, target -> target.copy(camelTask = updates) }
         result = extractTasksBasedOnType(result, "http",  cachedMapper(HttpMapper::class.java)) { updates, target -> target.copy(httpTask = updates) }
+        result = extractTasksBasedOnType(result, "external",  cachedMapper(ExternalTaskMapper::class.java)) { updates, target -> target.copy(externalTask = updates) }
         result = extractTasksBasedOnType(result, "mail",  cachedMapper(MailMapper::class.java)) { updates, target -> target.copy(mailTask = updates) }
         result = extractTasksBasedOnType(result, "mule",  cachedMapper(MuleMapper::class.java)) { updates, target -> target.copy(muleTask = updates) }
         result = extractTasksBasedOnType(result, "dmn",  cachedMapper(DecisionMapper::class.java)) { updates, target -> target.copy(decisionTask = updates) }
@@ -381,6 +382,17 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
                         target = "saveResponseVariableAsJson")
         )
         override fun convertToDto(input: BpmnServiceTask): BpmnHttpTask
+    }
+
+    @Mapper
+    interface ExternalTaskMapper: ServiceTaskMapper<BpmnExternalTask> {
+//        ???
+
+        @Mappings(
+            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"jobTopic\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                target = "jobTopic"),
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnExternalTask
     }
 
     @Mapper

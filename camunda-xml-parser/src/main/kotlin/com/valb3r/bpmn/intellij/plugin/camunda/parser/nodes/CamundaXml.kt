@@ -175,6 +175,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     private fun applyServiceTaskCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
         result = extractTasksBasedOnType(result, "camel",  cachedMapper(CamelMapper::class.java)) { updates, target -> target.copy(camelTask = updates) }
+        result = extractTasksBasedOnType(result, "external",  cachedMapper(ExternalTaskMapper::class.java)) { updates, target -> target.copy(externalTask = updates) }
         result = extractTasksBasedOnType(result, "http",  cachedMapper(HttpMapper::class.java)) { updates, target -> target.copy(httpTask = updates) }
         result = extractTasksBasedOnType(result, "mail",  cachedMapper(MailMapper::class.java)) { updates, target -> target.copy(mailTask = updates) }
         result = extractTasksBasedOnType(result, "mule",  cachedMapper(MuleMapper::class.java)) { updates, target -> target.copy(muleTask = updates) }
@@ -348,6 +349,17 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
                     target = "camelContext")
         )
         override fun convertToDto(input: BpmnServiceTask): BpmnCamelTask
+    }
+
+    @Mapper
+    interface ExternalTaskMapper: ServiceTaskMapper<BpmnExternalTask> {
+//        ???
+
+        @Mappings(
+            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"jobTopic\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                target = "jobTopic"),
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnExternalTask
     }
 
     @Mapper

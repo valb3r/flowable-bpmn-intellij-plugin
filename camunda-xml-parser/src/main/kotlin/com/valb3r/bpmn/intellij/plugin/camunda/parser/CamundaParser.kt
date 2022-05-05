@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnComplexGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.BpmnShapeObjectAdded
@@ -27,6 +28,7 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     ASYNC_BEFORE(PropertyTypeDetails(PropertyType.ASYNC_BEFORE, "camunda:asyncBefore", XmlType.ATTRIBUTE)),
     ASYNC_AFTER(PropertyTypeDetails(PropertyType.ASYNC_AFTER, "camunda:asyncAfter", XmlType.ATTRIBUTE)),
     ASSIGNEE(PropertyTypeDetails(PropertyType.ASSIGNEE, "camunda:assignee", XmlType.ATTRIBUTE)),
+    JOB_TOPIC(PropertyTypeDetails(PropertyType.JOB_TOPIC, "camunda:topic", XmlType.ATTRIBUTE)),
     CALLED_ELEM(PropertyTypeDetails(PropertyType.CALLED_ELEM, "calledElement", XmlType.ATTRIBUTE)),
     // Unsupported? CALLED_ELEM_TYPE(PropertyTypeDetails(PropertyType.CALLED_ELEM_TYPE, "camunda:calledElementType", XmlType.ATTRIBUTE)),
     // Unsupported? INHERIT_VARS(PropertyTypeDetails(PropertyType.INHERIT_VARS, "camunda:inheritVariables", XmlType.ATTRIBUTE)),
