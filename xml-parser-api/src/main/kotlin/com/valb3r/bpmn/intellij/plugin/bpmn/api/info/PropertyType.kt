@@ -46,6 +46,7 @@ enum class PropertyType(
     FORM_KEY("formKey", "Form key", STRING),
     FORM_FIELD_VALIDATION("formFieldValidation", "Form field validation", BOOLEAN),
     PRIORITY("priority", "Priority", STRING),
+    TASK_PRIORITY("taskPriority", "Task priority", STRING),
     SCRIPT("scriptBody", "Script body", STRING, multiline = true),
     SCRIPT_FORMAT("scriptFormat", "Script format", STRING),
     AUTO_STORE_VARIABLES("autoStoreVariables", "Auto store variables", BOOLEAN),
