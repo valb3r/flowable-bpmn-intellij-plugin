@@ -1229,25 +1229,12 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
     fun `Test draw trigger icon`() {
         val painter =
             spy(CanvasPainter(graphics, Camera(Point2D.Float(), Point2D.Float()), CacheBuilder.newBuilder().build()))
-        whenever(painter.drawTriggered(any(), any())).thenReturn(
-            Area(Rectangle2D.Float(
-            15F, 15F, 15F, 15F
-        ))
-        )
-        setCanvas(project, CanvasTestable(painter, project, DefaultCanvasConstants()))
+        this.canvas = setCanvas(project, CanvasTestable(painter, project, DefaultCanvasConstants()))
         prepareTwoServiceTaskView()
-        clickOnId(serviceTaskStartDiagramId)
-        whenever(
-            boolFieldsConstructed[Pair(
-                serviceTaskStartBpmnId,
-                PropertyType.IS_TRIGGERABLE
-            )]!!.isSelected
-        ).thenReturn(
-            true
-        )
+        updateEventsRegistry(project).addPropertyUpdateEvent(BooleanValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.IS_TRIGGERABLE, true, propertyIndex = null))
         clickOnId(serviceTaskStartDiagramId)
 
-//        verify(painter, atLeastOnce()).drawTriggered(any(), any())
+        verify(painter, atLeastOnce()).drawTriggered(any(), any())
     }
 
     @Test
