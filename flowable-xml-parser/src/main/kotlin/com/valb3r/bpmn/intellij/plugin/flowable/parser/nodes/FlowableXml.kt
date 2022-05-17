@@ -30,6 +30,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 const val EXTENSION_ELEM_STREAM = "java(null == input.getExtensionElements() ? null : input.getExtensionElements().stream()"
 const val EXTENSION_STRING_EXTRACTOR = ".map(it -> it.getString()).filter(java.util.Objects::nonNull).findFirst().orElse(null))"
+const val UNMAPPED_ELEM_STREAM = "java(null == input.getUnmappedProperties() ? null : input.getUnmappedProperties().stream()"
+const val UNMAPPED_STRING_EXTRACTOR = ".map(it -> it.getString()).filter(java.util.Objects::nonNull).findFirst().orElse(null))"
 const val EXTENSION_EXPRESSION_EXTRACTOR = ".map(it -> it.getExpression()).filter(java.util.Objects::nonNull).findFirst().orElse(null))"
 const val EXTENSION_BOOLEAN_EXTRACTOR = ".map(it -> Boolean.valueOf(it.getString())).findFirst().orElse(null))"
 
@@ -388,6 +390,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     interface ExternalTaskMapper: ServiceTaskMapper<BpmnExternalTask> {
         @Mappings(
             Mapping(source = "forCompensation", target = "isForCompensation"),
+            Mapping(expression = "$UNMAPPED_ELEM_STREAM.filter(it -> \"jobTopic\".equals(it.getName()))$UNMAPPED_STRING_EXTRACTOR", target = "jobTopic"),
             )
         override fun convertToDto(input: BpmnServiceTask): BpmnExternalTask
     }

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionField
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.UnmappedProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import org.mapstruct.Mapper
@@ -32,7 +33,7 @@ data class ServiceTask(
     @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
     @JacksonXmlProperty(isAttribute = true) val useLocalScopeForResultVariable: Boolean?,
     @JacksonXmlProperty(isAttribute = true) val type: String?,
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null,
 ): BpmnMappable<BpmnServiceTask> {
 
     override fun toElement(): BpmnServiceTask {
@@ -48,8 +49,15 @@ data class ServiceTask(
             val task = doConvertToDto(input)
             return task.copy(
                     fieldsExtension = input.extensionElements?.filterIsInstance<FieldExtensionElement>()?.map { ExtensionField(it.name, it.string, it.expression) },
+                    unmappedProperties = buildUnmappedProperties(
+                        UnmappedProperty("jobTopic", input.jobTopic),
+                    ),
                     failedJobRetryTimeCycle = input.extensionElements?.filter { null != it.failedJobRetryTimeCycle }?.map { it.failedJobRetryTimeCycle }?.firstOrNull()
             )
+        }
+
+        private fun buildUnmappedProperties(vararg unmappedProp:UnmappedProperty) : List<UnmappedProperty>{
+            return unmappedProp.filter { null != it.name && null != it.string }.map{ it }
         }
 
         @Mapping(source = "forCompensation", target = "isForCompensation")
