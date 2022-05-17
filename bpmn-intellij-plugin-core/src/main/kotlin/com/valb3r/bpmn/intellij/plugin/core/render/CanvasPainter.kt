@@ -26,7 +26,7 @@ import java.text.BreakIterator
 import javax.swing.Icon
 
 
-class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCachedIcons: Cache<Long, BufferedImage>) {
+open class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCachedIcons: Cache<Long, BufferedImage>) {
 
     private val iconMargin = 5.0f
     private val textMargin = 5.0f
@@ -237,7 +237,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(drawShape)
     }
 
-    fun drawTriggered(shape: Rectangle2D.Float, icon: Icon) : Area {
+    open fun drawTriggered(shape: Rectangle2D.Float, icon: Icon) : Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.x, shape.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.x + shape.width, shape.y + shape.height))
         val iconTop = camera.fromCameraView(Point2D.Float(leftTop.x, leftTop.y + iconMargin + icon.iconHeight))
