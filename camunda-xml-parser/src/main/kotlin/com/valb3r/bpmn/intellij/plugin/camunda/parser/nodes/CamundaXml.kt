@@ -359,6 +359,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         @Mappings(
             Mapping(source = "forCompensation", target = "isForCompensation"),
             Mapping(expression = "$UNMAPPED_ELEM_STREAM.filter(it -> \"jobTopic\".equals(it.getName()))$UNMAPPED_STRING_EXTRACTOR", target = "jobTopic"),
+            Mapping(expression = "$UNMAPPED_ELEM_STREAM.filter(it -> \"taskPriority\".equals(it.getName()))$UNMAPPED_STRING_EXTRACTOR", target = "taskPriority"),
         )
         override fun convertToDto(input: BpmnServiceTask): BpmnExternalTask
     }

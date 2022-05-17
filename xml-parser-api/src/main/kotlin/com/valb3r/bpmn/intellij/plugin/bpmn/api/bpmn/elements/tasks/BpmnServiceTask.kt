@@ -24,7 +24,6 @@ data class BpmnServiceTask(
         val useLocalScopeForResultVariable: Boolean? = null,
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
-        val taskPriority: String? = null,
         // Customizations (Flowable) - http task, camel task,...:
         val type: String?  = null,
         /* BPMN engine specific extensions (intermediate storage) */

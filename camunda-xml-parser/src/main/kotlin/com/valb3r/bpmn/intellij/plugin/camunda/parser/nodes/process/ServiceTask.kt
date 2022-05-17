@@ -28,12 +28,14 @@ data class ServiceTask(
         @JacksonXmlProperty(isAttribute = true) val delegateExpression: String?,
         @JacksonXmlProperty(isAttribute = true, localName = "class") val clazz: String?,
         @JacksonXmlProperty(isAttribute = true) val resultVariableName: String?,
-        @JacksonXmlProperty(isAttribute = true, localName = "topic") var jobTopic: String?,
         @JacksonXmlProperty(isAttribute = true) val skipExpression: String?,
         @JacksonXmlProperty(isAttribute = true) val triggerable: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val useLocalScopeForResultVariable: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val type: String?,
+        //Unmapped
+        @JacksonXmlProperty(isAttribute = true, localName = "topic") var jobTopic: String?,
+        @JacksonXmlProperty(isAttribute = true) var taskPriority: String?,
         @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>?,
         @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>?,
         @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
@@ -54,6 +56,7 @@ data class ServiceTask(
                     fieldsExtension = input.extensionElements?.filterIsInstance<FieldExtensionElement>()?.map { ExtensionField(it.name, it.string, it.expression) },
                     unmappedProperties = buildUnmappedProperties(
                         UnmappedProperty("jobTopic", input.jobTopic),
+                        UnmappedProperty("taskPriority", input.taskPriority),
                     ),
                     failedJobRetryTimeCycle = input.extensionElements?.filter { null != it.failedJobRetryTimeCycle }?.map { it.failedJobRetryTimeCycle }?.firstOrNull()
             )
