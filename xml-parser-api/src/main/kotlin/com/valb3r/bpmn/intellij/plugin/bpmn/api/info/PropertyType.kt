@@ -30,6 +30,8 @@ enum class PropertyType(
     ASYNC_BEFORE("asyncBefore", "Asynchronous Before", BOOLEAN),
     ASYNC_AFTER("asyncAfter", "Asynchronous After", BOOLEAN),
     ASSIGNEE("assignee", "Assignee", STRING),
+    CANDIDATE_USERS("candidateUsers", "Candidate Users", STRING),
+    CANDIDATE_GROUPS("candidateGroups", "Candidate Groups", STRING),
     JOB_TOPIC("jobTopic", "Job topic", STRING),
     CALLED_ELEM("calledElement", "Called element", T_EXPRESSION),
     CALLED_ELEM_TYPE("calledElementType", "Called element type", STRING),

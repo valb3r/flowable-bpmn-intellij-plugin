@@ -28,6 +28,8 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     ASYNC_BEFORE(PropertyTypeDetails(PropertyType.ASYNC_BEFORE, "camunda:asyncBefore", XmlType.ATTRIBUTE)),
     ASYNC_AFTER(PropertyTypeDetails(PropertyType.ASYNC_AFTER, "camunda:asyncAfter", XmlType.ATTRIBUTE)),
     ASSIGNEE(PropertyTypeDetails(PropertyType.ASSIGNEE, "camunda:assignee", XmlType.ATTRIBUTE)),
+    CANDIDATE_USERS(PropertyTypeDetails(PropertyType.CANDIDATE_USERS, "camunda:candidateUsers", XmlType.ATTRIBUTE)),
+    CANDIDATE_GROUPS(PropertyTypeDetails(PropertyType.CANDIDATE_GROUPS, "camunda:candidateGroups", XmlType.ATTRIBUTE)),
     JOB_TOPIC(PropertyTypeDetails(PropertyType.JOB_TOPIC, "camunda:topic", XmlType.ATTRIBUTE)),
     TASK_PRIORITY(PropertyTypeDetails(PropertyType.TASK_PRIORITY, "camunda:taskPriority", XmlType.ATTRIBUTE)),
     CALLED_ELEM(PropertyTypeDetails(PropertyType.CALLED_ELEM, "calledElement", XmlType.ATTRIBUTE)),
