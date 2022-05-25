@@ -54,6 +54,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             BpmnScriptTask::class -> BpmnScriptTask(generateBpmnId())
             BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId())
             BpmnExternalTask::class -> BpmnExternalTask(generateBpmnId())
+            BpmnSendEventTask::class -> BpmnSendEventTask(generateBpmnId())
             BpmnBusinessRuleTask::class -> BpmnBusinessRuleTask(generateBpmnId())
             BpmnReceiveTask::class -> BpmnReceiveTask(generateBpmnId())
             BpmnManualTask::class -> BpmnManualTask(generateBpmnId())
@@ -131,7 +132,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             is BpmnBoundaryConditionalEvent, is BpmnBoundaryEscalationEvent, is BpmnBoundaryMessageEvent, is BpmnBoundaryErrorEvent,
             is BpmnBoundarySignalEvent, is BpmnBoundaryTimerEvent,
             is BpmnTask, is BpmnUserTask, is BpmnScriptTask, is BpmnServiceTask, is BpmnBusinessRuleTask,
-            is BpmnSendTask, is BpmnReceiveTask, is BpmnCamelTask, is BpmnHttpTask, is BpmnExternalTask, is BpmnMuleTask, is BpmnDecisionTask, is BpmnShellTask, is BpmnMailTask,
+            is BpmnSendTask, is BpmnReceiveTask, is BpmnCamelTask, is BpmnHttpTask, is BpmnSendEventTask,is BpmnExternalTask, is BpmnMuleTask, is BpmnDecisionTask, is BpmnShellTask, is BpmnMailTask,
             is BpmnManualTask,
             is BpmnSubProcess, is BpmnEventSubprocess, is BpmnTransactionalSubProcess, is BpmnAdHocSubProcess, is BpmnCollapsedSubprocess, is BpmnTransactionCollapsedSubprocess,
             is BpmnExclusiveGateway, is BpmnParallelGateway, is BpmnInclusiveGateway, is BpmnEventGateway, is BpmnComplexGateway,

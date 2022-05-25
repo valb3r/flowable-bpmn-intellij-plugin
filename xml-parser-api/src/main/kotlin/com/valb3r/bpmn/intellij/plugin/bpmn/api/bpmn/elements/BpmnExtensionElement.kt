@@ -15,3 +15,9 @@ data class ExtensionFormPropertyValue(val id: String?, val name: String?)
 
 data class UnmappedProperty(val name: String? = null, val string: String? = null)
 
+data class ExtensionFromEvent(
+    val eventType: String?, val triggerEventType: String?, val type: String?, val eventName: String?, val channelKey: String?, val channelName: String?,
+    val channelDestination: String?, val triggerEventName: String?,  val triggerChannelKey: String?, val triggerChannelName: String?,
+    val triggerChannelDestination: String?, val keyDetectionType: String?, val keyDetectionValue: String?
+)
+

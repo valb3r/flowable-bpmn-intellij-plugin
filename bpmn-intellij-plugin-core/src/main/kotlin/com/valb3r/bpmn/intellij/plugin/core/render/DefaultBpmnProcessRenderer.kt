@@ -237,6 +237,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             is BpmnCamelTask -> TopLeftIconShape(id, bpmn.id, icons.camel, shape, state)
             is BpmnHttpTask -> TopLeftIconShape(id, bpmn.id, icons.http, shape, state)
             is BpmnExternalTask -> TopLeftIconShape(id, bpmn.id, icons.external, shape, state)
+            is BpmnSendEventTask -> TopLeftIconShape(id, bpmn.id, icons.envelope, shape, state)
             is BpmnMailTask -> TopLeftIconShape(id, bpmn.id, icons.mail, shape, state)
             is BpmnMuleTask -> TopLeftIconShape(id, bpmn.id, icons.mule, shape, state)
             is BpmnDecisionTask -> TopLeftIconShape(id, bpmn.id, icons.decision, shape, state)

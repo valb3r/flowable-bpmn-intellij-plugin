@@ -163,6 +163,7 @@ class FlowableCanvasPopupMenuProvider(private val project: Project) : CanvasPopu
         addItem(menu, "Mule task", MULE_TASK, ShapeCreator(project, BpmnMuleTask::class, sceneLocation, parent))
         addItem(menu, "Decision task", DECISION_TASK, ShapeCreator(project, BpmnDecisionTask::class, sceneLocation, parent))
         addItem(menu, "Shell task", SHELL_TASK, ShapeCreator(project, BpmnShellTask::class, sceneLocation, parent))
+        addItem(menu, "Send event task", RECEIVE_TASK, ShapeCreator(project, BpmnSendEventTask::class, sceneLocation, parent))
         addItem(menu, "External Worker task", EXTERNAL_TASK, ShapeCreator(project, BpmnExternalTask::class, sceneLocation, parent))
         return menu
     }

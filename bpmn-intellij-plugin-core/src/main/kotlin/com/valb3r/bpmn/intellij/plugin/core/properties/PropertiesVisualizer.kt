@@ -20,6 +20,7 @@ import javax.swing.table.TableModel
 import javax.swing.table.TableRowSorter
 import kotlin.math.max
 
+
 private const val maxFields = 9999
 
 private val visualizer = Collections.synchronizedMap(WeakHashMap<Project,  PropertiesVisualizer>())
@@ -124,10 +125,12 @@ class PropertiesVisualizer(
             val paddGroup = ifInnerPadd + "".padStart((control.second.index?.size ?: 1) * 2 - 2)
             if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex)) {
                 addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
-                model.addRow(arrayOf(
-                    paddGroup + groupType.groupCaption,
-                    buildButtonField(newElemsProvider, state, bpmnElementId, groupType, control.second.index?.dropLast(1) ?: listOf())
-                ))
+                if (!groupType.actionCaption.equals("")) {
+                    model.addRow(arrayOf(
+                        paddGroup + groupType.groupCaption,
+                        buildButtonField(newElemsProvider, state, bpmnElementId, groupType, control.second.index?.dropLast(1) ?: listOf())
+                    ))
+                }
                 seenIndexes.add(controlGroupIndex)
             }
 
@@ -243,7 +246,7 @@ class PropertiesVisualizer(
 
     private fun buildArrowExpansionButton(bpmnElementId: BpmnElementId, filter: RowExpansionFilter, identifier: ElementIndex, sorter: TableRowSorter<TableModel>): BasicArrowButton {
         val button = arrowButtonFactory(bpmnElementId)
-        button.addActionListener {
+       button.addActionListener {
             val isExpanded = button.isExpanded()
             if (isExpanded) {
                 button.direction = arrowButtonDirection(true)

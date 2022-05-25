@@ -177,6 +177,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         result = extractTasksBasedOnType(result, "mule",  cachedMapper(MuleMapper::class.java)) { updates, target -> target.copy(muleTask = updates) }
         result = extractTasksBasedOnType(result, "dmn",  cachedMapper(DecisionMapper::class.java)) { updates, target -> target.copy(decisionTask = updates) }
         result = extractTasksBasedOnType(result, "shell",  cachedMapper(ShellMapper::class.java)) { updates, target -> target.copy(shellTask = updates) }
+        result = extractTasksBasedOnType(result, "send-event",  cachedMapper(SendEventMapper::class.java)) { updates, target -> target.copy(sendEventTask = updates) }
         return result
     }
 
@@ -451,6 +452,33 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
                         target = "fallbackToDefaultTenantCdata")
         )
         override fun convertToDto(input: BpmnServiceTask): BpmnDecisionTask
+    }
+
+    @Mapper
+    interface SendEventMapper: ServiceTaskMapper<BpmnSendEventTask> {
+        @Mappings(
+//            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"eventType\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+//                target = "eventType"),
+//            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"triggerEventType\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+//                target = "triggerEventType"),
+//            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"eventName\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+//                target = "eventName"),
+//            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"channelKey\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+//                target = "channelKey"),
+//            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"channelName\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+//                target = "channelName"),
+//            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"channelDestination\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+//                target = "channelDestination"),
+//            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"triggerEventName\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+//                target = "triggerEventName"),
+//            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"triggerChannelKey\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+//                target = "triggerChannelKey"),
+//            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"triggerChannelName\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+//                target = "triggerChannelName"),
+//            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"triggerChannelDestination\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+//                target = "triggerChannelDestination"),
+        )
+        override fun convertToDto(input: BpmnServiceTask): BpmnSendEventTask
     }
 
     @Mapper

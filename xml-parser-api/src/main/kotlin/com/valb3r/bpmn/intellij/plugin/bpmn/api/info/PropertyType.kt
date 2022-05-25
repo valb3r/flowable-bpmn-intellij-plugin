@@ -125,8 +125,30 @@ enum class PropertyType(
     FORM_PROPERTY_DATE_PATTERN("formPropertiesExtension.@datePattern", "Date pattern", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_VALUE_ID("formPropertiesExtension.@value.@id", "Value ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),  // Is sub-id
     FORM_PROPERTY_VALUE_NAME("formPropertiesExtension.@value.@name", "Value name", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id"),
+    EVENT_TYPE("eventExtensionElements.@eventType", "Event type", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false),
+    EVENT_NAME("eventExtensionElements.@value", "Event name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
+    TRIGGER_EVENT_TYPE("eventExtensionElements.@triggerEventType", "Trigger event key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
+    CHANEL_KEY("eventExtensionElements.@channelKey" , "Channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
+    CHANNEL_NAME("eventExtensionElements.@channelName" , "Channel name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
+    CHANNEL_DESTINATION("eventExtensionElements.@channelDestination" , "Channel destination", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
+    TRIGGER_EVENT_NAME("eventExtensionElements.@triggerEventName" , "Trigger event name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
+    TRIGGER_CHANNEL_KEY("eventExtensionElements.@triggerChannelKey" , "Trigger channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
+    TRIGGER_CHANNEL_NAME("eventExtensionElements.@triggerChannelName" , "Trigger channel name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
+    TRIGGER_CHANNEL_DESTINATION("eventExtensionElements.@triggerChannelDestination" , "Trigger channel destination", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
+//    EVENT_TYPE("eventExtensionElements.@eventType", "Event type", STRING, indexInGroupArrayName = "name", updateOrder = 100, indexCascades = true), // Is sub-id
+//    EVENT_NAME("eventExtensionElements.@value", "Event name", STRING, indexInGroupArrayName = "name", updateOrder = 100, indexCascades = true), // Is sub-id
+//    TRIGGER_EVENT_TYPE("eventExtensionElements.@triggerEventType", "Trigger event key", STRING, indexInGroupArrayName = "name", updateOrder = 100, indexCascades = true),
+//    CHANEL_KEY("eventExtensionElements.@channelKey" , "Channel key", STRING),
+//    CHANNEL_NAME("eventExtensionElements.@channelName" , "Channel name", STRING),
+//    CHANNEL_DESTINATION("eventExtensionElements.@channelDestination" , "Channel destination", STRING),
+//    TRIGGER_EVENT_NAME("eventExtensionElements.@triggerEventName" , "Trigger event name", STRING),
+//    TRIGGER_CHANNEL_KEY("eventExtensionElements.@triggerChannelKey" , "Trigger channel key", STRING),
+//    TRIGGER_CHANNEL_NAME("eventExtensionElements.@triggerChannelName" , "Trigger channel name", STRING),
+//    TRIGGER_CHANNEL_DESTINATION("eventExtensionElements.@triggerChannelDestination" , "Trigger channel destination", STRING),
 }
 
+
+data class NewElem(val propertyType: String, val valuePattern: String = "", val uiOnlyaddedIndex: List<String> = emptyList())
 enum class FunctionalGroupType(val groupCaption: String, val actionCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf()) {
     ADD_FIELD("Fields", "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", ""))),
     ADD_FORM_PROPERTY("Form properties", "Add property", actionResult = NewElem("FORM_PROPERTY_ID", "Property %d"),
@@ -145,7 +167,19 @@ enum class FunctionalGroupType(val groupCaption: String, val actionCaption: Stri
         actionUiOnlyResult = listOf(
             NewElem("FORM_PROPERTY_VALUE_NAME", "")
         )
-    )
-}
+    ),
+    ADD_EVENT("Event fields", "", actionResult = NewElem("EVENT_TYPE", ""),
+        actionUiOnlyResult = listOf(
+            NewElem("EVENT_NAME", ""),
+            NewElem("TRIGGER_EVENT_TYPE", ""),
+            NewElem("CHANEL_KEY", ""),
+            NewElem("CHANNEL_NAME", ""),
+            NewElem("CHANNEL_DESTINATION", ""),
+            NewElem("TRIGGER_EVENT_NAME", ""),
+            NewElem("TRIGGER_CHANNEL_KEY", ""),
+            NewElem("TRIGGER_CHANNEL_NAME", ""),
+            NewElem("TRIGGER_CHANNEL_DESTINATION", ""),
+        )
+    ),
 
-data class NewElem(val propertyType: String, val valuePattern: String = "", val uiOnlyaddedIndex: List<String> = emptyList())
+}

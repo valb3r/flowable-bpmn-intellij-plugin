@@ -6,6 +6,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnComplexGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendEventTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.BpmnShapeObjectAdded
@@ -107,6 +108,16 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     OUTPUT_VARIABLE(PropertyTypeDetails(PropertyType.OUTPUT_VARIABLE, "extensionElements.flowable:field?name=outputVariable.flowable:string.text", XmlType.CDATA)),
     DIRECTORY(PropertyTypeDetails(PropertyType.DIRECTORY, "extensionElements.flowable:field?name=directory.flowable:string.text", XmlType.CDATA)),
     FAILED_JOB_RETRY_CYCLE(PropertyTypeDetails(PropertyType.FAILED_JOB_RETRY_CYCLE, "extensionElements.flowable:failedJobRetryTimeCycle.text", XmlType.CDATA)),
+    TRIGGER_EVENT_TYPE(PropertyTypeDetails(PropertyType.TRIGGER_EVENT_TYPE, "extensionElements.flowable:triggerEventType.text", XmlType.CDATA)),
+    EVENT_NAME(PropertyTypeDetails(PropertyType.EVENT_NAME, "extensionElements.flowable:eventName.text", XmlType.CDATA)),
+    EVENT_TYPE(PropertyTypeDetails(PropertyType.EVENT_TYPE, "extensionElements.flowable:eventType.text", XmlType.CDATA)),
+    CHANNEL_KEY(PropertyTypeDetails(PropertyType.CHANEL_KEY, "extensionElements.flowable:channelKey.text", XmlType.CDATA)),
+    CHANNEL_NAME(PropertyTypeDetails(PropertyType.CHANNEL_NAME, "extensionElements.flowable:channelName.text", XmlType.CDATA)),
+    CHANNEL_DESTINATION(PropertyTypeDetails(PropertyType.CHANNEL_DESTINATION, "extensionElements.flowable:channelDestination.text", XmlType.CDATA)),
+    TRIGGER_EVENT_NAME(PropertyTypeDetails(PropertyType.TRIGGER_EVENT_NAME, "extensionElements.flowable:triggerEventName.text", XmlType.CDATA)),
+    TRIGGER_CHANNEL_KEY(PropertyTypeDetails(PropertyType.TRIGGER_CHANNEL_KEY, "extensionElements.flowable:triggerChannelKey.text", XmlType.CDATA)),
+    TRIGGER_CHANNEL_NAME(PropertyTypeDetails(PropertyType.TRIGGER_CHANNEL_NAME, "extensionElements.flowable:triggerChannelName.text", XmlType.CDATA)),
+    TRIGGER_CHANNEL_DESTINATION(PropertyTypeDetails(PropertyType.TRIGGER_CHANNEL_DESTINATION, "extensionElements.flowable:triggerChannelDestination.text", XmlType.CDATA)),
     FIELD_NAME(PropertyTypeDetails(PropertyType.FIELD_NAME, "extensionElements.flowable:field?name=@.name", XmlType.ATTRIBUTE)),
     FIELD_EXPRESSION(PropertyTypeDetails(PropertyType.FIELD_EXPRESSION, "extensionElements.flowable:field?name=@.flowable:expression.text", XmlType.CDATA)),
     FIELD_STRING(PropertyTypeDetails(PropertyType.FIELD_STRING, "extensionElements.flowable:field?name=@.flowable:string.text", XmlType.CDATA)),
@@ -118,7 +129,7 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     FORM_PROPERTY_EXPRESSION(PropertyTypeDetails(PropertyType.FORM_PROPERTY_EXPRESSION, "extensionElements.flowable:formProperty?id=@.expression", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_DATE_PATTERN(PropertyTypeDetails(PropertyType.FORM_PROPERTY_DATE_PATTERN, "extensionElements.flowable:formProperty?id=@.datePattern", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_VALUE_ID(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_ID, "extensionElements.flowable:formProperty?id=@.flowable:value?id=@.id", XmlType.ATTRIBUTE)),
-    FORM_PROPERTY_VALUE_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_NAME, "extensionElements.flowable:formProperty?id=@.flowable:value?id=@.name", XmlType.ATTRIBUTE))
+    FORM_PROPERTY_VALUE_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_NAME, "extensionElements.flowable:formProperty?id=@.flowable:value?id=@.name", XmlType.ATTRIBUTE)),
 }
 
 class FlowableParser : BaseBpmnParser() {

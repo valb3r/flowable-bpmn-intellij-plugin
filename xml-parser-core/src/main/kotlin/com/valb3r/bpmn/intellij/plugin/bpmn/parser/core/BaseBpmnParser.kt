@@ -355,6 +355,7 @@ abstract class BaseBpmnParser: BpmnParser {
         is BpmnReceiveTask -> diagramParent.addElement(modelNs().named("receiveTask"))
         is BpmnManualTask -> diagramParent.addElement(modelNs().named("manualTask"))
         is BpmnCamelTask -> createServiceTaskWithType(diagramParent, "camel")
+        is BpmnSendEventTask -> createServiceTaskWithType(diagramParent, "send-event")
         is BpmnHttpTask -> createServiceTaskWithType(diagramParent, "http")
         is BpmnExternalTask -> createServiceTaskWithType(diagramParent, "external")
         is BpmnMailTask -> createServiceTaskWithType(diagramParent, "mail")
