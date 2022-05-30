@@ -113,6 +113,10 @@ class ActivitiCanvasPopupMenuProvider(private val project: Project) : CanvasPopu
         return popup
     }
 
+    override fun popupChangeShape(focus: BpmnElementId): JBPopupMenu {
+        TODO("Not yet implemented")
+    }
+
     private fun addCopyAndpasteIfNeeded(popup: JBPopupMenu, sceneLocation: Point2D.Float, parent: BpmnElementId) {
         val renderedState = lastRenderedState(project)
         if (true == renderedState?.canCopyOrCut()) {

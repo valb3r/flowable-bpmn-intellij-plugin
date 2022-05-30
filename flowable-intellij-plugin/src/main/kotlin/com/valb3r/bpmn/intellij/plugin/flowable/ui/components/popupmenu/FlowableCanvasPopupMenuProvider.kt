@@ -25,6 +25,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdH
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
@@ -121,6 +122,10 @@ class FlowableCanvasPopupMenuProvider(private val project: Project) : CanvasPopu
         popup.add(endEvents(sceneLocation, parent))
         addItem(popup, "Save to PNG", SAVE_TO_PNG, ActionListener { saveDiagramToPng(project) })
         return popup
+    }
+
+    override fun popupChangeShape(focus: BpmnElementId): JBPopupMenu {
+        TODO("Not yet implemented")
     }
 
     private fun addCopyAndPasteIfNeeded(popup: JBPopupMenu, sceneLocation: Point2D.Float, parent: BpmnElementId) {

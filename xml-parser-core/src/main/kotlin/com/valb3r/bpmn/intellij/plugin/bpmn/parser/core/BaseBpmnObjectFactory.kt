@@ -152,10 +152,10 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
     protected open fun processDtoToPropertyMap(dto: Any): MutableMap<PropertyType, MutableList<Property>> {
         val result: MutableMap<PropertyType, MutableList<Property>> = mutableMapOf()
         val propertyTree = mapper.valueToTree<JsonNode>(dto)
-
         for (type in propertyTypes()) {
             parseValue(type.path, type, propertyTree, result, 0)
         }
+//        result[PropertyType.CLASS] = mutableListOf(Property(dto.javaClass))
 
         return result
     }

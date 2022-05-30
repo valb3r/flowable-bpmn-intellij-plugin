@@ -15,10 +15,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.core.render.DefaultCanvasConstants
 import com.valb3r.bpmn.intellij.plugin.core.render.ICON_Z_INDEX
-import com.valb3r.bpmn.intellij.plugin.core.render.elements.ACTIONS_ICO_SIZE
-import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
-import com.valb3r.bpmn.intellij.plugin.core.render.elements.computeCascadeChangeOfBpmnIncomingOutgoingIndex
-import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.*
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.ResizeViewTransform
 import java.awt.geom.Point2D
 
@@ -61,8 +58,23 @@ class PhysicalWaypoint(
             )))
         }
 
+//        val changeShapeId = elementId.elemIdToChangeShape()
+//        val changeShapeBounds = BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE)
+//        val changeShapeIconArea = state().ctx.canvas.drawIcon(changeShapeBounds, state().icons.wrench)
+//        state().ctx.interactionContext.clickCallbacks[changeShapeId] = { dest ->
+//            dest.addEvents(listOf(NewWaypointsEvent(
+//                    parentElementId,
+//                    edge.waypoint
+//                            .filter { it.physical }
+//                            .filter { it.id != elementId }
+//                            .toList(),
+//                    edge.epoch + 1
+//            )))
+//        }
+
         val result = mutableMapOf(
             delId to AreaWithZindex(deleteIconArea, areaType, mutableSetOf(), mutableSetOf(),  ICON_Z_INDEX, elementId),
+//            changeShapeId to AreaWithZindex(changeShapeIconArea, areaType, mutableSetOf(), mutableSetOf(),  ICON_Z_INDEX, elementId),
         )
 
         val lastButton = addEdgeSelectionButton(deleteBounds, result)

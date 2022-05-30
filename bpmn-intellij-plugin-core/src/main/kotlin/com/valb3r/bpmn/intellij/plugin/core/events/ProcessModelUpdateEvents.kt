@@ -190,6 +190,33 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
 
         commitToFile()
     }
+    @Synchronized
+    fun addElementChangeShapeEvent(diagram: List<DiagramElementRemovedEvent>, bpmn: List<BpmnElementRemovedEvent>, other: List<PropertyUpdateWithId> = emptyList()) {
+        disableRedo()
+        val current = allBeforeThis
+        val blockSize = diagram.size + bpmn.size + other.size
+        allBeforeThis += blockSize
+
+        diagram.forEachIndexed {index, event ->
+            val toStore = Order(current + index, event, EventBlock(blockSize))
+            updates.add(toStore)
+            deletionsByStaticId.computeIfAbsent(event.elementId) { CopyOnWriteArrayList() } += toStore
+        }
+
+        bpmn.forEachIndexed {index, event ->
+            val toStore = Order(current + index, event, EventBlock(blockSize))
+            updates.add(toStore)
+            deletionsByStaticBpmnId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
+        }
+
+        other.forEachIndexed { index, event ->
+            val toStore = Order(current + index, event, EventBlock(blockSize))
+            updates.add(toStore)
+            propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
+        }
+
+        commitToFile()
+    }
 
     @Synchronized
     fun addObjectEvent(event: BpmnShapeObjectAddedEvent) {

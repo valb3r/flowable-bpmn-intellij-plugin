@@ -25,6 +25,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.internal.CascadeTran
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.NullViewTransform
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.RectangleTransformationIntrospection
 import com.valb3r.bpmn.intellij.plugin.core.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.popupMenuProvider
 import java.awt.geom.Line2D
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -73,15 +74,36 @@ abstract class ShapeRenderElement(
     }
 
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
+        val spaceCoeff = 1.5f
+        val start = state().ctx.canvas.camera.fromCameraView(Point2D.Float(0.0f, 0.0f))
+        val end = state().ctx.canvas.camera.fromCameraView(Point2D.Float(0.0f, ACTIONS_ICO_SIZE * spaceCoeff))
+        val ySpacing = end.y - start.y
+        val rect = currentOnScreenRect(state().ctx.canvas.camera)
+
+        val left = state().ctx.canvas.camera.toCameraView(Point2D.Float(rect.x, rect.y))
+        val right = state().ctx.canvas.camera.toCameraView(Point2D.Float(rect.x + rect.width, rect.y + rect.height))
+
+        var currY = y
         val delId = elementId.elemIdToRemove()
-        val deleteIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, y, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.recycleBin)
+        val deleteIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.recycleBin)
         state().ctx.interactionContext.clickCallbacks[delId] = { dest ->
             dest.addElementRemovedEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement())
         }
 
+        currY += spaceCoeff * ySpacing
+        val changeShapeId = elementId.elemIdToChangeShape()
+        val changeShapeIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.wrench)
+        state().ctx.interactionContext.clickCallbacks[changeShapeId] = { dest ->
+            popupMenuProvider(state().ctx.project).popupChangeShape(
+                bpmnElementId
+            ).show(currentCanvas(state().ctx.project), right.x.toInt(), right.y.toInt())
+//            dest.addElementChangeShapeEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement())
+        }
+
         return mutableMapOf(
-                delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
-        )
+                delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId),
+                changeShapeId to AreaWithZindex(changeShapeIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId),
+            )
     }
 
 

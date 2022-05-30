@@ -10,20 +10,22 @@ import com.valb3r.bpmn.intellij.plugin.core.events.BpmnShapeResizedAndMovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.core.render.ICON_Z_INDEX
+import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.*
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors.ShapeResizeAnchorBottom
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors.ShapeResizeAnchorTop
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.PreTransformHandler
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.ResizeViewTransform
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.popupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.core.xmlnav.xmlNavigator
 import java.awt.geom.Point2D
 import kotlin.math.abs
 
 abstract class ResizeableShapeRenderElement(
-        elementId: DiagramElementId,
-        bpmnElementId: BpmnElementId,
-        shape: ShapeElement,
-        state: () -> RenderState
+    elementId: DiagramElementId,
+    bpmnElementId: BpmnElementId,
+    shape: ShapeElement,
+    state: () -> RenderState
 ) : ShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
     private val anchors = Pair(
@@ -60,12 +62,23 @@ abstract class ResizeableShapeRenderElement(
         }
 
         currY += spaceCoeff * ySpacing
+        val changeShapeId = elementId.elemIdToChangeShape()
+        val changeShapeIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.wrench)
+        state().ctx.interactionContext.clickCallbacks[changeShapeId] = { dest ->
+            popupMenuProvider(state().ctx.project).popupChangeShape(
+                bpmnElementId
+            ).show(currentCanvas(state().ctx.project), right.x.toInt(), right.y.toInt())
+//            dest.addElementChangeShapeEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement())
+        }
+
+        currY += spaceCoeff * ySpacing
         val toXmlId = DiagramElementId("TOXML:$elementId")
         val toXmlArea = state().ctx.canvas.drawText(Point2D.Float(x, currY), "<XML/>", Colors.INNER_TEXT_COLOR.color)
         state().ctx.interactionContext.clickCallbacks[toXmlId] = { dest -> xmlNavigator(state().ctx.project).jumpTo(bpmnElementId)}
 
         return mutableMapOf(
                 delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId),
+                changeShapeId to AreaWithZindex(changeShapeIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId),
                 toXmlId to AreaWithZindex(toXmlArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
         )
     }

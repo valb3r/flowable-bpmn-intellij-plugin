@@ -23,6 +23,10 @@ fun DiagramElementId.elemIdToRemove(): DiagramElementId {
     return DiagramElementId("DEL:" + this.id)
 }
 
+fun DiagramElementId.elemIdToChangeShape(): DiagramElementId {
+    return DiagramElementId("CHANGE_SHAPE:" + this.id)
+}
+
 abstract class BaseDiagramRenderElement(
         open val elementId: DiagramElementId,
         protected open val state: () -> RenderState

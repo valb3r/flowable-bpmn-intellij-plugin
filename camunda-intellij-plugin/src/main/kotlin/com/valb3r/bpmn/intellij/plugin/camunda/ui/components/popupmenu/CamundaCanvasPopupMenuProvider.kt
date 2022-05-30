@@ -121,6 +121,22 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
         return popup
     }
 
+    override fun popupChangeShape(focus: BpmnElementId): JBPopupMenu {
+//        currentStateProvider(project).
+
+        val popup = JBPopupMenu()
+
+        if(isTask(project, focus)) {
+            addItem(popup, "Test item", SAVE_TO_PNG, ActionListener { saveDiagramToPng(project) })
+            addItem(popup, "Send event task", SAVE_TO_PNG, ActionListener { saveDiagramToPng(project) })
+            addItem(popup, "Save to PNG", SAVE_TO_PNG, ActionListener { saveDiagramToPng(project) })
+        }
+        else if(isGateway(project, focus)) {
+            addItem(popup, "Add change gateway", COMPLEX_GATEWAY, ActionListener { })
+        }
+        return popup
+    }
+
     private fun addCopyAndPasteIfNeeded(popup: JBPopupMenu, sceneLocation: Point2D.Float, parent: BpmnElementId) {
         val renderedState = lastRenderedState(project)
         if (true == renderedState?.canCopyOrCut()) {
