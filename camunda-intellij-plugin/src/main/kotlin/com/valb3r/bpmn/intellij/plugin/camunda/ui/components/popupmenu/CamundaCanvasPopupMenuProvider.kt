@@ -19,15 +19,18 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdH
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteFromClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.saveDiagramToPng
+import com.valb3r.bpmn.intellij.plugin.commons.actions.shapechange.TaskChanger
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.CanvasPopupMenuProvider
 import java.awt.event.ActionListener
 import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
 import javax.swing.Icon
 import javax.swing.JMenu
 import javax.swing.JPopupMenu
@@ -121,15 +124,21 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
         return popup
     }
 
-    override fun popupChangeShape(focus: BpmnElementId): JBPopupMenu {
-//        currentStateProvider(project).
+    override fun popupChangeShape(focus: BpmnElementId, rect: Rectangle2D.Float): JBPopupMenu
+    {
+//        currentStateProvider(project).currentState().
 
         val popup = JBPopupMenu()
-
+        val taskChanger = TaskChanger(project)
         if(isTask(project, focus)) {
-            addItem(popup, "Test item", SAVE_TO_PNG, ActionListener { saveDiagramToPng(project) })
-            addItem(popup, "Send event task", SAVE_TO_PNG, ActionListener { saveDiagramToPng(project) })
-            addItem(popup, "Save to PNG", SAVE_TO_PNG, ActionListener { saveDiagramToPng(project) })
+            addItem(popup, "Task", TASK, taskChanger.toTask(focus, rect))
+            addItem(popup, "User Task", USER_TASK, ActionListener { saveDiagramToPng(project) })
+            addItem(popup, "Service Task", SERVICE_TASK, ActionListener { saveDiagramToPng(project) })
+            addItem(popup, "Script Task", SCRIPT_TASK, ActionListener { saveDiagramToPng(project) })
+            addItem(popup, "Business rule Task", BUSINESS_RULE_TASK, ActionListener { saveDiagramToPng(project) })
+            addItem(popup, "Send Task", SEND_TASK, ActionListener { saveDiagramToPng(project) })
+            addItem(popup, "Receive Task", RECEIVE_TASK, ActionListener { saveDiagramToPng(project) })
+            addItem(popup, "Manual Task", MANUAL_TASK, ActionListener { saveDiagramToPng(project) })
         }
         else if(isGateway(project, focus)) {
             addItem(popup, "Add change gateway", COMPLEX_GATEWAY, ActionListener { })

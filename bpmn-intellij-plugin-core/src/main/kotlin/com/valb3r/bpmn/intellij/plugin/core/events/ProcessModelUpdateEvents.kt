@@ -156,6 +156,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
                 is LocationUpdateWithId, is BpmnShapeResizedAndMoved, is NewWaypoints, is BpmnParentChanged, is EventUiOnly -> { /*NOP*/ }
                 is BpmnShapeObjectAddedEvent -> addObjectShapeEvent(toStore as Order<BpmnShapeObjectAddedEvent>)
                 is BpmnEdgeObjectAddedEvent -> addObjectEdgeEvent(toStore as Order<BpmnEdgeObjectAddedEvent>)
+                is BpmnElementRemovedEvent -> removeBpmnElement(event.bpmnElementId , toStore as Order<BpmnElementRemovedEvent> )
                 else -> throw IllegalArgumentException("Can't bulk add: " + event::class.qualifiedName)
             }
         }
@@ -179,7 +180,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
         bpmn.forEachIndexed {index, event ->
             val toStore = Order(current + index, event, EventBlock(blockSize))
             updates.add(toStore)
-            deletionsByStaticBpmnId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
+            removeBpmnElement(event.bpmnElementId, toStore)
         }
 
         other.forEachIndexed { index, event ->
@@ -190,32 +191,12 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
 
         commitToFile()
     }
-    @Synchronized
-    fun addElementChangeShapeEvent(diagram: List<DiagramElementRemovedEvent>, bpmn: List<BpmnElementRemovedEvent>, other: List<PropertyUpdateWithId> = emptyList()) {
-        disableRedo()
-        val current = allBeforeThis
-        val blockSize = diagram.size + bpmn.size + other.size
-        allBeforeThis += blockSize
 
-        diagram.forEachIndexed {index, event ->
-            val toStore = Order(current + index, event, EventBlock(blockSize))
-            updates.add(toStore)
-            deletionsByStaticId.computeIfAbsent(event.elementId) { CopyOnWriteArrayList() } += toStore
-        }
-
-        bpmn.forEachIndexed {index, event ->
-            val toStore = Order(current + index, event, EventBlock(blockSize))
-            updates.add(toStore)
-            deletionsByStaticBpmnId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
-        }
-
-        other.forEachIndexed { index, event ->
-            val toStore = Order(current + index, event, EventBlock(blockSize))
-            updates.add(toStore)
-            propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
-        }
-
-        commitToFile()
+    private fun removeBpmnElement(
+        bpmnElement: BpmnElementId,
+        toStore: Order<BpmnElementRemovedEvent>
+    ) {
+        deletionsByStaticBpmnId.computeIfAbsent(bpmnElement) { CopyOnWriteArrayList() } += toStore
     }
 
     @Synchronized
