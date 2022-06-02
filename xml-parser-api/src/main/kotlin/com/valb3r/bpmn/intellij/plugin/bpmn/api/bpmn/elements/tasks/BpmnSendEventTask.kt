@@ -11,7 +11,7 @@ data class BpmnSendEventTask(
     val exclusive: Boolean? = null,
     val triggerable: Boolean? = null,
     // TODO Execution listener
-    val eventType: String? = null,
+//    val eventType: String? = null,
 //    val eventName: String? = null,
 //    val mappingToEventPayload: String? = null,
 //    val channelKey: String? = null,
@@ -33,8 +33,9 @@ data class BpmnSendEventTask(
 /* BPMN engine specific extensions (intermediate storage) */
     val extensionElements: List<ExtensionElement>? = null,
     /* Flattened extensionElements, for explicitness - these are the target of binding */
-//    val formPropertiesExtension: List<ExtensionFormProperty>? = null
-    val eventExtensionElements: List<ExtensionFromEvent>? = null
+//    val formPropertiesExtension: List<ExtensionFormProperty>? =1 null
+    val fieldsExtension: List<ExtensionField>? = null,
+    var eventExtensionElements: List<ExtensionFromEvent>? = null
 
 ): WithBpmnId {
 

@@ -125,26 +125,17 @@ enum class PropertyType(
     FORM_PROPERTY_DATE_PATTERN("formPropertiesExtension.@datePattern", "Date pattern", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_VALUE_ID("formPropertiesExtension.@value.@id", "Value ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),  // Is sub-id
     FORM_PROPERTY_VALUE_NAME("formPropertiesExtension.@value.@name", "Value name", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id"),
-    EVENT_TYPE("eventExtensionElements.@eventType", "Event type", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false),
-    EVENT_NAME("eventExtensionElements.@value", "Event name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
-    TRIGGER_EVENT_TYPE("eventExtensionElements.@triggerEventType", "Trigger event key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
-    CHANEL_KEY("eventExtensionElements.@channelKey" , "Channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
-    CHANNEL_NAME("eventExtensionElements.@channelName" , "Channel name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
-    CHANNEL_DESTINATION("eventExtensionElements.@channelDestination" , "Channel destination", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
-    TRIGGER_EVENT_NAME("eventExtensionElements.@triggerEventName" , "Trigger event name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
-    TRIGGER_CHANNEL_KEY("eventExtensionElements.@triggerChannelKey" , "Trigger channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
-    TRIGGER_CHANNEL_NAME("eventExtensionElements.@triggerChannelName" , "Trigger channel name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
-    TRIGGER_CHANNEL_DESTINATION("eventExtensionElements.@triggerChannelDestination" , "Trigger channel destination", STRING, group = listOf(FunctionalGroupType.ADD_EVENT)),
-//    EVENT_TYPE("eventExtensionElements.@eventType", "Event type", STRING, indexInGroupArrayName = "name", updateOrder = 100, indexCascades = true), // Is sub-id
-//    EVENT_NAME("eventExtensionElements.@value", "Event name", STRING, indexInGroupArrayName = "name", updateOrder = 100, indexCascades = true), // Is sub-id
-//    TRIGGER_EVENT_TYPE("eventExtensionElements.@triggerEventType", "Trigger event key", STRING, indexInGroupArrayName = "name", updateOrder = 100, indexCascades = true),
-//    CHANEL_KEY("eventExtensionElements.@channelKey" , "Channel key", STRING),
-//    CHANNEL_NAME("eventExtensionElements.@channelName" , "Channel name", STRING),
-//    CHANNEL_DESTINATION("eventExtensionElements.@channelDestination" , "Channel destination", STRING),
-//    TRIGGER_EVENT_NAME("eventExtensionElements.@triggerEventName" , "Trigger event name", STRING),
-//    TRIGGER_CHANNEL_KEY("eventExtensionElements.@triggerChannelKey" , "Trigger channel key", STRING),
-//    TRIGGER_CHANNEL_NAME("eventExtensionElements.@triggerChannelName" , "Trigger channel name", STRING),
-//    TRIGGER_CHANNEL_DESTINATION("eventExtensionElements.@triggerChannelDestination" , "Trigger channel destination", STRING),
+    EVENT_TYPE("eventExtensionElements.@eventType", "Event type", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false, indexInGroupArrayName = "eventType"),
+    EVENT_NAME("eventExtensionElements.@eventName", "Event name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), updateOrder = 95, indexInGroupArrayName = "eventType"),
+    TRIGGER_EVENT_TYPE("eventExtensionElements.@triggerEventType", "Trigger event key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType"),
+    CHANEL_KEY("eventExtensionElements.@channelKey" , "Channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType"),
+    CHANNEL_NAME("eventExtensionElements.@channelName" , "Channel name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType"),
+    CHANNEL_DESTINATION("eventExtensionElements.@channelDestination" , "Channel destination", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType"),
+    TRIGGER_EVENT_NAME("eventExtensionElements.@triggerEventName" , "Trigger event name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType"),
+    TRIGGER_CHANNEL_KEY("eventExtensionElements.@triggerChannelKey" , "Trigger channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType"),
+    TRIGGER_CHANNEL_NAME("eventExtensionElements.@triggerChannelName" , "Trigger channel name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType"),
+    TRIGGER_CHANNEL_DESTINATION("eventExtensionElements.@triggerChannelDestination" , "Trigger channel destination", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType"),
+    EVENT_KEY_FIXED_VALUE("eventExtensionElements.@triggerChannelDestination" , "Event key fixed value", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType"),
 }
 
 
@@ -179,6 +170,7 @@ enum class FunctionalGroupType(val groupCaption: String, val actionCaption: Stri
             NewElem("TRIGGER_CHANNEL_KEY", ""),
             NewElem("TRIGGER_CHANNEL_NAME", ""),
             NewElem("TRIGGER_CHANNEL_DESTINATION", ""),
+            NewElem("EVENT_KEY_FIXED_VALUE", ""),
         )
     ),
 

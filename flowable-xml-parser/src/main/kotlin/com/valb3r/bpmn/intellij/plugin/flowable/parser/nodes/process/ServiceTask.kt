@@ -52,22 +52,22 @@ data class ServiceTask(
                     unmappedProperties = buildUnmappedProperties(
                         UnmappedProperty("jobTopic", input.jobTopic),
                     ),
-                    failedJobRetryTimeCycle = input.extensionElements?.filter { null != it.failedJobRetryTimeCycle }?.map { it.failedJobRetryTimeCycle }?.firstOrNull()
-            )
-        }
-
-        private fun buildUnmappedProperties(vararg unmappedProp:UnmappedProperty) : List<UnmappedProperty>{
-            return unmappedProp.filter { null != it.name && null != it.string }.map{ it }
+                    failedJobRetryTimeCycle = input.extensionElements?.filter { null != it.failedJobRetryTimeCycle }?.map { it.failedJobRetryTimeCycle }?.firstOrNull(),
+                )
         }
 
         @Mapping(source = "forCompensation", target = "isForCompensation")
         protected abstract fun doConvertToDto(input: ServiceTask) : BpmnServiceTask
+
+        private fun buildUnmappedProperties(vararg unmappedProp:UnmappedProperty) : List<UnmappedProperty>{
+            return unmappedProp.filter { null != it.name && null != it.string }.map{ it }
+        }
     }
 
     @JsonDeserialize(using = ExtensionElementDeserializer::class)
     open class ExtensionElement(
-            val name: String? = null,
-            val string: String? = null,
+            open val name: String? = null,
+            open val string: String? = null,
             val expression: String? = null,
             val failedJobRetryTimeCycle: String? = null,
     )
@@ -85,7 +85,23 @@ data class ServiceTask(
     @JsonDeserialize(`as` = UnhandledExtensionElement::class)
     class UnhandledExtensionElement : ExtensionElement()
 
+    @JsonDeserialize(using = ExtensionElementDeserializer::class)
+    class EventElement(key: String, value: String) : ExtensionElement(name = key, string = value)
+
     class ExtensionElementDeserializer(vc: Class<*>? = null) : StdDeserializer<ExtensionElement?>(vc) {
+
+        private var listEventKey = listOf(
+                "eventType",
+                "triggerEventType",
+                "eventName",
+                "channelKey",
+                "channelName",
+                "channelDestination",
+                "triggerEventName",
+                "triggerChannelKey",
+                "triggerChannelDestination",
+                "keyDetectionValue",
+        )
 
         override fun deserialize(parser: JsonParser, context: DeserializationContext?): ExtensionElement {
             val node: JsonNode = parser.codec.readTree(parser)
@@ -95,6 +111,7 @@ data class ServiceTask(
             return when (staxName) {
                 "failedJobRetryTimeCycle" -> FailedJobRetryTimeCycleExtensionElement(node.textValue())
                 "field" -> mapper.treeToValue(node, FieldExtensionElement::class.java)
+                in listEventKey -> EventElement(staxName, node.textValue())
                 else -> UnhandledExtensionElement()
             }
         }
