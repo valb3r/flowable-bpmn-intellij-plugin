@@ -27,7 +27,7 @@ fun registerPopupMenuProvider(project: Project, provider: CanvasPopupMenuProvide
 interface CanvasPopupMenuProvider {
     fun popupMenu(sceneLocation: Point2D.Float, parent: BpmnElementId): JBPopupMenu
 
-    fun popupChangeShape(focus: BpmnElementId, rect: Rectangle2D.Float): JBPopupMenu
+    fun popupChangeShape(focus: BpmnElementId): JBPopupMenu
 
     fun isTask(project: Project, bpmnElementId: BpmnElementId) : Boolean {
         when(getElement(project, bpmnElementId)) {

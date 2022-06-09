@@ -2,11 +2,11 @@ package com.valb3r.bpmn.intellij.plugin.core.events
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.properties.uionly.UiOnlyPropertyType
 import java.awt.geom.Point2D
@@ -14,6 +14,10 @@ import java.awt.geom.Point2D
 data class StringValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: String, override val referencedValue: String? = null, override val newIdValue: BpmnElementId? = null, override val propertyIndex: List<String>? = null): PropertyUpdateWithId
 
 data class BooleanValueUpdatedEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType, override val newValue: Boolean, override val referencedValue: Boolean? = null, override val newIdValue: BpmnElementId? = null, override val propertyIndex: List<String>? = null): PropertyUpdateWithId
+
+data class RemovePropertyEvent(override val bpmnElementId: BpmnElementId, override val property: PropertyType): PropertyRemoveWithId
+
+data class UpdatePropertyTableEvent(override val bpmnElementId: BpmnElementId, override val newPropertyTable: PropertyTable): PropertyTableWithId
 
 data class DraggedToEvent(override val diagramElementId: DiagramElementId, override val dx: Float, override val dy: Float, override val parentElementId: DiagramElementId?, override val internalPos: Int?): LocationUpdateWithId
 
@@ -25,6 +29,8 @@ data class BpmnShapeResizedAndMovedEvent(override val diagramElementId: DiagramE
 }
 
 data class BpmnParentChangedEvent(override val bpmnElementId: BpmnElementId, override val newParentId: BpmnElementId, override val propagateToXml: Boolean = true): BpmnParentChanged
+
+data class BpmnElementTypeChangeEvent(override val bpmnElementId: BpmnElementId, override val newBpmnElement: WithBpmnId): BpmnElementTypeChange
 
 data class NewWaypointsEvent(override val edgeElementId: DiagramElementId, override val waypoints: List<IdentifiableWaypoint>, override val epoch: Int): NewWaypoints
 

@@ -3,7 +3,6 @@ package com.valb3r.bpmn.intellij.plugin.core.actions.copypaste
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.google.common.annotations.VisibleForTesting
 import com.intellij.openapi.project.Project

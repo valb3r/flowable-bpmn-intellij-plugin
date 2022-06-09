@@ -124,16 +124,15 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
         return popup
     }
 
-    override fun popupChangeShape(focus: BpmnElementId, rect: Rectangle2D.Float): JBPopupMenu
+    override fun popupChangeShape(focus: BpmnElementId): JBPopupMenu
     {
-//        currentStateProvider(project).currentState().
 
         val popup = JBPopupMenu()
         val taskChanger = TaskChanger(project)
         if(isTask(project, focus)) {
-            addItem(popup, "Task", TASK, taskChanger.toTask(focus, rect))
-            addItem(popup, "User Task", USER_TASK, ActionListener { saveDiagramToPng(project) })
-            addItem(popup, "Service Task", SERVICE_TASK, ActionListener { saveDiagramToPng(project) })
+            addItem(popup, "Task", TASK, taskChanger.toTask(focus))
+            addItem(popup, "User Task", USER_TASK, taskChanger.toUsertask(focus))
+            addItem(popup, "Service Task", SERVICE_TASK, taskChanger.toServiceTask(focus))
             addItem(popup, "Script Task", SCRIPT_TASK, ActionListener { saveDiagramToPng(project) })
             addItem(popup, "Business rule Task", BUSINESS_RULE_TASK, ActionListener { saveDiagramToPng(project) })
             addItem(popup, "Send Task", SEND_TASK, ActionListener { saveDiagramToPng(project) })

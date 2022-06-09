@@ -25,6 +25,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdH
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
+import com.valb3r.bpmn.intellij.plugin.commons.actions.shapechange.TaskChanger
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
@@ -35,6 +36,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.CanvasPopupMenuProvider
 import java.awt.event.ActionListener
 import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
 import javax.swing.Icon
 import javax.swing.JMenu
 import javax.swing.JPopupMenu
@@ -124,8 +126,25 @@ class FlowableCanvasPopupMenuProvider(private val project: Project) : CanvasPopu
         return popup
     }
 
-    override fun popupChangeShape(focus: BpmnElementId, dest: ProcessModelUpdateEvents): JBPopupMenu {
-        TODO("Not yet implemented")
+    override fun popupChangeShape(focus: BpmnElementId): JBPopupMenu
+    {
+
+        val popup = JBPopupMenu()
+        val taskChanger = TaskChanger(project)
+        if(isTask(project, focus)) {
+            addItem(popup, "Task", USER_TASK, taskChanger.toTask(focus))
+            addItem(popup, "User Task", USER_TASK, taskChanger.toUsertask(focus))
+            addItem(popup, "Service Task", SERVICE_TASK, taskChanger.toServiceTask(focus))
+            addItem(popup, "Script Task", SCRIPT_TASK, ActionListener { saveDiagramToPng(project) })
+            addItem(popup, "Business rule Task", BUSINESS_RULE_TASK, ActionListener { saveDiagramToPng(project) })
+//            addItem(popup, "Send Task", SEND_TASK, ActionListener { saveDiagramToPng(project) })
+//            addItem(popup, "Receive Task", RECEIVE_TASK, ActionListener { saveDiagramToPng(project) })
+//            addItem(popup, "Manual Task", MANUAL_TASK, ActionListener { saveDiagramToPng(project) })
+        }
+        else if(isGateway(project, focus)) {
+//            addItem(popup, "Add change gateway", COMPLEX_GATEWAY, ActionListener { })
+        }
+        return popup
     }
 
     private fun addCopyAndPasteIfNeeded(popup: JBPopupMenu, sceneLocation: Point2D.Float, parent: BpmnElementId) {
