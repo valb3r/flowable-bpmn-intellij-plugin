@@ -229,7 +229,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             is BpmnTask -> NoIconShape(id, bpmn.id, shape, state)
             is BpmnUserTask -> TopLeftIconShape(id, bpmn.id, icons.user, shape, state)
             is BpmnScriptTask -> TopLeftIconShape(id, bpmn.id, icons.script, shape, state)
-            is BpmnServiceTask -> TopLeftIconShape(id, bpmn.id, icons.gear, shape, state)
+            is BpmnServiceTask -> TopLeftIconWithTriggerShape(id, bpmn.id, icons.gear, shape, state)
             is BpmnBusinessRuleTask -> TopLeftIconShape(id, bpmn.id, icons.businessRule, shape, state)
             is BpmnSendTask -> TopLeftIconShape(id, bpmn.id, icons.envelope, shape, state)
             is BpmnReceiveTask -> TopLeftIconShape(id, bpmn.id, icons.receive, shape, state)

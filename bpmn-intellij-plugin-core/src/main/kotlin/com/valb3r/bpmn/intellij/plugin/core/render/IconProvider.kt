@@ -17,6 +17,7 @@ interface IconProvider {
     val gridDense: Icon
     val noGrid: Icon
     val gear: Icon
+    val triggered: Icon
     val external: Icon
     val script: Icon
     val businessRule: Icon
@@ -106,6 +107,7 @@ data class IconProviderImpl(
         override val gridDense: Icon = IconLoader.getIcon("/icons/actions/grid.png"),
         override val noGrid: Icon = IconLoader.getIcon("/icons/actions/no-grid.png"),
         override val gear: Icon = IconLoader.getIcon("/icons/ui-icons/gear.png"),
+        override val triggered: Icon = IconLoader.getIcon("/icons/ui-icons/triggired.png"),
         override val external: Icon = IconLoader.getIcon("/icons/ui-icons/external.png"),
         override val script: Icon = IconLoader.getIcon("/icons/ui-icons/script.png"),
         override val businessRule: Icon = IconLoader.getIcon("/icons/ui-icons/business-rule.png"),
