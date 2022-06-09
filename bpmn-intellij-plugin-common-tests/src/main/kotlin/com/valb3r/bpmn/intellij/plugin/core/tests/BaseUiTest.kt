@@ -144,7 +144,7 @@ abstract class BaseUiTest {
         null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null,
-        null, null, null, null, null, null ,null, null, null
+        null, null, null, null, null, null ,null, null, null, null
     )
 
     protected val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()

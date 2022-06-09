@@ -11,6 +11,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionField
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.UnmappedProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import org.mapstruct.Mapper
@@ -18,20 +19,21 @@ import org.mapstruct.Mapping
 import org.mapstruct.factory.Mappers
 
 data class ServiceTask(
-        @JacksonXmlProperty(isAttribute = true) val id: String,
-        @JacksonXmlProperty(isAttribute = true) val name: String?,
-        val documentation: String?,
-        @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val expression: String?,
-        @JacksonXmlProperty(isAttribute = true) val delegateExpression: String?,
-        @JacksonXmlProperty(isAttribute = true, localName = "class") val clazz: String?,
-        @JacksonXmlProperty(isAttribute = true) val resultVariableName: String?,
-        @JacksonXmlProperty(isAttribute = true) val skipExpression: String?,
-        @JacksonXmlProperty(isAttribute = true) val triggerable: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val useLocalScopeForResultVariable: Boolean?,
-        @JacksonXmlProperty(isAttribute = true) val type: String?,
-        @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
+    @JacksonXmlProperty(isAttribute = true) val id: String,
+    @JacksonXmlProperty(isAttribute = true) val name: String?,
+    val documentation: String?,
+    @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
+    @JacksonXmlProperty(isAttribute = true) val expression: String?,
+    @JacksonXmlProperty(isAttribute = true) val delegateExpression: String?,
+    @JacksonXmlProperty(isAttribute = true, localName = "class") val clazz: String?,
+    @JacksonXmlProperty(isAttribute = true) val resultVariableName: String?,
+    @JacksonXmlProperty(isAttribute = true, localName = "topic") var jobTopic: String?,
+    @JacksonXmlProperty(isAttribute = true) val skipExpression: String?,
+    @JacksonXmlProperty(isAttribute = true) val triggerable: Boolean?,
+    @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
+    @JacksonXmlProperty(isAttribute = true) val useLocalScopeForResultVariable: Boolean?,
+    @JacksonXmlProperty(isAttribute = true) val type: String?,
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null,
 ): BpmnMappable<BpmnServiceTask> {
 
     override fun toElement(): BpmnServiceTask {
@@ -47,8 +49,15 @@ data class ServiceTask(
             val task = doConvertToDto(input)
             return task.copy(
                     fieldsExtension = input.extensionElements?.filterIsInstance<FieldExtensionElement>()?.map { ExtensionField(it.name, it.string, it.expression) },
+                    unmappedProperties = buildUnmappedProperties(
+                        UnmappedProperty("jobTopic", input.jobTopic),
+                    ),
                     failedJobRetryTimeCycle = input.extensionElements?.filter { null != it.failedJobRetryTimeCycle }?.map { it.failedJobRetryTimeCycle }?.firstOrNull()
             )
+        }
+
+        private fun buildUnmappedProperties(vararg unmappedProp:UnmappedProperty) : List<UnmappedProperty>{
+            return unmappedProp.filter { null != it.name && null != it.string }.map{ it }
         }
 
         @Mapping(source = "forCompensation", target = "isForCompensation")
@@ -60,7 +69,7 @@ data class ServiceTask(
             val name: String? = null,
             val string: String? = null,
             val expression: String? = null,
-            val failedJobRetryTimeCycle: String? = null
+            val failedJobRetryTimeCycle: String? = null,
     )
 
     @JsonDeserialize(`as` = FieldExtensionElement::class)

@@ -12,3 +12,6 @@ data class ExtensionFormProperty(
 )
 
 data class ExtensionFormPropertyValue(val id: String?, val name: String?)
+
+data class UnmappedProperty(val name: String? = null, val string: String? = null)
+
