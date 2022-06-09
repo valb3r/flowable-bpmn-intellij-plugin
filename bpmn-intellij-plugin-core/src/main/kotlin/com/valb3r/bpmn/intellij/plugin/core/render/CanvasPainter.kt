@@ -237,6 +237,29 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(drawShape)
     }
 
+    fun drawTriggered(shape: Rectangle2D.Float, icon: Icon) : Area {
+        val leftTop = camera.toCameraView(Point2D.Float(shape.x, shape.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(shape.x + shape.width, shape.y + shape.height))
+        val iconTop = camera.fromCameraView(Point2D.Float(leftTop.x, leftTop.y + iconMargin + icon.iconHeight))
+        val iconBottom = camera.fromCameraView(Point2D.Float(rightBottom.x, rightBottom.y))
+
+        if (rightBottom.x - leftTop.x < (iconMargin + icon.iconWidth) * 2) {
+            return Area(shape)
+        }
+
+        if (rightBottom.y - leftTop.y < (iconMargin + icon.iconHeight) * 1.5) {
+            return Area(shape)
+        }
+
+        icon.paintIcon(null, graphics2D, (rightBottom.x - icon.iconWidth - iconMargin).toInt(), (leftTop.y + iconMargin).toInt())
+        return Area(Rectangle2D.Float(
+            iconTop.x,
+            iconTop.y,
+            iconBottom.x - iconTop.x,
+            iconBottom.y - iconTop.y
+        ))
+    }
+
     fun drawRoundedRectWithIconAtBottom(shape: Rectangle2D.Float, icon: Icon, name: String?, background: Color, border: Color, textColor: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.x, shape.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.x + shape.width, shape.y + shape.height))
