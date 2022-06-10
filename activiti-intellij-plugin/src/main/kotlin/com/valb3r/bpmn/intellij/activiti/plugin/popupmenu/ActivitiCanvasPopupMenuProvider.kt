@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.activiti.plugin.popupmenu
 
+import ShapeChange
 import ShapeCreator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.JBMenuItem
@@ -25,6 +26,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParal
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.utils.NameElementWithTypeForXml
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
@@ -114,8 +116,24 @@ class ActivitiCanvasPopupMenuProvider(private val project: Project) : CanvasPopu
         return popup
     }
 
-    override fun popupChangeShape(focus: BpmnElementId, sceneLocation: Point2D.Float): JBPopupMenu {
-        TODO("Not yet implemented")
+    override fun popupChangeShape(focus: BpmnElementId): JBPopupMenu {
+        val popup = JBPopupMenu()
+        if(isTask(project, focus)) {
+            addItem(popup, "User Task", USER_TASK, ShapeChange(project, BpmnUserTask::class, focus))
+            addItem(popup, "Service Task", SERVICE_TASK, ShapeChange(project, BpmnServiceTask::class, focus))
+            addItem(popup, "Script Task", SCRIPT_TASK, ShapeChange(project, BpmnScriptTask::class, focus))
+            addItem(popup, "Business rule Task", BUSINESS_RULE_TASK, ShapeChange(project, BpmnBusinessRuleTask::class, focus))
+            addItem(popup, "Receive Task", RECEIVE_TASK, ShapeChange(project, BpmnReceiveTask::class, focus))
+            addItem(popup, "Manual Task", MANUAL_TASK, ShapeChange(project, BpmnManualTask::class, focus))
+            addItem(popup, "Camel Task", CAMEL_TASK, ShapeChange(project, BpmnCamelTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "camel")))
+            addItem(popup, "Mail task", MAIL_TASK, ShapeChange(project, BpmnMailTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "mail")))
+            addItem(popup, "Mule task", MULE_TASK, ShapeChange(project, BpmnMuleTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "mule")))
+            addItem(popup, "Decision task", DECISION_TASK, ShapeChange(project, BpmnDecisionTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "dmn")))
+        }
+        else if(isGateway(project, focus)) {
+//            addItem(popup, "Add change gateway", COMPLEX_GATEWAY, ActionListener { })
+        }
+        return popup
     }
 
     private fun addCopyAndpasteIfNeeded(popup: JBPopupMenu, sceneLocation: Point2D.Float, parent: BpmnElementId) {

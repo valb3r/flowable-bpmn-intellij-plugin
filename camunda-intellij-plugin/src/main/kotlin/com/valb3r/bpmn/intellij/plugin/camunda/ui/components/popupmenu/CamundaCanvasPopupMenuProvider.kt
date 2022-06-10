@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.camunda.ui.components.popupmenu
 
+import ShapeChange
 import ShapeCreator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.JBMenuItem
@@ -19,18 +20,15 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdH
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteFromClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.saveDiagramToPng
-import com.valb3r.bpmn.intellij.plugin.commons.actions.shapechange.TaskChanger
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.CanvasPopupMenuProvider
 import java.awt.event.ActionListener
 import java.awt.geom.Point2D
-import java.awt.geom.Rectangle2D
 import javax.swing.Icon
 import javax.swing.JMenu
 import javax.swing.JPopupMenu
@@ -128,16 +126,15 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
     {
 
         val popup = JBPopupMenu()
-        val taskChanger = TaskChanger(project)
         if(isTask(project, focus)) {
-            addItem(popup, "Task", TASK, taskChanger.toTask(focus))
-            addItem(popup, "User Task", USER_TASK, taskChanger.toUsertask(focus))
-            addItem(popup, "Service Task", SERVICE_TASK, taskChanger.toServiceTask(focus))
-            addItem(popup, "Script Task", SCRIPT_TASK, ActionListener { saveDiagramToPng(project) })
-            addItem(popup, "Business rule Task", BUSINESS_RULE_TASK, ActionListener { saveDiagramToPng(project) })
-            addItem(popup, "Send Task", SEND_TASK, ActionListener { saveDiagramToPng(project) })
-            addItem(popup, "Receive Task", RECEIVE_TASK, ActionListener { saveDiagramToPng(project) })
-            addItem(popup, "Manual Task", MANUAL_TASK, ActionListener { saveDiagramToPng(project) })
+            addItem(popup, "Task", TASK, ShapeChange(project, BpmnTask::class, focus))
+            addItem(popup, "User Task", USER_TASK, ShapeChange(project, BpmnUserTask::class, focus))
+            addItem(popup, "Service Task", SERVICE_TASK, ShapeChange(project, BpmnServiceTask::class, focus))
+            addItem(popup, "Script Task", SCRIPT_TASK, ShapeChange(project, BpmnScriptTask::class, focus))
+            addItem(popup, "Business rule Task", BUSINESS_RULE_TASK, ShapeChange(project, BpmnBusinessRuleTask::class, focus))
+            addItem(popup, "Send Task", SEND_TASK, ShapeChange(project, BpmnSendTask::class, focus))
+            addItem(popup, "Receive Task", RECEIVE_TASK, ShapeChange(project, BpmnReceiveTask::class, focus))
+            addItem(popup, "Manual Task", MANUAL_TASK, ShapeChange(project, BpmnManualTask::class, focus))
         }
         else if(isGateway(project, focus)) {
             addItem(popup, "Add change gateway", COMPLEX_GATEWAY, ActionListener { })

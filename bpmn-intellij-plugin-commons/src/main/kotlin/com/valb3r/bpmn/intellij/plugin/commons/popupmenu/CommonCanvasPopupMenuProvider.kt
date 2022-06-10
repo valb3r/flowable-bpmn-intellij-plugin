@@ -3,11 +3,11 @@ import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnDummy
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.utils.NameElementWithTypeForXml
 import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.render.snapToGridIfNecessary
@@ -55,19 +55,23 @@ class ShapeCreator<T : WithBpmnId> (private val project: Project, private val cl
 class ShapeChange<T : WithBpmnId>(
     private val project: Project,
     private val clazz: KClass<T>,
-    private val elementId: BpmnElementId,
-    private val elemWithTypeForXml: Pair<WithBpmnId, String> = Pair(
-        BpmnDummy(), ""
-    )
-) : ActionListener {
+    private val elementId: BpmnElementId) : ActionListener {
+    constructor(project: Project,
+                clazz: KClass<T>,
+                elementId: BpmnElementId,
+                nameElemWithTypeForXml: NameElementWithTypeForXml<out WithBpmnId>
+    ) : this(project, clazz, elementId){
+        this.nameElemWithTypeForXml = nameElemWithTypeForXml
+    }
 
+    private var nameElemWithTypeForXml : NameElementWithTypeForXml<out WithBpmnId>? = null
     override fun actionPerformed(e: ActionEvent?) {
-        val oldPropertyTable = currentStateProvider(project).currentState().elemPropertiesByStaticElementId[elementId]
         val elementsFactory = newElementsFactory(project)
         val newBpmnElement = elementsFactory.newBpmnObject(clazz).updateBpmnElemId(elementId)
-
+        val currentElement = currentStateProvider(project).currentState().elementByBpmnId[elementId]!!.element
+        if(newBpmnElement.javaClass == currentElement.javaClass) return
+        val oldPropertyTable = currentStateProvider(project).currentState().elemPropertiesByStaticElementId[elementId]
         val newPropertyTable = elementsFactory.propertiesOf(newBpmnElement)
-
         val propertiesToRemove = mutableListOf<RemovePropertyEvent>()
         val nestedPropertiesRemove = mutableListOf<PropertyUpdateWithId>()
         oldPropertyTable!!.view().forEach { (t, u) ->
@@ -82,12 +86,20 @@ class ShapeChange<T : WithBpmnId>(
             }
         }
 
+        val prepareChangeEvent: BpmnElementChangeEvent = if (null == nameElemWithTypeForXml){
+            BpmnElementChangeEvent(elementId, newBpmnElement)
+        } else {
+            BpmnElementChangeEvent(elementId, newBpmnElement, Pair(
+                elementsFactory.newBpmnObject(nameElemWithTypeForXml!!.clazz),
+                nameElemWithTypeForXml!!.type))
+        }
+
         updateEventsRegistry(project).addEvents(
             propertiesToRemove +
                     nestedPropertiesRemove +
                     listOf(
                         UpdatePropertyTableEvent(elementId, newPropertyTable),
-                        BpmnElementChangeEvent(elementId, newBpmnElement, elemWithTypeForXml)
+                        prepareChangeEvent
                     )
         )
     }

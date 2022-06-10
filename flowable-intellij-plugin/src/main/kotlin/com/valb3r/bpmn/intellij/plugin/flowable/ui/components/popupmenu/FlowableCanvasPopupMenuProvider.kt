@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.ui.components.popupmenu
 
+import ShapeChange
 import ShapeCreator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.JBMenuItem
@@ -25,7 +26,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdH
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
-import com.valb3r.bpmn.intellij.plugin.commons.actions.shapechange.TaskChanger
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.utils.NameElementWithTypeForXml
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
@@ -124,26 +125,25 @@ class FlowableCanvasPopupMenuProvider(private val project: Project) : CanvasPopu
         return popup
     }
 
-    override fun popupChangeShape(focusElement: BpmnElementId): JBPopupMenu
+    override fun popupChangeShape(focus: BpmnElementId): JBPopupMenu
     {
 
         val popup = JBPopupMenu()
-        val taskChanger = TaskChanger(project)
-        if(isTask(project, focusElement)) {
-            addItem(popup, "User Task", USER_TASK, taskChanger.toUsertask(focusElement))
-            addItem(popup, "Service Task", SERVICE_TASK, taskChanger.toServiceTask(focusElement))
-            addItem(popup, "Script Task", SCRIPT_TASK, taskChanger.toScriptTask(focusElement) )
-            addItem(popup, "Business rule Task", BUSINESS_RULE_TASK, taskChanger.toBusinessRuleTask(focusElement))
-            addItem(popup, "Receive Task", RECEIVE_TASK, taskChanger.toReceiveTask(focusElement))
-            addItem(popup, "Manual Task", MANUAL_TASK, taskChanger.toManualTask(focusElement))
-            addItem(popup, "Camel Task", CAMEL_TASK, taskChanger.toServiceTaskWithType(focusElement, "camel"))
-            addItem(popup, "Http task", HTTP_TASK, taskChanger.toServiceTaskWithType(focusElement, "http"))
-            addItem(popup, "Mail task", MAIL_TASK, taskChanger.toServiceTaskWithType(focusElement, "mail"))
-            addItem(popup, "Mule task", MULE_TASK, taskChanger.toServiceTaskWithType(focusElement, "mule"))
-            addItem(popup, "Decision task", DECISION_TASK, taskChanger.toServiceTaskWithType(focusElement, "dmn"))
-            addItem(popup, "Shell task", SHELL_TASK, taskChanger.toServiceTaskWithType(focusElement, "shell"))
+        if(isTask(project, focus)) {
+            addItem(popup, "User Task", USER_TASK, ShapeChange(project, BpmnUserTask::class, focus))
+            addItem(popup, "Service Task", SERVICE_TASK, ShapeChange(project, BpmnServiceTask::class, focus))
+            addItem(popup, "Script Task", SCRIPT_TASK, ShapeChange(project, BpmnScriptTask::class, focus))
+            addItem(popup, "Business rule Task", BUSINESS_RULE_TASK, ShapeChange(project, BpmnBusinessRuleTask::class, focus))
+            addItem(popup, "Receive Task", RECEIVE_TASK, ShapeChange(project, BpmnReceiveTask::class, focus))
+            addItem(popup, "Manual Task", MANUAL_TASK, ShapeChange(project, BpmnManualTask::class, focus))
+            addItem(popup, "Camel Task", CAMEL_TASK, ShapeChange(project, BpmnCamelTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "camel")))
+            addItem(popup, "Http task", HTTP_TASK, ShapeChange(project, BpmnHttpTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "http")))
+            addItem(popup, "Mail task", MAIL_TASK, ShapeChange(project, BpmnMailTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "mail")))
+            addItem(popup, "Mule task", MULE_TASK, ShapeChange(project, BpmnMuleTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "mule")))
+            addItem(popup, "Decision task", DECISION_TASK, ShapeChange(project, BpmnDecisionTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "dmn")))
+            addItem(popup, "Shell task", SHELL_TASK, ShapeChange(project, BpmnShellTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "shell")))
         }
-        else if(isGateway(project, focusElement)) {
+        else if(isGateway(project, focus)) {
 //            addItem(popup, "Add change gateway", COMPLEX_GATEWAY, ActionListener { })
         }
         return popup
