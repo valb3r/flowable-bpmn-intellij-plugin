@@ -43,7 +43,6 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.charset.StandardCharsets
-import kotlin.reflect.KClass
 
 const val CDATA_FIELD = "CDATA"
 
@@ -168,7 +167,7 @@ abstract class BaseBpmnParser: BpmnParser {
                 is NewWaypoints -> applyNewWaypoints(doc, event)
                 is DiagramElementRemoved -> applyDiagramElementRemoved(doc, event)
                 is BpmnElementRemoved -> applyBpmnElementRemoved(doc, event)
-                is BpmnElementTypeChange -> changeElementType(doc, event)
+                is BpmnElementChange -> changeElementType(doc, event)
                 is BpmnShapeObjectAdded -> applyBpmnShapeObjectAdded(doc, event)
                 is BpmnEdgeObjectAdded -> applyBpmnEdgeObjectAdded(doc, event)
                 is PropertyUpdateWithId -> applyPropertyUpdateWithId(doc, event)
@@ -262,28 +261,33 @@ abstract class BaseBpmnParser: BpmnParser {
         trimWhitespace(parent, false)
     }
 
-    private fun changeElementType(doc: Document, update: BpmnElementTypeChange){
+    private fun changeElementType(doc: Document, update: BpmnElementChange){
         val node = doc.selectSingleNode(
             "//*[local-name()='process']//*[@id='${update.bpmnElementId.id}'][1]"
         ) as Node
 //        setAttributeOrValueOrCdataOrRemoveIfNull(node as Element, "", PropertyTypeDetails(), )
-        node.name = getTypeElement(update.newBpmnElement)
+        node.name = getNameElement(update.newBpmnElement)
     }
-    open protected fun getTypeElement(bpmnElement: WithBpmnId) = when(bpmnElement) {
+    open protected fun getNameElement(bpmnElement: WithBpmnId) = when(bpmnElement) {
+
+        //Activity
         is BpmnUserTask -> "userTask"
         is BpmnScriptTask -> "scriptTask"
         is BpmnServiceTask -> "serviceTask"
         is BpmnBusinessRuleTask -> "businessRuleTask"
         is BpmnReceiveTask -> "receiveTask"
         is BpmnManualTask -> "manualTask"
-        is BpmnCamelTask ->  "camel"
-        is BpmnHttpTask ->  "http"
-        is BpmnMailTask ->  "mail"
-        is BpmnMuleTask ->  "mule"
-        is BpmnDecisionTask -> "dmn"
-        is BpmnShellTask -> "shell"
+//        ----
+//        is BpmnCamelTask ->  "camel" //It's service task with type
+//        is BpmnHttpTask ->  "http"
+//        is BpmnMailTask ->  "mail"
+//        is BpmnMuleTask ->  "mule"
+//        is BpmnDecisionTask -> "dmn"
+//        is BpmnShellTask -> "shell"
+//        ----
+
         else -> {
-            "nothing"
+            throw IllegalArgumentException("Can't find name by element $bpmnElement for xml element")
         }
     }
 
@@ -643,7 +647,7 @@ abstract class BaseBpmnParser: BpmnParser {
     }
 
     private fun setAttribute(node: Element, details: PropertyTypeDetails, name: String, value: String?) {
-        val qname = qname(name)
+            val qname = qname(name)
 
         if (value.isNullOrEmpty()) {
             if (destroyEnclosingNode(details, node)) return
