@@ -31,12 +31,10 @@ import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteFromClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.saveDiagramToPng
-import com.valb3r.bpmn.intellij.plugin.core.events.ProcessModelUpdateEvents
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.CanvasPopupMenuProvider
 import java.awt.event.ActionListener
 import java.awt.geom.Point2D
-import java.awt.geom.Rectangle2D
 import javax.swing.Icon
 import javax.swing.JMenu
 import javax.swing.JPopupMenu
@@ -126,26 +124,26 @@ class FlowableCanvasPopupMenuProvider(private val project: Project) : CanvasPopu
         return popup
     }
 
-    override fun popupChangeShape(focus: BpmnElementId): JBPopupMenu
+    override fun popupChangeShape(focusElement: BpmnElementId): JBPopupMenu
     {
 
         val popup = JBPopupMenu()
         val taskChanger = TaskChanger(project)
-        if(isTask(project, focus)) {
-            addItem(popup, "User Task", USER_TASK, taskChanger.toUsertask(focus))
-            addItem(popup, "Service Task", SERVICE_TASK, taskChanger.toServiceTask(focus))
-            addItem(popup, "Script Task", SCRIPT_TASK, taskChanger.toScriptTask(focus) )
-            addItem(popup, "Business rule Task", BUSINESS_RULE_TASK, taskChanger.toBusinessRuleTask(focus))
-            addItem(popup, "Receive Task", RECEIVE_TASK, taskChanger.toReceiveTask(focus))
-            addItem(popup, "Manual Task", MANUAL_TASK, taskChanger.toManualTask(focus))
-            addItem(popup, "Camel Task", MANUAL_TASK, taskChanger.toServiceTaskWithType(focus, "camel"))
-            addItem(popup, "Http task", MANUAL_TASK, taskChanger.toServiceTaskWithType(focus, "http"))
-            addItem(popup, "Mail task", MANUAL_TASK, taskChanger.toServiceTaskWithType(focus, "mail"))
-            addItem(popup, "Mule task", MANUAL_TASK, taskChanger.toServiceTaskWithType(focus, "mule"))
-            addItem(popup, "Decision task", MANUAL_TASK, taskChanger.toServiceTaskWithType(focus, "dmn"))
-            addItem(popup, "Shell task", MANUAL_TASK, taskChanger.toServiceTaskWithType(focus, "shell"))
+        if(isTask(project, focusElement)) {
+            addItem(popup, "User Task", USER_TASK, taskChanger.toUsertask(focusElement))
+            addItem(popup, "Service Task", SERVICE_TASK, taskChanger.toServiceTask(focusElement))
+            addItem(popup, "Script Task", SCRIPT_TASK, taskChanger.toScriptTask(focusElement) )
+            addItem(popup, "Business rule Task", BUSINESS_RULE_TASK, taskChanger.toBusinessRuleTask(focusElement))
+            addItem(popup, "Receive Task", RECEIVE_TASK, taskChanger.toReceiveTask(focusElement))
+            addItem(popup, "Manual Task", MANUAL_TASK, taskChanger.toManualTask(focusElement))
+            addItem(popup, "Camel Task", CAMEL_TASK, taskChanger.toServiceTaskWithType(focusElement, "camel"))
+            addItem(popup, "Http task", HTTP_TASK, taskChanger.toServiceTaskWithType(focusElement, "http"))
+            addItem(popup, "Mail task", MAIL_TASK, taskChanger.toServiceTaskWithType(focusElement, "mail"))
+            addItem(popup, "Mule task", MULE_TASK, taskChanger.toServiceTaskWithType(focusElement, "mule"))
+            addItem(popup, "Decision task", DECISION_TASK, taskChanger.toServiceTaskWithType(focusElement, "dmn"))
+            addItem(popup, "Shell task", SHELL_TASK, taskChanger.toServiceTaskWithType(focusElement, "shell"))
         }
-        else if(isGateway(project, focus)) {
+        else if(isGateway(project, focusElement)) {
 //            addItem(popup, "Add change gateway", COMPLEX_GATEWAY, ActionListener { })
         }
         return popup

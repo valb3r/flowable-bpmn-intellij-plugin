@@ -36,7 +36,7 @@ class TaskChanger(val project: Project) {
     }
 
     fun toServiceTaskWithType(elementId: BpmnElementId, type: String): ShapeChange<out WithBpmnId> {
-        var dummyBpmnServiceTask = BpmnServiceTask(BpmnElementId(""))
+        val dummyBpmnServiceTask = BpmnServiceTask(BpmnElementId(""))
         return when (type) {
             "camel" -> ShapeChange(project, BpmnCamelTask::class, elementId, Pair(dummyBpmnServiceTask, "camel"))
             "http" -> ShapeChange(project, BpmnHttpTask::class, elementId, Pair(dummyBpmnServiceTask, "http"))

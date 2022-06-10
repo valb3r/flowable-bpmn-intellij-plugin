@@ -50,6 +50,7 @@ interface BpmnElementRemoved: EventPropagatableToXml {
 interface BpmnElementChange: EventPropagatableToXml{
     val bpmnElementId: BpmnElementId
     val newBpmnElement: WithBpmnId
+    val elemWithTypeForXml: Pair<WithBpmnId, String>
 }
 
 interface BpmnShapeObjectAdded: EventPropagatableToXml {
