@@ -267,21 +267,24 @@ abstract class BaseBpmnParser: BpmnParser {
                 ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnElementId.id}'][1]") as Element
         node.attribute("type")?.let { node.remove(it) }
 
-        if (update.elemWithTypeForXml.first !is BpmnDummy) {
-            node.addAttribute(engineNs().named("type"), update.elemWithTypeForXml.second)
-        } else {
+        if (update.nameElemWithTypeForXml.first is BpmnDummy) {
             node.name = getNameByBpmnElement(update.newBpmnElement)
+        } else {
+            node.name = getNameByBpmnElement(update.nameElemWithTypeForXml.first)
+            node.addAttribute(engineNs().named("type"), update.nameElemWithTypeForXml.second)
         }
     }
     open protected fun getNameByBpmnElement(bpmnElement: WithBpmnId) = when(bpmnElement) {
 
         //Activity
+        is BpmnTask -> "task"
         is BpmnUserTask -> "userTask"
         is BpmnScriptTask -> "scriptTask"
         is BpmnServiceTask -> "serviceTask"
         is BpmnBusinessRuleTask -> "businessRuleTask"
         is BpmnReceiveTask -> "receiveTask"
         is BpmnManualTask -> "manualTask"
+        is BpmnSendTask -> "sendTask"
         else -> {
             throw IllegalArgumentException("Can't find name by element $bpmnElement for xml element")
         }
