@@ -4,6 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnDummy
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
@@ -30,7 +31,7 @@ data class BpmnShapeResizedAndMovedEvent(override val diagramElementId: DiagramE
 
 data class BpmnParentChangedEvent(override val bpmnElementId: BpmnElementId, override val newParentId: BpmnElementId, override val propagateToXml: Boolean = true): BpmnParentChanged
 
-data class BpmnElementTypeChangeEvent(override val bpmnElementId: BpmnElementId, override val newBpmnElement: WithBpmnId): BpmnElementTypeChange
+data class BpmnElementChangeEvent(override val bpmnElementId: BpmnElementId, override val newBpmnElement: WithBpmnId, val elemWithTypeForXml: Pair<WithBpmnId, String> = Pair(BpmnDummy(), "")): BpmnElementChange
 
 data class NewWaypointsEvent(override val edgeElementId: DiagramElementId, override val waypoints: List<IdentifiableWaypoint>, override val epoch: Int): NewWaypoints
 

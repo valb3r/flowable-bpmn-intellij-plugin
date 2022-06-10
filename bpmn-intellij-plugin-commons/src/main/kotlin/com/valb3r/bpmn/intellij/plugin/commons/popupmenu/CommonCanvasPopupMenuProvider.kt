@@ -1,14 +1,13 @@
 
 import com.intellij.openapi.project.Project
-import com.intellij.sql.isNullOr
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnDummy
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.render.snapToGridIfNecessary
@@ -53,7 +52,14 @@ class ShapeCreator<T : WithBpmnId> (private val project: Project, private val cl
     }
 }
 
-class ShapeChange<T : WithBpmnId> (private val project: Project, private val clazz: KClass<T>, val elementId: BpmnElementId): ActionListener {
+class ShapeChange<T : WithBpmnId>(
+    private val project: Project,
+    private val clazz: KClass<T>,
+    private val elementId: BpmnElementId,
+    private val elemWithTypeForXml: Pair<WithBpmnId, String> = Pair(
+        BpmnDummy(), ""
+    )
+) : ActionListener {
 
     override fun actionPerformed(e: ActionEvent?) {
         val oldPropertyTable = currentStateProvider(project).currentState().elemPropertiesByStaticElementId[elementId]
@@ -66,22 +72,22 @@ class ShapeChange<T : WithBpmnId> (private val project: Project, private val cla
         val nestedPropertiesRemove = mutableListOf<PropertyUpdateWithId>()
         oldPropertyTable!!.view().forEach { (t, u) ->
             if (null == newPropertyTable[t]) {
-                if (t == PropertyType.FORM_PROPERTY_ID || t == PropertyType.FORM_PROPERTY_NAME){
-                    nestedPropertiesRemove += StringValueUpdatedEvent(elementId, t, "", propertyIndex = listOf(""))
+                if (t == PropertyType.FORM_PROPERTY_ID || t == PropertyType.FORM_PROPERTY_NAME){                                        //FIXME doesn't remove nested elements
+                    nestedPropertiesRemove += StringValueUpdatedEvent(elementId, t, "", propertyIndex = listOf("Property 1"))
                 }else {
+                    propertiesToRemove += RemovePropertyEvent(elementId, t)
                 }
-                propertiesToRemove += RemovePropertyEvent(elementId, t)
             } else {
                 newPropertyTable[t] = u.toMutableList()
             }
         }
 
         updateEventsRegistry(project).addEvents(
-//            propertiesToRemove +
+            propertiesToRemove +
                     nestedPropertiesRemove +
                     listOf(
-//                        UpdatePropertyTableEvent(elementId, newPropertyTable),
-//                        BpmnElementTypeChangeEvent(elementId, newBpmnElement)
+                        UpdatePropertyTableEvent(elementId, newPropertyTable),
+                        BpmnElementChangeEvent(elementId, newBpmnElement, elemWithTypeForXml)
                     )
         )
     }
