@@ -26,7 +26,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdH
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.utils.NameElementWithTypeForXml
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
@@ -127,26 +126,63 @@ class FlowableCanvasPopupMenuProvider(private val project: Project) : CanvasPopu
         return popup
     }
 
-    override fun popupChangeShape(focus: BpmnElementId): JBPopupMenu
-    {
-
+    override fun popupChangeShape(focus: BpmnElementId): JBPopupMenu {
         val popup = JBPopupMenu()
-        if(isTask(project, focus)) {
+        if(isStartEvent(project, focus)) {
+            addItem(popup, "Start event", START_EVENT, ShapeChange(project, BpmnStartEvent::class, focus))
+            addItem(popup, "Start conditional event", START_CONDITIONAL_EVENT, ShapeChange(project, BpmnStartConditionalEvent::class, focus))
+            addItem(popup, "Start message event", START_MESSAGE_EVENT, ShapeChange(project, BpmnStartConditionalEvent::class, focus))
+            addItem(popup, "Start error event", START_ERROR_EVENT, ShapeChange(project, BpmnStartErrorEvent::class, focus))
+            addItem(popup, "Start escalation event", START_ESCALATION_EVENT, ShapeChange(project, BpmnStartEscalationEvent::class, focus))
+            addItem(popup, "Start signal event", START_SIGNAL_EVENT, ShapeChange(project, BpmnStartSignalEvent::class, focus))
+            addItem(popup, "Start timer event", START_TIMER_EVENT, ShapeChange(project, BpmnStartTimerEvent::class, focus))
+        } else if(isTask(project, focus)) {
             addItem(popup, "User Task", USER_TASK, ShapeChange(project, BpmnUserTask::class, focus))
             addItem(popup, "Service Task", SERVICE_TASK, ShapeChange(project, BpmnServiceTask::class, focus))
             addItem(popup, "Script Task", SCRIPT_TASK, ShapeChange(project, BpmnScriptTask::class, focus))
             addItem(popup, "Business rule Task", BUSINESS_RULE_TASK, ShapeChange(project, BpmnBusinessRuleTask::class, focus))
             addItem(popup, "Receive Task", RECEIVE_TASK, ShapeChange(project, BpmnReceiveTask::class, focus))
             addItem(popup, "Manual Task", MANUAL_TASK, ShapeChange(project, BpmnManualTask::class, focus))
-            addItem(popup, "Camel Task", CAMEL_TASK, ShapeChange(project, BpmnCamelTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "camel")))
-            addItem(popup, "Http task", HTTP_TASK, ShapeChange(project, BpmnHttpTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "http")))
-            addItem(popup, "Mail task", MAIL_TASK, ShapeChange(project, BpmnMailTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "mail")))
-            addItem(popup, "Mule task", MULE_TASK, ShapeChange(project, BpmnMuleTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "mule")))
-            addItem(popup, "Decision task", DECISION_TASK, ShapeChange(project, BpmnDecisionTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "dmn")))
-            addItem(popup, "Shell task", SHELL_TASK, ShapeChange(project, BpmnShellTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "shell")))
-        }
-        else if(isGateway(project, focus)) {
-//            addItem(popup, "Exclusive gateway", EXCLUSIVE_GATEWAY, ShapeChange(project, BpmnExclusiveGateway))
+            addItem(popup, "Camel Task", CAMEL_TASK, ShapeChange(project, BpmnCamelTask::class, focus))
+            addItem(popup, "Http task", HTTP_TASK, ShapeChange(project, BpmnHttpTask::class, focus))
+            addItem(popup, "Mail task", MAIL_TASK, ShapeChange(project, BpmnMailTask::class, focus))
+            addItem(popup, "Mule task", MULE_TASK, ShapeChange(project, BpmnMuleTask::class, focus))
+            addItem(popup, "Decision task", DECISION_TASK, ShapeChange(project, BpmnDecisionTask::class, focus))
+            addItem(popup, "Shell task", SHELL_TASK, ShapeChange(project, BpmnShellTask::class, focus))
+        } else if(isStructuralElement(project, focus)) {
+            addItem(popup, "Sub process", SUB_PROCESS, ShapeChange(project, BpmnSubProcess::class, focus))
+            addItem(popup, "Event sub process", EVENT_SUB_PROCESS, ShapeChange(project, BpmnEventSubprocess::class, focus))
+            addItem(popup, "Call activity", CALL_ACTIVITY, ShapeChange(project, BpmnCallActivity::class, focus))
+            addItem(popup, "Adhoc sub process", ADHOC_SUB_PROCESS, ShapeChange(project, BpmnAdHocSubProcess::class, focus))
+        } else if(isGateway(project, focus)) {
+            addItem(popup, "Exclusive gateway", EXCLUSIVE_GATEWAY, ShapeChange(project, BpmnExclusiveGateway::class, focus))
+            addItem(popup, "Parallel gateway", PARALLEL_GATEWAY, ShapeChange(project, BpmnParallelGateway::class, focus))
+            addItem(popup, "Inclusive gateway", INCLUSIVE_GATEWAY, ShapeChange(project, BpmnInclusiveGateway::class, focus))
+            addItem(popup, "Event gateway", EVENT_GATEWAY, ShapeChange(project, BpmnEventGateway::class, focus))
+        } else if(isBoundaryEvents(project, focus)) {
+            addItem(popup, "Boundary cancel event", BOUNDARY_CANCEL_EVENT, ShapeChange(project, BpmnEventGateway::class, focus))
+            addItem(popup, "Boundary compensation event", BOUNDARY_COMPENSATION_EVENT, ShapeChange(project, BpmnBoundaryCompensationEvent::class, focus))
+            addItem(popup, "Boundary conditional event", BOUNDARY_CONDITIONAL_EVENT, ShapeChange(project, BpmnStartConditionalEvent::class, focus))
+            addItem(popup, "Boundary error event", BOUNDARY_ERROR_EVENT, ShapeChange(project, BpmnBoundaryErrorEvent::class, focus))
+            addItem(popup, "Boundary escalation event", BOUNDARY_ESCALATION_EVENT, ShapeChange(project, BpmnBoundaryEscalationEvent::class, focus))
+            addItem(popup, "Boundary message event", BOUNDARY_MESSAGE_EVENT, ShapeChange(project, BpmnBoundaryMessageEvent::class, focus))
+            addItem(popup, "Boundary signal event", BOUNDARY_SIGNAL_EVENT, ShapeChange(project, BpmnBoundarySignalEvent::class, focus))
+            addItem(popup, "Boundary timer event", BOUNDARY_TIMER_EVENT, ShapeChange(project, BpmnBoundaryTimerEvent::class, focus))
+        } else if(isIntermediateCatchingEvent(project, focus)) {
+            addItem(popup, "Intermediate timer catching event", INTERMEDIATE_TIMER_CATCHING, ShapeChange(project, BpmnIntermediateTimerCatchingEvent::class, focus))
+            addItem(popup, "Intermediate message catching event", INTERMEDIATE_MESSAGE_CATCHING, ShapeChange(project, BpmnIntermediateMessageCatchingEvent::class, focus))
+            addItem(popup, "Intermediate signal catching event", INTERMEDIATE_SIGNAL_CATCHING, ShapeChange(project, BpmnIntermediateSignalCatchingEvent::class, focus))
+            addItem(popup, "Intermediate conditional catching event", INTERMEDIATE_CONDITIONAL_CATCHING, ShapeChange(project, BpmnIntermediateConditionalCatchingEvent::class, focus))
+        } else if(isIntermediateThrowingEvent(project, focus)) {
+            addItem(popup, "Intermediate none throwing event", INTERMEDIATE_NONE_THROWING, ShapeChange(project, BpmnIntermediateNoneThrowingEvent::class, focus))
+            addItem(popup, "Intermediate signal throwing event", INTERMEDIATE_SIGNAL_THROWING, ShapeChange(project, BpmnIntermediateSignalThrowingEvent::class, focus))
+            addItem(popup, "Intermediate escalation throwing event", INTERMEDIATE_ESCALATION_THROWING, ShapeChange(project, BpmnIntermediateEscalationThrowingEvent::class, focus))
+        } else if(isEndEvent(project, focus)) {
+            addItem(popup, "End event", END_EVENT, ShapeChange(project, BpmnEndEvent::class, focus))
+            addItem(popup, "End error event", ERROR_END_EVENT, ShapeChange(project, BpmnEndErrorEvent::class, focus))
+            addItem(popup, "End escalation event", ESCALATION_END_EVENT, ShapeChange(project, BpmnEndEscalationEvent::class, focus))
+            addItem(popup, "End cancel event", CANCEL_END_EVENT, ShapeChange(project, BpmnEndCancelEvent::class, focus))
+            addItem(popup, "End terminate event", TERMINATE_END_EVENT, ShapeChange(project, BpmnEndTerminateEvent::class, focus))
         }
         return popup
     }

@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.flowable.parser
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnComplexGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
@@ -178,10 +179,10 @@ class FlowableParser : BaseBpmnParser() {
         return FlowablePropertyTypeDetails.values().map { it.details }
     }
 
-    override fun createBpmnObject(update: BpmnShapeObjectAdded, diagramParent: Element): Element? {
-        return when (update.bpmnObject.element) {
+    override fun createBpmnObject(element: WithBpmnId, diagramParent: Element): Element? {
+        return when (element) {
             is BpmnExternalTask -> createServiceTaskWithType(diagramParent, "external-worker")
-            else -> super.createBpmnObject(update, diagramParent)
+            else -> super.createBpmnObject(element, diagramParent)
         }
     }
 

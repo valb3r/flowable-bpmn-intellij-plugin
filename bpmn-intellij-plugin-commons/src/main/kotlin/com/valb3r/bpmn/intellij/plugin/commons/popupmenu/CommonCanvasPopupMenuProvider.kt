@@ -5,8 +5,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.utils.NameElementWithTypeForXml
-import com.valb3r.bpmn.intellij.plugin.core.events.*
+import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementChangeEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.BpmnShapeObjectAddedEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.render.snapToGridIfNecessary
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
@@ -54,15 +55,6 @@ class ShapeChange<T : WithBpmnId>(
     private val project: Project,
     private val clazz: KClass<T>,
     private val elementId: BpmnElementId) : ActionListener {
-    constructor(project: Project,
-                clazz: KClass<T>,
-                elementId: BpmnElementId,
-                nameElemWithTypeForXml: NameElementWithTypeForXml<out WithBpmnId>
-    ) : this(project, clazz, elementId){
-        this.nameElemWithTypeForXml = nameElemWithTypeForXml
-    }
-
-    private var nameElemWithTypeForXml : NameElementWithTypeForXml<out WithBpmnId>? = null
     override fun actionPerformed(e: ActionEvent?) {
         val newElement = newElementsFactory(project).newBpmnObject(clazz).updateBpmnElemId(elementId)
         val currentElement = currentStateProvider(project).currentState().elementByBpmnId[elementId]!!.element
