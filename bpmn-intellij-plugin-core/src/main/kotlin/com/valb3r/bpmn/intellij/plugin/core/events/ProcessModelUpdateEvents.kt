@@ -157,9 +157,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
                 is BpmnShapeObjectAddedEvent -> addObjectShapeEvent(toStore as Order<BpmnShapeObjectAddedEvent>)
                 is BpmnEdgeObjectAddedEvent -> addObjectEdgeEvent(toStore as Order<BpmnEdgeObjectAddedEvent>)
                 is BpmnElementRemovedEvent -> removeBpmnElement(event.bpmnElementId , toStore as Order<BpmnElementRemovedEvent> )
-                is RemovePropertyEvent -> removePropertyEvent(event.bpmnElementId , toStore as Order<RemovePropertyEvent> )
-                is UpdatePropertyTableEvent -> updateTableEvent(event.bpmnElementId , toStore as Order<UpdatePropertyTableEvent> )
-                is BpmnElementChangeEvent -> changeBpmnElement(event.bpmnElementId , toStore as Order<BpmnElementRemovedEvent>, toStore as Order<BpmnEdgeObjectAddedEvent>)
+                is BpmnElementChangeEvent -> changeBpmnElement(event.elementId , toStore as Order<BpmnElementRemovedEvent>, toStore as Order<BpmnEdgeObjectAddedEvent>)
                 else -> throw IllegalArgumentException("Can't bulk add: " + event::class.qualifiedName)
             }
         }
@@ -209,22 +207,6 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
         toStore: Order<BpmnElementRemovedEvent>
     ) {
         deletionsByStaticBpmnId.computeIfAbsent(bpmnElement) { CopyOnWriteArrayList() } += toStore
-    }
-
-    private fun removePropertyEvent(
-        bpmnElement: BpmnElementId,
-        toStore: Order<RemovePropertyEvent>
-    ){
-        deletionsByStaticBpmnId.computeIfAbsent(bpmnElement) { CopyOnWriteArrayList() } += toStore
-
-    }
-
-    private fun updateTableEvent(
-        bpmnElement: BpmnElementId,
-        toStore: Order<UpdatePropertyTableEvent>
-    ){
-        propertyUpdatesByStaticId.computeIfAbsent(bpmnElement) { CopyOnWriteArrayList() } += toStore
-
     }
 
     @Synchronized

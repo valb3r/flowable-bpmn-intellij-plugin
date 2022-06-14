@@ -9,6 +9,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
@@ -166,12 +167,11 @@ abstract class BaseBpmnParser: BpmnParser {
                 is BpmnShapeResizedAndMoved -> applyShapeRectUpdate(doc, event)
                 is NewWaypoints -> applyNewWaypoints(doc, event)
                 is DiagramElementRemoved -> applyDiagramElementRemoved(doc, event)
-                is BpmnElementRemoved -> applyBpmnElementRemoved(doc, event)
-                is BpmnElementChange -> changeElement(doc, event)
+                is BpmnElementRemoved -> applyBpmnElementRemoved(doc, event.bpmnElementId)
+                is BpmnElementChange -> applyChangeElement(doc, event)
                 is BpmnShapeObjectAdded -> applyBpmnShapeObjectAdded(doc, event)
                 is BpmnEdgeObjectAdded -> applyBpmnEdgeObjectAdded(doc, event)
                 is PropertyUpdateWithId -> applyPropertyUpdateWithId(doc, event)
-                is PropertyRemoveWithId -> removePropertyWithId(doc, event)
                 is BpmnParentChanged -> applyParentChange(doc, event)
             }
         }
@@ -261,38 +261,23 @@ abstract class BaseBpmnParser: BpmnParser {
         trimWhitespace(parent, false)
     }
 
-    private fun changeElement(doc: Document, update: BpmnElementChange){
-        val node =
-            doc.selectSingleNode("//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]") as Element?
-                ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnElementId.id}'][1]") as Element
-        node.attribute("type")?.let { node.remove(it) }
-
-        if (update.nameElemWithTypeForXml.first is BpmnDummy) {
-            node.name = getNameByBpmnElement(update.newBpmnElement)
-        } else {
-            node.name = getNameByBpmnElement(update.nameElemWithTypeForXml.first)
-            node.addAttribute(engineNs().named("type"), update.nameElemWithTypeForXml.second)
-        }
-    }
-    open protected fun getNameByBpmnElement(bpmnElement: WithBpmnId) = when(bpmnElement) {
-
-        //Activity
-        is BpmnTask -> "task"
-        is BpmnUserTask -> "userTask"
-        is BpmnScriptTask -> "scriptTask"
-        is BpmnServiceTask -> "serviceTask"
-        is BpmnBusinessRuleTask -> "businessRuleTask"
-        is BpmnReceiveTask -> "receiveTask"
-        is BpmnManualTask -> "manualTask"
-        is BpmnSendTask -> "sendTask"
-        else -> {
-            throw IllegalArgumentException("Can't find name by element $bpmnElement for xml element")
-        }
-    }
-
-    private fun applyBpmnElementRemoved(doc: Document, update: BpmnElementRemoved) {
+    private fun applyChangeElement(doc: Document, update: BpmnElementChange){
         val node = doc.selectSingleNode(
-            "//*[local-name()='process']//*[@id='${update.bpmnElementId.id}'][1]"
+            "//*[local-name()='process']//*[@id='${update.elementId.id}'][1]"
+        ) as Node
+
+        val parent = node.parent
+        node.parent.remove(node)
+        trimWhitespace(parent, false)
+
+        val newNode = createBpmnObject(update.newBpmnElement, parent) ?: throw IllegalArgumentException("Can't store: " + update.parentIdForXml)
+        update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.index?.toMutableList()) }
+        trimWhitespace(parent, false)
+    }
+
+    private fun applyBpmnElementRemoved(doc: Document, bpmnElementId: BpmnElementId) {
+        val node = doc.selectSingleNode(
+            "//*[local-name()='process']//*[@id='${bpmnElementId.id}'][1]"
         ) as Node
 
         val parent = node.parent
@@ -306,7 +291,7 @@ abstract class BaseBpmnParser: BpmnParser {
                     ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnObject.parentIdForXml.id}'][1]") as Element?
                 )!!
 
-        val newNode = createBpmnObject(update, diagramParent) ?: throw IllegalArgumentException("Can't store: " + update.bpmnObject)
+        val newNode = createBpmnObject(update.bpmnObject.element, diagramParent) ?: throw IllegalArgumentException("Can't store: " + update.bpmnObject)
 
         update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.index?.toMutableList()) }
         trimWhitespace(diagramParent, false)
@@ -326,7 +311,7 @@ abstract class BaseBpmnParser: BpmnParser {
         trimWhitespace(shapeParent, false)
     }
 
-    protected open fun createBpmnObject(update: BpmnShapeObjectAdded, diagramParent: Element) = when (update.bpmnObject.element) {
+    protected open fun createBpmnObject(element: WithBpmnId, diagramParent: Element) = when (element) {
         // Events
         // Start
         is BpmnStartEvent -> createStartEventWithType(diagramParent, null)
@@ -485,7 +470,7 @@ abstract class BaseBpmnParser: BpmnParser {
             doc.selectSingleNode("//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]") as Element?
                 ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnElementId.id}'][1]") as Element
 
-        setToNode(node, update.property, update.newValue, update.propertyIndex?.toMutableList())
+            setToNode(node, update.property, update.newValue, update.propertyIndex?.toMutableList())
 
         if (null == update.newIdValue) {
             return
@@ -496,14 +481,6 @@ abstract class BaseBpmnParser: BpmnParser {
                 ?: doc.selectSingleNode("//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][@bpmnElement='${update.bpmnElementId.id}']") as Element
 
         diagramElement.addAttribute("bpmnElement", update.newIdValue!!.id)
-    }
-
-    private fun removePropertyWithId(doc: Document, update: PropertyRemoveWithId) {
-        val node =
-            doc.selectSingleNode("//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]") as Element?
-                ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnElementId.id}'][1]") as Element
-
-        setToNode(node, update.property, null)
     }
 
     private fun applyParentChange(doc: Document, update: BpmnParentChanged) {
@@ -554,6 +531,7 @@ abstract class BaseBpmnParser: BpmnParser {
 
             var (attrName, attrValue) = attributeSelector?.split("=") ?: listOf(null, null)
             if (true == attrValue?.contains('@')) {
+//                if (null == value || null == valueIndexInArray || valueIndexInArray.size == 0) { // Skip null unindexable props
                 if (null == value && null == valueIndexInArray) { // Skip null unindexable props
                     return
                 }
@@ -693,7 +671,6 @@ abstract class BaseBpmnParser: BpmnParser {
         if (!details.propertyType.removeEnclosingNodeIfNullOrEmpty) {
             return false
         }
-
         node.parent.remove(node)
         return true
     }

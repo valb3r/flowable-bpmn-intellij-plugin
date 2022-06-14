@@ -48,9 +48,10 @@ interface BpmnElementRemoved: EventPropagatableToXml {
 }
 
 interface BpmnElementChange: EventPropagatableToXml{
-    val bpmnElementId: BpmnElementId
+    val elementId: BpmnElementId
     val newBpmnElement: WithBpmnId
-    val nameElemWithTypeForXml: Pair<WithBpmnId, String>
+    val parentIdForXml: BpmnElementId
+    val props: PropertyTable
 }
 
 interface BpmnShapeObjectAdded: EventPropagatableToXml {
@@ -88,16 +89,6 @@ interface PropertyUpdateWithId: EventPropagatableToXml {
     val referencedValue: Any?
     val newIdValue: BpmnElementId?
     val propertyIndex: List<String>?
-}
-
-interface PropertyRemoveWithId: EventPropagatableToXml {
-    val bpmnElementId: BpmnElementId
-    val property: PropertyType
-}
-
-interface PropertyTableWithId: EventPropagatableToXml {
-    val bpmnElementId: BpmnElementId
-    val newPropertyTable: PropertyTable
 }
 
 @JsonTypeInfo(

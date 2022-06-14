@@ -5,8 +5,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.utils.NameElementWithTypeForXml
 import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
@@ -66,41 +64,26 @@ class ShapeChange<T : WithBpmnId>(
 
     private var nameElemWithTypeForXml : NameElementWithTypeForXml<out WithBpmnId>? = null
     override fun actionPerformed(e: ActionEvent?) {
-        val elementsFactory = newElementsFactory(project)
-        val newBpmnElement = elementsFactory.newBpmnObject(clazz).updateBpmnElemId(elementId)
+        val newElement = newElementsFactory(project).newBpmnObject(clazz).updateBpmnElemId(elementId)
         val currentElement = currentStateProvider(project).currentState().elementByBpmnId[elementId]!!.element
-        if(newBpmnElement.javaClass == currentElement.javaClass) return
+        if(newElement.javaClass == currentElement.javaClass) return
         val oldPropertyTable = currentStateProvider(project).currentState().elemPropertiesByStaticElementId[elementId]
-        val newPropertyTable = elementsFactory.propertiesOf(newBpmnElement)
-        val propertiesToRemove = mutableListOf<RemovePropertyEvent>()
-        val nestedPropertiesRemove = mutableListOf<PropertyUpdateWithId>()
+        val newPropertyTable = newElementsFactory(project).propertiesOf(newElement)
         oldPropertyTable!!.view().forEach { (t, u) ->
-            if (null == newPropertyTable[t]) {
-                if (t == PropertyType.FORM_PROPERTY_ID || t == PropertyType.FORM_PROPERTY_NAME){                                        //FIXME doesn't remove nested elements
-                    nestedPropertiesRemove += StringValueUpdatedEvent(elementId, t, "", propertyIndex = listOf("Property 1"))
-                }else {
-                    propertiesToRemove += RemovePropertyEvent(elementId, t)
-                }
-            } else {
+            if (null != newPropertyTable[t]) {
                 newPropertyTable[t] = u.toMutableList()
             }
         }
 
-        val prepareChangeEvent: BpmnElementChangeEvent = if (null == nameElemWithTypeForXml){
-            BpmnElementChangeEvent(elementId, newBpmnElement)
-        } else {
-            BpmnElementChangeEvent(elementId, newBpmnElement, Pair(
-                elementsFactory.newBpmnObject(nameElemWithTypeForXml!!.clazz),
-                nameElemWithTypeForXml!!.type))
-        }
-
         updateEventsRegistry(project).addEvents(
-            propertiesToRemove +
-                    nestedPropertiesRemove +
-                    listOf(
-                        UpdatePropertyTableEvent(elementId, newPropertyTable),
-                        prepareChangeEvent
-                    )
+            listOf(
+                BpmnElementChangeEvent(
+                    elementId,
+                    newElement,
+                    newPropertyTable,
+                    currentStateProvider(project).currentState().elementByBpmnId[elementId]!!.parentIdForXml
+                )
+            )
         )
     }
 }
