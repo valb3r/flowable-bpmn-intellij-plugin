@@ -3,6 +3,12 @@ package com.valb3r.bpmn.intellij.plugin.flowable.parser
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnComplexGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.BpmnShapeObjectAdded
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.NS
@@ -21,6 +27,9 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     IS_FOR_COMPENSATION(PropertyTypeDetails(PropertyType.IS_FOR_COMPENSATION, "isForCompensation", XmlType.ATTRIBUTE)),
     ASYNC(PropertyTypeDetails(PropertyType.ASYNC, "flowable:async", XmlType.ATTRIBUTE)),
     ASSIGNEE(PropertyTypeDetails(PropertyType.ASSIGNEE, "flowable:assignee", XmlType.ATTRIBUTE)),
+    CANDIDATE_USERS(PropertyTypeDetails(PropertyType.CANDIDATE_USERS, "flowable:candidateUsers", XmlType.ATTRIBUTE)),
+    CANDIDATE_GROUPS(PropertyTypeDetails(PropertyType.CANDIDATE_GROUPS, "flowable:candidateGroups", XmlType.ATTRIBUTE)),
+    JOB_TOPIC(PropertyTypeDetails(PropertyType.JOB_TOPIC, "flowable:topic", XmlType.ATTRIBUTE)),
     CALLED_ELEM(PropertyTypeDetails(PropertyType.CALLED_ELEM, "calledElement", XmlType.ATTRIBUTE)),
     CALLED_ELEM_TYPE(PropertyTypeDetails(PropertyType.CALLED_ELEM_TYPE, "flowable:calledElementType", XmlType.ATTRIBUTE)),
     INHERIT_VARS(PropertyTypeDetails(PropertyType.INHERIT_VARS, "flowable:inheritVariables", XmlType.ATTRIBUTE)),
@@ -158,7 +167,6 @@ class FlowableParser : BaseBpmnParser() {
         if (FlowablePropertyTypeDetails.IS_TRANSACTIONAL_SUBPROCESS.details != details) {
             throw IllegalArgumentException("Can't change type for: ${details.javaClass.canonicalName}")
         }
-
         if (null == value || !value.toBoolean()) {
             node.qName = modelNs().named("subProcess")
         } else {
@@ -168,6 +176,13 @@ class FlowableParser : BaseBpmnParser() {
 
     override fun propertyTypeDetails(): List<PropertyTypeDetails> {
         return FlowablePropertyTypeDetails.values().map { it.details }
+    }
+
+    override fun createBpmnObject(update: BpmnShapeObjectAdded, diagramParent: Element): Element? {
+        return when (update.bpmnObject.element) {
+            is BpmnExternalTask -> createServiceTaskWithType(diagramParent, "external-worker")
+            else -> super.createBpmnObject(update, diagramParent)
+        }
     }
 
     // Mark 'collapsed' subprocesses where diagram is different from 1st one

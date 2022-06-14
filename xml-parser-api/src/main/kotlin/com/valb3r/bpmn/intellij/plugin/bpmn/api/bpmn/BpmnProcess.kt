@@ -68,6 +68,7 @@ data class BpmnProcessBody(
         // Customizations of ServiceTask
         val camelTask: List<BpmnCamelTask>?,
         val httpTask: List<BpmnHttpTask>?,
+        val externalTask: List<BpmnExternalTask>?,
         val mailTask: List<BpmnMailTask>?,
         val muleTask: List<BpmnMuleTask>?,
         val decisionTask: List<BpmnDecisionTask>?,

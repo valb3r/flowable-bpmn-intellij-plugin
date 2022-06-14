@@ -374,6 +374,7 @@ abstract class BaseBpmnParser: BpmnParser {
         is BpmnManualTask -> diagramParent.addElement(modelNs().named("manualTask"))
         is BpmnCamelTask -> createServiceTaskWithType(diagramParent, "camel")
         is BpmnHttpTask -> createServiceTaskWithType(diagramParent, "http")
+        is BpmnExternalTask -> createServiceTaskWithType(diagramParent, "external")
         is BpmnMailTask -> createServiceTaskWithType(diagramParent, "mail")
         is BpmnMuleTask -> createServiceTaskWithType(diagramParent, "mule")
         is BpmnDecisionTask -> createServiceTaskWithType(diagramParent, "dmn")
@@ -429,9 +430,9 @@ abstract class BaseBpmnParser: BpmnParser {
         return newElem
     }
 
-    private fun createServiceTaskWithType(elem: Element, type: String? = null): Element {
+    protected fun createServiceTaskWithType(elem: Element, type: String? = null): Element {
         val newElem = elem.addElement(modelNs().named("serviceTask"))
-        type?.let { newElem.addAttribute(engineNs().named("type"), type) }
+        type?.let { newElem.addAttribute(engineNs().named("type"), it) }
         return newElem
     }
 
