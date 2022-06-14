@@ -146,7 +146,7 @@ class FlowableCanvasPopupMenuProvider(private val project: Project) : CanvasPopu
             addItem(popup, "Shell task", SHELL_TASK, ShapeChange(project, BpmnShellTask::class, focus, NameElementWithTypeForXml(BpmnServiceTask::class, "shell")))
         }
         else if(isGateway(project, focus)) {
-//            addItem(popup, "Add change gateway", COMPLEX_GATEWAY, ActionListener { })
+//            addItem(popup, "Exclusive gateway", EXCLUSIVE_GATEWAY, ShapeChange(project, BpmnExclusiveGateway))
         }
         return popup
     }

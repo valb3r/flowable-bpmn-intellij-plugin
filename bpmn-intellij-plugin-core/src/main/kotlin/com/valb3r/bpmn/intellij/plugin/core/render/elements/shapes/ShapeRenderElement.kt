@@ -97,7 +97,6 @@ abstract class ShapeRenderElement(
             popupMenuProvider(state().ctx.project).popupChangeShape(
                 bpmnElementId
             ).show(currentCanvas(state().ctx.project), right.x.toInt(), right.y.toInt())
-//            dest.addElementChangeShapeEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement())
         }
 
         return mutableMapOf(

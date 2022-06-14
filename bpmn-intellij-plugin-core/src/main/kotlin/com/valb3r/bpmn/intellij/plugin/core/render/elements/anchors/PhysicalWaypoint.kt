@@ -58,23 +58,8 @@ class PhysicalWaypoint(
             )))
         }
 
-//        val changeShapeId = elementId.elemIdToChangeShape()
-//        val changeShapeBounds = BoundsElement(x, y - ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE)
-//        val changeShapeIconArea = state().ctx.canvas.drawIcon(changeShapeBounds, state().icons.wrench)
-//        state().ctx.interactionContext.clickCallbacks[changeShapeId] = { dest ->
-//            dest.addEvents(listOf(NewWaypointsEvent(
-//                    parentElementId,
-//                    edge.waypoint
-//                            .filter { it.physical }
-//                            .filter { it.id != elementId }
-//                            .toList(),
-//                    edge.epoch + 1
-//            )))
-//        }
-
         val result = mutableMapOf(
             delId to AreaWithZindex(deleteIconArea, areaType, mutableSetOf(), mutableSetOf(),  ICON_Z_INDEX, elementId),
-//            changeShapeId to AreaWithZindex(changeShapeIconArea, areaType, mutableSetOf(), mutableSetOf(),  ICON_Z_INDEX, elementId),
         )
 
         val lastButton = addEdgeSelectionButton(deleteBounds, result)

@@ -42,6 +42,10 @@ intellij {
     plugins = intellijPlatformPlugins
 }
 
+runIde {
+    jvmArgs '-Xmx2G'
+}
+
 runPluginVerifier {
     ideVersions = ["IU-2019.3.5"]
 }
