@@ -192,7 +192,6 @@ class PropertiesVisualizer(
         val fieldValue = extractString(value)
         val field = if (type.multiline) multiLineExpandableTextFieldFactory.invoke(bpmnElementId, type, fieldValue) else textFieldFactory.invoke(bpmnElementId, type, fieldValue)
         val initialValue = field.text
-
         listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
             if (initialValue != field.text) {
                 emitStringUpdateWithCascadeIfNeeded(
@@ -200,7 +199,22 @@ class PropertiesVisualizer(
                     stringValueUpdatedTemplate(bpmnElementId, type, field.text, initialValue, value)
                 )
             }
+            val cascades = mutableListOf<Event>()
+
+            if (type.headType && field.text.isEmpty()) {
+                state[bpmnElementId]!!.filter { k, _ -> k.dependecies.contains(type) }.forEach { prop ->
+                    print(prop)
+                    cascades += StringValueUpdatedEvent(
+                        bpmnElementId,
+                        prop.first,
+                        "",
+                        propertyIndex = prop.second.index
+                    )
+                }
+            }
+            updateEventsRegistry(project).addEvents(cascades)
         }
+
         return field.component
     }
 
@@ -248,7 +262,7 @@ class PropertiesVisualizer(
         val button = arrowButtonFactory(bpmnElementId)
        button.addActionListener {
             val isExpanded = button.isExpanded()
-            if (isExpanded) {
+           if (isExpanded) {
                 button.direction = arrowButtonDirection(true)
                 filter.collapse(identifier)
                 sorter.sort()
@@ -319,12 +333,6 @@ class PropertiesVisualizer(
             }
         }
 
-        if (event.property.indexCascades) {
-            state[event.bpmnElementId]?.view()?.filter { it.key.indexInGroupArrayName == event.property.indexInGroupArrayName }?.forEach { (k, _) ->
-                uiEventCascade(event, cascades, k)
-            }
-        }
-
         event.property.explicitIndexCascades?.forEach {
             val type = PropertyType.valueOf(it)
             state.forEach { (id, props) ->
@@ -333,8 +341,6 @@ class PropertiesVisualizer(
                 }
             }
         }
-
-        updateEventsRegistry(project).addEvents(listOf(event) + cascades)
     }
 
     private fun uiEventCascade(
