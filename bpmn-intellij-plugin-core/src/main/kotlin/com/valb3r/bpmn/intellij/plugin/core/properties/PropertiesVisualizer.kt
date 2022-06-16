@@ -179,7 +179,9 @@ class PropertiesVisualizer(
     }
 
     private fun computePropertyKey(entry: Pair<PropertyType, Property>): String {
-        return entry.first.group?.mapIndexed { index, type -> type.name + entry.second.index?.getOrElse(index) {""} }?.joinToString() ?: ""
+        if(entry.first.positionInGroup >= 65535) throw IllegalArgumentException("Max int to character is 65535, position is ${entry.first.positionInGroup}")
+        val intToChar = entry.first.positionInGroup.toChar()
+        return entry.first.group?.mapIndexed { index, type -> type.name + intToChar + entry.second.index?.getOrElse(index) {""}}?.joinToString() ?: ""
     }
 
     private fun notifyDeFocusElement() {

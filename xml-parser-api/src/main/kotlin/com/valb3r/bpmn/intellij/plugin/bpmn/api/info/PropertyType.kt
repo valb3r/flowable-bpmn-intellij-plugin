@@ -22,7 +22,8 @@ enum class PropertyType(
     val visible: Boolean = true,
     val multiline: Boolean = false,
     val headType: Boolean = false,
-    val dependecies: List<PropertyType> = emptyList()
+    val dependecies: List<PropertyType> = emptyList(),
+    val positionInGroup: Int = 65534 //Max value of character, sorting by name
     ) {
     ID("id", "ID", STRING, "id.id", true, null, 1000, explicitIndexCascades = listOf("BPMN_INCOMING", "BPMN_OUTGOING")), // ID should fire last
     NAME("name", "Name", STRING),
@@ -127,8 +128,7 @@ enum class PropertyType(
     FORM_PROPERTY_DATE_PATTERN("formPropertiesExtension.@datePattern", "Date pattern", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_VALUE_ID("formPropertiesExtension.@value.@id", "Value ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),  // Is sub-id
     FORM_PROPERTY_VALUE_NAME("formPropertiesExtension.@value.@name", "Value name", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id"),
-//    ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    EVENT_TYPE("eventExtensionElements.@eventType", "Event type", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), updateOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false, indexInGroupArrayName = "eventType", headType = true),
+    EVENT_TYPE("eventExtensionElements.@eventType", "Event type", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), updateOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false, indexInGroupArrayName = "eventType", headType = true, positionInGroup = 1),
     EVENT_NAME("eventExtensionElements.@eventName", "Event name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     TRIGGER_EVENT_TYPE("eventExtensionElements.@triggerEventType", "Trigger event key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     CHANEL_KEY("eventExtensionElements.@channelKey" , "Channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
