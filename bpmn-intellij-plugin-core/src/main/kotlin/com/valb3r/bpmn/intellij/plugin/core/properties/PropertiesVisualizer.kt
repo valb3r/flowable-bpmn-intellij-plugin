@@ -335,6 +335,12 @@ class PropertiesVisualizer(
             }
         }
 
+        if (event.property.indexCascades) {
+            state[event.bpmnElementId]?.view()?.filter { it.key.indexInGroupArrayName == event.property.indexInGroupArrayName }?.forEach { (k, _) ->
+                uiEventCascade(event, cascades, k)
+            }
+        }
+
         event.property.explicitIndexCascades?.forEach {
             val type = PropertyType.valueOf(it)
             state.forEach { (id, props) ->
@@ -343,6 +349,8 @@ class PropertiesVisualizer(
                 }
             }
         }
+
+        updateEventsRegistry(project).addEvents(listOf(event) + cascades)
     }
 
     private fun uiEventCascade(
