@@ -8,6 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.listDefaultPrint
 import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.newelements.NewElementsProvider
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
@@ -114,6 +115,9 @@ class PropertiesVisualizer(
         val seenIndexes = mutableSetOf<ElementIndex>()
         val buttonsToClick = mutableSetOf<BasicArrowButton>()
         for (control in controls) {
+            if (control.first.caption.isEmpty()) {
+                continue
+            }
             val groupType = control.first.group?.lastOrNull()
             val isExpandButton = control.first.name == groupType?.actionResult?.propertyType
             val controlGroupIndex = ElementIndex(
@@ -201,20 +205,6 @@ class PropertiesVisualizer(
                     stringValueUpdatedTemplate(bpmnElementId, type, field.text, initialValue, value)
                 )
             }
-            val cascades = mutableListOf<Event>()
-
-            if (type.headType && field.text.isEmpty()) {
-                state[bpmnElementId]!!.filter { k, _ -> k.dependecies.contains(type) }.forEach { prop ->
-                    print(prop)
-                    cascades += StringValueUpdatedEvent(
-                        bpmnElementId,
-                        prop.first,
-                        "",
-                        propertyIndex = prop.second.index
-                    )
-                }
-            }
-            updateEventsRegistry(project).addEvents(cascades)
         }
 
         return field.component
@@ -346,6 +336,30 @@ class PropertiesVisualizer(
             state.forEach { (id, props) ->
                 props.getAll(type).filter { it.value == event.referencedValue }.forEach { prop ->
                     uiEventCascade(event.copy(bpmnElementId = id, propertyIndex = prop.index), cascades, type)
+                }
+            }
+        }
+
+        if (event.property.isHeadType && event.newValue.isEmpty()) {
+            state[event.bpmnElementId]!!.filter { k, _ -> k.dependecies.contains(event.property) }.forEach { prop ->
+                cascades += StringValueUpdatedEvent(
+                    event.bpmnElementId,
+                    prop.first,
+                    "",
+                    propertyIndex = prop.second.index
+                )
+            }
+        }
+
+        if (listDefaultPrint.filter { it.headProp == event.property }.isNotEmpty()) {
+            listDefaultPrint.filter { it.headProp == event.property }.forEach {
+                state[event.bpmnElementId]!!.filter { k, _ -> k == it.dependProp }.forEach { prop ->
+                    cascades += StringValueUpdatedEvent(
+                        event.bpmnElementId,
+                        prop.first,
+                        it.valueDependProp,
+                        propertyIndex = prop.second.index
+                    )
                 }
             }
         }

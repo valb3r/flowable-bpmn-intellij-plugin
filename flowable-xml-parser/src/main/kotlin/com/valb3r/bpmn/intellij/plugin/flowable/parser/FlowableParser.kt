@@ -119,6 +119,7 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     TRIGGER_CHANNEL_NAME(PropertyTypeDetails(PropertyType.TRIGGER_CHANNEL_NAME, "extensionElements.flowable:triggerChannelName.text", XmlType.CDATA)),
     TRIGGER_CHANNEL_DESTINATION(PropertyTypeDetails(PropertyType.TRIGGER_CHANNEL_DESTINATION, "extensionElements.flowable:triggerChannelDestination.text", XmlType.CDATA)),
     EVENT_KEY_FIXED_VALUE(PropertyTypeDetails(PropertyType.EVENT_KEY_FIXED_VALUE, "extensionElements.flowable:keyDetectionValue.text", XmlType.CDATA)),
+    FIXED_VALUE(PropertyTypeDetails(PropertyType.FIXED_VALUE, "extensionElements.flowable:keyDetectionType.text", XmlType.CDATA)),
     FIELD_NAME(PropertyTypeDetails(PropertyType.FIELD_NAME, "extensionElements.flowable:field?name=@.name", XmlType.ATTRIBUTE)),
     FIELD_EXPRESSION(PropertyTypeDetails(PropertyType.FIELD_EXPRESSION, "extensionElements.flowable:field?name=@.flowable:expression.text", XmlType.CDATA)),
     FIELD_STRING(PropertyTypeDetails(PropertyType.FIELD_STRING, "extensionElements.flowable:field?name=@.flowable:string.text", XmlType.CDATA)),

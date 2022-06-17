@@ -21,7 +21,7 @@ enum class PropertyType(
     val hideIfNullOrEmpty: Boolean = false,
     val visible: Boolean = true,
     val multiline: Boolean = false,
-    val headType: Boolean = false,
+    val isHeadType: Boolean = false,
     val dependecies: List<PropertyType> = emptyList(),
     val positionInGroup: Int = 65534 //Max value of character, sorting by name
     ) {
@@ -128,7 +128,7 @@ enum class PropertyType(
     FORM_PROPERTY_DATE_PATTERN("formPropertiesExtension.@datePattern", "Date pattern", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_VALUE_ID("formPropertiesExtension.@value.@id", "Value ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),  // Is sub-id
     FORM_PROPERTY_VALUE_NAME("formPropertiesExtension.@value.@name", "Value name", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id"),
-    EVENT_TYPE("eventExtensionElements.@eventType", "Event type", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), updateOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false, indexInGroupArrayName = "eventType", headType = true, positionInGroup = 1),
+    EVENT_TYPE("eventExtensionElements.@eventType", "Event type", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), updateOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false, indexInGroupArrayName = "eventType", isHeadType = true, positionInGroup = 1),
     EVENT_NAME("eventExtensionElements.@eventName", "Event name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     TRIGGER_EVENT_TYPE("eventExtensionElements.@triggerEventType", "Trigger event key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     CHANEL_KEY("eventExtensionElements.@channelKey" , "Channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
@@ -138,11 +138,14 @@ enum class PropertyType(
     TRIGGER_CHANNEL_KEY("eventExtensionElements.@triggerChannelKey" , "Trigger channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     TRIGGER_CHANNEL_NAME("eventExtensionElements.@triggerChannelName" , "Trigger channel name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     TRIGGER_CHANNEL_DESTINATION("eventExtensionElements.@triggerChannelDestination" , "Trigger channel destination", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
-    EVENT_KEY_FIXED_VALUE("eventExtensionElements.@triggerChannelDestination" , "Event key fixed value", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
-    FIXED_VALUE("eventExtensionElements.@triggerChannelDestination" , "Event key fixed value", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE));
+    EVENT_KEY_FIXED_VALUE("eventExtensionElements.@keyDetectionValue" , "Event key fixed value", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE), isHeadType = true),
+    FIXED_VALUE("eventExtensionElements.@keyDetectionType" , "", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_KEY_FIXED_VALUE));
 }
 
-
+val listDefaultPrint: List<DefaultPrintByHeadProp> = listOf(
+    DefaultPrintByHeadProp(PropertyType.EVENT_KEY_FIXED_VALUE, PropertyType.FIXED_VALUE, "fixedValue")
+)
+data class DefaultPrintByHeadProp(val headProp: PropertyType, val dependProp: PropertyType, val valueDependProp: String)
 data class NewElem(val propertyType: String, val valuePattern: String = "", val uiOnlyaddedIndex: List<String> = emptyList())
 enum class FunctionalGroupType(val groupCaption: String, val actionCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf()) {
     ADD_FIELD("Fields", "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", ""))),
