@@ -16,6 +16,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryErrorEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendEventTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -97,6 +98,7 @@ abstract class BaseUiTest {
     protected val subprocessInSubProcessBpmnId = BpmnElementId("nestedSubProcess")
     protected val serviceTaskStartBpmnId = BpmnElementId("startServiceTask")
     protected val serviceTaskEndBpmnId = BpmnElementId("endServiceTask")
+    protected val sendEventTaskBpmnId = BpmnElementId("sendEventTask")
     protected val sequenceFlowBpmnId = BpmnElementId("sequenceFlow")
 
     protected val optionalBoundaryErrorEventDiagramId = DiagramElementId("DIAGRAM-boundaryErrorEvent")
@@ -106,6 +108,7 @@ abstract class BaseUiTest {
     protected val serviceTaskEndDiagramId = DiagramElementId("DIAGRAM-endServiceTask")
     protected val sequenceFlowDiagramId = DiagramElementId("DIAGRAM-sequenceFlow")
 
+    protected val bpmnSendEventTask = BpmnSendEventTask(sendEventTaskBpmnId)
     protected val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId)
     protected val bpmnSubProcess = BpmnSubProcess(subprocessBpmnId, triggeredByEvent = false, transactionalSubprocess = false)
     protected val bpmnNestedSubProcess = BpmnSubProcess(subprocessInSubProcessBpmnId, triggeredByEvent = false, transactionalSubprocess = false)
@@ -144,7 +147,7 @@ abstract class BaseUiTest {
         null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null,
-        null, null, null, null, null, null ,null, null, null, null
+        null, null, null, null, null, null ,null, null, null, null, null
     )
 
     protected val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
@@ -496,6 +499,19 @@ abstract class BaseUiTest {
         initializeCanvas()
     }
 
+    protected fun prepareSendEventTask(){
+        val process = basicProcess.copy(
+            basicProcess.process.copy(
+                body = basicProcessBody.copy(sendEventTask = listOf(bpmnSendEventTask))
+            ),
+            listOf(DiagramElement(
+                diagramMainElementId,
+                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, diagramServiceTaskEnd), listOf()))
+            )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
 
     protected fun prepareTwoServiceTaskView() {
         prepareTwoServiceTaskView(bpmnServiceTaskStart, bpmnServiceTaskEnd)
