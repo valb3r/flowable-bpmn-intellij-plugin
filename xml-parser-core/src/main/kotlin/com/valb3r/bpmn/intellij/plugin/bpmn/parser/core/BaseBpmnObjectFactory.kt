@@ -252,7 +252,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         }
 
         val propVal = when (type.valueType) {
-            PropertyValueType.STRING, PropertyValueType.CLASS, PropertyValueType.EXPRESSION, PropertyValueType.ATTACHED_SEQUENCE_SELECT
+            PropertyValueType.STRING, PropertyValueType.CLASS, PropertyValueType.EXPRESSION, PropertyValueType.ATTACHED_SEQUENCE_SELECT, PropertyValueType.LIST_SELECT
             -> if (node.isNull) makeProperty(null) else makeProperty(node.asText())
             PropertyValueType.BOOLEAN -> makeProperty(node.asBoolean())
         }

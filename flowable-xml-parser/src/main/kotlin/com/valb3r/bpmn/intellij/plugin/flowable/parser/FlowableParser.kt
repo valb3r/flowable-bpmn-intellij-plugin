@@ -3,12 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.flowable.parser
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnComplexGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendEventTask
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendTask
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.BpmnShapeObjectAdded
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnParser
@@ -111,14 +106,16 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     EVENT_NAME(PropertyTypeDetails(PropertyType.EVENT_NAME, "extensionElements.flowable:eventName.text", XmlType.CDATA)),
     EVENT_TYPE(PropertyTypeDetails(PropertyType.EVENT_TYPE, "extensionElements.flowable:eventType.text", XmlType.CDATA)),
     TRIGGER_EVENT_TYPE(PropertyTypeDetails(PropertyType.TRIGGER_EVENT_TYPE, "extensionElements.flowable:triggerEventType.text", XmlType.CDATA)),
-    CHANNEL_KEY(PropertyTypeDetails(PropertyType.CHANEL_KEY, "extensionElements.flowable:channelKey.text", XmlType.CDATA)),
+    CHANNEL_KEY(PropertyTypeDetails(PropertyType.CHANNEL_KEY, "extensionElements.flowable:channelKey.text", XmlType.CDATA)),
     CHANNEL_NAME(PropertyTypeDetails(PropertyType.CHANNEL_NAME, "extensionElements.flowable:channelName.text", XmlType.CDATA)),
     CHANNEL_DESTINATION(PropertyTypeDetails(PropertyType.CHANNEL_DESTINATION, "extensionElements.flowable:channelDestination.text", XmlType.CDATA)),
     TRIGGER_EVENT_NAME(PropertyTypeDetails(PropertyType.TRIGGER_EVENT_NAME, "extensionElements.flowable:triggerEventName.text", XmlType.CDATA)),
     TRIGGER_CHANNEL_KEY(PropertyTypeDetails(PropertyType.TRIGGER_CHANNEL_KEY, "extensionElements.flowable:triggerChannelKey.text", XmlType.CDATA)),
     TRIGGER_CHANNEL_NAME(PropertyTypeDetails(PropertyType.TRIGGER_CHANNEL_NAME, "extensionElements.flowable:triggerChannelName.text", XmlType.CDATA)),
     TRIGGER_CHANNEL_DESTINATION(PropertyTypeDetails(PropertyType.TRIGGER_CHANNEL_DESTINATION, "extensionElements.flowable:triggerChannelDestination.text", XmlType.CDATA)),
+    TRIGGER_CHANNEL_TYPE(PropertyTypeDetails(PropertyType.TRIGGER_CHANNEL_TYPE, "extensionElements.flowable:triggerChannelType.text", XmlType.CDATA)),
     EVENT_KEY_FIXED_VALUE(PropertyTypeDetails(PropertyType.EVENT_KEY_FIXED_VALUE, "extensionElements.flowable:keyDetectionValue.text", XmlType.CDATA)),
+    CHANNEL_TYPE(PropertyTypeDetails(PropertyType.CHANNEL_TYPE, "extensionElements.flowable:channelType.text", XmlType.CDATA)),
     FIXED_VALUE(PropertyTypeDetails(PropertyType.FIXED_VALUE, "extensionElements.flowable:keyDetectionType.text", XmlType.CDATA)),
     FIELD_NAME(PropertyTypeDetails(PropertyType.FIELD_NAME, "extensionElements.flowable:field?name=@.name", XmlType.ATTRIBUTE)),
     FIELD_EXPRESSION(PropertyTypeDetails(PropertyType.FIELD_EXPRESSION, "extensionElements.flowable:field?name=@.flowable:expression.text", XmlType.CDATA)),

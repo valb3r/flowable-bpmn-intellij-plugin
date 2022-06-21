@@ -19,6 +19,6 @@ data class ExtensionFromEvent(
     val eventType: String? = null, val triggerEventType: String? = null, val eventName: String? = null, val channelKey: String? = null,
     val channelName: String?  = null, val channelDestination: String? = null, val triggerEventName: String? = null,
     val triggerChannelKey: String? = null, val triggerChannelName: String? = null, val triggerChannelDestination: String? = null,
-    val keyDetectionType: String? = null, val keyDetectionValue: String? = null
+    val keyDetectionType: String? = null, val keyDetectionValue: String? = null, val channelType: String? = null, val triggerChannelType: String? = null
 )
 

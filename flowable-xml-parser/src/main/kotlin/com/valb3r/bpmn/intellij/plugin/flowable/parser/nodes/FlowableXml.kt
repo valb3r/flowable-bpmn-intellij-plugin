@@ -755,19 +755,23 @@ class ProcessNode : BpmnMappable<BpmnProcess>, ProcessBody() {
             val triggerChannelDestination: String? = input.extensionElements?.filter { it.name.equals("triggerChannelDestination")}?.firstOrNull()?.string
             val keyDetectionType: String? = input.extensionElements?.filter { it.name.equals("keyDetectionType")}?.firstOrNull()?.string
             val keyDetectionValue: String? = input.extensionElements?.filter { it.name.equals("keyDetectionValue")}?.firstOrNull()?.string
+            val channelType: String? = input.extensionElements?.filter { it.name.equals("channelType")}?.firstOrNull()?.string
+            val triggerChannelType: String? = input.extensionElements?.filter { it.name.equals("triggerChannelType")}?.firstOrNull()?.string
             val extensionFromEvent = ExtensionFromEvent(
-                    eventType,
-                    triggerEventType,
-                    eventName,
-                    channelKey,
-                    channelName,
-                    channelDestination,
-                    triggerEventName,
-                    triggerChannelKey,
-                    triggerChannelName,
-                    triggerChannelDestination,
-                    keyDetectionType,
-                    keyDetectionValue
+                    eventType = eventType,
+                    triggerEventType = triggerEventType,
+                    eventName = eventName,
+                    channelKey = channelKey,
+                    channelName = channelName,
+                    channelDestination = channelDestination,
+                    triggerEventName = triggerEventName,
+                    triggerChannelKey = triggerChannelKey,
+                    triggerChannelName = triggerChannelName,
+                    triggerChannelDestination = triggerChannelDestination,
+                    keyDetectionType = keyDetectionType,
+                    keyDetectionValue = keyDetectionValue,
+                    channelType = channelType,
+                    triggerChannelType = triggerChannelType
                 )
             input.eventExtensionElements = listOf(extensionFromEvent)
         }

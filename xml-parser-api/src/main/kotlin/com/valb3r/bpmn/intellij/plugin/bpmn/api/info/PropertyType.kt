@@ -23,8 +23,9 @@ enum class PropertyType(
     val multiline: Boolean = false,
     val isHeadType: Boolean = false,
     val dependecies: List<PropertyType> = emptyList(),
-    val positionInGroup: Int = 65534 //Max value of character, sorting by name
-    ) {
+    val positionInGroup: Int = 65534, //Max value of character, sorting by name
+    val setForSelect: Set<String>? = null
+) {
     ID("id", "ID", STRING, "id.id", true, null, 1000, explicitIndexCascades = listOf("BPMN_INCOMING", "BPMN_OUTGOING")), // ID should fire last
     NAME("name", "Name", STRING),
     DOCUMENTATION("documentation", "Documentation", STRING, multiline = true),
@@ -131,15 +132,17 @@ enum class PropertyType(
     EVENT_TYPE("eventExtensionElements.@eventType", "Event type", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), updateOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false, indexInGroupArrayName = "eventType", isHeadType = true, positionInGroup = 1),
     EVENT_NAME("eventExtensionElements.@eventName", "Event name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     TRIGGER_EVENT_TYPE("eventExtensionElements.@triggerEventType", "Trigger event key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
-    CHANEL_KEY("eventExtensionElements.@channelKey" , "Channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
+    CHANNEL_KEY("eventExtensionElements.@channelKey" , "Channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     CHANNEL_NAME("eventExtensionElements.@channelName" , "Channel name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     CHANNEL_DESTINATION("eventExtensionElements.@channelDestination" , "Channel destination", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
+    CHANNEL_TYPE("eventExtensionElements.@channelType" ,"Channel type", LIST_SELECT, setForSelect = setOf("", "jms", "kafka", "rabbitmq"), group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     TRIGGER_EVENT_NAME("eventExtensionElements.@triggerEventName" , "Trigger event name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     TRIGGER_CHANNEL_KEY("eventExtensionElements.@triggerChannelKey" , "Trigger channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     TRIGGER_CHANNEL_NAME("eventExtensionElements.@triggerChannelName" , "Trigger channel name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     TRIGGER_CHANNEL_DESTINATION("eventExtensionElements.@triggerChannelDestination" , "Trigger channel destination", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
+    TRIGGER_CHANNEL_TYPE("eventExtensionElements.@triggerChannelType" ,"Trigger channel type", LIST_SELECT, setForSelect = setOf("", "jms", "kafka", "rabbitmq"), group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     EVENT_KEY_FIXED_VALUE("eventExtensionElements.@keyDetectionValue" , "Event key fixed value", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE), isHeadType = true),
-    FIXED_VALUE("eventExtensionElements.@keyDetectionType" , "", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_KEY_FIXED_VALUE));
+    FIXED_VALUE("eventExtensionElements.@keyDetectionType" ,"", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_KEY_FIXED_VALUE));
 }
 
 val listDefaultPrint: List<DefaultPrintByHeadProp> = listOf(

@@ -100,7 +100,10 @@ data class ServiceTask(
                 "triggerEventName",
                 "triggerChannelKey",
                 "triggerChannelDestination",
+                "triggerChannelName",
                 "keyDetectionValue",
+                "channelType",
+                "triggerChannelType"
         )
 
         override fun deserialize(parser: JsonParser, context: DeserializationContext?): ExtensionElement {

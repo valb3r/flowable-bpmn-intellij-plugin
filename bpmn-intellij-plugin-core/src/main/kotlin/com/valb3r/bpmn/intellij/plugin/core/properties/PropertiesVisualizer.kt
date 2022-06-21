@@ -150,6 +150,10 @@ class PropertiesVisualizer(
                 CLASS -> arrayOf(caption, buildClassField(state, bpmnElementId, control.first, control.second))
                 EXPRESSION -> arrayOf(caption, buildExpressionField(state, bpmnElementId, control.first, control.second))
                 ATTACHED_SEQUENCE_SELECT -> arrayOf(caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, control.first, control.second))
+                LIST_SELECT -> arrayOf(caption, buildDropDownSelect(state, bpmnElementId, control.first, control.second))
+                else -> {
+                    throw IllegalArgumentException("Bad value type")
+                }
             }
 
             if (isExpandButton) {
@@ -240,6 +244,13 @@ class PropertiesVisualizer(
     private fun buildDropDownSelectFieldForTargettedIds(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
         val fieldValue = extractString(value)
         val field = dropDownFactory(bpmnElementId, type, fieldValue, findCascadeTargetIds(bpmnElementId, type, state))
+        addEditorTextListener(state, field, bpmnElementId, type, value)
+        return field.component
+    }
+
+    private fun buildDropDownSelect(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
+        val fieldValue = extractString(value)
+        val field = dropDownFactory(bpmnElementId, type, fieldValue, type.setForSelect!!)
         addEditorTextListener(state, field, bpmnElementId, type, value)
         return field.component
     }
