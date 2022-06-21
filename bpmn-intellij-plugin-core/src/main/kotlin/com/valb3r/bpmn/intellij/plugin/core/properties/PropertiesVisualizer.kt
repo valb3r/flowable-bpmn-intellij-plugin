@@ -8,8 +8,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.listDefaultPrint
-import com.valb3r.bpmn.intellij.plugin.core.events.*
+import com.valb3r.bpmn.intellij.plugin.core.events.BooleanValueUpdatedEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.UiOnlyValueAddedEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.newelements.NewElementsProvider
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
@@ -206,7 +208,8 @@ class PropertiesVisualizer(
             if (initialValue != field.text) {
                 emitStringUpdateWithCascadeIfNeeded(
                     state,
-                    stringValueUpdatedTemplate(bpmnElementId, type, field.text, initialValue, value)
+                    stringValueUpdatedTemplate(bpmnElementId, type, field.text, initialValue, value),
+                    project
                 )
             }
         }
@@ -303,7 +306,8 @@ class PropertiesVisualizer(
             if (initialValue != field.text) {
                 emitStringUpdateWithCascadeIfNeeded(
                     state,
-                    stringValueUpdatedTemplate(bpmnElementId, type,  removeQuotes(field.text), initialValue, value)
+                    stringValueUpdatedTemplate(bpmnElementId, type,  removeQuotes(field.text), initialValue, value),
+                    project
                 )
             }
         }
@@ -324,70 +328,6 @@ class PropertiesVisualizer(
             updateEventsRegistry(project).addEvents(events)
             visualize(newElementsFactory(project), currentStateProvider(project).currentState().elemPropertiesByStaticElementId, bpmnElementId, expandedElems.toSet())
         }
-    }
-
-    private fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, PropertyTable>, event: StringValueUpdatedEvent) {
-        val cascades = mutableListOf<Event>()
-        if (null != event.referencedValue) {
-            state.forEach { (id, props) ->
-                props.filter { k, _ -> k.updatedBy == event.property }.filter { it.second.value == event.referencedValue }.forEach { prop ->
-                    cascades += StringValueUpdatedEvent(id, prop.first, event.newValue, event.referencedValue, null, propertyIndex = prop.second.index)
-                }
-            }
-        }
-
-        if (event.property.indexCascades) {
-            state[event.bpmnElementId]?.view()?.filter { it.key.indexInGroupArrayName == event.property.indexInGroupArrayName }?.forEach { (k, _) ->
-                uiEventCascade(event, cascades, k)
-            }
-        }
-
-        event.property.explicitIndexCascades?.forEach {
-            val type = PropertyType.valueOf(it)
-            state.forEach { (id, props) ->
-                props.getAll(type).filter { it.value == event.referencedValue }.forEach { prop ->
-                    uiEventCascade(event.copy(bpmnElementId = id, propertyIndex = prop.index), cascades, type)
-                }
-            }
-        }
-
-        if (event.property.isHeadType && event.newValue.isEmpty()) {
-            state[event.bpmnElementId]!!.filter { k, _ -> k.dependecies.contains(event.property) }.forEach { prop ->
-                cascades += StringValueUpdatedEvent(
-                    event.bpmnElementId,
-                    prop.first,
-                    "",
-                    propertyIndex = prop.second.index
-                )
-            }
-        }
-
-        if (listDefaultPrint.filter { it.headProp == event.property }.isNotEmpty()) {
-            listDefaultPrint.filter { it.headProp == event.property }.forEach {
-                state[event.bpmnElementId]!!.filter { k, _ -> k == it.dependProp }.forEach { prop ->
-                    cascades += StringValueUpdatedEvent(
-                        event.bpmnElementId,
-                        prop.first,
-                        it.valueDependProp,
-                        propertyIndex = prop.second.index
-                    )
-                }
-            }
-        }
-
-        updateEventsRegistry(project).addEvents(listOf(event) + cascades)
-    }
-
-    private fun uiEventCascade(
-        event: StringValueUpdatedEvent,
-        cascades: MutableList<Event>,
-        cascadePropTo: PropertyType
-    ) {
-        val index = event.propertyIndex ?: listOf()
-        if (event.newValue.isBlank()) {
-            cascades += UiOnlyValueRemovedEvent(event.bpmnElementId, cascadePropTo, index)
-        }
-        cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, cascadePropTo, index, index.dropLast(1) + event.newValue)
     }
 
     private fun stringValueUpdatedTemplate(
