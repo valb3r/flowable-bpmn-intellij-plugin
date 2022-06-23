@@ -156,7 +156,6 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         for (type in propertyTypes()) {
             parseValue(type.path, type, propertyTree, result, 0)
         }
-//        result[PropertyType.CLASS] = mutableListOf(Property(dto.javaClass))
 
         return result
     }
