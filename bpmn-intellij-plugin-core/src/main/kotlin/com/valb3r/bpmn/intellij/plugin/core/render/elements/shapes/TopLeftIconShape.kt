@@ -10,7 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import javax.swing.Icon
 
-class TopLeftIconShape(
+open class TopLeftIconShape(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
         private val icon: Icon,

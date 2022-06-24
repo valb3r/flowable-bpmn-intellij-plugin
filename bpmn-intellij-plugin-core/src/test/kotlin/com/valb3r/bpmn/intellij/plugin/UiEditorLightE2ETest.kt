@@ -1,5 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin
 
+import com.google.common.cache.Cache
+import com.google.common.cache.CacheBuilder
+import com.intellij.openapi.project.Project
 import com.nhaarman.mockitokotlin2.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
@@ -8,9 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
-import com.valb3r.bpmn.intellij.plugin.core.render.AnchorType
-import com.valb3r.bpmn.intellij.plugin.core.render.RenderContext
-import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
+import com.valb3r.bpmn.intellij.plugin.core.render.*
 import com.valb3r.bpmn.intellij.plugin.core.state.CurrentState
 import com.valb3r.bpmn.intellij.plugin.core.tests.BaseUiTest
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
@@ -20,7 +21,10 @@ import org.junit.jupiter.api.Test
 import java.awt.Graphics2D
 import java.awt.Shape
 import java.awt.font.GlyphVector
+import java.awt.geom.Area
 import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
+import java.awt.image.BufferedImage
 import java.util.*
 
 internal class UiEditorLightE2ETest: BaseUiTest() {
@@ -1222,6 +1226,18 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
     }
 
     @Test
+    fun `Test draw trigger icon`() {
+        val painter =
+            spy(CanvasPainter(graphics, Camera(Point2D.Float(), Point2D.Float()), CacheBuilder.newBuilder().build()))
+        this.canvas = setCanvas(project, CanvasTestable(painter, project, DefaultCanvasConstants()))
+        prepareTwoServiceTaskView()
+        updateEventsRegistry(project).addPropertyUpdateEvent(BooleanValueUpdatedEvent(serviceTaskStartBpmnId, PropertyType.IS_TRIGGERABLE, true, propertyIndex = null))
+        clickOnId(serviceTaskStartDiagramId)
+
+        verify(painter, atLeastOnce()).drawTriggered(any(), any())
+    }
+
+    @Test
     fun `Root process id changing works`() {
         val newRootProcessId = "new-root-process-id"
         val onlyRootProcessPoint = Point2D.Float(-9999.0f, -9999.0f)
@@ -1248,5 +1264,16 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         lastRenderedState(project)!!.state.ctx.selectedIds.shouldBeEmpty()
         lastRenderedState(project)!!.state.ctx.stateProvider.currentState()
                 .elementByDiagramId[CurrentState.processDiagramId(BpmnElementId(anotherNewRootProcessId))].shouldNotBeNull()
+    }
+}
+
+class CanvasTestable(private val painter: CanvasPainter, project: Project, settings: CanvasConstants) :
+    Canvas(project, settings) {
+    override fun buildPainter(
+        graphics2D: Graphics2D,
+        camera: Camera,
+        cache: Cache<Long, BufferedImage>
+    ): CanvasPainter {
+        return painter
     }
 }
