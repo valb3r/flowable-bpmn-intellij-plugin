@@ -112,7 +112,9 @@ interface CanvasPopupMenuProvider {
         return false
     }
 
-    private fun getElement(project: Project, bpmnElementId: BpmnElementId) : WithBpmnId? {
+    fun getElement(project: Project, bpmnElementId: BpmnElementId) : WithBpmnId? {
         return currentStateProvider(project).currentState().elementByBpmnId[bpmnElementId]?.element
     }
+
+    fun mutateStartEvent(popup: JBPopupMenu, focus: BpmnElementId)
 }
