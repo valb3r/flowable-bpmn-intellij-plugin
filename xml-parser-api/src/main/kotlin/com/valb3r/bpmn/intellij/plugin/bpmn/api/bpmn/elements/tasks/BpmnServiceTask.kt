@@ -30,6 +30,7 @@ data class BpmnServiceTask(
         val failedJobRetryTimeCycle: String? = null,
         val fieldsExtension: List<ExtensionField>? = null,
         val eventPropertiesExtension: List<ExtensionField>? = null,
+        val extensionElementsEvent: List<ExtensionEventInParameter>? = null,
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

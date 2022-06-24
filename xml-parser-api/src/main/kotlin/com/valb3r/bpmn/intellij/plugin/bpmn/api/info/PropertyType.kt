@@ -142,7 +142,10 @@ enum class PropertyType(
     TRIGGER_CHANNEL_DESTINATION("eventExtensionElements.@triggerChannelDestination" , "Trigger channel destination", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     TRIGGER_CHANNEL_TYPE("eventExtensionElements.@triggerChannelType" ,"Trigger channel type", LIST_SELECT, setForSelect = setOf("", "jms", "kafka", "rabbitmq"), group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE)),
     EVENT_KEY_FIXED_VALUE("eventExtensionElements.@keyDetectionValue" , "Event key fixed value", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_TYPE), isHeadType = true),
-    FIXED_VALUE("eventExtensionElements.@keyDetectionType" ,"", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_KEY_FIXED_VALUE));
+    FIXED_VALUE("eventExtensionElements.@keyDetectionType" ,"", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true, dependecies = listOf(EVENT_KEY_FIXED_VALUE)),
+    MAPPING_PAYLOAD_EVENT_VARIABLE_NAME("eventExtensionElements.@mappingToEventPayload.@source", "Variable name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT, FunctionalGroupType.MAPPING_PAYLOAD), indexInGroupArrayName = "eventType.source",  updateOrder = 95, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false),
+    MAPPING_PAYLOAD_EVENT_PROPERTY_NAME("eventExtensionElements.@mappingToEventPayload.@target", "Event property name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT, FunctionalGroupType.MAPPING_PAYLOAD), indexInGroupArrayName = "eventType.source", removeEnclosingNodeIfNullOrEmpty = true),
+    MAPPING_PAYLOAD_EVENT_TYPE("eventExtensionElements.@mappingToEventPayload.@type", "Type", LIST_SELECT, setForSelect = setOf("string", "integer", "double", "boolean"), group = listOf(FunctionalGroupType.ADD_EVENT, FunctionalGroupType.MAPPING_PAYLOAD), indexInGroupArrayName = "eventType.source", removeEnclosingNodeIfNullOrEmpty = true);
 }
 
 val listDefaultPrint: List<DefaultPrintByHeadProp> = listOf(
@@ -181,7 +184,16 @@ enum class FunctionalGroupType(val groupCaption: String, val actionCaption: Stri
             NewElem("TRIGGER_CHANNEL_NAME", ""),
             NewElem("TRIGGER_CHANNEL_DESTINATION", ""),
             NewElem("EVENT_KEY_FIXED_VALUE", ""),
+            NewElem("MAPPING_PAYLOAD_EVENT_VARIABLE_NAME", "", uiOnlyaddedIndex = listOf("")),
+            NewElem("MAPPING_PAYLOAD_EVENT_PROPERTY_NAME", "", uiOnlyaddedIndex = listOf("")),
+            NewElem("MAPPING_PAYLOAD_EVENT_TYPE", "", uiOnlyaddedIndex = listOf("")),
         )
     ),
-
+    MAPPING_PAYLOAD("Mapping payload", "Add mapping payload", actionResult = NewElem("MAPPING_PAYLOAD_EVENT_VARIABLE_NAME", "Value %d"),
+        actionUiOnlyResult = listOf(
+            NewElem("MAPPING_PAYLOAD_EVENT_PROPERTY_NAME", ""),
+            NewElem("MAPPING_PAYLOAD_EVENT_TYPE", ""),
+//            NewElem("CHANEL_KEY", ""),
+        )
+    )
 }

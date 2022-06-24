@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionEventInParameter
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.UnmappedProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
@@ -49,6 +50,7 @@ data class ServiceTask(
             val task = doConvertToDto(input)
             return task.copy(
                     fieldsExtension = input.extensionElements?.filterIsInstance<FieldExtensionElement>()?.map { ExtensionField(it.name, it.string, it.expression) },
+                    extensionElementsEvent = input.extensionElements?.filterIsInstance<EventExtensionElement>()?.map { ExtensionEventInParameter(it.source, it.target, it.type) },
                     unmappedProperties = buildUnmappedProperties(
                         UnmappedProperty("jobTopic", input.jobTopic),
                     ),
@@ -70,14 +72,24 @@ data class ServiceTask(
             open val string: String? = null,
             val expression: String? = null,
             val failedJobRetryTimeCycle: String? = null,
+            val source: String? = null,
+            val target: String? = null,
+            val type: String? = null,
     )
 
     @JsonDeserialize(`as` = FieldExtensionElement::class)
     class FieldExtensionElement(
-            @JacksonXmlProperty(isAttribute = true) name: String?,
-            @JacksonXmlProperty(isAttribute = false) string: String?,
-            @JacksonXmlProperty(isAttribute = false) expression: String?
-    ) : ExtensionElement(name, string, expression)
+        @JacksonXmlProperty(isAttribute = true) name: String?,
+        @JacksonXmlProperty(isAttribute = false) string: String?,
+        @JacksonXmlProperty(isAttribute = false) expression: String?,
+    ) : ExtensionElement(name, string, expression/*, source = source, target = target, type = type*/)
+
+    @JsonDeserialize(`as` = EventExtensionElement::class)
+    class EventExtensionElement(
+        @JacksonXmlProperty(isAttribute = true) source: String?,
+        @JacksonXmlProperty(isAttribute = false) target: String?,
+        @JacksonXmlProperty(isAttribute = false) type: String?,
+    ) : ExtensionElement(source = source, target = target, type = type)
 
     @JsonDeserialize(`as` = FailedJobRetryTimeCycleExtensionElement::class)
     class FailedJobRetryTimeCycleExtensionElement(failedJobRetryTimeCycle: String) : ExtensionElement(failedJobRetryTimeCycle = failedJobRetryTimeCycle)
@@ -90,7 +102,7 @@ data class ServiceTask(
 
     class ExtensionElementDeserializer(vc: Class<*>? = null) : StdDeserializer<ExtensionElement?>(vc) {
 
-        private var listEventKey = listOf(
+        private var listSimpleEventKey = listOf(
                 "eventType",
                 "triggerEventType",
                 "eventName",
@@ -103,7 +115,7 @@ data class ServiceTask(
                 "triggerChannelName",
                 "keyDetectionValue",
                 "channelType",
-                "triggerChannelType"
+                "triggerChannelType",
         )
 
         override fun deserialize(parser: JsonParser, context: DeserializationContext?): ExtensionElement {
@@ -114,7 +126,8 @@ data class ServiceTask(
             return when (staxName) {
                 "failedJobRetryTimeCycle" -> FailedJobRetryTimeCycleExtensionElement(node.textValue())
                 "field" -> mapper.treeToValue(node, FieldExtensionElement::class.java)
-                in listEventKey -> EventElement(staxName, node.textValue())
+                "eventInParameter" -> mapper.treeToValue(node, EventExtensionElement::class.java)
+                in listSimpleEventKey -> EventElement(staxName, node.textValue())
                 else -> UnhandledExtensionElement()
             }
         }
