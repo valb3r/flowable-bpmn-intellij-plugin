@@ -4,6 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.BpmnTaskAlike
 import javax.print.attribute.standard.JobPriority
 
 data class BpmnExternalTask(
@@ -22,7 +23,7 @@ data class BpmnExternalTask(
         /* BPMN engine specific extensions (intermediate storage) */
         val extensionElements: List<ExtensionElement>? = null,
         /* Flattened extensionElements, for explicitness - these are the target of binding */
-): WithBpmnId {
+): WithBpmnId, BpmnTaskAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)
