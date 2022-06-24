@@ -113,7 +113,7 @@ class CurrentStateProvider(private val project: Project) {
                     handleRemoved(event.bpmnElementId, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
                 }
                 is BpmnElementChange -> {
-                    handleChangeType(event.elementId, event.newBpmnElement, updatedElementByStaticId, event.props ,updatedElemPropertiesByStaticElementId)
+                    handleChangeType(event.elementId, event.newBpmnElement, updatedElementByStaticId, event.props, updatedElemPropertiesByStaticElementId)
                 }
                 is DiagramElementRemoved -> {
                     handleDiagramRemoved(event.elementId, updatedShapes, updatedEdges, updatedElementByDiagramId)
