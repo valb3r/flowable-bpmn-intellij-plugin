@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.BpmnTaskAlike
 
 /**
  * Is created from BpmnServiceTask based on its type
@@ -33,7 +34,7 @@ data class BpmnHttpTask(
         val saveResponseVariableAsJson: String? = null,
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
-): WithBpmnId {
+): WithBpmnId, BpmnTaskAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)

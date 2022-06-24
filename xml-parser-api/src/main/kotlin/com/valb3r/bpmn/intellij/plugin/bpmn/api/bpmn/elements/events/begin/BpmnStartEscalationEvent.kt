@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.BpmnStartEventAlike
 
 data class BpmnStartEscalationEvent(
         override val id: BpmnElementId,
@@ -11,7 +12,7 @@ data class BpmnStartEscalationEvent(
         val asyncAfter: Boolean? = null,
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
-) : WithBpmnId {
+) : WithBpmnId, BpmnStartEventAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)

@@ -20,11 +20,13 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdH
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.*
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteFromClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.saveDiagramToPng
+import com.valb3r.bpmn.intellij.plugin.core.popupmenu.BaseCanvasPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.CanvasPopupMenuProvider
 import java.awt.event.ActionListener
@@ -33,79 +35,7 @@ import javax.swing.Icon
 import javax.swing.JMenu
 import javax.swing.JPopupMenu
 
-class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopupMenuProvider {
-
-    // Functional
-    private val COPY = IconLoader.getIcon("/icons/actions/copy.png")
-    private val CUT = IconLoader.getIcon("/icons/actions/cut.png")
-    private val PASTE = IconLoader.getIcon("/icons/actions/paste.png")
-    private val SAVE_TO_PNG = IconLoader.getIcon("/icons/actions/save-to-png.png")
-
-    // Events
-    // Start
-    private val START_EVENT = IconLoader.getIcon("/icons/popupmenu/start-event.png")
-    private val START_CONDITIONAL_EVENT = IconLoader.getIcon("/icons/popupmenu/conditional-start-event.png")
-    private val START_MESSAGE_EVENT = IconLoader.getIcon("/icons/popupmenu/message-start-event.png")
-    // private val START_ERROR_EVENT = IconLoader.getIcon("/icons/popupmenu/error-start-event.png")
-    // private val START_ESCALATION_EVENT = IconLoader.getIcon("/icons/popupmenu/escalation-start-event.png")
-    private val START_SIGNAL_EVENT = IconLoader.getIcon("/icons/popupmenu/signal-start-event.png")
-    private val START_TIMER_EVENT = IconLoader.getIcon("/icons/popupmenu/timer-start-event.png")
-    // End
-    private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png")
-    // private val CANCEL_END_EVENT = IconLoader.getIcon("/icons/popupmenu/cancel-end-event.png")
-    private val ERROR_END_EVENT = IconLoader.getIcon("/icons/popupmenu/error-end-event.png")
-    private val ESCALATION_END_EVENT = IconLoader.getIcon("/icons/popupmenu/escalation-end-event.png")
-    private val TERMINATE_END_EVENT = IconLoader.getIcon("/icons/popupmenu/terminate-end-event.png")
-    // Boundary
-//    private val BOUNDARY_CANCEL_EVENT = IconLoader.getIcon("/icons/popupmenu/cancel-boundary-event.png")
-    private val BOUNDARY_COMPENSATION_EVENT = IconLoader.getIcon("/icons/popupmenu/compensation-boundary-event.png")
-    private val BOUNDARY_CONDITIONAL_EVENT = IconLoader.getIcon("/icons/popupmenu/conditional-boundary-event.png")
-    private val BOUNDARY_ERROR_EVENT = IconLoader.getIcon("/icons/popupmenu/error-boundary-event.png")
-    private val BOUNDARY_ESCALATION_EVENT = IconLoader.getIcon("/icons/popupmenu/escalation-boundary-event.png")
-    private val BOUNDARY_MESSAGE_EVENT = IconLoader.getIcon("/icons/popupmenu/message-boundary-event.png")
-    private val BOUNDARY_SIGNAL_EVENT = IconLoader.getIcon("/icons/popupmenu/signal-boundary-event.png")
-    private val BOUNDARY_TIMER_EVENT = IconLoader.getIcon("/icons/popupmenu/timer-boundary-event.png")
-    // Intermediate events
-    // Catch
-    private val INTERMEDIATE_TIMER_CATCHING = IconLoader.getIcon("/icons/popupmenu/timer-catch-event.png")
-    private val INTERMEDIATE_MESSAGE_CATCHING = IconLoader.getIcon("/icons/popupmenu/message-catch-event.png")
-    private val INTERMEDIATE_SIGNAL_CATCHING = IconLoader.getIcon("/icons/popupmenu/signal-catch-event.png")
-    private val INTERMEDIATE_CONDITIONAL_CATCHING = IconLoader.getIcon("/icons/popupmenu/conditional-catch-event.png")
-    private val INTERMEDIATE_LINK_CATCHING = IconLoader.getIcon("/icons/popupmenu/intermediate-link-catch-event.png")
-    // Throw
-    private val INTERMEDIATE_NONE_THROWING = IconLoader.getIcon("/icons/popupmenu/none-throw-event.png")
-    private val INTERMEDIATE_SIGNAL_THROWING = IconLoader.getIcon("/icons/popupmenu/signal-throw-event.png")
-    private val INTERMEDIATE_ESCALATION_THROWING = IconLoader.getIcon("/icons/popupmenu/escalation-throw-event.png")
-
-    // Service-task alike
-    private val TASK = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
-    private val SERVICE_TASK = IconLoader.getIcon("/icons/popupmenu/service-task.png")
-    private val USER_TASK = IconLoader.getIcon("/icons/popupmenu/user-task.png")
-    private val SCRIPT_TASK = IconLoader.getIcon("/icons/popupmenu/script-task.png")
-    private val BUSINESS_RULE_TASK = IconLoader.getIcon("/icons/popupmenu/business-rule-task.png")
-    private val SEND_TASK = IconLoader.getIcon("/icons/popupmenu/send-task.png")
-    private val RECEIVE_TASK = IconLoader.getIcon("/icons/popupmenu/receive-task.png")
-    private val MANUAL_TASK = IconLoader.getIcon("/icons/popupmenu/manual-task.png")
-    private val EXTERNAL_TASK = IconLoader.getIcon("/icons/popupmenu/external-task.png")
-//    private val CAMEL_TASK = IconLoader.getIcon("/icons/popupmenu/camel-task.png")
-//    private val HTTP_TASK = IconLoader.getIcon("/icons/popupmenu/http-task.png")
-//    private val MAIL_TASK = IconLoader.getIcon("/icons/popupmenu/mail-task.png")
-//    private val MULE_TASK = IconLoader.getIcon("/icons/popupmenu/mule-task.png")
-//    private val DECISION_TASK = IconLoader.getIcon("/icons/popupmenu/decision-task.png")
-//    private val SHELL_TASK = IconLoader.getIcon("/icons/popupmenu/shell-task.png")
-
-    // Sub process alike
-    private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
-    private val SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/subprocess.png")
-    private val EVENT_SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/event-subprocess.png")
-    private val ADHOC_SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/adhoc-subprocess.png")
-
-    // Gateway
-    private val EXCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/exclusive-gateway.png")
-    private val PARALLEL_GATEWAY = IconLoader.getIcon("/icons/popupmenu/parallel-gateway.png")
-    private val INCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/inclusive-gateway.png")
-    private val EVENT_GATEWAY = IconLoader.getIcon("/icons/popupmenu/event-gateway.png")
-    private val COMPLEX_GATEWAY = IconLoader.getIcon("/icons/popupmenu/complex-gateway.png")
+class CamundaCanvasPopupMenuProvider(private val project: Project) : BaseCanvasPopupMenuProvider(project) {
 
     override fun popupMenu(sceneLocation: Point2D.Float, parent: BpmnElementId): JBPopupMenu {
         val popup = JBPopupMenu()
@@ -126,70 +56,84 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
     override fun popupChangeShape(focus: BpmnElementId): JBPopupMenu
     {
         val popup = JBPopupMenu()
-        if(isStartEvent(project, focus)) {
-            addItem(popup, "Start event", START_EVENT, ShapeChange(project, BpmnStartEvent::class, focus))
-            addItem(popup, "Start conditional event", START_CONDITIONAL_EVENT, ShapeChange(project, BpmnStartConditionalEvent::class, focus))
-            addItem(popup, "Start message event", START_MESSAGE_EVENT, ShapeChange(project, BpmnStartConditionalEvent::class, focus))
-            addItem(popup, "Start signal event", START_SIGNAL_EVENT, ShapeChange(project, BpmnStartSignalEvent::class, focus))
-            addItem(popup, "Start timer event", START_TIMER_EVENT, ShapeChange(project, BpmnStartTimerEvent::class, focus))
-        } else if(isTask(project, focus)) {
-            addItem(popup, "Task", TASK, ShapeChange(project, BpmnTask::class, focus))
-            addItem(popup, "User task", USER_TASK, ShapeChange(project, BpmnUserTask::class, focus))
-            addItem(popup, "Service task", SERVICE_TASK, ShapeChange(project, BpmnServiceTask::class, focus))
-            addItem(popup, "Script task", SCRIPT_TASK, ShapeChange(project, BpmnScriptTask::class, focus))
-            addItem(popup, "Business rule task", BUSINESS_RULE_TASK, ShapeChange(project, BpmnBusinessRuleTask::class, focus))
-            addItem(popup, "Send task", SEND_TASK, ShapeChange(project, BpmnSendTask::class, focus))
-            addItem(popup, "Receive task", RECEIVE_TASK, ShapeChange(project, BpmnReceiveTask::class, focus))
-            addItem(popup, "Manual task", MANUAL_TASK, ShapeChange(project, BpmnManualTask::class, focus))
-            addItem(popup, "External task", MANUAL_TASK, ShapeChange(project, BpmnExternalTask::class, focus))
-        } else if(isStructuralElement(project, focus)) {
-            addItem(popup, "Sub process", SUB_PROCESS, ShapeChange(project, BpmnSubProcess::class, focus))
-            addItem(popup, "Event sub process", EVENT_SUB_PROCESS, ShapeChange(project, BpmnEventSubprocess::class, focus))
-            addItem(popup, "Call activity", CALL_ACTIVITY, ShapeChange(project, BpmnCallActivity::class, focus))
-            addItem(popup, "Adhoc sub process", ADHOC_SUB_PROCESS, ShapeChange(project, BpmnAdHocSubProcess::class, focus))
-        } else if(isGateway(project, focus)) {
-            addItem(popup, "Exclusive gateway", EXCLUSIVE_GATEWAY, ShapeChange(project, BpmnExclusiveGateway::class, focus))
-            addItem(popup, "Parallel gateway", PARALLEL_GATEWAY, ShapeChange(project, BpmnParallelGateway::class, focus))
-            addItem(popup, "Inclusive gateway", INCLUSIVE_GATEWAY, ShapeChange(project, BpmnInclusiveGateway::class, focus))
-            addItem(popup, "Event gateway", EVENT_GATEWAY, ShapeChange(project, BpmnEventGateway::class, focus))
-            addItem(popup, "Complex gateway", COMPLEX_GATEWAY, ShapeChange(project, BpmnComplexGateway::class, focus))
-        } else if(isBoundaryEvents(project, focus)) {
-            addItem(popup, "Boundary compensation event", BOUNDARY_COMPENSATION_EVENT, ShapeChange(project, BpmnBoundaryCompensationEvent::class, focus))
-            addItem(popup, "Boundary conditional event", BOUNDARY_CONDITIONAL_EVENT, ShapeChange(project, BpmnStartConditionalEvent::class, focus))
-            addItem(popup, "Boundary error event", BOUNDARY_ERROR_EVENT, ShapeChange(project, BpmnBoundaryErrorEvent::class, focus))
-            addItem(popup, "Boundary escalation event", BOUNDARY_ESCALATION_EVENT, ShapeChange(project, BpmnBoundaryEscalationEvent::class, focus))
-            addItem(popup, "Boundary message event", BOUNDARY_MESSAGE_EVENT, ShapeChange(project, BpmnBoundaryMessageEvent::class, focus))
-            addItem(popup, "Boundary signal event", BOUNDARY_SIGNAL_EVENT, ShapeChange(project, BpmnBoundarySignalEvent::class, focus))
-            addItem(popup, "Boundary timer event", BOUNDARY_TIMER_EVENT, ShapeChange(project, BpmnBoundaryTimerEvent::class, focus))
-        } else if(isIntermediateCatchingEvent(project, focus)) {
-            addItem(popup, "Intermediate timer catching event", INTERMEDIATE_TIMER_CATCHING, ShapeChange(project, BpmnIntermediateTimerCatchingEvent::class, focus))
-            addItem(popup, "Intermediate message catching event", INTERMEDIATE_MESSAGE_CATCHING, ShapeChange(project, BpmnIntermediateMessageCatchingEvent::class, focus))
-            addItem(popup, "Intermediate signal catching event", INTERMEDIATE_SIGNAL_CATCHING, ShapeChange(project, BpmnIntermediateSignalCatchingEvent::class, focus))
-            addItem(popup, "Intermediate conditional catching event", INTERMEDIATE_CONDITIONAL_CATCHING, ShapeChange(project, BpmnIntermediateConditionalCatchingEvent::class, focus))
-            addItem(popup, "Intermediate link catching event", INTERMEDIATE_LINK_CATCHING, ShapeChange(project, BpmnIntermediateConditionalCatchingEvent::class, focus))
-        } else if(isIntermediateThrowingEvent(project, focus)) {
-            addItem(popup, "Intermediate none throwing event", INTERMEDIATE_NONE_THROWING, ShapeChange(project, BpmnIntermediateNoneThrowingEvent::class, focus))
-            addItem(popup, "Intermediate signal throwing event", INTERMEDIATE_SIGNAL_THROWING, ShapeChange(project, BpmnIntermediateSignalThrowingEvent::class, focus))
-            addItem(popup, "Intermediate escalation throwing event", INTERMEDIATE_ESCALATION_THROWING, ShapeChange(project, BpmnIntermediateEscalationThrowingEvent::class, focus))
-        } else if(isEndEvent(project, focus)) {
-            addItem(popup, "End event", END_EVENT, ShapeChange(project, BpmnEndEvent::class, focus))
-            addItem(popup, "End error event", ERROR_END_EVENT, ShapeChange(project, BpmnEndErrorEvent::class, focus))
-            addItem(popup, "End escalation event", ESCALATION_END_EVENT, ShapeChange(project, BpmnEndEscalationEvent::class, focus))
-            addItem(popup, "End terminate event", TERMINATE_END_EVENT, ShapeChange(project, BpmnEndTerminateEvent::class, focus))
+        val focusedElem = getElement(project, focus)
+        when (focusedElem) {
+            is BpmnStartEventAlike -> mutateStartEvent(popup, focus)
+            is BpmnBoundaryEventAlike -> mutateBoundaryEvents(popup, focus)
+            is BpmnTaskAlike -> mutateTask(popup, focus)
+            is BpmnGatewayAlike -> mutateGateway(popup, focus)
+            is BpmnStructuralElementAlike -> mutateStructuralElement(popup, focus)
+            is IntermediateThrowingEventAlike -> mutateIntermediateThrowingEvent(popup, focus)
+            is IntermediateCatchingEventAlike -> mutateIntermediateCatchingEvent(popup, focus)
+            is EndEventAlike -> mutateEndEvent(popup, focus)
         }
         return popup
     }
 
-    private fun addCopyAndPasteIfNeeded(popup: JBPopupMenu, sceneLocation: Point2D.Float, parent: BpmnElementId) {
-        val renderedState = lastRenderedState(project)
-        if (true == renderedState?.canCopyOrCut()) {
-            addItem(popup, "Copy", COPY, ActionListener { copyToClipboard(project) })
-            addItem(popup, "Cut", CUT, ActionListener { cutToClipboard(project) })
-        }
+    override fun mutateStartEvent(popup: JBPopupMenu, focus: BpmnElementId) {
+        addItem(popup, "Start event", START_EVENT, ShapeChange(project, BpmnStartEvent::class, focus))
+        addItem(popup, "Start conditional event", START_CONDITIONAL_EVENT, ShapeChange(project, BpmnStartConditionalEvent::class, focus))
+        addItem(popup, "Start message event", START_MESSAGE_EVENT, ShapeChange(project, BpmnStartConditionalEvent::class, focus))
+        addItem(popup, "Start signal event", START_SIGNAL_EVENT, ShapeChange(project, BpmnStartSignalEvent::class, focus))
+        addItem(popup, "Start timer event", START_TIMER_EVENT, ShapeChange(project, BpmnStartTimerEvent::class, focus))
+    }
 
-        if (copyPasteActionHandler(project).hasDataToPaste()) {
-            addItem(popup, "Paste", PASTE, ActionListener { pasteFromClipboard(project, sceneLocation, parent) })
-        }
+    override fun mutateBoundaryEvents(popup: JBPopupMenu, focus: BpmnElementId) {
+        addItem(popup, "Boundary compensation event", BOUNDARY_COMPENSATION_EVENT, ShapeChange(project, BpmnBoundaryCompensationEvent::class, focus))
+        addItem(popup, "Boundary conditional event", BOUNDARY_CONDITIONAL_EVENT, ShapeChange(project, BpmnStartConditionalEvent::class, focus))
+        addItem(popup, "Boundary error event", BOUNDARY_ERROR_EVENT, ShapeChange(project, BpmnBoundaryErrorEvent::class, focus))
+        addItem(popup, "Boundary escalation event", BOUNDARY_ESCALATION_EVENT, ShapeChange(project, BpmnBoundaryEscalationEvent::class, focus))
+        addItem(popup, "Boundary message event", BOUNDARY_MESSAGE_EVENT, ShapeChange(project, BpmnBoundaryMessageEvent::class, focus))
+        addItem(popup, "Boundary signal event", BOUNDARY_SIGNAL_EVENT, ShapeChange(project, BpmnBoundarySignalEvent::class, focus))
+        addItem(popup, "Boundary timer event", BOUNDARY_TIMER_EVENT, ShapeChange(project, BpmnBoundaryTimerEvent::class, focus))
+    }
+
+    override fun mutateEndEvent(popup: JBPopupMenu, focus: BpmnElementId) {
+        addItem(popup, "End event", END_EVENT, ShapeChange(project, BpmnEndEvent::class, focus))
+        addItem(popup, "End error event", ERROR_END_EVENT, ShapeChange(project, BpmnEndErrorEvent::class, focus))
+        addItem(popup, "End escalation event", ESCALATION_END_EVENT, ShapeChange(project, BpmnEndEscalationEvent::class, focus))
+        addItem(popup, "End terminate event", TERMINATE_END_EVENT, ShapeChange(project, BpmnEndTerminateEvent::class, focus))
+    }
+
+    override fun mutateIntermediateThrowingEvent(popup: JBPopupMenu, focus: BpmnElementId) {
+        addItem(popup, "Intermediate none throwing event", INTERMEDIATE_NONE_THROWING, ShapeChange(project, BpmnIntermediateNoneThrowingEvent::class, focus))
+        addItem(popup, "Intermediate signal throwing event", INTERMEDIATE_SIGNAL_THROWING, ShapeChange(project, BpmnIntermediateSignalThrowingEvent::class, focus))
+        addItem(popup, "Intermediate escalation throwing event", INTERMEDIATE_ESCALATION_THROWING, ShapeChange(project, BpmnIntermediateEscalationThrowingEvent::class, focus))
+    }
+
+    override fun mutateIntermediateCatchingEvent(popup: JBPopupMenu, focus: BpmnElementId) {
+        addItem(popup, "Intermediate timer catching event", INTERMEDIATE_TIMER_CATCHING, ShapeChange(project, BpmnIntermediateTimerCatchingEvent::class, focus))
+        addItem(popup, "Intermediate message catching event", INTERMEDIATE_MESSAGE_CATCHING, ShapeChange(project, BpmnIntermediateMessageCatchingEvent::class, focus))
+        addItem(popup, "Intermediate signal catching event", INTERMEDIATE_SIGNAL_CATCHING, ShapeChange(project, BpmnIntermediateSignalCatchingEvent::class, focus))
+        addItem(popup, "Intermediate conditional catching event", INTERMEDIATE_CONDITIONAL_CATCHING, ShapeChange(project, BpmnIntermediateConditionalCatchingEvent::class, focus))
+        addItem(popup, "Intermediate link catching event", INTERMEDIATE_LINK_CATCHING, ShapeChange(project, BpmnIntermediateConditionalCatchingEvent::class, focus))
+    }
+
+    override fun mutateStructuralElement(popup: JBPopupMenu, focus: BpmnElementId) {
+        addItem(popup, "Sub process", SUB_PROCESS, ShapeChange(project, BpmnSubProcess::class, focus))
+        addItem(popup, "Event sub process", EVENT_SUB_PROCESS, ShapeChange(project, BpmnEventSubprocess::class, focus))
+        addItem(popup, "Call activity", CALL_ACTIVITY, ShapeChange(project, BpmnCallActivity::class, focus))
+        addItem(popup, "Adhoc sub process", ADHOC_SUB_PROCESS, ShapeChange(project, BpmnAdHocSubProcess::class, focus))
+    }
+
+    override fun mutateGateway(popup: JBPopupMenu, focus: BpmnElementId) {
+        addItem(popup, "Exclusive gateway", EXCLUSIVE_GATEWAY, ShapeChange(project, BpmnExclusiveGateway::class, focus))
+        addItem(popup, "Parallel gateway", PARALLEL_GATEWAY, ShapeChange(project, BpmnParallelGateway::class, focus))
+        addItem(popup, "Inclusive gateway", INCLUSIVE_GATEWAY, ShapeChange(project, BpmnInclusiveGateway::class, focus))
+        addItem(popup, "Event gateway", EVENT_GATEWAY, ShapeChange(project, BpmnEventGateway::class, focus))
+        addItem(popup, "Complex gateway", COMPLEX_GATEWAY, ShapeChange(project, BpmnComplexGateway::class, focus))
+    }
+
+    override fun mutateTask(popup: JBPopupMenu, focus: BpmnElementId) {
+        addItem(popup, "Task", TASK, ShapeChange(project, BpmnTask::class, focus))
+        addItem(popup, "User task", USER_TASK, ShapeChange(project, BpmnUserTask::class, focus))
+        addItem(popup, "Service task", SERVICE_TASK, ShapeChange(project, BpmnServiceTask::class, focus))
+        addItem(popup, "Script task", SCRIPT_TASK, ShapeChange(project, BpmnScriptTask::class, focus))
+        addItem(popup, "Business rule task", BUSINESS_RULE_TASK, ShapeChange(project, BpmnBusinessRuleTask::class, focus))
+        addItem(popup, "Send task", SEND_TASK, ShapeChange(project, BpmnSendTask::class, focus))
+        addItem(popup, "Receive task", RECEIVE_TASK, ShapeChange(project, BpmnReceiveTask::class, focus))
+        addItem(popup, "Manual task", MANUAL_TASK, ShapeChange(project, BpmnManualTask::class, focus))
+        addItem(popup, "External task", MANUAL_TASK, ShapeChange(project, BpmnExternalTask::class, focus))
     }
 
     private fun startEvents(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {
@@ -282,17 +226,5 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : CanvasPopup
         // Unsupported? addItem(menu, "End cancel event", CANCEL_END_EVENT, ShapeCreator(project, BpmnEndCancelEvent::class, sceneLocation, parent))
         addItem(menu, "End terminate event", TERMINATE_END_EVENT, ShapeCreator(project, BpmnEndTerminateEvent::class, sceneLocation, parent))
         return menu
-    }
-
-    private fun addItem(menu: JMenu, text: String, icon: Icon, listener: ActionListener) {
-        val item = JBMenuItem(text, icon)
-        item.addActionListener(listener)
-        menu.add(item)
-    }
-
-    private fun addItem(menu: JPopupMenu, text: String, icon: Icon, listener: ActionListener) {
-        val item = JBMenuItem(text, icon)
-        item.addActionListener(listener)
-        menu.add(item)
     }
 }
