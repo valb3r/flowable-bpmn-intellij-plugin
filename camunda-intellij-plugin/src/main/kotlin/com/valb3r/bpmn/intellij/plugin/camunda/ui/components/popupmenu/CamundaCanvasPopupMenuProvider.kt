@@ -49,7 +49,7 @@ class CamundaCanvasPopupMenuProvider(private val project: Project) : BaseCanvasP
         popup.add(intermediateCatchingEvents(sceneLocation, parent))
         popup.add(intermediateThrowingEvents(sceneLocation, parent))
         popup.add(endEvents(sceneLocation, parent))
-        addItem(popup, "Save to PNG", SAVE_TO_PNG, ActionListener { saveDiagramToPng(project) })
+        addItem(popup, "Save to PNG", SAVE_TO_PNG) { saveDiagramToPng(project) }
         return popup
     }
 
