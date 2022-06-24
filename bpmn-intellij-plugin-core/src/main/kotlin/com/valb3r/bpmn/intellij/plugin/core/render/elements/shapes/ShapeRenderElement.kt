@@ -85,15 +85,17 @@ abstract class ShapeRenderElement(
         val left = state().ctx.canvas.camera.toCameraView(Point2D.Float(rect.x, rect.y))
         val right = state().ctx.canvas.camera.toCameraView(Point2D.Float(rect.x + rect.width, rect.y + rect.height))
 
-        if (ACTIONS_ICO_SIZE * actionCount >= (right.y - left.y)) {
-            return mutableMapOf()
-        }
-
         var currY = y
         val delId = elementId.elemIdToRemove()
         val deleteIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.recycleBin)
         state().ctx.interactionContext.clickCallbacks[delId] = { dest ->
             dest.addElementRemovedEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement())
+        }
+
+        if (ACTIONS_ICO_SIZE * actionCount >= (right.y - left.y)) {
+            return mutableMapOf(
+                delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
+            )
         }
 
         currY += spaceCoeff * ySpacing
