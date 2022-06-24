@@ -24,7 +24,7 @@ fun DiagramElementId.elemIdToRemove(): DiagramElementId {
 }
 
 fun DiagramElementId.elemIdToChangeShape(): DiagramElementId {
-    return DiagramElementId("CHANGE_SHAPE:" + this.id)
+    return DiagramElementId("CHANGE-TYPE:" + this.id)
 }
 
 abstract class BaseDiagramRenderElement(

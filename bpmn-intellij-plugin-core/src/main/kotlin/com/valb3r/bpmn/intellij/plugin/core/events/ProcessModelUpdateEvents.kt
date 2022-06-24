@@ -157,7 +157,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
                 is BpmnShapeObjectAddedEvent -> addObjectShapeEvent(toStore as Order<BpmnShapeObjectAddedEvent>)
                 is BpmnEdgeObjectAddedEvent -> addObjectEdgeEvent(toStore as Order<BpmnEdgeObjectAddedEvent>)
                 is BpmnElementRemovedEvent -> removeBpmnElement(event.bpmnElementId , toStore as Order<BpmnElementRemovedEvent> )
-                is BpmnElementChangeEvent -> changeBpmnElement(event.elementId , toStore as Order<BpmnElementRemovedEvent>, toStore as Order<BpmnEdgeObjectAddedEvent>)
+                is BpmnElementTypeChangeEvent -> changeBpmnElement(event.elementId , toStore as Order<BpmnElementRemovedEvent>, toStore as Order<BpmnEdgeObjectAddedEvent>)
                 else -> throw IllegalArgumentException("Can't bulk add: " + event::class.qualifiedName)
             }
         }

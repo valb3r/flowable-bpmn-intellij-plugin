@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.activiti.plugin.popupmenu
 
-import ShapeChange
+import ShapeTypeChange
 import ShapeCreator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.JBPopupMenu
@@ -42,7 +42,7 @@ class ActivitiCanvasPopupMenuProvider(val project: Project) : BaseCanvasPopupMen
         return popup
     }
 
-    override fun popupChangeShape(focus: BpmnElementId): JBPopupMenu {
+    override fun popupChangeShapeType(focus: BpmnElementId): JBPopupMenu {
         val popup = JBPopupMenu()
         val focusedElem = getElement(project, focus)
         when (focusedElem) {
@@ -60,63 +60,63 @@ class ActivitiCanvasPopupMenuProvider(val project: Project) : BaseCanvasPopupMen
     }
 
     override fun mutateStartEvent(popup: JBPopupMenu, focus: BpmnElementId) {
-        addItem(popup, "Start event", START_EVENT, ShapeChange(project, BpmnStartEvent::class, focus))
-        addItem(popup, "Start timer event", START_TIMER_EVENT, ShapeChange(project, BpmnStartTimerEvent::class, focus))
-        addItem(popup, "Start signal event", START_SIGNAL_EVENT, ShapeChange(project, BpmnStartSignalEvent::class, focus))
-        addItem(popup, "Start error event", START_ERROR_EVENT, ShapeChange(project, BpmnStartErrorEvent::class, focus))
+        addItem(popup, "Start event", START_EVENT, ShapeTypeChange(project, BpmnStartEvent::class, focus))
+        addItem(popup, "Start timer event", START_TIMER_EVENT, ShapeTypeChange(project, BpmnStartTimerEvent::class, focus))
+        addItem(popup, "Start signal event", START_SIGNAL_EVENT, ShapeTypeChange(project, BpmnStartSignalEvent::class, focus))
+        addItem(popup, "Start error event", START_ERROR_EVENT, ShapeTypeChange(project, BpmnStartErrorEvent::class, focus))
     }
 
     override fun mutateBoundaryEvents(popup: JBPopupMenu, focus: BpmnElementId) {
-        addItem(popup, "Boundary error event", BOUNDARY_ERROR_EVENT, ShapeChange(project, BpmnBoundaryErrorEvent::class, focus))
-        addItem(popup, "Boundary timer event", BOUNDARY_TIMER_EVENT, ShapeChange(project, BpmnBoundaryTimerEvent::class, focus))
-        addItem(popup, "Boundary signal event", BOUNDARY_SIGNAL_EVENT, ShapeChange(project, BpmnBoundarySignalEvent::class, focus))
-        addItem(popup, "Boundary message event", BOUNDARY_MESSAGE_EVENT, ShapeChange(project, BpmnBoundaryMessageEvent::class, focus))
-        addItem(popup, "Boundary cancel event", BOUNDARY_CANCEL_EVENT, ShapeChange(project, BpmnBoundaryCancelEvent::class, focus))
-        addItem(popup, "Boundary compensation event", BOUNDARY_COMPENSATION_EVENT, ShapeChange(project, BpmnBoundaryCompensationEvent::class, focus))
+        addItem(popup, "Boundary error event", BOUNDARY_ERROR_EVENT, ShapeTypeChange(project, BpmnBoundaryErrorEvent::class, focus))
+        addItem(popup, "Boundary timer event", BOUNDARY_TIMER_EVENT, ShapeTypeChange(project, BpmnBoundaryTimerEvent::class, focus))
+        addItem(popup, "Boundary signal event", BOUNDARY_SIGNAL_EVENT, ShapeTypeChange(project, BpmnBoundarySignalEvent::class, focus))
+        addItem(popup, "Boundary message event", BOUNDARY_MESSAGE_EVENT, ShapeTypeChange(project, BpmnBoundaryMessageEvent::class, focus))
+        addItem(popup, "Boundary cancel event", BOUNDARY_CANCEL_EVENT, ShapeTypeChange(project, BpmnBoundaryCancelEvent::class, focus))
+        addItem(popup, "Boundary compensation event", BOUNDARY_COMPENSATION_EVENT, ShapeTypeChange(project, BpmnBoundaryCompensationEvent::class, focus))
     }
 
     override fun mutateTask(popup: JBPopupMenu, focus: BpmnElementId) {
-        addItem(popup, "User Task", USER_TASK, ShapeChange(project, BpmnUserTask::class, focus))
-        addItem(popup, "Service Task", SERVICE_TASK, ShapeChange(project, BpmnServiceTask::class, focus))
-        addItem(popup, "Script Task", SCRIPT_TASK, ShapeChange(project, BpmnScriptTask::class, focus))
-        addItem(popup, "Business rule Task", BUSINESS_RULE_TASK, ShapeChange(project, BpmnBusinessRuleTask::class, focus))
-        addItem(popup, "Receive Task", RECEIVE_TASK, ShapeChange(project, BpmnReceiveTask::class, focus))
-        addItem(popup, "Manual Task", MANUAL_TASK, ShapeChange(project, BpmnManualTask::class, focus))
-        addItem(popup, "Mail task", MAIL_TASK, ShapeChange(project, BpmnMailTask::class, focus))
-        addItem(popup, "Camel Task", CAMEL_TASK, ShapeChange(project, BpmnCamelTask::class, focus))
-        addItem(popup, "Mule task", MULE_TASK, ShapeChange(project, BpmnMuleTask::class, focus))
-        addItem(popup, "Decision task", DECISION_TASK, ShapeChange(project, BpmnDecisionTask::class, focus))
+        addItem(popup, "User Task", USER_TASK, ShapeTypeChange(project, BpmnUserTask::class, focus))
+        addItem(popup, "Service Task", SERVICE_TASK, ShapeTypeChange(project, BpmnServiceTask::class, focus))
+        addItem(popup, "Script Task", SCRIPT_TASK, ShapeTypeChange(project, BpmnScriptTask::class, focus))
+        addItem(popup, "Business rule Task", BUSINESS_RULE_TASK, ShapeTypeChange(project, BpmnBusinessRuleTask::class, focus))
+        addItem(popup, "Receive Task", RECEIVE_TASK, ShapeTypeChange(project, BpmnReceiveTask::class, focus))
+        addItem(popup, "Manual Task", MANUAL_TASK, ShapeTypeChange(project, BpmnManualTask::class, focus))
+        addItem(popup, "Mail task", MAIL_TASK, ShapeTypeChange(project, BpmnMailTask::class, focus))
+        addItem(popup, "Camel Task", CAMEL_TASK, ShapeTypeChange(project, BpmnCamelTask::class, focus))
+        addItem(popup, "Mule task", MULE_TASK, ShapeTypeChange(project, BpmnMuleTask::class, focus))
+        addItem(popup, "Decision task", DECISION_TASK, ShapeTypeChange(project, BpmnDecisionTask::class, focus))
     }
 
     override fun mutateGateway(popup: JBPopupMenu, focus: BpmnElementId) {
-        addItem(popup, "Exclusive gateway", EXCLUSIVE_GATEWAY, ShapeChange(project, BpmnExclusiveGateway::class, focus))
-        addItem(popup, "Parallel gateway", PARALLEL_GATEWAY, ShapeChange(project, BpmnParallelGateway::class, focus))
-        addItem(popup, "Inclusive gateway", INCLUSIVE_GATEWAY, ShapeChange(project, BpmnInclusiveGateway::class, focus))
-        addItem(popup, "Event gateway", EVENT_GATEWAY, ShapeChange(project, BpmnEventGateway::class, focus))
+        addItem(popup, "Exclusive gateway", EXCLUSIVE_GATEWAY, ShapeTypeChange(project, BpmnExclusiveGateway::class, focus))
+        addItem(popup, "Parallel gateway", PARALLEL_GATEWAY, ShapeTypeChange(project, BpmnParallelGateway::class, focus))
+        addItem(popup, "Inclusive gateway", INCLUSIVE_GATEWAY, ShapeTypeChange(project, BpmnInclusiveGateway::class, focus))
+        addItem(popup, "Event gateway", EVENT_GATEWAY, ShapeTypeChange(project, BpmnEventGateway::class, focus))
     }
 
     override fun mutateStructuralElement(popup: JBPopupMenu, focus: BpmnElementId) {
-        addItem(popup, "Sub process", SUB_PROCESS, ShapeChange(project, BpmnSubProcess::class, focus))
-        addItem(popup, "Event sub process", EVENT_SUB_PROCESS, ShapeChange(project, BpmnEventSubprocess::class, focus))
-        addItem(popup, "Call activity", CALL_ACTIVITY, ShapeChange(project, BpmnCallActivity::class, focus))
+        addItem(popup, "Sub process", SUB_PROCESS, ShapeTypeChange(project, BpmnSubProcess::class, focus))
+        addItem(popup, "Event sub process", EVENT_SUB_PROCESS, ShapeTypeChange(project, BpmnEventSubprocess::class, focus))
+        addItem(popup, "Call activity", CALL_ACTIVITY, ShapeTypeChange(project, BpmnCallActivity::class, focus))
     }
 
     override fun mutateIntermediateThrowingEvent(popup: JBPopupMenu, focus: BpmnElementId) {
-        addItem(popup, "Intermediate none throwing event", INTERMEDIATE_NONE_THROWING, ShapeChange(project, BpmnIntermediateNoneThrowingEvent::class, focus))
-        addItem(popup, "Intermediate signal throwing event", INTERMEDIATE_SIGNAL_THROWING, ShapeChange(project, BpmnIntermediateSignalThrowingEvent::class, focus))
+        addItem(popup, "Intermediate none throwing event", INTERMEDIATE_NONE_THROWING, ShapeTypeChange(project, BpmnIntermediateNoneThrowingEvent::class, focus))
+        addItem(popup, "Intermediate signal throwing event", INTERMEDIATE_SIGNAL_THROWING, ShapeTypeChange(project, BpmnIntermediateSignalThrowingEvent::class, focus))
     }
 
     override fun mutateIntermediateCatchingEvent(popup: JBPopupMenu, focus: BpmnElementId) {
-        addItem(popup, "Intermediate timer catching event", INTERMEDIATE_TIMER_CATCHING, ShapeChange(project, BpmnIntermediateTimerCatchingEvent::class, focus))
-        addItem(popup, "Intermediate message catching event", INTERMEDIATE_MESSAGE_CATCHING, ShapeChange(project, BpmnIntermediateMessageCatchingEvent::class, focus))
-        addItem(popup, "Intermediate signal catching event", INTERMEDIATE_SIGNAL_CATCHING, ShapeChange(project, BpmnIntermediateSignalCatchingEvent::class, focus))
+        addItem(popup, "Intermediate timer catching event", INTERMEDIATE_TIMER_CATCHING, ShapeTypeChange(project, BpmnIntermediateTimerCatchingEvent::class, focus))
+        addItem(popup, "Intermediate message catching event", INTERMEDIATE_MESSAGE_CATCHING, ShapeTypeChange(project, BpmnIntermediateMessageCatchingEvent::class, focus))
+        addItem(popup, "Intermediate signal catching event", INTERMEDIATE_SIGNAL_CATCHING, ShapeTypeChange(project, BpmnIntermediateSignalCatchingEvent::class, focus))
     }
 
     override fun mutateEndEvent(popup: JBPopupMenu, focus: BpmnElementId){
-        addItem(popup, "End event", END_EVENT, ShapeChange(project, BpmnEndEvent::class, focus))
-        addItem(popup, "End error event", ERROR_END_EVENT, ShapeChange(project, BpmnEndErrorEvent::class, focus))
-        addItem(popup, "End cancel event", CANCEL_END_EVENT, ShapeChange(project, BpmnEndCancelEvent::class, focus))
-        addItem(popup, "End terminate event", TERMINATE_END_EVENT, ShapeChange(project, BpmnEndTerminateEvent::class, focus))
+        addItem(popup, "End event", END_EVENT, ShapeTypeChange(project, BpmnEndEvent::class, focus))
+        addItem(popup, "End error event", ERROR_END_EVENT, ShapeTypeChange(project, BpmnEndErrorEvent::class, focus))
+        addItem(popup, "End cancel event", CANCEL_END_EVENT, ShapeTypeChange(project, BpmnEndCancelEvent::class, focus))
+        addItem(popup, "End terminate event", TERMINATE_END_EVENT, ShapeTypeChange(project, BpmnEndTerminateEvent::class, focus))
     }
 
     private fun startEvents(sceneLocation: Point2D.Float, parent: BpmnElementId): JMenu {

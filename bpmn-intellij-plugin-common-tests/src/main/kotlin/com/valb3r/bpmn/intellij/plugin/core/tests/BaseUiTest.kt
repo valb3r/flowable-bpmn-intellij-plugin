@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.core.tests
 
 import com.google.common.hash.Hashing
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.messages.MessageBus
 import com.intellij.util.messages.MessageBusConnection
@@ -36,6 +37,8 @@ import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.setUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.settings.BaseBpmnPluginSettingsState
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.CanvasPopupMenuProvider
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
 import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.ArgumentMatchers
@@ -68,9 +71,11 @@ abstract class BaseUiTest {
     protected val columnModel = mock<TableColumnModel>()
     protected val tableColumn = mock<TableColumn>()
     protected val propertiesTable = mock<JTable>()
+    protected val popupMenuProvider = mock<CanvasPopupMenuProvider>()
 
     protected val newLink = "NEW-SEQUENCE"
     protected val doDel = "DEL"
+    protected val doChangeType = "CHANGE-TYPE"
 
     protected val icon = "dummy-icon.svg".asResource()
 
@@ -184,6 +189,8 @@ abstract class BaseUiTest {
     @BeforeEach
     fun setupMocks() {
         currentSettingsStateProvider.set{ object: BaseBpmnPluginSettingsState() {} }
+        registerPopupMenuProvider(project, popupMenuProvider)
+        whenever(popupMenuProvider.popupChangeShapeType(any())).thenReturn(mock())
         textFieldsConstructed.clear()
         boolFieldsConstructed.clear()
 
@@ -675,6 +682,8 @@ abstract class BaseUiTest {
 
     protected fun findExactlyOneNewLinkElem() = renderResult?.areas?.keys?.filter { it.id.contains(newLink) }?.shouldHaveSize(1)?.first()
     protected fun findExactlyOneDeleteElem() = renderResult?.areas?.keys?.filter { it.id.contains(doDel) }?.shouldHaveSize(1)?.first()
+
+    protected fun findExactlyOneTypeChangeElem() = renderResult?.areas?.keys?.filter { it.id.contains(doChangeType) }?.shouldHaveSize(1)?.first()
 
     protected fun String.asResource(): SvgIcon {
         val txt = BaseUiTest::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)!!

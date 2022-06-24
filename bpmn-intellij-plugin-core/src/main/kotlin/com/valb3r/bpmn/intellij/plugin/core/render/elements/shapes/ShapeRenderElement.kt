@@ -102,7 +102,7 @@ abstract class ShapeRenderElement(
         val changeShapeId = elementId.elemIdToChangeShape()
         val changeShapeIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.wrench)
         state().ctx.interactionContext.clickCallbacks[changeShapeId] = { dest ->
-            popupMenuProvider(state().ctx.project).popupChangeShape(
+            popupMenuProvider(state().ctx.project).popupChangeShapeType(
                 bpmnElementId
             ).show(currentCanvas(state().ctx.project), right.x.toInt(), right.y.toInt())
         }

@@ -21,9 +21,7 @@ import org.junit.jupiter.api.Test
 import java.awt.Graphics2D
 import java.awt.Shape
 import java.awt.font.GlyphVector
-import java.awt.geom.Area
 import java.awt.geom.Point2D
-import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
 import java.util.*
 
@@ -1264,6 +1262,16 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         lastRenderedState(project)!!.state.ctx.selectedIds.shouldBeEmpty()
         lastRenderedState(project)!!.state.ctx.stateProvider.currentState()
                 .elementByDiagramId[CurrentState.processDiagramId(BpmnElementId(anotherNewRootProcessId))].shouldNotBeNull()
+    }
+
+    @Test
+    fun `Shape change menu is shown when user clicks on wrench icon`() {
+        prepareTwoServiceTaskView()
+        clickOnId(serviceTaskStartDiagramId)
+        val serviceTaskTypeChange = findExactlyOneTypeChangeElem()
+        clickOnId(serviceTaskTypeChange!!)
+
+        verify(popupMenuProvider).popupChangeShapeType(serviceTaskStartBpmnId)
     }
 }
 

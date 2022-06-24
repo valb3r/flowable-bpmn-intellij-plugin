@@ -5,7 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
-import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementChangeEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementTypeChangeEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnShapeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
@@ -43,7 +43,7 @@ class ShapeCreator<T : WithBpmnId> (private val project: Project, private val cl
     }
 }
 
-class ShapeChange<T : WithBpmnId>(
+class ShapeTypeChange<T : WithBpmnId>(
     private val project: Project,
     private val clazz: KClass<T>,
     private val elementId: BpmnElementId) : ActionListener {
@@ -63,7 +63,7 @@ class ShapeChange<T : WithBpmnId>(
 
         updateEventsRegistry(project).addEvents(
             listOf(
-                BpmnElementChangeEvent(
+                BpmnElementTypeChangeEvent(
                     elementId,
                     newElement,
                     newPropertyTable,
