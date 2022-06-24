@@ -31,14 +31,6 @@ private fun <T: WithBpmnId> newShapeElement(project: Project, sceneLocation: Poi
     )
 }
 
-private fun <T: WithBpmnId> newShapeElementWithBounds(project: Project, bounds: BoundsElement, forObject: T): ShapeElement {
-    val templateShape = newElementsFactory(project).newDiagramObject(ShapeElement::class, forObject)
-
-    return templateShape.copy(
-        bounds = bounds
-        )
-}
-
 class ShapeCreator<T : WithBpmnId> (private val project: Project, private val clazz: KClass<T>, private val sceneLocation: Point2D.Float, private val parent: BpmnElementId): ActionListener {
 
     override fun actionPerformed(e: ActionEvent?) {
@@ -55,15 +47,17 @@ class ShapeChange<T : WithBpmnId>(
     private val project: Project,
     private val clazz: KClass<T>,
     private val elementId: BpmnElementId) : ActionListener {
+
     override fun actionPerformed(e: ActionEvent?) {
-        val newElement = newElementsFactory(project).newBpmnObject(clazz).updateBpmnElemId(elementId)
         val currentElement = currentStateProvider(project).currentState().elementByBpmnId[elementId]!!.element
-        if(newElement.javaClass == currentElement.javaClass) return
+        if (clazz.java == currentElement.javaClass) return
+
+        val newElement = newElementsFactory(project).newBpmnObject(clazz).updateBpmnElemId(elementId)
         val oldPropertyTable = currentStateProvider(project).currentState().elemPropertiesByStaticElementId[elementId]
         val newPropertyTable = newElementsFactory(project).propertiesOf(newElement)
-        oldPropertyTable!!.view().forEach { (t, u) ->
-            if (null != newPropertyTable[t]) {
-                newPropertyTable[t] = u.toMutableList()
+        oldPropertyTable!!.view().forEach { (type, values) ->
+            if (null != newPropertyTable[type]) {
+                newPropertyTable[type] = values.toMutableList()
             }
         }
 
