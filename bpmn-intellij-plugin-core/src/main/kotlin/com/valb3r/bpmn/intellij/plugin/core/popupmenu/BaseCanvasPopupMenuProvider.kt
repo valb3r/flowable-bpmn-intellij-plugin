@@ -30,6 +30,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.CanvasPopupMenuProvider
 import java.awt.event.ActionListener
 import java.awt.geom.Point2D
+import java.util.concurrent.atomic.AtomicReference
 import javax.swing.Icon
 import javax.swing.JMenu
 import javax.swing.JPopupMenu
@@ -117,6 +118,12 @@ data class MenuItemDef(
     val elementMutationListener: (p: Project, focus: BpmnElementId) -> ActionListener
 )
 
+val currentPopupMenuUiComponentSupplier = AtomicReference { id: String -> JBPopupMenu() } // Not map as is global
+val currentPopupMenuItemUiComponentSupplier = AtomicReference { name: String, icon: Icon -> JBMenuItem(name, icon) } // Not map as is global
+
+const val MAIN_POPUP_MENU = "Main popup menu"
+const val SHAPE_CHANGE_POPUP_MENU = "Shape change popup menu"
+
 abstract class BaseCanvasPopupMenuProvider(private val project: Project) : CanvasPopupMenuProvider {
 
     protected val START_EVENT = MenuItemDef("Start event",  START_EVENT_ICON, {project, sceneLocation, focus -> ShapeCreator(project, BpmnStartEvent::class, sceneLocation, focus)}, {project, focus ->  ShapeTypeChange(project, BpmnStartEvent::class, focus)})
@@ -190,8 +197,23 @@ abstract class BaseCanvasPopupMenuProvider(private val project: Project) : Canva
         }
     }
 
+    override fun popupMenu(sceneLocation: Point2D.Float, parent: BpmnElementId): JBPopupMenu {
+        val popup = currentPopupMenuUiComponentSupplier.get()(MAIN_POPUP_MENU)
+        addCopyAndPasteIfNeeded(popup, sceneLocation, parent)
+        popup.add(startEvents(sceneLocation, parent))
+        popup.add(activities(sceneLocation, parent))
+        popup.add(structural(sceneLocation, parent))
+        popup.add(gateways(sceneLocation, parent))
+        popup.add(boundaryEvents(sceneLocation, parent))
+        popup.add(intermediateCatchingEvents(sceneLocation, parent))
+        popup.add(intermediateThrowingEvents(sceneLocation, parent))
+        popup.add(endEvents(sceneLocation, parent))
+        addItem(popup, "Save to PNG", SAVE_TO_PNG_ICON) { saveDiagramToPng(project) }
+        return popup
+    }
+
     override fun popupChangeShapeType(focus: BpmnElementId): JBPopupMenu {
-        val popup = JBPopupMenu()
+        val popup = currentPopupMenuUiComponentSupplier.get()(SHAPE_CHANGE_POPUP_MENU)
         val focusedElem = getElement(project, focus)
         when (focusedElem) {
             is BpmnStartEventAlike -> mutateStartEvent(popup, focus)
@@ -206,30 +228,14 @@ abstract class BaseCanvasPopupMenuProvider(private val project: Project) : Canva
         return popup
     }
 
-    override fun popupMenu(sceneLocation: Point2D.Float, parent: BpmnElementId): JBPopupMenu {
-        val popup = JBPopupMenu()
-
-        addCopyAndPasteIfNeeded(popup, sceneLocation, parent)
-        popup.add(startEvents(sceneLocation, parent))
-        popup.add(activities(sceneLocation, parent))
-        popup.add(structural(sceneLocation, parent))
-        popup.add(gateways(sceneLocation, parent))
-        popup.add(boundaryEvents(sceneLocation, parent))
-        popup.add(intermediateCatchingEvents(sceneLocation, parent))
-        popup.add(intermediateThrowingEvents(sceneLocation, parent))
-        popup.add(endEvents(sceneLocation, parent))
-        addItem(popup, "Save to PNG", SAVE_TO_PNG_ICON) { saveDiagramToPng(project) }
-        return popup
-    }
-
     protected fun JMenu.addNewElementItem(sceneLocation: Point2D.Float, focus: BpmnElementId, menuItem: MenuItemDef) {
-        val item = JBMenuItem(menuItem.name, menuItem.menuIcon)
+        val item = currentPopupMenuItemUiComponentSupplier.get()(menuItem.name, menuItem.menuIcon)
         item.addActionListener(menuItem.newElementListener(project, sceneLocation, focus))
         this.add(item)
     }
 
     protected fun JPopupMenu.addMutateElementItem(focus: BpmnElementId, menuItem: MenuItemDef) {
-        val item = JBMenuItem(menuItem.name, menuItem.menuIcon)
+        val item = currentPopupMenuItemUiComponentSupplier.get()(menuItem.name, menuItem.menuIcon)
         item.addActionListener(menuItem.elementMutationListener(project, focus))
         this.add(item)
     }

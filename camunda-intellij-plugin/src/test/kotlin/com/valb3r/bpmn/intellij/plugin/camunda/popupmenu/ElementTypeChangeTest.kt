@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.plugin.flowable.ui.components.popupmenu
+package com.valb3r.bpmn.intellij.plugin.camunda.popupmenu
 
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
@@ -13,7 +13,7 @@ import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
 
-class ElementTypeChangeTest: FlowableBaseUiTest() {
+class ElementTypeChangeTest: CamundaBaseUiTest() {
 
     @Test
     fun `Service task shape changes to User task`() {
@@ -33,11 +33,9 @@ class ElementTypeChangeTest: FlowableBaseUiTest() {
         props[DOCUMENTATION]!!.value.shouldBe("Start service task docs")
         val userTaskProps = listOf(
             ID, NAME, DOCUMENTATION, IS_FOR_COMPENSATION,
-            ASYNC, ASSIGNEE, CANDIDATE_USERS, CANDIDATE_GROUPS,
-            SKIP_EXPRESSION, DUE_DATE, CATEGORY, FORM_KEY,
-            FORM_FIELD_VALIDATION, PRIORITY, FORM_PROPERTY_ID,
-            FORM_PROPERTY_NAME, FORM_PROPERTY_TYPE, FORM_PROPERTY_VARIABLE,
-            FORM_PROPERTY_DEFAULT, FORM_PROPERTY_EXPRESSION, FORM_PROPERTY_DATE_PATTERN
+            ASYNC_BEFORE, ASYNC_AFTER, ASSIGNEE, CANDIDATE_USERS, CANDIDATE_GROUPS,
+            SKIP_EXPRESSION, DUE_DATE, FORM_KEY, PRIORITY, BPMN_INCOMING, BPMN_OUTGOING,
+            FORM_PROPERTY_ID, FORM_PROPERTY_NAME, FORM_PROPERTY_TYPE, FORM_PROPERTY_DEFAULT,
         )
         props.keys.shouldContainSame(userTaskProps)
         argumentCaptor<List<EventPropagatableToXml>>().let {

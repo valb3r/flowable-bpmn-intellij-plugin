@@ -261,7 +261,7 @@ abstract class BaseBpmnParser: BpmnParser {
         trimWhitespace(parent, false)
     }
 
-    private fun applyChangeElement(doc: Document, update: BpmnElementChange){
+    private fun applyChangeElement(doc: Document, update: BpmnElementChange) {
         val node = doc.selectSingleNode(
             "//*[local-name()='process']//*[@id='${update.elementId.id}'][1]"
         ) as Node
