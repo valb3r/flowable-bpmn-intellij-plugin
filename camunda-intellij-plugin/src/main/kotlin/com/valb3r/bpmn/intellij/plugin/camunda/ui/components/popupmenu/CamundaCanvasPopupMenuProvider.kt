@@ -1,14 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.camunda.ui.components.popupmenu
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.JPopupMenu
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.core.popupmenu.BaseCanvasPopupMenuProvider
 import java.awt.geom.Point2D
 import javax.swing.JMenu
