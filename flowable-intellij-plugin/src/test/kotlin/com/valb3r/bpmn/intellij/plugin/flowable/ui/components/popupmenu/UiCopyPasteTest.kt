@@ -21,28 +21,12 @@ import org.junit.jupiter.api.Test
 import java.awt.geom.Point2D
 import java.util.concurrent.atomic.AtomicReference
 
-internal class UiCopyPasteTest: BaseUiTest() {
+internal class UiCopyPasteTest: FlowableBaseUiTest() {
 
     private val delta = Point2D.Float(10.0f, 10.0f)
     private val pasteStart = Point2D.Float(-1000.0f, -1000.0f)
     private val pastedElemCenter = Point2D.Float(pasteStart.x + serviceTaskSize / 2.0f, pasteStart.y + serviceTaskSize / 2.0f)
     private val end = Point2D.Float(pasteStart.x + delta.x, pasteStart.y + delta.y)
-
-    private val buffer: AtomicReference<String> = AtomicReference()
-
-    @BeforeEach
-    fun init() {
-        registerNewElementsFactory(project, FlowableObjectFactory())
-        val clipboard = mock<SystemClipboard>()
-        doAnswer { buffer.get() }.whenever(clipboard).getData(any())
-        doAnswer { true }.whenever(clipboard).isDataFlavorAvailable(any())
-        doAnswer {
-            buffer.set(
-                    it.getArgument(0, CopyPasteActionHandler.ClipboardFlavor::class.java).getTransferData(DATA_FLAVOR) as String)
-        }.whenever(clipboard).setContents(any(), anyOrNull())
-
-        setCopyPasteActionHandler(project, CopyPasteActionHandler(clipboard))
-    }
 
     @Test
     fun `Flat service task can be cut and pasted`() {

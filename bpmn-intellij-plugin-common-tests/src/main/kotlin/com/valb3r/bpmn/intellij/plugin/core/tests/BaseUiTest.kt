@@ -71,7 +71,7 @@ abstract class BaseUiTest {
     protected val columnModel = mock<TableColumnModel>()
     protected val tableColumn = mock<TableColumn>()
     protected val propertiesTable = mock<JTable>()
-    protected val popupMenuProvider = mock<CanvasPopupMenuProvider>()
+    protected var popupMenuProvider = mock<CanvasPopupMenuProvider>()
 
     protected val newLink = "NEW-SEQUENCE"
     protected val doDel = "DEL"

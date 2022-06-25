@@ -7,6 +7,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import java.awt.geom.Point2D
 import java.util.*
+import javax.swing.JMenu
+import javax.swing.JPopupMenu
 
 
 private val popupMenuProvider = Collections.synchronizedMap(WeakHashMap<Project,  CanvasPopupMenuProvider>())
@@ -28,12 +30,21 @@ interface CanvasPopupMenuProvider {
         return currentStateProvider(project).currentState().elementByBpmnId[bpmnElementId]?.element
     }
 
-    fun mutateStartEvent(popup: JBPopupMenu, focus: BpmnElementId)
-    fun mutateBoundaryEvents(popup: JBPopupMenu, focus: BpmnElementId)
-    fun mutateEndEvent(popup: JBPopupMenu, focus: BpmnElementId)
-    fun mutateIntermediateThrowingEvent(popup: JBPopupMenu, focus: BpmnElementId)
-    fun mutateIntermediateCatchingEvent(popup: JBPopupMenu, focus: BpmnElementId)
-    fun mutateStructuralElement(popup: JBPopupMenu, focus: BpmnElementId)
-    fun mutateGateway(popup: JBPopupMenu, focus: BpmnElementId)
-    fun mutateTask(popup: JBPopupMenu, focus: BpmnElementId)
+    fun startEvents(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu
+    fun activities(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu
+    fun structural(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu
+    fun gateways(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu
+    fun boundaryEvents(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu
+    fun intermediateCatchingEvents(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu
+    fun intermediateThrowingEvents(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu
+    fun endEvents(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu
+
+    fun mutateStartEvent(popup: JPopupMenu, focus: BpmnElementId)
+    fun mutateBoundaryEvents(popup: JPopupMenu, focus: BpmnElementId)
+    fun mutateEndEvent(popup: JPopupMenu, focus: BpmnElementId)
+    fun mutateIntermediateThrowingEvent(popup: JPopupMenu, focus: BpmnElementId)
+    fun mutateIntermediateCatchingEvent(popup: JPopupMenu, focus: BpmnElementId)
+    fun mutateStructuralElement(popup: JPopupMenu, focus: BpmnElementId)
+    fun mutateGateway(popup: JPopupMenu, focus: BpmnElementId)
+    fun mutateTask(popup: JPopupMenu, focus: BpmnElementId)
 }
