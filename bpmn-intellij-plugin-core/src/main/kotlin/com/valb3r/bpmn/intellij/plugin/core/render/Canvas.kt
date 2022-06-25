@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.google.common.annotations.VisibleForTesting
+import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import com.google.common.collect.EvictingQueue
 import com.google.common.math.Quantiles.percentiles
@@ -53,7 +54,7 @@ fun setCanvas(project: Project, canvas: Canvas): Canvas {
     return canvas
 }
 
-class Canvas(private val project: Project, private val settings: CanvasConstants) : JPanel() {
+open class Canvas(private val project: Project, private val settings: CanvasConstants) : JPanel() {
     private val fpsCircularBuffer = EvictingQueue.create<Int>(30)
     private var cachedTreeState: TreeState? = null
 
@@ -128,7 +129,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
             val result = renderer?.render(
                 RenderContext(
                     project,
-                    CanvasPainter(graphics2D, camera.copy(), cachedIcons),
+                    buildPainter(graphics2D, camera.copy(), cachedIcons),
                     selectedElements.toSet(),
                     shallowCopyOfCtx,
                     stateProvider,
@@ -139,6 +140,9 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
             areaByElement = result?.areas
         }
     }
+
+    open protected fun buildPainter(graphics2D: Graphics2D, camera: Camera, cache: Cache<Long, BufferedImage>)
+            = CanvasPainter(graphics2D, camera, cache)
 
     fun renderToBitmap() : BufferedImage? {
         val doRender = { image: BufferedImage, ctx: ElementInteractionContext, camera: Camera ->

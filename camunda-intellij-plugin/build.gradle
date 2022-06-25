@@ -42,6 +42,10 @@ intellij {
     plugins = intellijPlatformPlugins
 }
 
+runPluginVerifier {
+    ideVersions = ["IU-2019.3.5"]
+}
+
 runIde {
     jbrVersion = jbrJdkVersion
     jvmArgs("-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition", "-Xmx2G")

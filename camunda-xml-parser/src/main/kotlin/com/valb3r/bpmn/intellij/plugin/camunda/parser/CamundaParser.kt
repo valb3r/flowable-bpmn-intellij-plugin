@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnComplexGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.BpmnShapeObjectAdded
@@ -22,11 +23,15 @@ import org.dom4j.Element
 enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     ID(PropertyTypeDetails(PropertyType.ID, "id", XmlType.ATTRIBUTE)),
     NAME(PropertyTypeDetails(PropertyType.NAME,"name", XmlType.ATTRIBUTE)),
-    DOCUMENTATION(PropertyTypeDetails(PropertyType.DOCUMENTATION, "documentation.text", XmlType.CDATA)),
+    DOCUMENTATION(PropertyTypeDetails(PropertyType.DOCUMENTATION, "documentation.text", XmlType.CDATA, forceFirst = true)),
     IS_FOR_COMPENSATION(PropertyTypeDetails(PropertyType.IS_FOR_COMPENSATION, "isForCompensation", XmlType.ATTRIBUTE)),
     ASYNC_BEFORE(PropertyTypeDetails(PropertyType.ASYNC_BEFORE, "camunda:asyncBefore", XmlType.ATTRIBUTE)),
     ASYNC_AFTER(PropertyTypeDetails(PropertyType.ASYNC_AFTER, "camunda:asyncAfter", XmlType.ATTRIBUTE)),
     ASSIGNEE(PropertyTypeDetails(PropertyType.ASSIGNEE, "camunda:assignee", XmlType.ATTRIBUTE)),
+    CANDIDATE_USERS(PropertyTypeDetails(PropertyType.CANDIDATE_USERS, "camunda:candidateUsers", XmlType.ATTRIBUTE)),
+    CANDIDATE_GROUPS(PropertyTypeDetails(PropertyType.CANDIDATE_GROUPS, "camunda:candidateGroups", XmlType.ATTRIBUTE)),
+    JOB_TOPIC(PropertyTypeDetails(PropertyType.JOB_TOPIC, "camunda:topic", XmlType.ATTRIBUTE)),
+    TASK_PRIORITY(PropertyTypeDetails(PropertyType.TASK_PRIORITY, "camunda:taskPriority", XmlType.ATTRIBUTE)),
     CALLED_ELEM(PropertyTypeDetails(PropertyType.CALLED_ELEM, "calledElement", XmlType.ATTRIBUTE)),
     // Unsupported? CALLED_ELEM_TYPE(PropertyTypeDetails(PropertyType.CALLED_ELEM_TYPE, "camunda:calledElementType", XmlType.ATTRIBUTE)),
     // Unsupported? INHERIT_VARS(PropertyTypeDetails(PropertyType.INHERIT_VARS, "camunda:inheritVariables", XmlType.ATTRIBUTE)),

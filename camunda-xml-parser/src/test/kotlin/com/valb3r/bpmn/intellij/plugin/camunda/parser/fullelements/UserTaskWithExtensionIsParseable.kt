@@ -28,11 +28,17 @@ internal class UserTaskWithExtensionIsParseable {
         val task = readStartEventSingleProp(processObject)
         task.id.shouldBeEqualTo(singlePropElementId)
         task.name.shouldBeEqualTo("User task with single extension")
+        task.assignee.shouldBeEqualTo("someAssignee")
+        task.candidateUsers.shouldBeEqualTo("candidateUser1")
+        task.candidateGroups.shouldBeEqualTo("candidates1")
         task.documentation.shouldBeEqualTo("Some docs")
 
         val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
+        props[PropertyType.ASSIGNEE]!!.value.shouldBeEqualTo(task.assignee)
+        props[PropertyType.CANDIDATE_USERS]!!.value.shouldBeEqualTo(task.candidateUsers)
+        props[PropertyType.CANDIDATE_GROUPS]!!.value.shouldBeEqualTo(task.candidateGroups)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
 
         props.getAll(PropertyType.FORM_PROPERTY_ID).shouldContainSame(arrayOf(
@@ -67,6 +73,9 @@ internal class UserTaskWithExtensionIsParseable {
     fun `User task (single props) is updatable`() {
         {value: String -> readAndUpdateSinglePropTask(PropertyType.ID, value).id.id.shouldBeEqualTo(value)} ("new Id");
         {value: String -> readAndUpdateSinglePropTask(PropertyType.NAME, value).name.shouldBeEqualTo(value)} ("new Name");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.ASSIGNEE, value).assignee.shouldBeEqualTo(value)} ("new Assignee");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.CANDIDATE_USERS, value).candidateUsers.shouldBeEqualTo(value)} ("new Candidate");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.CANDIDATE_GROUPS, value).candidateGroups.shouldBeEqualTo(value)} ("new Group");
         {value: String -> readAndUpdateSinglePropTask(PropertyType.DOCUMENTATION, value).documentation.shouldBeEqualTo(value)} ("new docs");
     }
 
@@ -103,11 +112,17 @@ internal class UserTaskWithExtensionIsParseable {
         val task = readStartEventMultiProp(processObject)
         task.id.shouldBeEqualTo(multiplePropElementId)
         task.name.shouldBeEqualTo("User task with multiple extension")
+        task.assignee.shouldBeEqualTo("someAssignee")
+        task.candidateUsers.shouldBeEqualTo("candidateUser1")
+        task.candidateGroups.shouldBeEqualTo("candidates1")
         task.documentation.shouldBeEqualTo("Some docs")
 
         val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
+        props[PropertyType.ASSIGNEE]!!.value.shouldBeEqualTo(task.assignee)
+        props[PropertyType.CANDIDATE_USERS]!!.value.shouldBeEqualTo(task.candidateUsers)
+        props[PropertyType.CANDIDATE_GROUPS]!!.value.shouldBeEqualTo(task.candidateGroups)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
 
         props.getAll(PropertyType.FORM_PROPERTY_ID).shouldContainSame(arrayOf(
@@ -149,6 +164,9 @@ internal class UserTaskWithExtensionIsParseable {
         {value: String -> readAndUpdateMultiPropTask(PropertyType.ID, value).id.id.shouldBeEqualTo(value)} ("new Id");
         {value: String -> readAndUpdateMultiPropTask(PropertyType.NAME, value).name.shouldBeEqualTo(value)} ("new Name");
         {value: String -> readAndUpdateMultiPropTask(PropertyType.DOCUMENTATION, value).documentation.shouldBeEqualTo(value)} ("new docs");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.ASSIGNEE, value).assignee.shouldBeEqualTo(value)} ("new Assignee");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.CANDIDATE_USERS, value).candidateUsers.shouldBeEqualTo(value)} ("new Candidate");
+        {value: String -> readAndUpdateSinglePropTask(PropertyType.CANDIDATE_GROUPS, value).candidateGroups.shouldBeEqualTo(value)} ("new Group");
     }
 
     @Test

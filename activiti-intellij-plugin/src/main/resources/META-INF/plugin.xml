@@ -4,7 +4,7 @@
     <name>Activiti BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.4.9.2</version>
+    <version>0.4.9.4</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -39,6 +39,24 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+      <p>0.4.9.4:</p>
+        <ul>
+          <li>
+            Support for candidate users and groups in UserTask
+          </li>
+        </ul>
+      <p>0.4.9.3:</p>
+        <ul>
+          <li>
+            Fixed bug - documentation tag was not placed at the beginning of parent element
+          </li>
+          <li>
+            Fixed bug - delegate expression/expression was rendered as blank field in IntelliJ 2021.3.1+
+          </li>
+          <li>
+            Plugin now provides XSDs for BPMN files highlighting in newer IntelliJ (2021+)
+          </li>
+        </ul>
       <p>0.4.9.2:</p>
         <ul>
           <li>
@@ -46,24 +64,6 @@
           </li>
           <li>
             Added loading spinner for Open Diagram action
-          </li>
-        </ul>
-      <p>0.4.9.1:</p>
-        <ul>
-          <li>
-            Fixed missing scrollbars on Apple Silicon
-          </li>
-          <li>
-            Fixed (not ideally, but is perfectly usable) Delegate expressions and alike not shown on Apple Silicon
-          </li>
-        </ul>
-      <p>0.4.9:</p>
-        <ul>
-          <li>
-            Fixed exception when `xsi:type` is null
-          </li>
-          <li>
-            Minor rendering performance improvement
           </li>
         </ul>
     ]]></change-notes>

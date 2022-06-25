@@ -32,6 +32,8 @@ internal class ActivityUserTaskTest {
         // TODO 'exclusive' ?
         task.isForCompensation!!.shouldBeTrue()
         task.assignee.shouldBeEqualTo("\$INITIATOR")
+        task.candidateUsers.shouldBeEqualTo("user1")
+        task.candidateGroups.shouldBeEqualTo("group1")
         task.dueDate.shouldBeEqualTo("2020-01-01")
         task.category.shouldBeNull() // Unsupported by Activity
         task.formKey.shouldBeEqualTo("FORM_KEY")
@@ -46,6 +48,8 @@ internal class ActivityUserTaskTest {
         props[PropertyType.ASYNC]!!.value.shouldBeEqualTo(task.async)
         props[PropertyType.IS_FOR_COMPENSATION]!!.value.shouldBeEqualTo(task.isForCompensation)
         props[PropertyType.ASSIGNEE]!!.value.shouldBeEqualTo(task.assignee)
+        props[PropertyType.CANDIDATE_USERS]!!.value.shouldBeEqualTo(task.candidateUsers)
+        props[PropertyType.CANDIDATE_GROUPS]!!.value.shouldBeEqualTo(task.candidateGroups)
         props[PropertyType.DUE_DATE]!!.value.shouldBeEqualTo(task.dueDate)
         props[PropertyType.CATEGORY].shouldBeNull()
         props[PropertyType.FORM_KEY]!!.value.shouldBeEqualTo(task.formKey)
@@ -62,6 +66,8 @@ internal class ActivityUserTaskTest {
         {value: Boolean -> readAndUpdate(PropertyType.ASYNC, value).async.shouldBeEqualTo(value)} (false);
         {value: Boolean -> readAndUpdate(PropertyType.IS_FOR_COMPENSATION, value).isForCompensation.shouldBeEqualTo(value)} (false);
         {value: String -> readAndUpdate(PropertyType.ASSIGNEE, value).assignee.shouldBeEqualTo(value)} ("Assigned to");
+        {value: String -> readAndUpdate(PropertyType.CANDIDATE_USERS, value).candidateUsers.shouldBeEqualTo(value)} ("User");
+        {value: String -> readAndUpdate(PropertyType.CANDIDATE_GROUPS, value).candidateGroups.shouldBeEqualTo(value)} ("Group");
         {value: String -> readAndUpdate(PropertyType.DUE_DATE, value).dueDate.shouldBeEqualTo(value)} ("2000-01-01");
         {value: String -> readAndUpdate(PropertyType.CATEGORY, value).category.shouldBeNull()} ("SOME_CAT123");
         {value: String -> readAndUpdate(PropertyType.FORM_KEY, value).formKey.shouldBeEqualTo(value)} ("KEY_90");
@@ -76,6 +82,8 @@ internal class ActivityUserTaskTest {
         readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.ASSIGNEE).assignee.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.DUE_DATE).dueDate.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.CANDIDATE_USERS).candidateUsers.shouldBeNullOrEmpty()
+        readAndSetNullString(PropertyType.CANDIDATE_GROUPS).candidateGroups.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.CATEGORY).category.shouldBeNull()
         readAndSetNullString(PropertyType.FORM_KEY).formKey.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.PRIORITY).priority.shouldBeNullOrEmpty()

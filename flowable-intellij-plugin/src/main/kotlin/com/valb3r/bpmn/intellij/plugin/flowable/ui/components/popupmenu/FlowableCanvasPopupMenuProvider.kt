@@ -94,6 +94,8 @@ class FlowableCanvasPopupMenuProvider(private val project: Project) : CanvasPopu
     private val MULE_TASK = IconLoader.getIcon("/icons/popupmenu/mule-task.png")
     private val DECISION_TASK = IconLoader.getIcon("/icons/popupmenu/decision-task.png")
     private val SHELL_TASK = IconLoader.getIcon("/icons/popupmenu/shell-task.png")
+    private val EXTERNAL_TASK = IconLoader.getIcon("/icons/popupmenu/external-task.png")
+
 
     // Sub process alike
     private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
@@ -161,6 +163,7 @@ class FlowableCanvasPopupMenuProvider(private val project: Project) : CanvasPopu
         addItem(menu, "Mule task", MULE_TASK, ShapeCreator(project, BpmnMuleTask::class, sceneLocation, parent))
         addItem(menu, "Decision task", DECISION_TASK, ShapeCreator(project, BpmnDecisionTask::class, sceneLocation, parent))
         addItem(menu, "Shell task", SHELL_TASK, ShapeCreator(project, BpmnShellTask::class, sceneLocation, parent))
+        addItem(menu, "External Worker task", EXTERNAL_TASK, ShapeCreator(project, BpmnExternalTask::class, sceneLocation, parent))
         return menu
     }
 
