@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.core.tests
 
 import com.google.common.hash.Hashing
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.messages.MessageBus
@@ -28,6 +29,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.CanvasBuilder
 import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
+import com.valb3r.bpmn.intellij.plugin.core.popupmenu.currentPopupMenuItemUiComponentSupplier
+import com.valb3r.bpmn.intellij.plugin.core.popupmenu.currentPopupMenuUiComponentSupplier
 import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
@@ -111,7 +114,7 @@ abstract class BaseUiTest {
     protected val serviceTaskEndDiagramId = DiagramElementId("DIAGRAM-endServiceTask")
     protected val sequenceFlowDiagramId = DiagramElementId("DIAGRAM-sequenceFlow")
 
-    protected val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId)
+    protected val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId, "Start service task", "Start service task docs")
     protected val bpmnSubProcess = BpmnSubProcess(subprocessBpmnId, triggeredByEvent = false, transactionalSubprocess = false)
     protected val bpmnNestedSubProcess = BpmnSubProcess(subprocessInSubProcessBpmnId, triggeredByEvent = false, transactionalSubprocess = false)
     protected val bpmnServiceTaskEnd = BpmnServiceTask(serviceTaskEndBpmnId)
@@ -158,6 +161,9 @@ abstract class BaseUiTest {
     protected val buttonsConstructed: MutableMap<Pair<BpmnElementId, FunctionalGroupType>, JButton> = mutableMapOf()
     protected val arrowButtonsConstructed: MutableMap<BpmnElementId, BasicArrowButton> = mutableMapOf()
 
+    protected val popupsConstructed: MutableMap<String, JBPopupMenu> = mutableMapOf()
+    protected val popupItemsConstructed: MutableMap<String, JBMenuItem> = mutableMapOf()
+
     protected val comboboxFactory = { id: BpmnElementId, type: PropertyType, value: String, allowedValues: Set<String> -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
         val res = mock<TextValueAccessor>()
         whenever(res.text).thenReturn(value)
@@ -183,6 +189,13 @@ abstract class BaseUiTest {
     } }
     protected val arrowButtonFactory = { id: BpmnElementId -> arrowButtonsConstructed.computeIfAbsent(id) {
         return@computeIfAbsent mock<BasicArrowButton>()
+    } }
+
+    protected val popupsFactory = { id: String -> popupsConstructed.computeIfAbsent(id) {
+        return@computeIfAbsent mock<JBPopupMenu>()
+    } }
+    protected val popupsMenuItemFactory = { name: String -> popupItemsConstructed.computeIfAbsent(name) {
+        return@computeIfAbsent JBMenuItem(name)
     } }
 
 
@@ -211,6 +224,7 @@ abstract class BaseUiTest {
         whenever(icons.selectParentSequence).thenReturn(icon)
         whenever(icons.wrench).thenReturn(icon)
         whenever(icons.gear).thenReturn(mock())
+        whenever(icons.user).thenReturn(mock())
         whenever(icons.redo).thenReturn(mock())
         whenever(icons.undo).thenReturn(mock())
         whenever(icons.dragToResizeBottom).thenReturn(mock())
@@ -228,6 +242,9 @@ abstract class BaseUiTest {
             renderResult = result
             return@doAnswer result
         }.whenever(renderer).render(any())
+
+        currentPopupMenuUiComponentSupplier.set { popupsFactory(it) }
+        currentPopupMenuItemUiComponentSupplier.set { name, _ -> popupsMenuItemFactory(name) }
     }
 
     protected fun prepareGraphics(graphics2D: Graphics2D) {
