@@ -36,7 +36,7 @@ internal class ActivityCamelTaskTest {
         task.isForCompensation!!.shouldBeTrue()
         task.camelContext.shouldBeEqualTo("CAMEL_CTX")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(ActivitiObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -94,6 +94,6 @@ internal class ActivityCamelTaskTest {
     }
 
     private fun readCamelTask(processObject: BpmnFileObject): BpmnCamelTask {
-        return processObject.process.body!!.camelTask!!.shouldHaveSingleItem()
+        return processObject.processes[0].body!!.camelTask!!.shouldHaveSingleItem()
     }
 }

@@ -35,7 +35,7 @@ internal class ActivityManualTaskTest {
         // TODO 'exclusive' ?
         task.isForCompensation!!.shouldBeTrue()
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(ActivitiObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -71,6 +71,6 @@ internal class ActivityManualTaskTest {
     }
 
     private fun readManualTask(processObject: BpmnFileObject): BpmnManualTask {
-        return processObject.process.body!!.manualTask!!.shouldHaveSingleItem()
+        return processObject.processes[0].body!!.manualTask!!.shouldHaveSingleItem()
     }
 }

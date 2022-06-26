@@ -44,7 +44,7 @@ internal class FlowableUserTaskTest {
         task.priority.shouldBeEqualTo("1")
         task.skipExpression.shouldBeEqualTo("#{do.skip}")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -106,6 +106,6 @@ internal class FlowableUserTaskTest {
     }
 
     private fun readUserTask(processObject: BpmnFileObject): BpmnUserTask {
-        return processObject.process.body!!.userTask!!.shouldHaveSingleItem()
+        return processObject.processes[0].body!!.userTask!!.shouldHaveSingleItem()
     }
 }

@@ -39,7 +39,7 @@ internal class FlowableMuleTaskTest {
         task.payloadExpression.shouldBeEqualTo("\${foo.bar}")
         task.resultVariableCdata.shouldBeEqualTo("RESULT")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -87,6 +87,6 @@ internal class FlowableMuleTaskTest {
     }
 
     private fun readMuleTask(processObject: BpmnFileObject): BpmnMuleTask {
-        return processObject.process.body!!.muleTask!!.shouldHaveSingleItem()
+        return processObject.processes[0].body!!.muleTask!!.shouldHaveSingleItem()
     }
 }

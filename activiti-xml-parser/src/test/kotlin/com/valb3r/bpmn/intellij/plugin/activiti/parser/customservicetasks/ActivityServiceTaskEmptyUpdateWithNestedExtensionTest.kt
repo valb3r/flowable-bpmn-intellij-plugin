@@ -28,7 +28,7 @@ internal class ActivityServiceTaskEmptyUpdateWithNestedExtensionTest {
         task.name.shouldBeEqualTo("Service task with extension")
         task.documentation.shouldBeNull()
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(ActivitiObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props.getAll(PropertyType.FIELD_NAME)[0].value.shouldBeNull()
         props.getAll(PropertyType.FIELD_EXPRESSION)[0].value.shouldBeNull()
@@ -36,6 +36,6 @@ internal class ActivityServiceTaskEmptyUpdateWithNestedExtensionTest {
     }
 
     private fun readServiceTask(processObject: BpmnFileObject): BpmnServiceTask {
-        return processObject.process.body!!.serviceTask!!.shouldHaveSingleItem()
+        return processObject.processes[0].body!!.serviceTask!!.shouldHaveSingleItem()
     }
 }

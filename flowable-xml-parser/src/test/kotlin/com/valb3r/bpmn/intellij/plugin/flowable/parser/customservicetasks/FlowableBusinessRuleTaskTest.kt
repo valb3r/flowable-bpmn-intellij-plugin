@@ -36,7 +36,7 @@ internal class FlowableBusinessRuleTaskTest {
         task.resultVariable.shouldBeEqualTo("RESULT_VAR")
         task.exclude!!.shouldBeTrue()
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -83,6 +83,6 @@ internal class FlowableBusinessRuleTaskTest {
     }
 
     private fun readBusinessRuleTask(processObject: BpmnFileObject): BpmnBusinessRuleTask {
-        return processObject.process.body!!.businessRuleTask!!.shouldHaveSingleItem()
+        return processObject.processes[0].body!!.businessRuleTask!!.shouldHaveSingleItem()
     }
 }

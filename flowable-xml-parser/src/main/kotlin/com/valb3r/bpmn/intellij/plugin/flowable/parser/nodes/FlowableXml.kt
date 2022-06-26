@@ -18,6 +18,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEve
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.collaboration.Collaboration
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.DiagramElementIdMapper
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.Plane
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.*
@@ -39,20 +40,25 @@ const val EXTENSION_BOOLEAN_EXTRACTOR = ".map(it -> Boolean.valueOf(it.getString
 // https://github.com/FasterXML/jackson-dataformat-xml/issues/363
 // unfortunately this has failed with Kotlin 'data' classes
 class BpmnFile(
-        @JacksonXmlProperty(localName = "message")
-        @JsonMerge
-        @JacksonXmlElementWrapper(useWrapping = false)
-        var messages: List<MessageNode>? = null,
+    @JacksonXmlProperty(localName = "message")
+    @JsonMerge
+    @JacksonXmlElementWrapper(useWrapping = false)
+    var messages: List<MessageNode>? = null,
 
-        @JacksonXmlProperty(localName = "process")
-        @JsonMerge
-        @JacksonXmlElementWrapper(useWrapping = false)
-        var processes: List<ProcessNode>,
+    @JacksonXmlProperty(localName = "collaboration")
+    @JsonMerge
+    @JacksonXmlElementWrapper(useWrapping = false)
+    var collaborations: List<Collaboration>? = null,
 
-        @JacksonXmlProperty(localName = "BPMNDiagram")
-        @JsonMerge
-        @JacksonXmlElementWrapper(useWrapping = false)
-        var diagrams: List<DiagramNode>? = null
+    @JacksonXmlProperty(localName = "process")
+    @JsonMerge
+    @JacksonXmlElementWrapper(useWrapping = false)
+    var processes: List<ProcessNode>,
+
+    @JacksonXmlProperty(localName = "BPMNDiagram")
+    @JsonMerge
+    @JacksonXmlElementWrapper(useWrapping = false)
+    var diagrams: List<DiagramNode>? = null
 )
 
 data class MessageNode(val id: String, var name: String?)

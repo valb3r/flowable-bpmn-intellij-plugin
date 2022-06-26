@@ -16,6 +16,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 // TODO - move to some implementation module
 data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: List<BpmnCollaboration>, val diagram: List<DiagramElement>) {
 
+    constructor(processes: List<BpmnProcess>, diagram: List<DiagramElement>) : this(processes, listOf(), diagram)
+
     fun toView(factory: BpmnObjectFactory) : BpmnFileView {
         val mappedCollaborations = mapCollaborations(factory)
         val rootProcessOrCollaborationId = mappedCollaborations.firstOrNull()?.collaborationId ?: BpmnElementId("")

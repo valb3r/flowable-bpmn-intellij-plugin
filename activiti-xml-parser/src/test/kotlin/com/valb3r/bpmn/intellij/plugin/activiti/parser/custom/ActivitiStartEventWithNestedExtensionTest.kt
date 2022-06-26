@@ -30,7 +30,7 @@ internal class ActivitiUsereventWithNestedExtensionTest {
         val event = readStartEventWithExtensions(processObject)
         event.id.shouldBeEqualTo(elementId)
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[event.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(ActivitiObjectFactory()).processes[0].processElemPropertiesByElementId[event.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(event.id.id)
 
         props.getAll(PropertyType.FORM_PROPERTY_ID).shouldContainSame(arrayOf(
@@ -82,6 +82,6 @@ internal class ActivitiUsereventWithNestedExtensionTest {
     }
 
     private fun readStartEventWithExtensions(processObject: BpmnFileObject): BpmnStartEvent {
-        return processObject.process.body!!.startEvent!!.shouldHaveSize(1)[0]
+        return processObject.processes[0].body!!.startEvent!!.shouldHaveSize(1)[0]
     }
 }

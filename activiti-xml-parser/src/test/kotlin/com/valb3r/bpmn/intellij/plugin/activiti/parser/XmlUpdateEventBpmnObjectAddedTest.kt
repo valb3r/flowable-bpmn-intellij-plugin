@@ -53,322 +53,322 @@ internal class XmlUpdateEventBpmnObjectAddedTest {
     fun `Added start event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnStartEvent::class))
 
-        updatedProcess.process.body!!.startEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.startEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added start timer event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnStartTimerEvent::class))
 
-        updatedProcess.process.body!!.timerStartEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.timerStartEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added start signal event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnStartSignalEvent::class))
 
-        updatedProcess.process.body!!.signalStartEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.signalStartEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added start message event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnStartMessageEvent::class))
 
-        updatedProcess.process.body!!.messageStartEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.messageStartEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added start error event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnStartErrorEvent::class))
 
-        updatedProcess.process.body!!.errorStartEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.errorStartEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added start conditional event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnStartConditionalEvent::class))
 
-        updatedProcess.process.body!!.conditionalStartEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.conditionalStartEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added start escalation event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnStartEscalationEvent::class))
 
-        updatedProcess.process.body!!.escalationStartEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.escalationStartEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added end event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnEndEvent::class))
 
-        updatedProcess.process.body!!.endEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.endEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added end termination event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnEndTerminateEvent::class))
 
-        updatedProcess.process.body!!.terminateEndEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.terminateEndEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added end escalation event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnEndEscalationEvent::class))
 
-        updatedProcess.process.body!!.escalationEndEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.escalationEndEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added end cancel event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnEndCancelEvent::class))
 
-        updatedProcess.process.body!!.cancelEndEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.cancelEndEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added end error event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnEndErrorEvent::class))
 
-        updatedProcess.process.body!!.errorEndEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.errorEndEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added boundary cancel event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnBoundaryCancelEvent::class))
 
-        updatedProcess.process.body!!.boundaryCancelEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.boundaryCancelEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added boundary compensation event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnBoundaryCompensationEvent::class))
 
-        updatedProcess.process.body!!.boundaryCompensationEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.boundaryCompensationEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added boundary condtional event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnBoundaryConditionalEvent::class))
 
-        updatedProcess.process.body!!.boundaryConditionalEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.boundaryConditionalEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added boundary error event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnBoundaryErrorEvent::class))
 
-        updatedProcess.process.body!!.boundaryErrorEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.boundaryErrorEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added boundary escalation event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnBoundaryEscalationEvent::class))
 
-        updatedProcess.process.body!!.boundaryEscalationEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.boundaryEscalationEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added boundary message event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnBoundaryMessageEvent::class))
 
-        updatedProcess.process.body!!.boundaryMessageEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.boundaryMessageEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added boundary signal event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnBoundarySignalEvent::class))
 
-        updatedProcess.process.body!!.boundarySignalEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.boundarySignalEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added boundary timer event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnBoundaryTimerEvent::class))
 
-        updatedProcess.process.body!!.boundaryTimerEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.boundaryTimerEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added intermediate timer catching event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnIntermediateTimerCatchingEvent::class))
 
-        updatedProcess.process.body!!.intermediateTimerCatchingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.intermediateTimerCatchingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added intermediate message catching event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnIntermediateMessageCatchingEvent::class))
 
-        updatedProcess.process.body!!.intermediateMessageCatchingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.intermediateMessageCatchingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added intermediate signal catching event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnIntermediateSignalCatchingEvent::class))
 
-        updatedProcess.process.body!!.intermediateSignalCatchingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.intermediateSignalCatchingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added intermediate conditional catching event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnIntermediateConditionalCatchingEvent::class))
 
-        updatedProcess.process.body!!.intermediateConditionalCatchingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.intermediateConditionalCatchingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added intermediate none throwing event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnIntermediateNoneThrowingEvent::class))
 
-        updatedProcess.process.body!!.intermediateNoneThrowingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.intermediateNoneThrowingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added intermediate signal throwing event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnIntermediateSignalThrowingEvent::class))
 
-        updatedProcess.process.body!!.intermediateSignalThrowingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.intermediateSignalThrowingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added intermediate escalation throwing event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnIntermediateEscalationThrowingEvent::class))
 
-        updatedProcess.process.body!!.intermediateEscalationThrowingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.intermediateEscalationThrowingEvent!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added user task event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnUserTask::class))
 
-        updatedProcess.process.body!!.userTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.userTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added script task event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnScriptTask::class))
 
-        updatedProcess.process.body!!.scriptTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.scriptTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added service task event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnServiceTask::class))
 
-        updatedProcess.process.body!!.serviceTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.serviceTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added business rule task event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnBusinessRuleTask::class))
 
-        updatedProcess.process.body!!.businessRuleTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.businessRuleTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added receive task event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnReceiveTask::class))
 
-        updatedProcess.process.body!!.receiveTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.receiveTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added camel task event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnCamelTask::class))
 
-        updatedProcess.process.body!!.camelTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.camelTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added http task event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnHttpTask::class))
 
-        updatedProcess.process.body!!.httpTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.httpTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added mule task event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnMuleTask::class))
 
-        updatedProcess.process.body!!.muleTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.muleTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added decision task event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnDecisionTask::class))
 
-        updatedProcess.process.body!!.decisionTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.decisionTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added shell task event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnShellTask::class))
 
-        updatedProcess.process.body!!.shellTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.shellTask!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added call activity event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnCallActivity::class))
 
-        updatedProcess.process.body!!.callActivity!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.callActivity!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added sub process event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnSubProcess::class))
 
-        updatedProcess.process.body!!.subProcess!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.subProcess!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added event sub process event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnEventSubprocess::class))
 
-        updatedProcess.process.body!!.eventSubProcess!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.eventSubProcess!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added adhoc sub process event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnAdHocSubProcess::class))
 
-        updatedProcess.process.body!!.adHocSubProcess!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.adHocSubProcess!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added transactional sub process event works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnTransactionalSubProcess::class))
 
-        updatedProcess.process.body!!.transaction!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.transaction!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added exclusive gateway works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnExclusiveGateway::class))
 
-        updatedProcess.process.body!!.exclusiveGateway!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.exclusiveGateway!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added parallel gateway works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnParallelGateway::class))
 
-        updatedProcess.process.body!!.parallelGateway!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.parallelGateway!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added inclusive gateway works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnInclusiveGateway::class))
 
-        updatedProcess.process.body!!.inclusiveGateway!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.inclusiveGateway!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
     fun `Added event gateway works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnEventGateway::class))
 
-        updatedProcess.process.body!!.eventBasedGateway!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.eventBasedGateway!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     private fun <T: WithBpmnId> generateUpdateEvent(clazz: KClass<T>): EventPropagatableToXml {

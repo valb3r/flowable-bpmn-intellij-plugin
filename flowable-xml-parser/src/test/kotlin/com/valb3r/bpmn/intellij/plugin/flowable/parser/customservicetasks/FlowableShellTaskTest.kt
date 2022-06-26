@@ -46,7 +46,7 @@ internal class FlowableShellTaskTest {
         task.outputVariable.shouldBeEqualTo("OUTPUT_VAR")
         task.directory.shouldBeEqualTo("/tmp")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -115,6 +115,6 @@ internal class FlowableShellTaskTest {
     }
 
     private fun readShellTask(processObject: BpmnFileObject): BpmnShellTask {
-        return processObject.process.body!!.shellTask!!.shouldHaveSingleItem()
+        return processObject.processes[0].body!!.shellTask!!.shouldHaveSingleItem()
     }
 }

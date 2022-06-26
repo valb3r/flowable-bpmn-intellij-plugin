@@ -29,7 +29,7 @@ internal class FlowableServiceTaskWithNestedExtensionTest {
         task.documentation.shouldBeNull()
         task.failedJobRetryTimeCycle?.shouldBeEqualTo("R10/PT5M")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -67,8 +67,8 @@ internal class FlowableServiceTaskWithNestedExtensionTest {
     @Test
     fun `Add nested extension element`() {
         val process = readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = listOf("")))
-        val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
-        val props = BpmnFileObject(process.process, process.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        val emptyTask = process.processes[0].body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
+        val props = BpmnFileObject(process.processes, process.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[emptyTask.id]!!
         props[PropertyType.FIELD_NAME]!!.shouldBeEqualTo(Property("new name", listOf("new name")))
     }
 
@@ -82,8 +82,8 @@ internal class FlowableServiceTaskWithNestedExtensionTest {
                 StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "", propertyIndex = listOf("new name"))
             )
         )
-        val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
-        val props = BpmnFileObject(process.process, process.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        val emptyTask = process.processes[0].body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
+        val props = BpmnFileObject(process.processes, process.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[emptyTask.id]!!
         props[PropertyType.FIELD_NAME]?.value.shouldBeNull()
     }
 
@@ -98,8 +98,8 @@ internal class FlowableServiceTaskWithNestedExtensionTest {
                 StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "other new name", propertyIndex = listOf("")),
             )
         )
-        val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
-        val props = BpmnFileObject(process.process, process.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        val emptyTask = process.processes[0].body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
+        val props = BpmnFileObject(process.processes, process.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[emptyTask.id]!!
         props[PropertyType.FIELD_NAME]!!.shouldBeEqualTo(Property("other new name", listOf("other new name")))
     }
 
@@ -113,8 +113,8 @@ internal class FlowableServiceTaskWithNestedExtensionTest {
                 StringValueUpdatedEvent(emptyElementId, PropertyType.FIELD_NAME, "new name", propertyIndex = listOf("")),
             )
         )
-        val emptyTask = process.process.body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
-        val props = BpmnFileObject(process.process, process.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[emptyTask.id]!!
+        val emptyTask = process.processes[0].body!!.serviceTask!!.firstOrNull {it.id == emptyElementId}.shouldNotBeNull()
+        val props = BpmnFileObject(process.processes, process.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[emptyTask.id]!!
         props[PropertyType.FIELD_NAME]!!.shouldBeEqualTo(Property("new name", listOf("new name")))
         props[PropertyType.FIELD_EXPRESSION]!!.shouldBeEqualTo(Property("expression 1", listOf("new name")))
     }
@@ -131,6 +131,6 @@ internal class FlowableServiceTaskWithNestedExtensionTest {
     }
 
     private fun readServiceTaskWithExtensions(processObject: BpmnFileObject): BpmnServiceTask {
-        return processObject.process.body!!.serviceTask!!.shouldHaveSize(2)[0]
+        return processObject.processes[0].body!!.serviceTask!!.shouldHaveSize(2)[0]
     }
 }

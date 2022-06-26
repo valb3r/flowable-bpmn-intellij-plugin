@@ -68,8 +68,8 @@ class XmlUpdateEventDocumentationFormatTest {
     fun `Removing element does not break 'documentation' element formatting`() {
         val originalProcess = readProcess()
         val updatedProcess = readAndUpdateProcess(BpmnElementRemovedEvent(BpmnElementId(startEventId)))
-        updatedProcess.process.body!!.scriptTask!![0].documentation
-            .shouldBeEqualTo(originalProcess.process.body!!.scriptTask!![0].documentation)
+        updatedProcess.processes[0].body!!.scriptTask!![0].documentation
+            .shouldBeEqualTo(originalProcess.processes[0].body!!.scriptTask!![0].documentation)
     }
 
     private fun readProcess(): BpmnFileObject {

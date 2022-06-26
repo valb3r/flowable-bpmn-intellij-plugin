@@ -131,12 +131,12 @@ class FlowableParser : BaseBpmnParser() {
     }
 
     private fun toProcessObject(dto: BpmnFile): BpmnFileObject {
-        // TODO - Multi process support?
         markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
-        val process = dto.processes[0].toElement()
+        val processes = dto.processes.map { it.toElement() }
+        val collaborations = dto.collaborations?.map { it.toElement() } ?: emptyList()
         val diagrams = dto.diagrams!!.map { it.toElement() }
 
-        TODO()
+        return BpmnFileObject(processes, collaborations, diagrams)
     }
 
     override fun modelNs(): NS {

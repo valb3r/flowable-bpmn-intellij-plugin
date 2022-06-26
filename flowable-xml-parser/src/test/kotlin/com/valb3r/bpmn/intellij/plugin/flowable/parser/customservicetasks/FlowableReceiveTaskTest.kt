@@ -35,7 +35,7 @@ internal class FlowableReceiveTaskTest {
         // TODO 'exclusive' ?
         task.isForCompensation!!.shouldBeTrue()
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -71,6 +71,6 @@ internal class FlowableReceiveTaskTest {
     }
 
     private fun readReceiveTask(processObject: BpmnFileObject): BpmnReceiveTask {
-        return processObject.process.body!!.receiveTask!!.shouldHaveSingleItem()
+        return processObject.processes[0].body!!.receiveTask!!.shouldHaveSingleItem()
     }
 }

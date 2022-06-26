@@ -20,11 +20,11 @@ internal class EmptyCondExpressionParseable {
     fun `Sequence flow with empty conditional flow element parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
 
-        val sequenceFlow = processObject.process.body!!.sequenceFlow!![0]
+        val sequenceFlow = processObject.processes[0].body!!.sequenceFlow!![0]
         sequenceFlow.id.shouldBeEqualTo(sequenceFlowElem)
         sequenceFlow.conditionExpression.shouldBeEqualTo(ConditionExpression(null, ""))
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[sequenceFlow.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(ActivitiObjectFactory()).processes[0].processElemPropertiesByElementId[sequenceFlow.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(sequenceFlowElem.id)
         props[PropertyType.CONDITION_EXPR_TYPE]!!.value.shouldBeNull()
         props[PropertyType.CONDITION_EXPR_VALUE]!!.value.shouldBeEqualTo("")
@@ -34,11 +34,11 @@ internal class EmptyCondExpressionParseable {
     fun `Sequence flow with empty conditional flow element parseable (Activiti 7)`() {
         val processObject = Activiti7Parser().parse(FILE.asResource()!!)
 
-        val sequenceFlow = processObject.process.body!!.sequenceFlow!![0]
+        val sequenceFlow = processObject.processes[0].body!!.sequenceFlow!![0]
         sequenceFlow.id.shouldBeEqualTo(sequenceFlowElem)
         sequenceFlow.conditionExpression.shouldBeEqualTo(ConditionExpression(null, ""))
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(Activiti7ObjectFactory()).elemPropertiesByElementId[sequenceFlow.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(Activiti7ObjectFactory()).processes[0].processElemPropertiesByElementId[sequenceFlow.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(sequenceFlowElem.id)
         props[PropertyType.CONDITION_EXPR_TYPE]!!.value.shouldBeNull()
         props[PropertyType.CONDITION_EXPR_VALUE]!!.value.shouldBeEqualTo("")

@@ -30,7 +30,7 @@ internal class StartEventWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Start event (single)")
         task.documentation.shouldBeEqualTo("As full as possible start event\nmultiline")
 
-        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].processElemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -105,7 +105,7 @@ internal class StartEventWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Start event(multi)")
         task.documentation.shouldBeEqualTo("As full as possible start event\nmultiline")
 
-        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory())[0].processElemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)

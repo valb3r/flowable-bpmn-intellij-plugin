@@ -35,7 +35,7 @@ internal class ActivityDecisionTaskTest {
         task.decisionTaskThrowErrorOnNoHits.shouldBeNull() // Not supported by activity
         task.fallbackToDefaultTenantCdata.shouldBeNull() // Not supported by activity
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(ActivitiObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -78,6 +78,6 @@ internal class ActivityDecisionTaskTest {
     }
 
     private fun readDecisionTask(processObject: BpmnFileObject): BpmnDecisionTask {
-        return processObject.process.body!!.decisionTask!!.shouldHaveSingleItem()
+        return processObject.processes[0].body!!.decisionTask!!.shouldHaveSingleItem()
     }
 }

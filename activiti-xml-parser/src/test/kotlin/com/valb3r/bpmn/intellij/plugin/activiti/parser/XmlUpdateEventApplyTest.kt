@@ -34,7 +34,7 @@ internal class XmlUpdateEventApplyTest {
         val newValue = "Start task name"
         val updatedProcess = readAndUpdateProcess(parser, StringValueUpdatedEvent(startEventId, PropertyType.NAME, newValue))
 
-        updatedProcess.process.body!!.startEvent!!.filter { it.id == startEventId }.shouldHaveSingleItem().name.shouldBeEqualTo(newValue)
+        updatedProcess.processes[0].body!!.startEvent!!.filter { it.id == startEventId }.shouldHaveSingleItem().name.shouldBeEqualTo(newValue)
     }
 
     @Test
@@ -42,7 +42,7 @@ internal class XmlUpdateEventApplyTest {
         val newValue = "Nested service task name"
         val updatedProcess = readAndUpdateProcess(parser, StringValueUpdatedEvent(nestedServiceTaskFirstId, PropertyType.NAME, newValue))
 
-        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldHaveSingleItem().name.shouldBeEqualTo(newValue)
+        updatedProcess.processes[0].children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldHaveSingleItem().name.shouldBeEqualTo(newValue)
     }
 
     @Test
@@ -50,8 +50,8 @@ internal class XmlUpdateEventApplyTest {
         val newValue = "newAwesomeStartEventId"
         val updatedProcess = readAndUpdateProcess(parser, StringValueUpdatedEvent(startEventId, PropertyType.ID, newValue))
 
-        updatedProcess.process.body!!.startEvent!!.filter { it.id == BpmnElementId(newValue) }.shouldHaveSingleItem()
-        updatedProcess.process.body!!.startEvent!!.filter { it.id == startEventId }.shouldBeEmpty()
+        updatedProcess.processes[0].body!!.startEvent!!.filter { it.id == BpmnElementId(newValue) }.shouldHaveSingleItem()
+        updatedProcess.processes[0].body!!.startEvent!!.filter { it.id == startEventId }.shouldBeEmpty()
     }
 
     @Test
@@ -59,8 +59,8 @@ internal class XmlUpdateEventApplyTest {
         val newValue = "newAwesomeNestedServiceId"
         val updatedProcess = readAndUpdateProcess(parser, StringValueUpdatedEvent(nestedServiceTaskFirstId, PropertyType.ID, newValue))
 
-        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.filter { it.id == BpmnElementId(newValue) }.shouldHaveSingleItem()
-        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldBeEmpty()
+        updatedProcess.processes[0].children!![subProcessId]!!.serviceTask!!.filter { it.id == BpmnElementId(newValue) }.shouldHaveSingleItem()
+        updatedProcess.processes[0].children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldBeEmpty()
     }
 
     @Test
@@ -68,7 +68,7 @@ internal class XmlUpdateEventApplyTest {
         val newValue = "Some new docs"
         val updatedProcess = readAndUpdateProcess(parser, StringValueUpdatedEvent(startEventId, PropertyType.DOCUMENTATION, newValue))
 
-        updatedProcess.process.body!!.startEvent!!.filter { it.id == startEventId }.shouldHaveSingleItem().documentation.shouldBeEqualTo(newValue)
+        updatedProcess.processes[0].body!!.startEvent!!.filter { it.id == startEventId }.shouldHaveSingleItem().documentation.shouldBeEqualTo(newValue)
     }
 
     @Test
@@ -76,31 +76,31 @@ internal class XmlUpdateEventApplyTest {
         val newValue = "Some new docs"
         val updatedProcess = readAndUpdateProcess(parser, StringValueUpdatedEvent(nestedServiceTaskFirstId, PropertyType.DOCUMENTATION, newValue))
 
-        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldHaveSingleItem().documentation.shouldBeEqualTo(newValue)
+        updatedProcess.processes[0].children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldHaveSingleItem().documentation.shouldBeEqualTo(newValue)
     }
 
     @Test
     fun `Boolean value update event on flat element works (attribute)`() {
         val updatedProcess = readAndUpdateProcess(parser, BooleanValueUpdatedEvent(flatServiceTaskId, PropertyType.ASYNC, true))
 
-        updatedProcess.process.body!!.serviceTask!!.filter { it.id == flatServiceTaskId }.shouldHaveSingleItem().async.shouldBeEqualTo(true)
+        updatedProcess.processes[0].body!!.serviceTask!!.filter { it.id == flatServiceTaskId }.shouldHaveSingleItem().async.shouldBeEqualTo(true)
     }
 
     @Test
     fun `Boolean value update event on nested element works (attribute)`() {
         val updatedProcess = readAndUpdateProcess(parser, BooleanValueUpdatedEvent(nestedServiceTaskFirstId, PropertyType.ASYNC, true))
 
-        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldHaveSingleItem().async.shouldBeEqualTo(true)
+        updatedProcess.processes[0].children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldHaveSingleItem().async.shouldBeEqualTo(true)
     }
 
     @Test
     fun `Element type pdate event on flat element works (attribute)`() {
         val updatedProcess = readAndUpdateProcess(parser, BooleanValueUpdatedEvent(subProcessId, PropertyType.IS_TRANSACTIONAL_SUBPROCESS, true))
 
-        updatedProcess.process.body!!.transaction!!.filter { it.id == subProcessId }.shouldHaveSingleItem()
-        updatedProcess.process.body!!.subProcess.shouldBeNull()
-        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.shouldHaveSize(2)
-        updatedProcess.process.children!![subProcessId]!!.sequenceFlow!!.shouldHaveSize(1)
+        updatedProcess.processes[0].body!!.transaction!!.filter { it.id == subProcessId }.shouldHaveSingleItem()
+        updatedProcess.processes[0].body!!.subProcess.shouldBeNull()
+        updatedProcess.processes[0].children!![subProcessId]!!.serviceTask!!.shouldHaveSize(2)
+        updatedProcess.processes[0].children!![subProcessId]!!.sequenceFlow!!.shouldHaveSize(1)
     }
 
 
@@ -177,14 +177,14 @@ internal class XmlUpdateEventApplyTest {
     fun `BPMN element removed event on flat element works`() {
         val updatedProcess = readAndUpdateProcess(parser, BpmnElementRemovedEvent(flatServiceTaskId))
 
-        updatedProcess.process.body!!.serviceTask.shouldBeNull()
+        updatedProcess.processes[0].body!!.serviceTask.shouldBeNull()
     }
 
     @Test
     fun `BPMN element removed event on nested element works`() {
         val updatedProcess = readAndUpdateProcess(parser, BpmnElementRemovedEvent(nestedServiceTaskFirstId))
 
-        updatedProcess.process.body!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldBeEmpty()
+        updatedProcess.processes[0].body!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldBeEmpty()
     }
 
     // BPMN Object added is tested in XmlUpdateEventBpmnObjectAdded
@@ -208,7 +208,7 @@ internal class XmlUpdateEventApplyTest {
                 PropertyTable(mutableMapOf(Pair(PropertyType.ID, mutableListOf(Property(id.id))), Pair(PropertyType.NAME, mutableListOf(Property(nameOnProp)))))
         ))
 
-        updatedProcess.process.body!!.sequenceFlow!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].body!!.sequenceFlow!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
     @Test
@@ -230,7 +230,7 @@ internal class XmlUpdateEventApplyTest {
             PropertyTable(mutableMapOf(Pair(PropertyType.ID, mutableListOf(Property(id.id))), Pair(PropertyType.NAME, mutableListOf(Property(nameOnProp)))))
         ))
 
-        updatedProcess.process.children!![subProcessId]!!.sequenceFlow!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
+        updatedProcess.processes[0].children!![subProcessId]!!.sequenceFlow!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
         val addedEdge = updatedProcess.diagram.filter { it.id == parentDiagramElementId }.shouldHaveSingleItem().bpmnPlane.bpmnEdge!!.filter { it.id == diagramId }.shouldHaveSingleItem()
         addedEdge.waypoint!![0].x.shouldBeNear(100.0f, EPSILON)
         addedEdge.waypoint!![0].y.shouldBeNear(100.0f, EPSILON)
@@ -258,9 +258,9 @@ internal class XmlUpdateEventApplyTest {
     fun `BPMN parent changed event on flat element works`() {
         val updatedProcess = readAndUpdateProcess(parser, BpmnParentChangedEvent(flatServiceTaskId, subProcessId))
 
-        updatedProcess.process.body!!.serviceTask.shouldBeNull()
-        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.filter { it.id == flatServiceTaskId }.shouldHaveSingleItem()
-        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.map { it.id }.shouldContainSame(
+        updatedProcess.processes[0].body!!.serviceTask.shouldBeNull()
+        updatedProcess.processes[0].children!![subProcessId]!!.serviceTask!!.filter { it.id == flatServiceTaskId }.shouldHaveSingleItem()
+        updatedProcess.processes[0].children!![subProcessId]!!.serviceTask!!.map { it.id }.shouldContainSame(
                 listOf(flatServiceTaskId, nestedServiceTaskFirstId, nestedServiceTaskSecondId)
         )
     }
@@ -269,9 +269,9 @@ internal class XmlUpdateEventApplyTest {
     fun `BPMN parent changed event on nested element works`() {
         val updatedProcess = readAndUpdateProcess(parser, BpmnParentChangedEvent(nestedServiceTaskFirstId, processId))
 
-        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldBeEmpty()
-        updatedProcess.process.body!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldHaveSingleItem()
-        updatedProcess.process.body!!.serviceTask!!.map { it.id }.shouldContainSame(
+        updatedProcess.processes[0].children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldBeEmpty()
+        updatedProcess.processes[0].body!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldHaveSingleItem()
+        updatedProcess.processes[0].body!!.serviceTask!!.map { it.id }.shouldContainSame(
                 listOf(flatServiceTaskId, nestedServiceTaskFirstId)
         )
     }
@@ -280,8 +280,8 @@ internal class XmlUpdateEventApplyTest {
     fun `BPMN parent changed event without propagation flag on nested element works`() {
         val updatedProcess = readAndUpdateProcess(parser, BpmnParentChangedEvent(nestedServiceTaskFirstId, processId, false))
 
-        updatedProcess.process.children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldHaveSingleItem()
-        updatedProcess.process.body!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldBeEmpty()
-        updatedProcess.process.body!!.serviceTask!!.filter { it.id == flatServiceTaskId }.shouldHaveSingleItem()
+        updatedProcess.processes[0].children!![subProcessId]!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldHaveSingleItem()
+        updatedProcess.processes[0].body!!.serviceTask!!.filter { it.id == nestedServiceTaskFirstId }.shouldBeEmpty()
+        updatedProcess.processes[0].body!!.serviceTask!!.filter { it.id == flatServiceTaskId }.shouldHaveSingleItem()
     }
 }

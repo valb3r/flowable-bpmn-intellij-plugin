@@ -23,12 +23,12 @@ internal class ActivityServiceTaskWithExtensionElementsTest {
     @Test
     fun `Service task with failedJobRetryTimeCycle is parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
-        val task = processObject.process.body!!.serviceTask!![0]
+        val task = processObject.processes[0].body!!.serviceTask!![0]
 
         task.id.shouldBeEqualTo(elementId)
         task.failedJobRetryTimeCycle.shouldBeEqualTo("R10/PT5M")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(ActivitiObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.FAILED_JOB_RETRY_CYCLE]!!.value.shouldBeEqualTo(task.failedJobRetryTimeCycle)
     }
 
@@ -42,6 +42,6 @@ internal class ActivityServiceTaskWithExtensionElementsTest {
     }
 
     private fun readServiceTask(processObject: BpmnFileObject): BpmnServiceTask {
-        return processObject.process.body!!.serviceTask!!.shouldHaveSingleItem()
+        return processObject.processes[0].body!!.serviceTask!!.shouldHaveSingleItem()
     }
 }

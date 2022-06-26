@@ -38,7 +38,7 @@ internal class FlowableDecisionTaskTest {
         task.decisionTaskThrowErrorOnNoHits.shouldBeEqualTo(true)
         task.fallbackToDefaultTenantCdata.shouldBeEqualTo(true)
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -81,6 +81,6 @@ internal class FlowableDecisionTaskTest {
     }
 
     private fun readDecisionTask(processObject: BpmnFileObject): BpmnDecisionTask {
-        return processObject.process.body!!.decisionTask!!.shouldHaveSingleItem()
+        return processObject.processes[0].body!!.decisionTask!!.shouldHaveSingleItem()
     }
 }

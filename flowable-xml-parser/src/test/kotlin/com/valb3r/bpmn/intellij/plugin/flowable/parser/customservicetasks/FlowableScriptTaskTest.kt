@@ -38,7 +38,7 @@ internal class FlowableScriptTaskTest {
         task.autoStoreVariables.shouldBeEqualTo(true)
         task.scriptBody.shouldBeEqualTo("echo \"Foo Bar!\" > /tmp/foo.txt")
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -82,6 +82,6 @@ internal class FlowableScriptTaskTest {
     }
 
     private fun readScriptTask(processObject: BpmnFileObject): BpmnScriptTask {
-        return processObject.process.body!!.scriptTask!!.shouldHaveSingleItem()
+        return processObject.processes[0].body!!.scriptTask!!.shouldHaveSingleItem()
     }
 }

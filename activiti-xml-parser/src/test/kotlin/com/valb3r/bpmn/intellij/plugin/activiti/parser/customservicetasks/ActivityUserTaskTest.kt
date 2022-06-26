@@ -41,7 +41,7 @@ internal class ActivityUserTaskTest {
         task.priority.shouldBeEqualTo("1")
         task.skipExpression.shouldBeNull() // Unsupported by Activity
 
-        val props = BpmnFileObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(ActivitiObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -103,6 +103,6 @@ internal class ActivityUserTaskTest {
     }
 
     private fun readUserTask(processObject: BpmnFileObject): BpmnUserTask {
-        return processObject.process.body!!.userTask!!.shouldHaveSingleItem()
+        return processObject.processes[0].body!!.userTask!!.shouldHaveSingleItem()
     }
 }

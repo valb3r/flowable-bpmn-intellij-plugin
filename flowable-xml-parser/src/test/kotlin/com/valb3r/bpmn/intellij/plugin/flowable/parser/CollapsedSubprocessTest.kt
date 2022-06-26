@@ -15,8 +15,8 @@ internal class CollapsedSubprocessTest {
         processObject = FlowableParser().parse("simple-collapsed-subprocess.bpmn20.xml".asResource()!!)
 
         processObject.shouldNotBeNull()
-        processObject.process.body!!.subProcess!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("subProcess")
-        processObject.process.body!!.collapsedSubProcess!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("collapsedSubProcess")
+        processObject.processes[0].body!!.subProcess!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("subProcess")
+        processObject.processes[0].body!!.collapsedSubProcess!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("collapsedSubProcess")
     }
 
     @Test
@@ -26,7 +26,7 @@ internal class CollapsedSubprocessTest {
         processObject = FlowableParser().parse("transactional-collapsed-subprocess.bpmn20.xml".asResource()!!)
 
         processObject.shouldNotBeNull()
-        processObject.process.body!!.transaction!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("transactionalSubprocess")
-        processObject.process.body!!.collapsedTransaction!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("transactionalCollapsedSubprocess")
+        processObject.processes[0].body!!.transaction!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("transactionalSubprocess")
+        processObject.processes[0].body!!.collapsedTransaction!!.shouldHaveSingleItem().id.id.shouldBeEqualTo("transactionalCollapsedSubprocess")
     }
 }
