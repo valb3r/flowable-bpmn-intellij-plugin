@@ -183,7 +183,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
     private fun createCollaborationAndCollaborationProcesses(state: () -> RenderState, root: BaseBpmnRenderElement, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
         state().currentState.elementByBpmnId.values.map { it.element }.filterIsInstance<BpmnCollaboration>().filter { it.id != root.bpmnElementId }.forEach {
-            val processElem = InvisibleShape(DiagramElementId("__collaboration_${it.id}"), it.id, state)
+            val processElem = InvisibleShape(DiagramElementId("__collaboration:_${it.id}"), it.id, state)
             elements += processElem
             elementsById[it.id] = processElem
         }
@@ -191,7 +191,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         val rootProcessId = state().currentState.primaryProcessId
         val collaborations = state().currentState.processes.filter { it != rootProcessId }
         collaborations.forEach {
-            val processElem = InvisibleShape(DiagramElementId("__collaboration_process_${it.id}"), it, state)
+            val processElem = InvisibleShape(DiagramElementId("__collaboration:_process_${it.id}"), it, state)
             elements += processElem
             elementsById[it] = processElem
         }
