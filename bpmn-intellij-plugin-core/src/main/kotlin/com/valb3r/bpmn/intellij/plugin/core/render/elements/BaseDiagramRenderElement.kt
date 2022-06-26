@@ -283,4 +283,8 @@ abstract class BaseDiagramRenderElement(
         currentOnScreenRect(state().ctx.canvas.camera)
         children.forEach {it.currentOnScreenRect(state().ctx.canvas.camera)}
     }
+
+    override fun toString(): String {
+        return "DIAG:${elementId.id}"
+    }
 }
