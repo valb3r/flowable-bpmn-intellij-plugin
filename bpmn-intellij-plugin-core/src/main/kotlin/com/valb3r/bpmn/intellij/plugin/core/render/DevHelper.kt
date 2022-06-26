@@ -41,7 +41,7 @@ private fun dumpTree(elementsById: Map<BpmnElementId, BaseDiagramRenderElement>,
         elemsByParent.keys.forEach { possibleRoot ->
             elemsByParent.forEach { (k, v) ->
                 if (v.contains(possibleRoot)) {
-                    println("Possible root $possibleRoot is child of $k")
+                    println("Possible root '$possibleRoot' is child of '$k'")
                 }
             }
         }
