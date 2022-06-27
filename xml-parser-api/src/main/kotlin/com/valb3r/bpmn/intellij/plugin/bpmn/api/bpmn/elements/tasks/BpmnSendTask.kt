@@ -4,6 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.BpmnTaskAlike
 
 data class BpmnSendTask(
         override val id: BpmnElementId,
@@ -24,7 +25,7 @@ data class BpmnSendTask(
         /* Flattened extensionElements, for explicitness - these are the target of binding */
         val failedJobRetryTimeCycle: String? = null,
         val fieldsExtension: List<ExtensionField>? = null
-): WithBpmnId {
+): WithBpmnId, BpmnTaskAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)

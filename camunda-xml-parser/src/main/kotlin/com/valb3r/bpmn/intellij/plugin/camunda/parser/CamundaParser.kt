@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.camunda.parser
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnComplexGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
@@ -183,13 +184,13 @@ class CamundaParser : BaseBpmnParser() {
         return CamundaPropertyTypeDetails.values().map { it.details }
     }
 
-    override fun createBpmnObject(update: BpmnShapeObjectAdded, diagramParent: Element): Element? {
-        return when (update.bpmnObject.element) {
+    override fun createBpmnObject(element: WithBpmnId, diagramParent: Element): Element? {
+        return when (element) {
             is BpmnTask -> diagramParent.addElement(modelNs().named("task"))
             is BpmnSendTask -> diagramParent.addElement(modelNs().named("sendTask"))
             is BpmnComplexGateway -> diagramParent.addElement(modelNs().named("complexGateway"))
             is BpmnIntermediateLinkCatchingEvent -> createIntermediateCatchEventWithType(diagramParent, "linkEventDefinition")
-            else -> super.createBpmnObject(update, diagramParent)
+            else -> super.createBpmnObject(element, diagramParent)
         }
     }
 

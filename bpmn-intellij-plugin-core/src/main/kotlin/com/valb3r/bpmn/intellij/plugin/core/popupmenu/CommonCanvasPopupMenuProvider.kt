@@ -5,10 +5,12 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementTypeChangeEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnShapeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.render.snapToGridIfNecessary
+import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.geom.Point2D
@@ -37,6 +39,37 @@ class ShapeCreator<T : WithBpmnId> (private val project: Project, private val cl
 
         updateEventsRegistry(project).addObjectEvent(
                 BpmnShapeObjectAddedEvent(WithParentId(parent, newObject), shape, newElementsFactory(project).propertiesOf(newObject))
+        )
+    }
+}
+
+class ShapeTypeChange<T : WithBpmnId>(
+    private val project: Project,
+    private val clazz: KClass<T>,
+    private val elementId: BpmnElementId) : ActionListener {
+
+    override fun actionPerformed(e: ActionEvent?) {
+        val currentElement = currentStateProvider(project).currentState().elementByBpmnId[elementId]!!.element
+        if (clazz.java == currentElement.javaClass) return
+
+        val newElement = newElementsFactory(project).newBpmnObject(clazz).updateBpmnElemId(elementId)
+        val oldPropertyTable = currentStateProvider(project).currentState().elemPropertiesByStaticElementId[elementId]
+        val newPropertyTable = newElementsFactory(project).propertiesOf(newElement)
+        oldPropertyTable!!.view().forEach { (type, values) ->
+            if (null != newPropertyTable[type]) {
+                newPropertyTable[type] = values.toMutableList()
+            }
+        }
+
+        updateEventsRegistry(project).addEvents(
+            listOf(
+                BpmnElementTypeChangeEvent(
+                    elementId,
+                    newElement,
+                    newPropertyTable,
+                    currentStateProvider(project).currentState().elementByBpmnId[elementId]!!.parentIdForXml
+                )
+            )
         )
     }
 }

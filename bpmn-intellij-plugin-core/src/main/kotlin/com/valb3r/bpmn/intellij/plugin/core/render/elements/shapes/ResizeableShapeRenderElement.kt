@@ -10,20 +10,22 @@ import com.valb3r.bpmn.intellij.plugin.core.events.BpmnShapeResizedAndMovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.core.render.ICON_Z_INDEX
+import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.*
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors.ShapeResizeAnchorBottom
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.anchors.ShapeResizeAnchorTop
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.PreTransformHandler
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.ResizeViewTransform
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.popupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.core.xmlnav.xmlNavigator
 import java.awt.geom.Point2D
 import kotlin.math.abs
 
 abstract class ResizeableShapeRenderElement(
-        elementId: DiagramElementId,
-        bpmnElementId: BpmnElementId,
-        shape: ShapeElement,
-        state: () -> RenderState
+    elementId: DiagramElementId,
+    bpmnElementId: BpmnElementId,
+    shape: ShapeElement,
+    state: () -> RenderState
 ) : ShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
     private val anchors = Pair(
@@ -36,39 +38,6 @@ abstract class ResizeableShapeRenderElement(
             anchors.second,
             edgeExtractionAnchor
     )
-
-    override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
-        val spaceCoeff = 1.5f
-        val actionCount = 3
-        val start = state().ctx.canvas.camera.fromCameraView(Point2D.Float(0.0f, 0.0f))
-        val end = state().ctx.canvas.camera.fromCameraView(Point2D.Float(0.0f, ACTIONS_ICO_SIZE * spaceCoeff))
-        val ySpacing = end.y - start.y
-
-        val rect = currentOnScreenRect(state().ctx.canvas.camera)
-        val left = state().ctx.canvas.camera.toCameraView(Point2D.Float(rect.x, rect.y))
-        val right = state().ctx.canvas.camera.toCameraView(Point2D.Float(rect.x + rect.width, rect.y + rect.height))
-
-        if (ACTIONS_ICO_SIZE * actionCount >= (right.y - left.y)) {
-            return mutableMapOf()
-        }
-
-        var currY = y
-        val delId = elementId.elemIdToRemove()
-        val deleteIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.recycleBin)
-        state().ctx.interactionContext.clickCallbacks[delId] = { dest ->
-            dest.addElementRemovedEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement())
-        }
-
-        currY += spaceCoeff * ySpacing
-        val toXmlId = DiagramElementId("TOXML:$elementId")
-        val toXmlArea = state().ctx.canvas.drawText(Point2D.Float(x, currY), "<XML/>", Colors.INNER_TEXT_COLOR.color)
-        state().ctx.interactionContext.clickCallbacks[toXmlId] = { dest -> xmlNavigator(state().ctx.project).jumpTo(bpmnElementId)}
-
-        return mutableMapOf(
-                delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId),
-                toXmlId to AreaWithZindex(toXmlArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
-        )
-    }
 
     override fun afterStateChangesAppliedNoChildren() {
         detectAndHandleShapeResize()

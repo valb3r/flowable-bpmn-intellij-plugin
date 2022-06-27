@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.camunda.parser.testevents
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
@@ -78,3 +79,5 @@ data class BpmnShapeResizedAndMovedEvent(override val diagramElementId: DiagramE
 }
 
 data class BpmnParentChangedEvent(override val bpmnElementId: BpmnElementId, override val newParentId: BpmnElementId, override val propagateToXml: Boolean = true): BpmnParentChanged
+
+data class BpmnElementTypeChangeEvent(override val elementId: BpmnElementId, override val newBpmnElement: WithBpmnId, override val props: PropertyTable, override val parentIdForXml: BpmnElementId): BpmnElementChange
