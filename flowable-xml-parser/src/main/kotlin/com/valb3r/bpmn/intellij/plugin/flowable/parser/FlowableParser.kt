@@ -129,12 +129,12 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     FORM_PROPERTY_DATE_PATTERN(PropertyTypeDetails(PropertyType.FORM_PROPERTY_DATE_PATTERN, "extensionElements.flowable:formProperty?id=@.datePattern", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_VALUE_ID(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_ID, "extensionElements.flowable:formProperty?id=@.flowable:value?id=@.id", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_VALUE_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_NAME, "extensionElements.flowable:formProperty?id=@.flowable:value?id=@.name", XmlType.ATTRIBUTE)),
-    MAPPING_PAYLOAD_EVENT_VARIABLE_NAME(PropertyTypeDetails(PropertyType.MAPPING_PAYLOAD_EVENT_VARIABLE_NAME, "extensionElements.flowable:eventInParameter?source=@.source", XmlType.ATTRIBUTE)),
-    MAPPING_PAYLOAD_EVENT_PROPERTY_NAME(PropertyTypeDetails(PropertyType.MAPPING_PAYLOAD_EVENT_PROPERTY_NAME, "extensionElements.flowable:eventInParameter?source=@.target", XmlType.ATTRIBUTE)),
-    MAPPING_PAYLOAD_EVENT_TYPE(PropertyTypeDetails(PropertyType.MAPPING_PAYLOAD_EVENT_TYPE, "extensionElements.flowable:eventInParameter?source=@.type", XmlType.ATTRIBUTE)),
-//    MAPPING_PAYLOAD_EVENT_VARIABLE_NAME
-//    MAPPING_PAYLOAD_EVENT_PROPERTY_NAME
-//    MAPPING_PAYLOAD_EVENT_TYPE
+    MAPPING_PAYLOAD_TO_EVENT_VARIABLE_NAME(PropertyTypeDetails(PropertyType.MAPPING_PAYLOAD_TO_EVENT_VARIABLE_NAME, "extensionElements.flowable:eventInParameter?source=@.source", XmlType.ATTRIBUTE)),
+    MAPPING_PAYLOAD_TO_EVENT_PROPERTY_NAME(PropertyTypeDetails(PropertyType.MAPPING_PAYLOAD_TO_EVENT_PROPERTY_NAME, "extensionElements.flowable:eventInParameter?source=@.target", XmlType.ATTRIBUTE)),
+    MAPPING_PAYLOAD_TO_EVENT_TYPE(PropertyTypeDetails(PropertyType.MAPPING_PAYLOAD_TO_EVENT_TYPE, "extensionElements.flowable:eventInParameter?source=@.type", XmlType.ATTRIBUTE)),
+    MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME(PropertyTypeDetails(PropertyType.MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME, "extensionElements.flowable:eventOutParameter?source=@.source", XmlType.ATTRIBUTE)),
+    MAPPING_PAYLOAD_FROM_EVENT_PROPERTY_NAME(PropertyTypeDetails(PropertyType.MAPPING_PAYLOAD_FROM_EVENT_PROPERTY_NAME, "extensionElements.flowable:eventOutParameter?source=@.target", XmlType.ATTRIBUTE)),
+    MAPPING_PAYLOAD_FROM_EVENT_TYPE(PropertyTypeDetails(PropertyType.MAPPING_PAYLOAD_FROM_EVENT_TYPE, "extensionElements.flowable:eventOutParameter?source=@.type", XmlType.ATTRIBUTE)),
 }
 
 class FlowableParser : BaseBpmnParser() {

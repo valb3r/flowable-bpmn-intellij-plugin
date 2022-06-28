@@ -772,7 +772,6 @@ class ProcessNode : BpmnMappable<BpmnProcess>, ProcessBody() {
                     keyDetectionValue = keyDetectionValue,
                     channelType = channelType,
                     triggerChannelType = triggerChannelType,
-                    mappingToEventPayload = input.extensionElementsEvent
                 )
             input.eventExtensionElements = listOf(extensionFromEvent)
         }

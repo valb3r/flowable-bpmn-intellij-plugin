@@ -22,11 +22,11 @@ data class BpmnSendEventTask(
     val extensionElements: List<ExtensionElement>? = null,
     /* Flattened extensionElements, for explicitness - these are the target of binding */
 //    val formPropertiesExtension: List<ExtensionFormProperty>? =1 null
-    val fieldsExtension: List<ExtensionField>? = null,
+//    val fieldsExtension: List<ExtensionField>? = null,
     var eventExtensionElements: List<ExtensionFromEvent>? = null,
-    val extensionElementsEvent: List<ExtensionEventInParameter>? = null
-
-): WithBpmnId {
+    val extensionElementsMappingPayloadToEvent: List<ExtensionEventPayload>? = null,
+    val extensionElementsMappingPayloadFromEvent: List<ExtensionEventPayload>? = null,
+    ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)

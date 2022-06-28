@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionEventInParameter
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionEventPayload
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.UnmappedProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
@@ -50,7 +50,8 @@ data class ServiceTask(
             val task = doConvertToDto(input)
             return task.copy(
                     fieldsExtension = input.extensionElements?.filterIsInstance<FieldExtensionElement>()?.map { ExtensionField(it.name, it.string, it.expression) },
-                    extensionElementsEvent = input.extensionElements?.filterIsInstance<EventExtensionElement>()?.map { ExtensionEventInParameter(it.source, it.target, it.type) },
+                    extensionElementsMappingPayloadToEvent = input.extensionElements?.filterIsInstance<ExtensionElementMappingPayloadToEvent>()?.map { ExtensionEventPayload(it.source, it.target, it.type) },
+                    extensionElementsMappingPayloadFromEvent = input.extensionElements?.filterIsInstance<ExtensionElementMappingPayloadFromEvent>()?.map { ExtensionEventPayload(it.source, it.target, it.type) },
                     unmappedProperties = buildUnmappedProperties(
                         UnmappedProperty("jobTopic", input.jobTopic),
                     ),
@@ -85,11 +86,19 @@ data class ServiceTask(
     ) : ExtensionElement(name, string, expression/*, source = source, target = target, type = type*/)
 
     @JsonDeserialize(`as` = EventExtensionElement::class)
-    class EventExtensionElement(
+    open class EventExtensionElement(
         @JacksonXmlProperty(isAttribute = true) source: String?,
         @JacksonXmlProperty(isAttribute = false) target: String?,
         @JacksonXmlProperty(isAttribute = false) type: String?,
     ) : ExtensionElement(source = source, target = target, type = type)
+
+    @JsonDeserialize(`as` = ExtensionElementMappingPayloadToEvent::class)
+    class ExtensionElementMappingPayloadToEvent(source: String?, target: String?, type: String?) :
+        EventExtensionElement(source, target, type)
+
+    @JsonDeserialize(`as` = ExtensionElementMappingPayloadFromEvent::class)
+    class ExtensionElementMappingPayloadFromEvent(source: String?, target: String?, type: String?) :
+        EventExtensionElement(source, target, type)
 
     @JsonDeserialize(`as` = FailedJobRetryTimeCycleExtensionElement::class)
     class FailedJobRetryTimeCycleExtensionElement(failedJobRetryTimeCycle: String) : ExtensionElement(failedJobRetryTimeCycle = failedJobRetryTimeCycle)
@@ -126,7 +135,8 @@ data class ServiceTask(
             return when (staxName) {
                 "failedJobRetryTimeCycle" -> FailedJobRetryTimeCycleExtensionElement(node.textValue())
                 "field" -> mapper.treeToValue(node, FieldExtensionElement::class.java)
-                "eventInParameter" -> mapper.treeToValue(node, EventExtensionElement::class.java)
+                "eventInParameter" -> mapper.treeToValue(node, ExtensionElementMappingPayloadToEvent::class.java)
+                "eventOutParameter" -> mapper.treeToValue(node, ExtensionElementMappingPayloadFromEvent::class.java)
                 in listSimpleEventKey -> EventElement(staxName, node.textValue())
                 else -> UnhandledExtensionElement()
             }
