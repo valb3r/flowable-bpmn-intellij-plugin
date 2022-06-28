@@ -122,16 +122,17 @@ class PropertiesVisualizer(
             }
             val groupType = control.first.group?.lastOrNull()
             val isExpandButton = control.first.name == groupType?.actionResult?.propertyType
+            val isAlwaysVisible = control.first.group?.size == 1 && isExpandButton
             val controlGroupIndex = ElementIndex(
-                if (isExpandButton) control.first.group?.getOrNull(control.first.group!!.size - 2) else groupType,
+                if (isExpandButton /*&& control.first.group!!.size != 1*/) control.first.group?.getOrNull(control.first.group!!.size - 2) else groupType,
                 control.second.index?.take(max(0, control.first.group!!.size - if (isExpandButton) 1 else 0))?.joinToString() ?: ""
             )
 
             val ifInnerPadd = "".padStart(if (null == groupType || control.first.indexCascades) 0 else 2)
             val paddGroup = ifInnerPadd + "".padStart((control.second.index?.size ?: 1) * 2 - 2)
             if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex)) {
-                addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
-                if (!groupType.actionCaption.equals("")) {
+                addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model, isAlwaysVisible)
+                if (groupType.actionCaption != "") {
                     model.addRow(arrayOf(
                         paddGroup + groupType.groupCaption,
                         buildButtonField(newElemsProvider, state, bpmnElementId, groupType, control.second.index?.dropLast(1) ?: listOf())
@@ -181,11 +182,11 @@ class PropertiesVisualizer(
     private fun addCurrentRowToCollapsedSectionIfNeeded(
         controlGroupIndex: ElementIndex,
         filter: RowExpansionFilter,
-        model: FirstLastColumnReadOnlyModel
+        model: FirstLastColumnReadOnlyModel,
+        isAlwaysVisible: Boolean = false
     ) {
-        if (null != controlGroupIndex.type) {
-            filter.addControl(controlGroupIndex, model.rowCount)
-        }
+        if (isAlwaysVisible || null == controlGroupIndex.type || controlGroupIndex.index == "") return
+        filter.addControl(controlGroupIndex, model.rowCount)
     }
 
     private fun computePropertyKey(entry: Pair<PropertyType, Property>): String {
