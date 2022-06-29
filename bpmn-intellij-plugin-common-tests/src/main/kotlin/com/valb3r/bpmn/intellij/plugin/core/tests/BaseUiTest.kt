@@ -123,7 +123,7 @@ abstract class BaseUiTest {
     protected val icons = mock<IconProvider>()
     protected val renderer = spy(DefaultBpmnProcessRenderer(project, icons))
     protected val canvasBuilder = CanvasBuilder(renderer)
-    protected val canvas = setCanvas(project, Canvas(project, DefaultCanvasConstants().copy(baseCursorSize = 3.0f))) // Using small cursor size for clarity
+    protected var canvas = setCanvas(project, Canvas(project, DefaultCanvasConstants().copy(baseCursorSize = 3.0f))) // Using small cursor size for clarity
     protected val uiEventBus = setUiEventBus(project, UiEventBus())
     protected var renderResult: RenderResult? = null
 
@@ -214,6 +214,7 @@ abstract class BaseUiTest {
         whenever(icons.zoomOut).thenReturn(mock())
         whenever(icons.zoomReset).thenReturn(mock())
         whenever(icons.centerImage).thenReturn(mock())
+        whenever(icons.triggered).thenReturn(mock())
         whenever(icons.anchorOff).thenReturn(mock())
         whenever(icons.anchorOn).thenReturn(mock())
 
