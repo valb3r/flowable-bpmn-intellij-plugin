@@ -246,11 +246,17 @@ class CurrentStateProvider(private val project: Project) {
     private fun updateIndexProperty(event: IndexUiOnlyValueUpdatedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
         updated[event.property] = updated.getAll(event.property).map {
-            if (it.index!![0] == event.propertyIndex[0] || (null == it.index && event.propertyIndex.isEmpty())) {
-                it.copy(index = event.newValue)
+            if ((null == it.index && event.propertyIndex.isEmpty()) || matchIndex(it.index!!, event.propertyIndex)) {
+                it.copy(index = event.newValue.plus(it.index!!.subList(event.newValue.size, it.index!!.size)))
             } else it
         }.toMutableList()
+
         updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
+    }
+
+    private fun matchIndex(matches: List<String>, eventIndex: List<String>): Boolean{
+        val newIndex = matches.subList(0, eventIndex.size)
+        return newIndex == eventIndex
     }
 
     private fun addUiOnlyProperty(event: UiOnlyValueAddedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {

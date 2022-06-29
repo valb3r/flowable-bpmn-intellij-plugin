@@ -20,15 +20,11 @@ internal fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, Prope
             }
         }
     }
-// index props
     if (event.property.indexCascades) {
-//        state[event.bpmnElementId]?.view()?.filter { it.key.indexInGroupArrayName == event.property.indexInGroupArrayName }?.forEach { (k, _) ->
-//            uiEventCascade(event, cascades, k)
-//        }
-        state[event.bpmnElementId]?.view()?.filter { it.key.indexInGroupArrayName?.startsWith(event.property.indexInGroupArrayName!!)
-            ?: false }?.forEach { (k, _) ->
-            uiEventCascade(event, cascades, k)
-        }
+        state[event.bpmnElementId]?.view()?.filter { null != it.key.group && null != event.property.group && it.key.group!!.contains(event.property.group!![event.property.group!!.size - 1 ])}
+            ?.forEach { (k, _) ->
+                uiEventCascade(event, cascades, k)
+            }
     }
 
     event.property.explicitIndexCascades?.forEach {
