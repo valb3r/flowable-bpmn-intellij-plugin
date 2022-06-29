@@ -124,7 +124,7 @@ class PropertiesVisualizer(
             val isExpandButton = control.first.name == groupType?.actionResult?.propertyType
             val isAlwaysVisible = control.first.group?.size == 1 && isExpandButton
             val controlGroupIndex = ElementIndex(
-                if (isExpandButton /*&& control.first.group!!.size != 1*/) control.first.group?.getOrNull(control.first.group!!.size - 2) else groupType,
+                if (isExpandButton && control.first.group!!.size != 1) control.first.group?.getOrNull(control.first.group!!.size - 2) else groupType,
                 control.second.index?.take(max(0, control.first.group!!.size - if (isExpandButton) 1 else 0))?.joinToString() ?: ""
             )
 
@@ -192,7 +192,7 @@ class PropertiesVisualizer(
     private fun computePropertyKey(entry: Pair<PropertyType, Property>): String {
         if(entry.first.positionInGroup >= 65535) throw IllegalArgumentException("Max int to character is 65535, position is ${entry.first.positionInGroup}")
         val intToChar = entry.first.positionInGroup.toChar()
-        return entry.first.group?.mapIndexed { index, type -> type.name + intToChar + entry.second.index?.getOrElse(index) {""}}?.joinToString() ?: ""
+        return entry.first.group?.mapIndexed { index, type -> type.name + entry.second.index?.getOrElse(index) {""} + intToChar}?.joinToString() ?: ""
     }
 
     private fun notifyDeFocusElement() {
