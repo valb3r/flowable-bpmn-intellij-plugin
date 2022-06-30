@@ -247,7 +247,7 @@ class CurrentStateProvider(private val project: Project) {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
         updated[event.property] = updated.getAll(event.property).map {
             if ((null == it.index && event.propertyIndex.isEmpty()) || it.index?.containsAll(event.propertyIndex) == true) {
-                it.copy(index = event.newValue.plus(it.index!!.subList(event.newValue.size, it.index!!.size)))
+                it.copy(index = event.newValue.plus(it.index?.subList(event.newValue.size, it.index!!.size) ?: emptyList()))
             } else it
         }.toMutableList()
 

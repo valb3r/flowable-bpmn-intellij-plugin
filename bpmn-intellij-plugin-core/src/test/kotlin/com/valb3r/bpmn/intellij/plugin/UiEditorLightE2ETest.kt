@@ -13,6 +13,7 @@ import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.render.*
 import com.valb3r.bpmn.intellij.plugin.core.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.tests.BaseUiTest
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import org.amshove.kluent.*
@@ -23,7 +24,6 @@ import java.awt.Shape
 import java.awt.font.GlyphVector
 import java.awt.geom.Area
 import java.awt.geom.Point2D
-import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
 import java.util.*
 
@@ -88,7 +88,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         clickOnId(addedEdge.edge.id)
         val lastEndpointId = addedEdge.edge.waypoint.last().id
         val point = clickOnId(lastEndpointId)
-        dragToAndVerifyButDontStop(point, Point2D.Float(intermediateX, intermediateY + serviceTaskSize / 2.0f), lastEndpointId)
+        dragToAndVerifyButDontStop(point, Point2D.Float(intermediateX, intermediateY + taskSize / 2.0f), lastEndpointId)
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
@@ -113,7 +113,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
             draggedTo.diagramElementId.shouldBe(lastEndpointId)
             draggedTo.dx.shouldBeNear(intermediateX - point.x, 0.1f)
-            draggedTo.dy.shouldBeNear(intermediateY + serviceTaskSize / 2.0f - point.y, 0.1f)
+            draggedTo.dy.shouldBeNear(intermediateY + taskSize / 2.0f - point.y, 0.1f)
 
             propUpdated.bpmnElementId.shouldBe(edgeBpmn.bpmnObject.id)
             propUpdated.property.shouldBe(PropertyType.TARGET_REF)
@@ -131,7 +131,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         val point = clickOnId(lastEndpointId)
 
         // Move to the end of service task
-        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX + serviceTaskSize, endElemMidY), lastEndpointId)
+        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX + taskSize, endElemMidY), lastEndpointId)
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
@@ -150,7 +150,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             sequence.targetRef.shouldBe("")
 
             draggedTo.diagramElementId.shouldBe(lastEndpointId)
-            draggedTo.dx.shouldBeNear(endElemX + serviceTaskSize - point.x, 0.1f)
+            draggedTo.dx.shouldBeNear(endElemX + taskSize - point.x, 0.1f)
             draggedTo.dy.shouldBeNear(0.0f, 0.1f)
 
             propUpdated.bpmnElementId.shouldBe(edgeBpmn.bpmnObject.id)
@@ -168,7 +168,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         val lastEndpointId = addedEdge.edge.waypoint.last().id
         val point = clickOnId(lastEndpointId)
 
-        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX + serviceTaskSize, endElemMidY), lastEndpointId)
+        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX + taskSize, endElemMidY), lastEndpointId)
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
@@ -187,7 +187,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             sequence.targetRef.shouldBe("")
 
             draggedTo.diagramElementId.shouldBe(lastEndpointId)
-            draggedTo.dx.shouldBeNear(endElemX + serviceTaskSize - point.x, 0.1f)
+            draggedTo.dx.shouldBeNear(endElemX + taskSize - point.x, 0.1f)
             draggedTo.dy.shouldBeNear(0.0f, 0.1f)
 
             propUpdated.bpmnElementId.shouldBe(edgeBpmn.bpmnObject.id)
@@ -554,12 +554,12 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.startSelectionOrDrag(begin)
         canvas.paintComponent(graphics)
-        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize, endElemY  + serviceTaskSize))
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + taskSize, endElemY  + taskSize))
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
 
-        val startCenterX = startElemX + serviceTaskSize / 2.0f
+        val startCenterX = startElemX + taskSize / 2.0f
         val startCenterY = startElemY
         val dragDelta = Point2D.Float(100.0f, 100.0f)
         canvas.startSelectionOrDrag(Point2D.Float(startCenterX, startCenterY))
@@ -597,12 +597,12 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.startSelectionOrDrag(begin)
         canvas.paintComponent(graphics)
-        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startElemX + serviceTaskSize + 10.0f, startElemY + serviceTaskSize + 10.0f))
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startElemX + taskSize + 10.0f, startElemY + taskSize + 10.0f))
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
 
-        val startCenterX = startElemX + serviceTaskSize / 2.0f
+        val startCenterX = startElemX + taskSize / 2.0f
         val startCenterY = startElemY
         val dragDelta = Point2D.Float(100.0f, 100.0f)
         canvas.startSelectionOrDrag(Point2D.Float(startCenterX, startCenterY))
@@ -656,12 +656,12 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         canvas.paintComponent(graphics)
         canvas.startSelectionOrDrag(begin)
         canvas.paintComponent(graphics)
-        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize, endElemY + serviceTaskSize))
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + taskSize, endElemY + taskSize))
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
 
-        val startCenterX = startElemX + serviceTaskSize / 2.0f
+        val startCenterX = startElemX + taskSize / 2.0f
         val startCenterY = startElemY
         val dragDelta = Point2D.Float(100.0f, 100.0f)
         canvas.startSelectionOrDrag(Point2D.Float(startCenterX, startCenterY))
@@ -783,9 +783,9 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         canvas.startSelectionOrDrag(begin)
         // Stepped selection to allow waypoints to reveal
         canvas.paintComponent(graphics)
-        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startElemX + serviceTaskSize + 10.0f, startElemX + serviceTaskSize + 10.0f))
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(startElemX + taskSize + 10.0f, startElemX + taskSize + 10.0f))
         canvas.paintComponent(graphics)
-        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize + 10.0f, endElemY + serviceTaskSize + 10.0f))
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + taskSize + 10.0f, endElemY + taskSize + 10.0f))
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
@@ -862,7 +862,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         clickOnId(addedEdge.edge.id)
         val lastEndpointId = addedEdge.edge.waypoint.last().id
         val point = clickOnId(lastEndpointId)
-        dragToAndVerifyButDontStop(point, Point2D.Float(intermediateX, intermediateY + serviceTaskSize / 2.0f), lastEndpointId)
+        dragToAndVerifyButDontStop(point, Point2D.Float(intermediateX, intermediateY + taskSize / 2.0f), lastEndpointId)
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
@@ -887,7 +887,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
             draggedTo.diagramElementId.shouldBe(lastEndpointId)
             draggedTo.dx.shouldBeNear(intermediateX - point.x, 0.1f)
-            draggedTo.dy.shouldBeNear(intermediateY + serviceTaskSize / 2.0f - point.y, 0.1f)
+            draggedTo.dy.shouldBeNear(intermediateY + taskSize / 2.0f - point.y, 0.1f)
 
             propUpdated.bpmnElementId.shouldBe(edgeBpmn.bpmnObject.id)
             propUpdated.property.shouldBe(PropertyType.TARGET_REF)
@@ -982,7 +982,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         clickOnId(addedEdge.edge.id)
         val lastEndpointId = addedEdge.edge.waypoint.last().id
         val point = clickOnId(lastEndpointId)
-        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX + serviceTaskSize, endElemMidY), lastEndpointId)
+        dragToAndVerifyButDontStop(point, Point2D.Float(endElemX + taskSize, endElemMidY), lastEndpointId)
         canvas.stopDragOrSelect()
         // Add midpoint
         clickOnId(addedEdge.edge.id)
@@ -995,7 +995,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         canvas.click(begin)
         canvas.startSelectionOrDrag(begin)
         canvas.paintComponent(graphics)
-        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize + 10.0f, endElemY + serviceTaskSize + 10.0f))
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + taskSize + 10.0f, endElemY + taskSize + 10.0f))
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
         // Drag rectangle
@@ -1055,7 +1055,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         canvas.click(begin)
         canvas.startSelectionOrDrag(begin)
         canvas.paintComponent(graphics)
-        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize + 10.0f, endElemY + serviceTaskSize + 10.0f))
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + taskSize + 10.0f, endElemY + taskSize + 10.0f))
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
         // Drag rectangle
@@ -1197,6 +1197,32 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             verify(capturingGraphics, atLeastOnce()).drawGlyphVector(capture(), any(), any())
             lastValue.numGlyphs.shouldBeEqualTo(4)
         }
+    }
+
+    @Test
+    fun `Remove index property, cascade property remove too`() {
+        prepareUserTaskView()
+        clickOnId(userTaskDiagramId)
+        whenever(textFieldsConstructed[Pair(userTaskBpmnId, PropertyType.FORM_PROPERTY_ID)]!!.text).thenReturn("")
+        clickOnId(userTaskDiagramId)
+        currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_ID].shouldBeNull()
+        currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_NAME].shouldBeNull()
+        currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_VALUE_ID].shouldBeNull()
+    }
+
+    @Test
+    fun `Update index property, cascade property update too`() {
+        prepareUserTaskView()
+        val newValueProp = "New property id"
+        clickOnId(userTaskDiagramId)
+        whenever(textFieldsConstructed[Pair(userTaskBpmnId, PropertyType.FORM_PROPERTY_ID)]!!.text).thenReturn(newValueProp)
+        clickOnId(userTaskDiagramId)
+        currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_ID]
+            ?.index?.shouldContain(newValueProp)
+        currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_NAME]
+            ?.index?.shouldContain(newValueProp)
+        currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_VALUE_ID]
+            ?.index?.shouldContain(newValueProp)
     }
 
     @Test
