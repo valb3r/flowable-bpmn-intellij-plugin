@@ -36,8 +36,6 @@ internal fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, Prope
         }
     }
 
-    addEventByDependProps(event, state, cascades)
-
     defaultPrintIfNeed(event, state, cascades)
 
     updateEventsRegistry(project).addEvents(listOf(event) + cascades)
@@ -58,23 +56,6 @@ private fun defaultPrintIfNeed(
                     propertyIndex = prop.second.index
                 )
             }
-        }
-    }
-}
-
-private fun addEventByDependProps(
-    event: StringValueUpdatedEvent,
-    state: Map<BpmnElementId, PropertyTable>,
-    cascades: MutableList<Event>
-) {
-    if (event.property.isHeadType && event.newValue.isEmpty()) {
-        state[event.bpmnElementId]!!.filter { k, _ -> k.dependecies.contains(event.property) }.forEach { prop ->
-            cascades += StringValueUpdatedEvent(
-                event.bpmnElementId,
-                prop.first,
-                "",
-                propertyIndex = prop.second.index
-            )
         }
     }
 }
