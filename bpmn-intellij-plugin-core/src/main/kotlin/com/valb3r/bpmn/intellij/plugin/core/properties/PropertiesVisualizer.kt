@@ -172,7 +172,7 @@ class PropertiesVisualizer(
                 filter.setCollapseGroupControl(controlGroupIndex, controlExpandsGroupIndex, button)
             }
 
-            addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
+            addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model, isAlwaysVisible)
             model.addRow(row)
         }
 
@@ -185,7 +185,7 @@ class PropertiesVisualizer(
         model: FirstLastColumnReadOnlyModel,
         isAlwaysVisible: Boolean = false
     ) {
-        if (isAlwaysVisible || null == controlGroupIndex.type || controlGroupIndex.index == "") return
+        if (null == controlGroupIndex.type /*||  controlGroupIndex.index != "" */|| isAlwaysVisible) return
         filter.addControl(controlGroupIndex, model.rowCount)
     }
 
