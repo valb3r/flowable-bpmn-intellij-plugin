@@ -83,7 +83,7 @@ data class ServiceTask(
         @JacksonXmlProperty(isAttribute = true) name: String?,
         @JacksonXmlProperty(isAttribute = false) string: String?,
         @JacksonXmlProperty(isAttribute = false) expression: String?,
-    ) : ExtensionElement(name, string, expression/*, source = source, target = target, type = type*/)
+    ) : ExtensionElement(name, string, expression)
 
     @JsonDeserialize(`as` = EventExtensionElement::class)
     open class EventExtensionElement(

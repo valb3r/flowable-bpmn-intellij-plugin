@@ -147,6 +147,10 @@ enum class PropertyType(
     MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME("extensionElementsMappingPayloadFromEvent.@source", "Variable name", STRING, group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), indexInGroupArrayName = "source",  updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true, positionInGroup = 1),
     MAPPING_PAYLOAD_FROM_EVENT_PROPERTY_NAME("extensionElementsMappingPayloadFromEvent.@target", "Event property name", STRING, group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), indexInGroupArrayName = "source"),
     MAPPING_PAYLOAD_FROM_EVENT_TYPE("extensionElementsMappingPayloadFromEvent.@type", "Type", LIST_SELECT, setForSelect = setOf("string", "integer", "double", "boolean"), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), indexInGroupArrayName = "source"),
+    EXECUTION_LISTENER_CLASS("extensionListener.@clazz", "Class", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER), indexInGroupArrayName = "clazz", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true, positionInGroup = 1),
+    EXECUTION_LISTENER_EVENT("extensionListener.@event", "Event", LIST_SELECT, setForSelect = setOf("start", "end", "take"), group = listOf(FunctionalGroupType.EXECUTION_LISTENER), indexInGroupArrayName = "clazz", indexCascades = true),
+    EXECUTION_LISTENER_FIELD_NAME("extensionListener.@fields.@name", "Name", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", indexCascades = true, updateOrder = 95),
+    EXECUTION_LISTENER_FIELD_STRING("extensionListener.@fields.@string", "String", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", updateOrder = 90),
 }
 
 val listDefaultPrint: List<DefaultPrintByHeadProp> = listOf(
@@ -197,6 +201,18 @@ enum class FunctionalGroupType(val groupCaption: String, val actionCaption: Stri
         actionUiOnlyResult = listOf(
             NewElem("MAPPING_PAYLOAD_FROM_EVENT_PROPERTY_NAME", ""),
             NewElem("MAPPING_PAYLOAD_FROM_EVENT_TYPE", ""),
+        )
+    ),
+    EXECUTION_LISTENER("Execution listeners", "Add execution listeners", actionResult = NewElem("EXECUTION_LISTENER_CLASS", "Class %d"),
+        actionUiOnlyResult = listOf(
+            NewElem("EXECUTION_LISTENER_EVENT", ""),
+            NewElem("EXECUTION_LISTENER_FIELD_NAME", "", uiOnlyaddedIndex = listOf("")),
+            NewElem("EXECUTION_LISTENER_FIELD_STRING", "", uiOnlyaddedIndex = listOf(""))
+        )
+    ),
+    EXECUTION_LISTENER_FILED("Fields", "Add fields listener", actionResult = NewElem("EXECUTION_LISTENER_FIELD_NAME", "Name %d"),
+        actionUiOnlyResult = listOf(
+            NewElem("EXECUTION_LISTENER_FIELD_STRING", ""),
         )
     )
 }

@@ -32,7 +32,8 @@ data class BpmnServiceTask(
         val eventPropertiesExtension: List<ExtensionField>? = null,
         val extensionElementsMappingPayloadToEvent: List<ExtensionEventPayload>? = null,
         val extensionElementsMappingPayloadFromEvent: List<ExtensionEventPayload>? = null,
-): WithBpmnId {
+        val extensionListener: List<ExeсutionListener>? = null,
+        ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)
