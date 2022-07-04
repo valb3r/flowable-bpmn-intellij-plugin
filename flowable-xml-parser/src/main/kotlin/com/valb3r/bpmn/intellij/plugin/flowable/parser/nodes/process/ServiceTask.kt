@@ -10,9 +10,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionEventPayload
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionField
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.UnmappedProperty
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import org.mapstruct.Mapper
@@ -56,6 +54,7 @@ data class ServiceTask(
                         UnmappedProperty("jobTopic", input.jobTopic),
                     ),
                     failedJobRetryTimeCycle = input.extensionElements?.filter { null != it.failedJobRetryTimeCycle }?.map { it.failedJobRetryTimeCycle }?.firstOrNull(),
+                    executionListener = input.extensionElements?.filterIsInstance<ExecutionListener>()?.map { ExeсutionListener(it.clazz, it.fields?.map { ListenerField(it.name, it.string) })},
                 )
         }
 
@@ -69,14 +68,27 @@ data class ServiceTask(
 
     @JsonDeserialize(using = ExtensionElementDeserializer::class)
     open class ExtensionElement(
-            open val name: String? = null,
-            open val string: String? = null,
-            val expression: String? = null,
-            val failedJobRetryTimeCycle: String? = null,
-            val source: String? = null,
-            val target: String? = null,
-            val type: String? = null,
+        open val name: String? = null,
+        open val string: String? = null,
+        val expression: String? = null,
+        val failedJobRetryTimeCycle: String? = null,
+        val source: String? = null,
+        val target: String? = null,
+        val type: String? = null,
+        val clazz: String? = null,
+        val fields: List<ListenerFieldName>? = null
     )
+
+    class ListenerFieldName(
+        val name: String? = null,
+        val string: String? = null
+    )
+
+    @JsonDeserialize(`as` = ExecutionListener::class)
+    open class ExecutionListener(
+        @JacksonXmlProperty(isAttribute = true, localName = "class") clazz: String?,
+        @JacksonXmlProperty(isAttribute = false) field: List<ListenerFieldName>?,
+    ) : ExtensionElement(clazz = clazz, fields = field)
 
     @JsonDeserialize(`as` = FieldExtensionElement::class)
     class FieldExtensionElement(
@@ -137,6 +149,7 @@ data class ServiceTask(
                 "field" -> mapper.treeToValue(node, FieldExtensionElement::class.java)
                 "eventInParameter" -> mapper.treeToValue(node, ExtensionElementMappingPayloadToEvent::class.java)
                 "eventOutParameter" -> mapper.treeToValue(node, ExtensionElementMappingPayloadFromEvent::class.java)
+                "executionListener" -> mapper.treeToValue(node, ExecutionListener::class.java)
                 in listSimpleEventKey -> EventElement(staxName, node.textValue())
                 else -> UnhandledExtensionElement()
             }
