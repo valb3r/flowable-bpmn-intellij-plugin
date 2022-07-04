@@ -130,14 +130,12 @@ class PropertiesVisualizer(
 
             val ifInnerPadd = "".padStart(if (null == groupType || control.first.indexCascades) 0 else 2)
             val paddGroup = ifInnerPadd + "".padStart((control.second.index?.size ?: 1) * 2 - 2)
-            if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex)) {
+            if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex) && groupType.createdButton) {
                 addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model, isAlwaysVisible)
-                if (groupType.actionCaption != "") {
-                    model.addRow(arrayOf(
-                        paddGroup + groupType.groupCaption,
-                        buildButtonField(newElemsProvider, state, bpmnElementId, groupType, control.second.index?.dropLast(1) ?: listOf())
-                    ))
-                }
+                model.addRow(arrayOf(
+                    paddGroup + groupType.groupCaption,
+                    buildButtonField(newElemsProvider, state, bpmnElementId, groupType, control.second.index?.dropLast(1) ?: listOf())
+                ))
                 seenIndexes.add(controlGroupIndex)
             }
 

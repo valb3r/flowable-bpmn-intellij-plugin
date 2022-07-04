@@ -158,9 +158,9 @@ val listDefaultPrint: List<DefaultPrintByHeadProp> = listOf(
 )
 data class DefaultPrintByHeadProp(val headProp: PropertyType, val dependProp: PropertyType, val valueDependProp: String)
 data class NewElem(val propertyType: String, val valuePattern: String = "", val uiOnlyaddedIndex: List<String> = emptyList())
-enum class FunctionalGroupType(val groupCaption: String, val actionCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf()) {
-    ADD_FIELD("Fields", "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", ""))),
-    ADD_FORM_PROPERTY("Form properties", "Add property", actionResult = NewElem("FORM_PROPERTY_ID", "Property %d"),
+enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf(),val createdButton: Boolean = true, val actionCaption: String = "",) {
+    ADD_FIELD("Fields", actionCaption = "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", ""))),
+    ADD_FORM_PROPERTY("Form properties", actionCaption = "Add property", actionResult = NewElem("FORM_PROPERTY_ID", "Property %d"),
         actionUiOnlyResult = listOf(
             NewElem("FORM_PROPERTY_NAME", ""),
             NewElem("FORM_PROPERTY_TYPE", ""),
@@ -172,12 +172,12 @@ enum class FunctionalGroupType(val groupCaption: String, val actionCaption: Stri
             NewElem("FORM_PROPERTY_VALUE_NAME", "", uiOnlyaddedIndex = listOf(""))
         )
     ),
-    ADD_FORM_PROPERTY_VALUE("Form property value", "Add value", actionResult = NewElem("FORM_PROPERTY_VALUE_ID", "Property value %d"),
+    ADD_FORM_PROPERTY_VALUE("Form property value", actionCaption = "Add value", actionResult = NewElem("FORM_PROPERTY_VALUE_ID", "Property value %d"),
         actionUiOnlyResult = listOf(
             NewElem("FORM_PROPERTY_VALUE_NAME", "")
         )
     ),
-    ADD_EVENT("Event fields", "", actionResult = NewElem("EVENT_TYPE", ""),
+    ADD_EVENT("Event fields", createdButton = false, actionResult = NewElem("EVENT_TYPE", ""),
         actionUiOnlyResult = listOf(
             NewElem("EVENT_NAME", ""),
             NewElem("TRIGGER_EVENT_TYPE", ""),
@@ -191,26 +191,26 @@ enum class FunctionalGroupType(val groupCaption: String, val actionCaption: Stri
             NewElem("EVENT_KEY_FIXED_VALUE", ""),
         )
     ),
-    MAPPING_PAYLOAD_TO("Mapping to event payload", "Add mapping payload", actionResult = NewElem("MAPPING_PAYLOAD_TO_EVENT_VARIABLE_NAME", ""),
+    MAPPING_PAYLOAD_TO("Mapping to event payload", actionCaption = "Add mapping payload", actionResult = NewElem("MAPPING_PAYLOAD_TO_EVENT_VARIABLE_NAME", ""),
         actionUiOnlyResult = listOf(
             NewElem("MAPPING_PAYLOAD_TO_EVENT_PROPERTY_NAME", ""),
             NewElem("MAPPING_PAYLOAD_TO_EVENT_TYPE", ""),
         )
     ),
-    MAPPING_PAYLOAD_FROM("Mapping from event payload", "Add mapping payload", actionResult = NewElem("MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME", ""),
+    MAPPING_PAYLOAD_FROM("Mapping from event payload", actionCaption = "Add mapping payload", actionResult = NewElem("MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME", ""),
         actionUiOnlyResult = listOf(
             NewElem("MAPPING_PAYLOAD_FROM_EVENT_PROPERTY_NAME", ""),
             NewElem("MAPPING_PAYLOAD_FROM_EVENT_TYPE", ""),
         )
     ),
-    EXECUTION_LISTENER("Execution listeners", "Add execution listeners", actionResult = NewElem("EXECUTION_LISTENER_CLASS", "Class %d"),
+    EXECUTION_LISTENER("Execution listeners", actionCaption = "Add execution listeners", actionResult = NewElem("EXECUTION_LISTENER_CLASS", "Class %d"),
         actionUiOnlyResult = listOf(
             NewElem("EXECUTION_LISTENER_EVENT", ""),
             NewElem("EXECUTION_LISTENER_FIELD_NAME", "", uiOnlyaddedIndex = listOf("")),
             NewElem("EXECUTION_LISTENER_FIELD_STRING", "", uiOnlyaddedIndex = listOf(""))
         )
     ),
-    EXECUTION_LISTENER_FILED("Fields", "Add fields listener", actionResult = NewElem("EXECUTION_LISTENER_FIELD_NAME", "Name %d"),
+    EXECUTION_LISTENER_FILED("Fields", actionCaption = "Add fields listener", actionResult = NewElem("EXECUTION_LISTENER_FIELD_NAME", "Name %d"),
         actionUiOnlyResult = listOf(
             NewElem("EXECUTION_LISTENER_FIELD_STRING", ""),
         )
