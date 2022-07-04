@@ -741,40 +741,40 @@ class ProcessNode : BpmnMappable<BpmnProcess>, ProcessBody() {
     abstract class SendEventMapper : ServiceTaskMapper<BpmnSendEventTask> {
 
         abstract override fun convertToDto(input: BpmnServiceTask): BpmnSendEventTask
-//        @AfterMapping
-//        fun afterConvertToDto(@MappingTarget input: BpmnSendEventTask) {
-//            val eventType: String? = input.extensionElements?.filter { it.name.equals("eventType")}?.firstOrNull()?.string
-//            val triggerEventType: String? = input.extensionElements?.filter { it.name.equals("triggerEventType")}?.firstOrNull()?.string
-//            val eventName: String? = input.extensionElements?.filter { it.name.equals("eventName")}?.firstOrNull()?.string
-//            val channelKey: String? = input.extensionElements?.filter { it.name.equals("channelKey")}?.firstOrNull()?.string
-//            val channelName: String? = input.extensionElements?.filter { it.name.equals("channelName")}?.firstOrNull()?.string
-//            val channelDestination: String? = input.extensionElements?.filter { it.name.equals("channelDestination")}?.firstOrNull()?.string
-//            val triggerEventName: String? = input.extensionElements?.filter { it.name.equals("triggerEventName")}?.firstOrNull()?.string
-//            val triggerChannelKey: String? = input.extensionElements?.filter { it.name.equals("triggerChannelKey")}?.firstOrNull()?.string
-//            val triggerChannelName: String? = input.extensionElements?.filter { it.name.equals("triggerChannelName")}?.firstOrNull()?.string
-//            val triggerChannelDestination: String? = input.extensionElements?.filter { it.name.equals("triggerChannelDestination")}?.firstOrNull()?.string
-//            val keyDetectionType: String? = input.extensionElements?.filter { it.name.equals("keyDetectionType")}?.firstOrNull()?.string
-//            val keyDetectionValue: String? = input.extensionElements?.filter { it.name.equals("keyDetectionValue")}?.firstOrNull()?.string
-//            val channelType: String? = input.extensionElements?.filter { it.name.equals("channelType")}?.firstOrNull()?.string
-//            val triggerChannelType: String? = input.extensionElements?.filter { it.name.equals("triggerChannelType")}?.firstOrNull()?.string
-//            val extensionFromEvent = ExtensionFromEvent(
-//                    eventType = eventType,
-//                    triggerEventType = triggerEventType,
-//                    eventName = eventName,
-//                    channelKey = channelKey,
-//                    channelName = channelName,
-//                    channelDestination = channelDestination,
-//                    triggerEventName = triggerEventName,
-//                    triggerChannelKey = triggerChannelKey,
-//                    triggerChannelName = triggerChannelName,
-//                    triggerChannelDestination = triggerChannelDestination,
-//                    keyDetectionType = keyDetectionType,
-//                    keyDetectionValue = keyDetectionValue,
-//                    channelType = channelType,
-//                    triggerChannelType = triggerChannelType,
-//                )
-//            input.eventExtensionElements = listOf(extensionFromEvent)
-//        }
+        @AfterMapping
+        fun afterConvertToDto(@MappingTarget input: BpmnSendEventTask) {
+            val eventType: String? = input.extensionElements?.filter { it.name.equals("eventType")}?.firstOrNull()?.string
+            val triggerEventType: String? = input.extensionElements?.filter { it.name.equals("triggerEventType")}?.firstOrNull()?.string
+            val eventName: String? = input.extensionElements?.filter { it.name.equals("eventName")}?.firstOrNull()?.string
+            val channelKey: String? = input.extensionElements?.filter { it.name.equals("channelKey")}?.firstOrNull()?.string
+            val channelName: String? = input.extensionElements?.filter { it.name.equals("channelName")}?.firstOrNull()?.string
+            val channelDestination: String? = input.extensionElements?.filter { it.name.equals("channelDestination")}?.firstOrNull()?.string
+            val triggerEventName: String? = input.extensionElements?.filter { it.name.equals("triggerEventName")}?.firstOrNull()?.string
+            val triggerChannelKey: String? = input.extensionElements?.filter { it.name.equals("triggerChannelKey")}?.firstOrNull()?.string
+            val triggerChannelName: String? = input.extensionElements?.filter { it.name.equals("triggerChannelName")}?.firstOrNull()?.string
+            val triggerChannelDestination: String? = input.extensionElements?.filter { it.name.equals("triggerChannelDestination")}?.firstOrNull()?.string
+            val keyDetectionType: String? = input.extensionElements?.filter { it.name.equals("keyDetectionType")}?.firstOrNull()?.string
+            val keyDetectionValue: String? = input.extensionElements?.filter { it.name.equals("keyDetectionValue")}?.firstOrNull()?.string
+            val channelType: String? = input.extensionElements?.filter { it.name.equals("channelType")}?.firstOrNull()?.string
+            val triggerChannelType: String? = input.extensionElements?.filter { it.name.equals("triggerChannelType")}?.firstOrNull()?.string
+            val extensionFromEvent = ExtensionFromEvent(
+                    eventType = eventType,
+                    triggerEventType = triggerEventType,
+                    eventName = eventName,
+                    channelKey = channelKey,
+                    channelName = channelName,
+                    channelDestination = channelDestination,
+                    triggerEventName = triggerEventName,
+                    triggerChannelKey = triggerChannelKey,
+                    triggerChannelName = triggerChannelName,
+                    triggerChannelDestination = triggerChannelDestination,
+                    keyDetectionType = keyDetectionType,
+                    keyDetectionValue = keyDetectionValue,
+                    channelType = channelType,
+                    triggerChannelType = triggerChannelType,
+                )
+            input.eventExtensionElements = listOf(extensionFromEvent)
+        }
     }
 
     @Mapper

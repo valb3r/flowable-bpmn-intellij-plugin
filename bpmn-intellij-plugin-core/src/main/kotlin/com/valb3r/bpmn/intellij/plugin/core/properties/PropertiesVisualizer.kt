@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.properties
 
+import com.google.common.annotations.VisibleForTesting
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -183,7 +184,7 @@ class PropertiesVisualizer(
         model: FirstLastColumnReadOnlyModel,
         isAlwaysVisible: Boolean = false
     ) {
-        if (null == controlGroupIndex.type /*||  controlGroupIndex.index != "" */|| isAlwaysVisible) return
+        if (null == controlGroupIndex.type || isAlwaysVisible) return
         filter.addControl(controlGroupIndex, model.rowCount)
     }
 
