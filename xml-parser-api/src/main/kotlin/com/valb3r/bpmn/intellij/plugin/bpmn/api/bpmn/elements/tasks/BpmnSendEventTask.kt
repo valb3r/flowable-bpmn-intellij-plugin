@@ -10,22 +10,14 @@ data class BpmnSendEventTask(
     val async: Boolean? = null,
     val exclusive: Boolean? = null,
     val triggerable: Boolean? = null,
-    // TODO Execution listener
-//    // TODO channelType must be list of selection
-//    // TODO triggerChannelType must be list of selection
 
-//    // TODO Mapping from event payload
-//    // TODO Correlation parameters
-
-
-/* BPMN engine specific extensions (intermediate storage) */
+    /* BPMN engine specific extensions (intermediate storage) */
     val extensionElements: List<ExtensionElement>? = null,
     /* Flattened extensionElements, for explicitness - these are the target of binding */
-//    val formPropertiesExtension: List<ExtensionFormProperty>? =1 null
-//    val fieldsExtension: List<ExtensionField>? = null,
     var eventExtensionElements: List<ExtensionFromEvent>? = null,
     val extensionElementsMappingPayloadToEvent: List<ExtensionEventPayload>? = null,
     val extensionElementsMappingPayloadFromEvent: List<ExtensionEventPayload>? = null,
+    val executionListener: List<ExeсutionListener>? = null,
     ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
