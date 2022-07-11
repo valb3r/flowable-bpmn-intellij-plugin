@@ -1,8 +1,11 @@
 package com.valb3r.bpmn.intellij.plugin.core.tests
 
 import com.google.common.hash.Hashing
+import com.intellij.ide.model
+import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.messages.MessageBus
 import com.intellij.util.messages.MessageBusConnection
 import com.nhaarman.mockitokotlin2.*
@@ -31,15 +34,15 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.CanvasBuilder
 import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
-import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
-import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
-import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
+import com.valb3r.bpmn.intellij.plugin.core.properties.*
 import com.valb3r.bpmn.intellij.plugin.core.render.*
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.UiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.setUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.settings.BaseBpmnPluginSettingsState
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstLastColumnReadOnlyModel
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
 import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.ArgumentMatchers
@@ -54,7 +57,9 @@ import java.util.*
 import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JTable
+import javax.swing.SwingConstants
 import javax.swing.plaf.basic.BasicArrowButton
+import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableColumn
 import javax.swing.table.TableColumnModel
 
@@ -71,7 +76,7 @@ abstract class BaseUiTest {
     protected val virtualFile = mock<VirtualFile>()
     protected val columnModel = mock<TableColumnModel>()
     protected val tableColumn = mock<TableColumn>()
-    protected val propertiesTable = mock<JTable>()
+    protected val propertiesTable = spy(JTable())
 
     protected val newLink = "NEW-SEQUENCE"
     protected val doDel = "DEL"
@@ -116,7 +121,7 @@ abstract class BaseUiTest {
     protected val sendEventTaskDiagramId = DiagramElementId("DIAGRAM-sendEventTask")
 
     protected val sequenceFlowDiagramId = DiagramElementId("DIAGRAM-sequenceFlow")
-    protected val bpmnSendEventTask = BpmnSendEventTask(sendEventTaskBpmnId)
+    protected val bpmnSendEventTask = BpmnSendEventTask(sendEventTaskBpmnId, eventExtensionElements = listOf())
     protected val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId)
     protected val bpmnUserTask = BpmnUserTask(userTaskBpmnId, "Name user task", formPropertiesExtension = listOf(ExtensionFormProperty("Property ID", "Name property", null
         , null, null, null, null, value = listOf(
@@ -191,11 +196,15 @@ abstract class BaseUiTest {
         return@computeIfAbsent res
     } }
     protected val buttonFactory = { id: BpmnElementId, type: FunctionalGroupType -> buttonsConstructed.computeIfAbsent(Pair(id, type)) {
-        return@computeIfAbsent mock<JButton>()
+        return@computeIfAbsent JButton(type.actionCaption)
     } }
     protected val arrowButtonFactory = { id: BpmnElementId -> arrowButtonsConstructed.computeIfAbsent(id) {
-        return@computeIfAbsent mock<BasicArrowButton>()
+        return@computeIfAbsent BasicArrowButton(SwingConstants.SOUTH)
     } }
+
+    private fun createButton(caption: String): JButton {
+        return JButton(caption)
+    }
 
 
     @BeforeEach
@@ -363,6 +372,8 @@ abstract class BaseUiTest {
         )
         canvas.paintComponent(graphics)
     }
+
+    
 
     protected fun verifyServiceTasksAreDrawn() {
         renderResult.shouldNotBeNull().areas.shouldHaveKey(serviceTaskStartDiagramId)

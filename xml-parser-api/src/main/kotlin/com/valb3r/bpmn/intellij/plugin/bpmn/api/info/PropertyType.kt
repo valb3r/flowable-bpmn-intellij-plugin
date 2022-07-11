@@ -191,13 +191,13 @@ enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewEl
             NewElem("EVENT_KEY_FIXED_VALUE", ""),
         )
     ),
-    MAPPING_PAYLOAD_TO("Mapping to event payload", actionCaption = "Add mapping payload", actionResult = NewElem("MAPPING_PAYLOAD_TO_EVENT_VARIABLE_NAME", ""),
+    MAPPING_PAYLOAD_TO("Mapping to event payload", actionCaption = "Add mapping payload", actionResult = NewElem("MAPPING_PAYLOAD_TO_EVENT_VARIABLE_NAME", "Name %d"),
         actionUiOnlyResult = listOf(
             NewElem("MAPPING_PAYLOAD_TO_EVENT_PROPERTY_NAME", ""),
             NewElem("MAPPING_PAYLOAD_TO_EVENT_TYPE", ""),
         )
     ),
-    MAPPING_PAYLOAD_FROM("Mapping from event payload", actionCaption = "Add mapping payload", actionResult = NewElem("MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME", ""),
+    MAPPING_PAYLOAD_FROM("Mapping from event payload", actionCaption = "Add mapping payload", actionResult = NewElem("MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME", "Name %d"),
         actionUiOnlyResult = listOf(
             NewElem("MAPPING_PAYLOAD_FROM_EVENT_PROPERTY_NAME", ""),
             NewElem("MAPPING_PAYLOAD_FROM_EVENT_TYPE", ""),

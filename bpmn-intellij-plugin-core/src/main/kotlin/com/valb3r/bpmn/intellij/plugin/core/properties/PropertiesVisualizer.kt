@@ -1,6 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.core.properties
 
-import com.google.common.annotations.VisibleForTesting
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -380,12 +379,16 @@ class PropertiesVisualizer(
     }
 }
 
-private class RowExpansionFilter: RowFilter<TableModel, Any>() {
+public class RowExpansionFilter: RowFilter<TableModel, Any>() {
 
     private val groups: MutableMap<ElementIndex, MutableSet<Int>> = mutableMapOf()
     private val collapsed: MutableSet<Int> = mutableSetOf()
     private val inverseGroups: MutableMap<Int, ElementIndex> = mutableMapOf()
     private val collapseControls: MutableMap<ElementIndex, MutableSet<Pair<BasicArrowButton, ElementIndex>>> = mutableMapOf()
+
+    fun getCollapsed(): MutableSet<Int> {
+        return collapsed
+    }
 
     fun addControl(control: ElementIndex, rowIndex: Int) {
         groups.computeIfAbsent(control) { mutableSetOf() }.add(rowIndex)
