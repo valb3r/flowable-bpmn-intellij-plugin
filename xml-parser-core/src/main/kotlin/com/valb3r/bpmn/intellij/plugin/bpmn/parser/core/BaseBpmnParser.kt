@@ -146,6 +146,7 @@ abstract class BaseBpmnParser: BpmnParser {
         mapper.enable(SerializationFeature.INDENT_OUTPUT)
         mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
         return mapper as XmlMapper
     }
 

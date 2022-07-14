@@ -17,7 +17,7 @@ import com.valb3r.bpmn.intellij.plugin.core.newelements.NewElementsProvider
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstLastColumnReadOnlyModel
-import org.assertj.core.util.VisibleForTesting
+import org.jetbrains.annotations.VisibleForTesting
 import java.util.*
 import javax.swing.*
 import javax.swing.plaf.basic.BasicArrowButton
