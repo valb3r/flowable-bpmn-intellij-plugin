@@ -21,6 +21,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
@@ -125,23 +126,11 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
 
     override fun <T : WithBpmnId> propertiesOf(obj: T): PropertyTable {
         val table = when (obj) {
-            is BpmnStartEvent, is BpmnStartTimerEvent, is BpmnStartSignalEvent, is BpmnStartMessageEvent,
-            is BpmnStartErrorEvent, is BpmnStartEscalationEvent, is BpmnStartConditionalEvent, is BpmnEndEvent,
-            is BpmnEndErrorEvent, is BpmnEndCancelEvent, is BpmnEndEscalationEvent,
-            is BpmnEndTerminateEvent, is BpmnBoundaryCancelEvent, is BpmnBoundaryCompensationEvent,
-            is BpmnBoundaryConditionalEvent, is BpmnBoundaryEscalationEvent, is BpmnBoundaryMessageEvent, is BpmnBoundaryErrorEvent,
-            is BpmnBoundarySignalEvent, is BpmnBoundaryTimerEvent,
-            is BpmnTask, is BpmnUserTask, is BpmnScriptTask, is BpmnServiceTask, is BpmnBusinessRuleTask,
-            is BpmnSendTask, is BpmnReceiveTask, is BpmnCamelTask, is BpmnHttpTask, is BpmnSendEventTask,is BpmnExternalTask, is BpmnMuleTask, is BpmnDecisionTask, is BpmnShellTask, is BpmnMailTask,
-            is BpmnManualTask,
-            is BpmnSubProcess, is BpmnEventSubprocess, is BpmnTransactionalSubProcess, is BpmnAdHocSubProcess, is BpmnCollapsedSubprocess, is BpmnTransactionCollapsedSubprocess,
-            is BpmnExclusiveGateway, is BpmnParallelGateway, is BpmnInclusiveGateway, is BpmnEventGateway, is BpmnComplexGateway,
-            is BpmnIntermediateTimerCatchingEvent, is BpmnIntermediateMessageCatchingEvent, is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent,
-            is BpmnIntermediateNoneThrowingEvent, is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent, is BpmnIntermediateLinkCatchingEvent,
-            is BpmnProcess
+            is BpmnStartEventAlike, is EndEventAlike, is BpmnBoundaryEventAlike, is BpmnTaskAlike, is BpmnGatewayAlike,
+            is IntermediateCatchingEventAlike, is IntermediateThrowingEventAlike, is BpmnProcess
             -> processDtoToPropertyMap(obj)
 
-            is BpmnCallActivity -> fillForCallActivity(obj)
+            is BpmnStructuralElementAlike -> fillForCallActivity(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
             else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
         }
@@ -154,7 +143,6 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
     protected open fun processDtoToPropertyMap(dto: Any): MutableMap<PropertyType, MutableList<Property>> {
         val result: MutableMap<PropertyType, MutableList<Property>> = mutableMapOf()
         val propertyTree = mapper.valueToTree<JsonNode>(dto)
-
         for (type in propertyTypes()) {
             parseValue(type.path, type, propertyTree, result, 0)
         }
@@ -178,7 +166,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         }
     }
 
-    private fun fillForCallActivity(activity: BpmnCallActivity): MutableMap<PropertyType, MutableList<Property>> {
+    private fun fillForCallActivity(activity: BpmnStructuralElementAlike): MutableMap<PropertyType, MutableList<Property>> {
         val properties = processDtoToPropertyMap(activity)
         // TODO: handle extension elements
         return properties
@@ -261,20 +249,14 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
 
     private fun bounds(forBpmnObject: WithBpmnId): BoundsElement {
         return when (forBpmnObject) {
-            is BpmnStartEvent, is BpmnStartEscalationEvent, is BpmnStartConditionalEvent, is BpmnStartErrorEvent,
-            is BpmnStartMessageEvent, is BpmnStartSignalEvent, is BpmnStartTimerEvent, is BpmnEndEvent,
-            is BpmnEndTerminateEvent, is BpmnEndEscalationEvent, is BpmnBoundaryCancelEvent, is BpmnBoundaryCompensationEvent,
-            is BpmnBoundaryConditionalEvent, is BpmnBoundaryEscalationEvent, is BpmnBoundaryMessageEvent, is BpmnBoundaryErrorEvent,
-            is BpmnBoundarySignalEvent, is BpmnBoundaryTimerEvent, is BpmnEndErrorEvent,
-            is BpmnEndCancelEvent, is BpmnIntermediateTimerCatchingEvent, is BpmnIntermediateMessageCatchingEvent,
-            is BpmnIntermediateSignalCatchingEvent, is BpmnIntermediateConditionalCatchingEvent, is BpmnIntermediateNoneThrowingEvent,
-            is BpmnIntermediateSignalThrowingEvent, is BpmnIntermediateEscalationThrowingEvent, is BpmnIntermediateLinkCatchingEvent -> BoundsElement(
+            is BpmnStartEventAlike, is EndEventAlike, is BpmnBoundaryEventAlike, is IntermediateThrowingEventAlike,
+            is IntermediateCatchingEventAlike -> BoundsElement(
                 0.0f,
                 0.0f,
                 30.0f,
                 30.0f
             )
-            is BpmnExclusiveGateway, is BpmnParallelGateway, is BpmnInclusiveGateway, is BpmnEventGateway, is BpmnComplexGateway -> BoundsElement(
+            is BpmnGatewayAlike -> BoundsElement(
                 0.0f,
                 0.0f,
                 40.0f,

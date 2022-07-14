@@ -1587,6 +1587,16 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         }
         throw IndexOutOfBoundsException("Can't find position by property type")
     }
+
+    @Test
+    fun `Shape change menu is shown when user clicks on wrench icon`() {
+        prepareTwoServiceTaskView()
+        clickOnId(serviceTaskStartDiagramId)
+        val serviceTaskTypeChange = findExactlyOneTypeChangeElem()
+        clickOnId(serviceTaskTypeChange!!)
+
+        verify(popupMenuProvider).popupChangeShapeType(serviceTaskStartBpmnId)
+    }
 }
 
 class CanvasTestable(private val painter: CanvasPainter, project: Project, settings: CanvasConstants) :

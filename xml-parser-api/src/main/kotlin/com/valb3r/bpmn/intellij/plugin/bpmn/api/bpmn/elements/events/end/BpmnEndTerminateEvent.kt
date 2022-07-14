@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.EndEventAlike
 
 data class BpmnEndTerminateEvent(
         override val id: BpmnElementId,
@@ -11,7 +12,7 @@ data class BpmnEndTerminateEvent(
         val asyncAfter: Boolean? = null,
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
-): WithBpmnId {
+): WithBpmnId, EndEventAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)

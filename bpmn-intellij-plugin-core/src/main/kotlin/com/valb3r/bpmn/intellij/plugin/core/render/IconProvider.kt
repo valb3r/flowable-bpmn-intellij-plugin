@@ -73,6 +73,7 @@ interface IconProvider {
     val boundarySignalEvent: SvgIcon
     val boundaryTimerEvent: SvgIcon
     val recycleBin: SvgIcon
+    val wrench: SvgIcon
     val rightAngle: SvgIcon
     val selectParentSequence: SvgIcon
 }
@@ -163,6 +164,7 @@ data class IconProviderImpl(
         override val boundarySignalEvent: SvgIcon = "/icons/ui-icons/svg/signal-boundary-event.svg".asResource()!!,
         override val boundaryTimerEvent: SvgIcon = "/icons/ui-icons/svg/timer-boundary-event.svg".asResource()!!,
         override val recycleBin: SvgIcon = "/icons/ui-icons/svg/recycle-bin.svg".asResource()!!,
+        override val wrench: SvgIcon = "/icons/ui-icons/svg/wrench.svg".asResource()!!,
         override val rightAngle: SvgIcon = "/icons/ui-icons/svg/angle-right.svg".asResource()!!,
         override val selectParentSequence: SvgIcon = "/icons/ui-icons/svg/select-parent-sequence.svg".asResource()!!,
 ): IconProvider

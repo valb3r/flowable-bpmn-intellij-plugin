@@ -3,13 +3,13 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.events
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.Translatable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import java.awt.geom.Point2D
 
@@ -45,6 +45,13 @@ interface DiagramElementRemoved: EventPropagatableToXml {
 
 interface BpmnElementRemoved: EventPropagatableToXml {
     val bpmnElementId: BpmnElementId
+}
+
+interface BpmnElementChange: EventPropagatableToXml{
+    val elementId: BpmnElementId
+    val newBpmnElement: WithBpmnId
+    val parentIdForXml: BpmnElementId
+    val props: PropertyTable
 }
 
 interface BpmnShapeObjectAdded: EventPropagatableToXml {

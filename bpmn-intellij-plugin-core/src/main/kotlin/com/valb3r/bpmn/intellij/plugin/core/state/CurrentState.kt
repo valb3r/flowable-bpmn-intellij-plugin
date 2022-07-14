@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
@@ -91,7 +92,6 @@ class CurrentStateProvider(private val project: Project) {
         val updatedPropertyWithElementByPropertyType = mutableMapOf<PropertyType, MutableMap<BpmnElementId, Property>>()
         val updatedElemUiOnlyPropertiesByStaticElementId = state.elemUiOnlyPropertiesByStaticElementId.toMutableMap()
         var updatedProcessId = state.processId
-
         val updateEventsRegistry: ProcessModelUpdateEvents = updateEventsRegistry(project)
         val undoRedoStatus = updateEventsRegistry.undoRedoStatus()
         val updates = updateEventsRegistry.getUpdateEventList()
@@ -111,6 +111,9 @@ class CurrentStateProvider(private val project: Project) {
                 }
                 is BpmnElementRemoved -> {
                     handleRemoved(event.bpmnElementId, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
+                }
+                is BpmnElementChange -> {
+                    handleChangeType(event.elementId, event.newBpmnElement, updatedElementByStaticId, event.props, updatedElemPropertiesByStaticElementId)
                 }
                 is DiagramElementRemoved -> {
                     handleDiagramRemoved(event.elementId, updatedShapes, updatedEdges, updatedElementByDiagramId)
@@ -286,6 +289,18 @@ class CurrentStateProvider(private val project: Project) {
         edge?.let { updatedElementByDiagramId.remove(it.id); updatedEdges.remove(it) }
         updatedElementByStaticId.remove(elementId)
         updatedElemPropertiesByStaticElementId.remove(elementId)
+    }
+
+    private fun handleChangeType(
+        elementId: BpmnElementId,
+        updateElement: WithBpmnId,
+        updatedElementByStaticId: MutableMap<BpmnElementId, WithParentId>,
+        propertyTable: PropertyTable,
+        updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>
+    ){
+        val updateWithParentId = updatedElementByStaticId[elementId]!!.copy(element = updateElement)
+        updatedElementByStaticId[elementId] = updateWithParentId
+        updatedElemPropertiesByStaticElementId[elementId] = propertyTable
     }
 
     private fun updateId(
