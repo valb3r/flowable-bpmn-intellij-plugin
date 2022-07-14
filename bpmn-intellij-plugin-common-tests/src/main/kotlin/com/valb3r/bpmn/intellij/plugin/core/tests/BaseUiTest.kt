@@ -1,13 +1,10 @@
 package com.valb3r.bpmn.intellij.plugin.core.tests
 
 import com.google.common.hash.Hashing
-import com.intellij.ide.model
-import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.messages.MessageBus
 import com.intellij.util.messages.MessageBusConnection
 import com.nhaarman.mockitokotlin2.*
@@ -45,6 +42,8 @@ import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.setUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.settings.BaseBpmnPluginSettingsState
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.CanvasPopupMenuProvider
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
 import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.ArgumentMatchers
@@ -61,7 +60,6 @@ import javax.swing.JButton
 import javax.swing.JTable
 import javax.swing.SwingConstants
 import javax.swing.plaf.basic.BasicArrowButton
-import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableColumn
 import javax.swing.table.TableColumnModel
 
