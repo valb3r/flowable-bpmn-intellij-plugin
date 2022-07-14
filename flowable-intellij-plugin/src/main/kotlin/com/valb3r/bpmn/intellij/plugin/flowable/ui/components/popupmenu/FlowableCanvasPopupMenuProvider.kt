@@ -37,7 +37,7 @@ class FlowableCanvasPopupMenuProvider(val project: Project) : BaseCanvasPopupMen
         menu.addNewElementItem(sceneLocation, focus, DECISION_TASK)
         menu.addNewElementItem(sceneLocation, focus, SHELL_TASK)
         menu.addNewElementItem(sceneLocation, focus, EXTERNAL_TASK)
-//        addItem(menu, "Send event task", RECEIVE_TASK, ShapeCreator(project, BpmnSendEventTask::class, sceneLocation, parent)) //FIXME
+        menu.addNewElementItem(sceneLocation, focus, SEND_EVENT_TASK)
         return menu
     }
 
