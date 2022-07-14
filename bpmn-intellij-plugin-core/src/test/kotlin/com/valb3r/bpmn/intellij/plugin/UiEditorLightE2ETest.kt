@@ -952,7 +952,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
     }
 
     @Test
-    fun `Visualize property new send event task`() {
+    fun `Visualize property in new send event task`() {
         prepareSendEventTask()
         (propertiesTable.model as DefaultTableModel).dataVector.size.shouldBeEqualTo(0)
         canvas.click(Point2D.Float(5F, 5F))
@@ -1003,7 +1003,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
     }
 
     @Test
-    fun `add execution listener in send event`() {
+    fun `add one execution listener groud in send event`() {
         prepareSendEventTask()
         val model: () -> DefaultTableModel = { propertiesTable.model as DefaultTableModel }
         model().dataVector.size.shouldBeEqualTo(0)
@@ -1014,13 +1014,17 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         addMappingPayloadFrom.doClick()
         (propertiesTable.model as DefaultTableModel).dataVector.size.shouldBeEqualTo(28)
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
-            allValues
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())     //FIXME double invoke doClick button
+            firstValue.shouldContainSame(
+                listOf(
+                    StringValueUpdatedEvent(sendEventTaskBpmnId, PropertyType.MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME, newValue="Name 1", propertyIndex=listOf("Name 1"))
+                )
+            )
         }
     }
 
     @Test
-    fun `arrow button must colapsed event type group`() {
+    fun `when tap arrow button must show event type group`() {
         prepareSendEventTask()
         canvas.click(Point2D.Float(5F, 5F))
         clickOnId(sendEventTaskDiagramId)
@@ -1029,11 +1033,11 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             findFirsBasicArrowButtonByType(PropertyType.EVENT_TYPE, propertiesTable.model as DefaultTableModel)
         val indexProperty =
             findPositionPropType(PropertyType.EVENT_TYPE, propertiesTable.model as DefaultTableModel)
-        val countGroup = PropertyType.EVENT_TYPE.group!!.first().actionUiOnlyResult.size
-        val groupRows = (indexProperty + 1..indexProperty + countGroup).map { it }
-        ((propertiesTable.rowSorter as TableRowSorter).rowFilter as RowExpansionFilter).getCollapsed().shouldContainAll(groupRows)
+        val eventTypeRowNum = PropertyType.EVENT_TYPE.group!!.first().actionUiOnlyResult.size
+        val nonEventTypeRowsNum = (indexProperty + 1..indexProperty + eventTypeRowNum).map { it }
+        ((propertiesTable.rowSorter as TableRowSorter).rowFilter as RowExpansionFilter).getCollapsed().shouldContainAll(nonEventTypeRowsNum)
         arrowButton.doClick()
-        ((propertiesTable.rowSorter as TableRowSorter).rowFilter as RowExpansionFilter).getCollapsed().shouldNotContainAny(groupRows)
+        ((propertiesTable.rowSorter as TableRowSorter).rowFilter as RowExpansionFilter).getCollapsed().shouldNotContainAny(nonEventTypeRowsNum)
     }
 
     @Test
