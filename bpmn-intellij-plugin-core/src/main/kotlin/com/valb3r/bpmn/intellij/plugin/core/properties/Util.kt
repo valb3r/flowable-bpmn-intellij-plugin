@@ -21,7 +21,7 @@ internal fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, Prope
         }
     }
     if (event.property.indexCascades) {
-        state[event.bpmnElementId]?.view()?.filter { null != it.key.group && null != event.property.group && it.key.group!!.contains(event.property.group!![event.property.group!!.size - 1 ])}
+        state[event.bpmnElementId]?.view()?.filter { it.key.group?.contains(event.property.group?.last()) == true }
             ?.forEach { (k, _) ->
                 uiEventCascade(event, cascades, k)
             }

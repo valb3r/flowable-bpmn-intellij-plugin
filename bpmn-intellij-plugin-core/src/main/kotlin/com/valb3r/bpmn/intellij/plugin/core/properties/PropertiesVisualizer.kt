@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.properties
 
+import com.intellij.database.util.toFixString
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -16,6 +17,7 @@ import com.valb3r.bpmn.intellij.plugin.core.newelements.NewElementsProvider
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstLastColumnReadOnlyModel
+import org.assertj.core.util.VisibleForTesting
 import java.util.*
 import javax.swing.*
 import javax.swing.plaf.basic.BasicArrowButton
@@ -130,7 +132,7 @@ class PropertiesVisualizer(
 
             val ifInnerPadd = "".padStart(if (null == groupType || control.first.indexCascades) 0 else 2)
             val paddGroup = ifInnerPadd + "".padStart((control.second.index?.size ?: 1) * 2 - 2)
-            if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex) && groupType.createdButton) {
+            if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex) && groupType.createExpansionButton) {
                 addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model, isAlwaysVisible)
                 model.addRow(arrayOf(
                     paddGroup + groupType.groupCaption,
@@ -152,9 +154,6 @@ class PropertiesVisualizer(
                 EXPRESSION -> arrayOf(caption, buildExpressionField(state, bpmnElementId, control.first, control.second))
                 ATTACHED_SEQUENCE_SELECT -> arrayOf(caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, control.first, control.second))
                 LIST_SELECT -> arrayOf(caption, buildDropDownSelect(state, bpmnElementId, control.first, control.second))
-                else -> {
-                    throw IllegalArgumentException("Bad value type")
-                }
             }
 
             if (isExpandButton) {
@@ -188,9 +187,9 @@ class PropertiesVisualizer(
     }
 
     private fun computePropertyKey(entry: Pair<PropertyType, Property>): String {
-        if(entry.first.positionInGroup >= 65535) throw IllegalArgumentException("Max int to character is 65535, position is ${entry.first.positionInGroup}")
-        val intToChar = entry.first.positionInGroup.toChar()
-        return entry.first.group?.mapIndexed { index, type -> type.name + entry.second.index?.getOrElse(index) {""} + intToChar}?.joinToString() ?: ""
+        return entry.first.group?.mapIndexed { index, type ->
+            type.name + entry.second.index?.getOrElse(index) {""} + entry.first.positionInGroup.toFixString(4)
+        }?.joinToString() ?: ""
     }
 
     private fun notifyDeFocusElement() {
@@ -386,6 +385,7 @@ public class RowExpansionFilter: RowFilter<TableModel, Any>() {
     private val inverseGroups: MutableMap<Int, ElementIndex> = mutableMapOf()
     private val collapseControls: MutableMap<ElementIndex, MutableSet<Pair<BasicArrowButton, ElementIndex>>> = mutableMapOf()
 
+    @VisibleForTesting
     fun getCollapsed(): MutableSet<Int> {
         return collapsed
     }

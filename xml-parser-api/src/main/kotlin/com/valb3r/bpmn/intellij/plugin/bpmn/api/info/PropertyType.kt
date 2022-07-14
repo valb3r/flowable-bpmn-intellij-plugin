@@ -158,7 +158,7 @@ val listDefaultPrint: List<DefaultPrintByHeadProp> = listOf(
 )
 data class DefaultPrintByHeadProp(val headProp: PropertyType, val dependProp: PropertyType, val valueDependProp: String)
 data class NewElem(val propertyType: String, val valuePattern: String = "", val uiOnlyaddedIndex: List<String> = emptyList())
-enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf(),val createdButton: Boolean = true, val actionCaption: String = "",) {
+enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf(), val createExpansionButton: Boolean = true, val actionCaption: String = "",) {
     ADD_FIELD("Fields", actionCaption = "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", ""))),
     ADD_FORM_PROPERTY("Form properties", actionCaption = "Add property", actionResult = NewElem("FORM_PROPERTY_ID", "Property %d"),
         actionUiOnlyResult = listOf(
@@ -177,7 +177,7 @@ enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewEl
             NewElem("FORM_PROPERTY_VALUE_NAME", "")
         )
     ),
-    ADD_EVENT("Event fields", createdButton = false, actionResult = NewElem("EVENT_TYPE", ""),
+    ADD_EVENT("Event fields", createExpansionButton = false, actionResult = NewElem("EVENT_TYPE", ""),
         actionUiOnlyResult = listOf(
             NewElem("EVENT_NAME", ""),
             NewElem("TRIGGER_EVENT_TYPE", ""),

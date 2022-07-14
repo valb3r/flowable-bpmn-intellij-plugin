@@ -119,7 +119,7 @@ data class ServiceTask(
     class UnhandledExtensionElement : ExtensionElement()
 
     @JsonDeserialize(using = ExtensionElementDeserializer::class)
-    class EventElement(key: String, value: String) : ExtensionElement(name = key, string = value)
+    class EventElement(key: String, value: String?) : ExtensionElement(name = key, string = value)
 
     class ExtensionElementDeserializer(vc: Class<*>? = null) : StdDeserializer<ExtensionElement?>(vc) {
 
