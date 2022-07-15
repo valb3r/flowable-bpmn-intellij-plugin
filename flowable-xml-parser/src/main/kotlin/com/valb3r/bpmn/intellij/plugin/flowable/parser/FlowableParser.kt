@@ -136,7 +136,7 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     MAPPING_PAYLOAD_FROM_EVENT_PROPERTY_NAME(PropertyTypeDetails(PropertyType.MAPPING_PAYLOAD_FROM_EVENT_PROPERTY_NAME, "extensionElements.flowable:eventOutParameter?source=@.target", XmlType.ATTRIBUTE)),
     MAPPING_PAYLOAD_FROM_EVENT_TYPE(PropertyTypeDetails(PropertyType.MAPPING_PAYLOAD_FROM_EVENT_TYPE, "extensionElements.flowable:eventOutParameter?source=@.type", XmlType.ATTRIBUTE)),
     EXECUTION_LISTENER_CLASS(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_CLASS, "extensionElements.flowable:executionListener?class=@.class", XmlType.ATTRIBUTE)),
-    EXECUTION_LISTENER_EVENT(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_EVENT, "extensionElements.flowable:executionListener?event=@.event", XmlType.ATTRIBUTE)),
+    EXECUTION_LISTENER_EVENT(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_EVENT, "extensionElements.flowable:executionListener?class=@.event", XmlType.ATTRIBUTE)),
     EXECUTION_LISTENER_FIELD_NAME(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_FIELD_NAME, "extensionElements.flowable:executionListener?class=@.flowable:field?name=@.name", XmlType.ATTRIBUTE)),
     EXECUTION_LISTENER_FIELD_STRING(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_FIELD_STRING, "extensionElements.flowable:executionListener?class=@.flowable:field?name=@.flowable:string.text", XmlType.CDATA)),
 }
