@@ -144,9 +144,15 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         val result: MutableMap<PropertyType, MutableList<Property>> = mutableMapOf()
         val propertyTree = mapper.valueToTree<JsonNode>(dto)
         for (type in propertyTypes()) {
-            parseValue(type.path, type, propertyTree, result, 0)
+            var isOk = type.listElemntImplement == null || type.listElemntImplement!!.isEmpty()
+            type.listElemntImplement?.forEach {
+                if(isOk) return@forEach
+                isOk = it.java == dto.javaClass
+            }
+            if (isOk) {
+                parseValue(type.path, type, propertyTree, result, 0)
+            }
         }
-
         return result
     }
 
