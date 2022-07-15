@@ -5,7 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.listDefaultPrint
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.defaultXmlNestedValues
 import com.valb3r.bpmn.intellij.plugin.core.events.IndexUiOnlyValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.UiOnlyValueRemovedEvent
@@ -36,26 +36,26 @@ internal fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, Prope
         }
     }
 
-    defaultPrintIfNeed(event, state, cascades)
-
+    addStaticDependentFieldsToXml(event, state, cascades)
     updateEventsRegistry(project).addEvents(listOf(event) + cascades)
 }
 
-private fun defaultPrintIfNeed(
+/**
+ * Adds static dependent fields to XML if parent element is created
+ */
+private fun addStaticDependentFieldsToXml(
     event: StringValueUpdatedEvent,
     state: Map<BpmnElementId, PropertyTable>,
     cascades: MutableList<Event>
 ) {
-    if (listDefaultPrint.filter { it.headProp == event.property }.isNotEmpty()) {
-        listDefaultPrint.filter { it.headProp == event.property }.forEach {
-            state[event.bpmnElementId]!!.filter { k, _ -> k == it.dependProp }.forEach { prop ->
-                cascades += StringValueUpdatedEvent(
-                    event.bpmnElementId,
-                    prop.first,
-                    it.valueDependProp,
-                    propertyIndex = prop.second.index
-                )
-            }
+    defaultXmlNestedValues.filter { it.headProp == event.property }.forEach {
+        state[event.bpmnElementId]!!.filter { k, _ -> k == it.dependProp }.forEach { prop ->
+            cascades += StringValueUpdatedEvent(
+                event.bpmnElementId,
+                prop.first,
+                it.valueDependProp,
+                propertyIndex = prop.second.index
+            )
         }
     }
 }

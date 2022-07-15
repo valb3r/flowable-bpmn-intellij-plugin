@@ -21,7 +21,7 @@ enum class PropertyType(
     val hideIfNullOrEmpty: Boolean = false,
     val visible: Boolean = true,
     val multiline: Boolean = false,
-    val positionInGroup: Int = 65534, //Max value of character, sorting by name
+    val positionInGroup: Int = 65534, // Explicit order indicator - where to place control in UI
     val setForSelect: Set<String>? = null
 ) {
     ID("id", "ID", STRING, "id.id", true, null, 1000, explicitIndexCascades = listOf("BPMN_INCOMING", "BPMN_OUTGOING")), // ID should fire last
@@ -150,13 +150,18 @@ enum class PropertyType(
     EXECUTION_LISTENER_CLASS("executionListener.@clazz", "Class", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER), indexInGroupArrayName = "clazz", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true, positionInGroup = 1),
     EXECUTION_LISTENER_EVENT("executionListener.@event", "Event", LIST_SELECT, setForSelect = setOf("start", "end", "take"), group = listOf(FunctionalGroupType.EXECUTION_LISTENER), indexInGroupArrayName = "clazz", indexCascades = true),
     EXECUTION_LISTENER_FIELD_NAME("executionListener.@fields.@name", "Name", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", indexCascades = true, updateOrder = 95),
-    EXECUTION_LISTENER_FIELD_STRING("executionListener.@fields.@string", "String", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", updateOrder = 90),
+    EXECUTION_LISTENER_FIELD_STRING("executionListener.@fields.@string", "String", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", updateOrder = 90)
+    ;
+
+    fun isNestedProperty(): Boolean {
+        return (group?.size ?: 0) > 1
+    }
 }
 
-val listDefaultPrint: List<DefaultPrintByHeadProp> = listOf(
-    DefaultPrintByHeadProp(PropertyType.EVENT_KEY_FIXED_VALUE, PropertyType.FIXED_VALUE, "fixedValue")
+val defaultXmlNestedValues: List<DefaultXmlNestedValue> = listOf(
+    DefaultXmlNestedValue(PropertyType.EVENT_KEY_FIXED_VALUE, PropertyType.FIXED_VALUE, "fixedValue")
 )
-data class DefaultPrintByHeadProp(val headProp: PropertyType, val dependProp: PropertyType, val valueDependProp: String)
+data class DefaultXmlNestedValue(val headProp: PropertyType, val dependProp: PropertyType, val valueDependProp: String)
 data class NewElem(val propertyType: String, val valuePattern: String = "", val uiOnlyaddedIndex: List<String> = emptyList())
 enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf(), val createExpansionButton: Boolean = true, val actionCaption: String = "",) {
     ADD_FIELD("Fields", actionCaption = "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", ""))),

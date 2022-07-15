@@ -126,7 +126,7 @@ class PropertiesVisualizer(
             val isExpandButton = control.first.name == groupType?.actionResult?.propertyType
             val isAlwaysVisible = control.first.group?.size == 1 && isExpandButton
             val controlGroupIndex = ElementIndex(
-                if (isExpandButton && control.first.group!!.size != 1) control.first.group?.getOrNull(control.first.group!!.size - 2) else groupType,
+                if (isExpandButton && control.first.isNestedProperty()) control.first.group?.getOrNull(control.first.group!!.size - 2) else groupType,
                 control.second.index?.take(max(0, control.first.group!!.size - if (isExpandButton) 1 else 0))?.joinToString() ?: ""
             )
 

@@ -48,7 +48,6 @@ internal class FlowableSendEventTaskTest {
         props[PropertyType.TRIGGER_CHANNEL_NAME]!!.value.shouldBeEqualTo(task.eventExtensionElements!![0].triggerChannelName)
         props[PropertyType.TRIGGER_CHANNEL_DESTINATION]!!.value.shouldBeEqualTo(task.eventExtensionElements!![0].triggerChannelDestination)
         props[PropertyType.EVENT_KEY_FIXED_VALUE]!!.value.shouldBeEqualTo(task.eventExtensionElements!![0].keyDetectionValue)
-//        props[PropertyType.FIXED_VALUE]!!.value.shouldBeEqualTo("task.async")
     }
 
     @Test
