@@ -54,7 +54,7 @@ data class ServiceTask(
                         UnmappedProperty("jobTopic", input.jobTopic),
                     ),
                     failedJobRetryTimeCycle = input.extensionElements?.filter { null != it.failedJobRetryTimeCycle }?.map { it.failedJobRetryTimeCycle }?.firstOrNull(),
-                    executionListener = input.extensionElements?.filterIsInstance<ExecutionListener>()?.map { ExeсutionListener(it.clazz, it.fields?.map { ListenerField(it.name, it.string) })},
+                    executionListener = input.extensionElements?.filterIsInstance<ExecutionListener>()?.map { ExeсutionListener(it.clazz, it.event, it.fields?.map { ListenerField(it.name, it.string) })},
                 )
         }
 
@@ -76,6 +76,7 @@ data class ServiceTask(
         val target: String? = null,
         val type: String? = null,
         val clazz: String? = null,
+        val event: String? = null,
         val fields: List<ListenerFieldName>? = null
     )
 
@@ -87,8 +88,9 @@ data class ServiceTask(
     @JsonDeserialize(`as` = ExecutionListener::class)
     open class ExecutionListener(
         @JacksonXmlProperty(isAttribute = true, localName = "class") clazz: String?,
+        @JacksonXmlProperty(isAttribute = true) event: String?,
         @JacksonXmlProperty(isAttribute = false) field: List<ListenerFieldName>?,
-    ) : ExtensionElement(clazz = clazz, fields = field)
+    ) : ExtensionElement(clazz = clazz, event = event, fields = field)
 
     @JsonDeserialize(`as` = FieldExtensionElement::class)
     class FieldExtensionElement(

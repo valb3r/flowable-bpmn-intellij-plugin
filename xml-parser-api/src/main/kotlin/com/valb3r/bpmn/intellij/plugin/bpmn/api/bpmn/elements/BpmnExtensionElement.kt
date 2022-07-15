@@ -8,7 +8,7 @@ data class ExtensionField(val name: String? = null, val string: String? = null, 
 
 data class ExtensionEventPayload(val source: String? = null, val target: String? = null, val type: String?)
 
-data class ExeсutionListener(val clazz: String?, val fields: List<ListenerField>?)
+data class ExeсutionListener(val clazz: String?, val event: String?, val fields: List<ListenerField>?)
 
 data class ListenerField(val name: String?, val string: String?)
 
