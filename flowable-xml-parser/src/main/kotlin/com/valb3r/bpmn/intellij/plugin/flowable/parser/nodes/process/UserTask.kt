@@ -3,10 +3,13 @@ package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 import com.fasterxml.jackson.annotation.JsonMerge
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ListenerField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.formprop.FormPropExtensionElement
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.formprop.ExecutionListener
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.formprop.ExtensionElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.formprop.FormProperty
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
@@ -27,7 +30,7 @@ data class UserTask(
         @JacksonXmlProperty(isAttribute = true) val formFieldValidation: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val priority: String?,
         @JacksonXmlProperty(isAttribute = true) val skipExpression: String?,
-        @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<FormPropExtensionElement>? = null
+        @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 ): BpmnMappable<BpmnUserTask> {
 
     override fun toElement(): BpmnUserTask {
@@ -41,7 +44,8 @@ data class UserTask(
         fun convertToDto(input: UserTask) : BpmnUserTask {
             val task = doConvertToDto(input)
             return task.copy(
-                formPropertiesExtension = input.extensionElements?.filterIsInstance<FormProperty>()?.map { mapFormProperty(it) }
+                formPropertiesExtension = input.extensionElements?.filterIsInstance<FormProperty>()?.map { mapFormProperty(it) },
+                executionListener = input.extensionElements?.filterIsInstance<ExecutionListener>()?.map { ExeсutionListener(it.clazz, it.event, it.fields?.map { ListenerField(it.name, it.string) }) },
             )
         }
 
