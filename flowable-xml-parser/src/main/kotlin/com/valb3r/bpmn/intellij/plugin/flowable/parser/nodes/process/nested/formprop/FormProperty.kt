@@ -18,4 +18,4 @@ class FormProperty(
     @JacksonXmlProperty(isAttribute = true) val datePattern: String?,
     @JsonIgnore // FIXME this is ignored field that is updated by custom deserializer because `parser.codec.readTree(parser)` returns single object instead of array
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) var value: List<ExtensionFormPropertyValue>? = null
-) : FormPropExtensionElement(name, string, expression)
+) : ExtensionElement(name, string, expression)

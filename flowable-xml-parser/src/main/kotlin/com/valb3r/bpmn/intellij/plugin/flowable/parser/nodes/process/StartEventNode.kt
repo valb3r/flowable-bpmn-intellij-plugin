@@ -8,7 +8,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.formprop.FormPropExtensionElement
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.formprop.ExtensionElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.formprop.FormProperty
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
@@ -23,7 +23,7 @@ data class StartEventNode(
         @JsonSetter(nulls = Nulls.AS_EMPTY) val errorEventDefinition: ErrorEventDefinition?,
         @JsonSetter(nulls = Nulls.AS_EMPTY) val escalationEventDefinition: EscalationEventDefinition?,
         @JsonSetter(nulls = Nulls.AS_EMPTY) val conditionalEventDefinition: ConditionalEventDefinition?,
-        @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<FormPropExtensionElement>? = null
+        @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 ): BpmnMappable<BpmnStartEvent> {
 
     override fun toElement(): BpmnStartEvent {
