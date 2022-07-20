@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
@@ -24,6 +25,7 @@ data class BpmnStartEvent(
     val extensionElements: List<ExtensionElement>? = null,
     /* Flattened extensionElements, for explicitness - these are the target of binding */
     val formPropertiesExtension: List<ExtensionFormProperty>? = null,
+    val executionListener: List<ExeсutionListener>? = null
 ) : WithBpmnId, BpmnStartEventAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
