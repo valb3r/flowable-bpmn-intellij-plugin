@@ -36,6 +36,7 @@ class ElementTypeChangeTest: CamundaBaseUiTest() {
             ASYNC_BEFORE, ASYNC_AFTER, ASSIGNEE, CANDIDATE_USERS, CANDIDATE_GROUPS,
             SKIP_EXPRESSION, DUE_DATE, FORM_KEY, PRIORITY, BPMN_INCOMING, BPMN_OUTGOING,
             FORM_PROPERTY_ID, FORM_PROPERTY_NAME, FORM_PROPERTY_TYPE, FORM_PROPERTY_DEFAULT,
+            EXECUTION_LISTENER_CLASS, EXECUTION_LISTENER_EVENT
         )
         props.keys.shouldContainSame(userTaskProps)
         argumentCaptor<List<EventPropagatableToXml>>().let {

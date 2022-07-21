@@ -965,7 +965,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
                     it
                 }
             }
-        }.filterNotNull().shouldBeEqualTo(
+        }.filterNotNull().map { it.toString().trim() }.shouldBeEqualTo(
             listOf(
                 "ID",
                 "Name",
@@ -973,31 +973,31 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
                 "Asynchronous",
                 "Exclusive",
                 "Is activity triggerable?",
-                "  Event type",
+                "Event type",
                 "BasicArrowButton",
-                "    Event name",
-                "    Trigger event key",
-                "    Channel key",
-                "    Channel name",
-                "    Channel destination",
-                "    Trigger event name",
-                "    Trigger channel key",
-                "    Trigger channel name",
-                "    Trigger channel destination",
-                "    Trigger channel type",
-                "    Event key fixed value",
-                "    Channel type",
+                "Event name",
+                "Trigger event key",
+                "Channel key",
+                "Channel name",
+                "Channel destination",
+                "Trigger event name",
+                "Trigger channel key",
+                "Trigger channel name",
+                "Trigger channel destination",
+                "Trigger channel type",
+                "Event key fixed value",
+                "Channel type",
                 "Execution listeners",
                 "Add execution listeners",
                 "Event",
                 "Mapping from event payload",
                 "Add mapping payload",
-                "  Event property name",
-                "  Type",
+                "Event property name",
+                "Type",
                 "Mapping to event payload",
                 "Add mapping payload",
-                "  Event property name",
-                "  Type",
+                "Event property name",
+                "Type",
             )
         )
     }

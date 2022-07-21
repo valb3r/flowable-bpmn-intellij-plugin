@@ -2,6 +2,8 @@ package com.valb3r.bpmn.intellij.plugin.camunda.parser.fullelements
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ListenerField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
@@ -24,6 +26,21 @@ internal class SendTaskWithExtensionIsParseable {
     private val parser = CamundaParser()
     private val singlePropElementId = BpmnElementId("fullSendTaskSingle")
     private val multiplePropElementId = BpmnElementId("fullSendTaskMulti")
+
+    @Test
+    fun `Send task parse XML listener`() {
+        val processObject = parser.parse(FILE.asResource()!!)
+
+        val task = readSingleIntermediateLinkCatchingEventSingleProp(processObject)
+        task.id.shouldBeEqualTo(singlePropElementId)
+        task.name.shouldBeEqualTo("Single send task")
+        task.documentation.shouldBeEqualTo("Single send task docs")
+        task.executionListener!!.shouldContainSame(listOf(
+            ExeсutionListener("com.java.Start", "start", listOf(
+            ListenerField("field1", "\$foo")
+        ))
+        ))
+    }
 
     @Test
     fun `Send task (single props) with nested extensions is parseable`() {

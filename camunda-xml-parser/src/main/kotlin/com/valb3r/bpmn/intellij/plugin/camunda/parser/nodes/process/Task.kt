@@ -16,7 +16,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ListenerField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import org.mapstruct.Mapper
-import org.mapstruct.Mapping
 import org.mapstruct.factory.Mappers
 
 data class Task(
@@ -40,19 +39,16 @@ data class Task(
         return Mappers.getMapper(TaskMapping::class.java).convertToDto(this)
     }
 
-    // Can't use interface due to:
-    // https://github.com/mapstruct/mapstruct/issues/1577
     @Mapper(uses = [BpmnElementIdMapper::class])
     abstract class TaskMapping {
 
         fun convertToDto(input: Task) : BpmnTask {
             val task = doConvertToDto(input)
             return task.copy(
-                    fieldsExtension = input.extensionElements?.filterIsInstance<FieldExtensionElement>()?.map { ExtensionField(it.name, it.string, it.expression) },
-                    failedJobRetryTimeCycle = input.extensionElements?.filter { null != it.failedJobRetryTimeCycle }?.map { it.failedJobRetryTimeCycle }?.firstOrNull(),
-                    executionListener = input.extensionElements?.filterIsInstance<ExecutionListener>()?.map { ExeсutionListener(it.clazz, it.event, it.fields?.map { ListenerField(it.name, it.string) }) },
-
-                )
+                fieldsExtension = input.extensionElements?.filterIsInstance<FieldExtensionElement>()?.map { ExtensionField(it.name, it.string, it.expression) },
+                failedJobRetryTimeCycle = input.extensionElements?.filter { null != it.failedJobRetryTimeCycle }?.map { it.failedJobRetryTimeCycle }?.firstOrNull(),
+                executionListener = input.extensionElements?.filterIsInstance<ExecutionListener>()?.map { ExeсutionListener(it.clazz, it.event, it.fields?.map { ListenerField(it.name, it.string) }) },
+            )
         }
 
         protected abstract fun doConvertToDto(input: Task) : BpmnTask
