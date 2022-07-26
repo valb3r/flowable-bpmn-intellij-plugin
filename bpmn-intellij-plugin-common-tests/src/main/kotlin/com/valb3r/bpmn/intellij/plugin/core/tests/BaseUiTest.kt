@@ -14,10 +14,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormPropertyValue
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryErrorEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendEventTask
@@ -112,6 +109,7 @@ abstract class BaseUiTest {
     protected val serviceTaskEndBpmnId = BpmnElementId("endServiceTask")
     protected val userTaskBpmnId = BpmnElementId("userTask")
     protected val sendEventTaskBpmnId = BpmnElementId("sendEventTask")
+    protected val sendEventTaskBpmnIdFilled = BpmnElementId("sendEventTaskFilled")
     protected val sequenceFlowBpmnId = BpmnElementId("sequenceFlow")
 
     protected val optionalBoundaryErrorEventDiagramId = DiagramElementId("DIAGRAM-boundaryErrorEvent")
@@ -123,7 +121,7 @@ abstract class BaseUiTest {
     protected val sendEventTaskDiagramId = DiagramElementId("DIAGRAM-sendEventTask")
 
     protected val sequenceFlowDiagramId = DiagramElementId("DIAGRAM-sequenceFlow")
-    protected val bpmnSendEventTask = BpmnSendEventTask(sendEventTaskBpmnId, eventExtensionElements = listOf())
+    protected var bpmnSendEventTask = BpmnSendEventTask(sendEventTaskBpmnId, eventExtensionElements = listOf())
     protected val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId, "Start service task", "Start service task docs")
     protected val bpmnUserTask = BpmnUserTask(userTaskBpmnId, "Name user task", formPropertiesExtension = listOf(ExtensionFormProperty("Property ID", "Name property", null
         , null, null, null, null, value = listOf(
@@ -560,6 +558,22 @@ abstract class BaseUiTest {
         initializeCanvas()
     }
 
+    protected fun fillGroupsSendEventTask(){
+        val extensionElementsMappingPayloadToEvent: List<ExtensionEventPayload> = listOf(
+            ExtensionEventPayload("source", "target", "string")
+        )
+        val extensionElementsMappingPayloadFromEvent: List<ExtensionEventPayload> = listOf(
+            ExtensionEventPayload("source", "target", "string")
+        )
+        val executionListener: List<ExeсutionListener> = listOf(
+            ExeсutionListener("class", "start", listOf(
+                ListenerField("listenr filed name", "listener field string")
+        )))
+        bpmnSendEventTask = bpmnSendEventTask.copy(
+            extensionElementsMappingPayloadToEvent = extensionElementsMappingPayloadToEvent,
+            extensionElementsMappingPayloadFromEvent = extensionElementsMappingPayloadFromEvent,
+            executionListener = executionListener)
+    }
     protected fun prepareUserTaskView() {
         prepareUserTask(bpmnUserTask)
     }
