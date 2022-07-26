@@ -144,8 +144,8 @@ class PropertiesVisualizer(
             if (control.first.hideIfNullOrEmpty && (null == control.second.value || (control.second.value is String && (control.second.value as String).isBlank()))) {
                 continue
             }
-
-            val padd = ifInnerPadd + "".padStart((control.second.index?.size ?: 0) * 2)
+            val lengthPad = control.second.index?.let { it.size * 2 - if (groupType?.createExpansionButton!!) 0 else 2 } ?: 0
+            val padd = ifInnerPadd + "".padStart(lengthPad)
             val caption = padd + control.first.caption
             var row = when (control.first.valueType) {
                 STRING -> arrayOf(caption, buildTextField(state, bpmnElementId, control.first, control.second))

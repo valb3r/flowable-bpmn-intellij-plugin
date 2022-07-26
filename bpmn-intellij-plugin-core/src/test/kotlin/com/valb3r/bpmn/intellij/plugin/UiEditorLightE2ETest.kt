@@ -957,15 +957,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         (propertiesTable.model as DefaultTableModel).dataVector.size.shouldBeEqualTo(0)
         canvas.click(Point2D.Float(5F, 5F))
         clickOnId(sendEventTaskDiagramId)
-        (propertiesTable.model as DefaultTableModel).dataVector.flatMap { it.toList() }.map {
-            when (it) {
-                is BasicArrowButton -> "BasicArrowButton"
-                is JButton -> it.text
-                else -> {
-                    it
-                }
-            }
-        }.filterNotNull().map { it.toString().trim() }.shouldBeEqualTo(
+        currentProperties().shouldBeEqualTo(
             listOf(
                 "ID",
                 "Name",
@@ -975,35 +967,90 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
                 "Is activity triggerable?",
                 "Event type",
                 "BasicArrowButton",
-                "Event name",
-                "Trigger event key",
-                "Channel key",
-                "Channel name",
-                "Channel destination",
-                "Trigger event name",
-                "Trigger channel key",
-                "Trigger channel name",
-                "Trigger channel destination",
-                "Trigger channel type",
-                "Event key fixed value",
-                "Channel type",
+                "  Event name",
+                "  Trigger event key",
+                "  Channel key",
+                "  Channel name",
+                "  Channel destination",
+                "  Trigger event name",
+                "  Trigger channel key",
+                "  Trigger channel name",
+                "  Trigger channel destination",
+                "  Trigger channel type",
+                "  Event key fixed value",
+                "  Channel type",
                 "Execution listeners",
                 "Add execution listeners",
-                "Event",
+                "  Event",
                 "Mapping from event payload",
                 "Add mapping payload",
-                "Event property name",
-                "Type",
+                "  Event property name",
+                "  Type",
                 "Mapping to event payload",
                 "Add mapping payload",
-                "Event property name",
-                "Type",
+                "  Event property name",
+                "  Type",
             )
         )
     }
 
     @Test
-    fun `add one execution listener groud in send event`() {
+    fun `Visualize property in full send event task`() {
+        fillGroupsSendEventTask()
+        prepareSendEventTask()
+        (propertiesTable.model as DefaultTableModel).dataVector.size.shouldBeEqualTo(0)
+        canvas.click(Point2D.Float(5F, 5F))
+        clickOnId(sendEventTaskDiagramId)
+        currentProperties().shouldBeEqualTo(
+            listOf(
+                "ID",
+                "Name",
+                "Documentation",
+                "Asynchronous",
+                "Exclusive",
+                "Is activity triggerable?",
+                "Event type",
+                "BasicArrowButton",
+                "  Event name",
+                "  Trigger event key",
+                "  Channel key",
+                "  Channel name",
+                "  Channel destination",
+                "  Trigger event name",
+                "  Trigger channel key",
+                "  Trigger channel name",
+                "  Trigger channel destination",
+                "  Trigger channel type",
+                "  Event key fixed value",
+                "  Channel type",
+                "Execution listeners",
+                "Add execution listeners",
+                "  Class",
+                "BasicArrowButton",
+                "    Event",
+                "  Fields",
+                "Add fields listener",
+                "    Name",
+                "BasicArrowButton",
+                "      String",
+                "Mapping from event payload",
+                "Add mapping payload",
+                "  Variable name",
+                "BasicArrowButton",
+                "    Event property name",
+                "    Type",
+                "Mapping to event payload",
+                "Add mapping payload",
+                "  Variable name",
+                "BasicArrowButton",
+                "    Event property name",
+                "    Type",
+            )
+        )
+    }
+
+    @Test
+    fun `add one execution listener group in send event`() {
         prepareSendEventTask()
         val model: () -> DefaultTableModel = { propertiesTable.model as DefaultTableModel }
         model().dataVector.size.shouldBeEqualTo(0)
@@ -1568,6 +1615,16 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             .elementByDiagramId[CurrentState.processDiagramId(BpmnElementId(anotherNewRootProcessId))].shouldNotBeNull()
     }
 
+    @Test
+    fun `Shape change menu is shown when user clicks on wrench icon`() {
+        prepareTwoServiceTaskView()
+        clickOnId(serviceTaskStartDiagramId)
+        val serviceTaskTypeChange = findExactlyOneTypeChangeElem()
+        clickOnId(serviceTaskTypeChange!!)
+
+        verify(popupMenuProvider).popupChangeShapeType(serviceTaskStartBpmnId)
+    }
+
     private fun findAddButtonByGroupType(groupType: FunctionalGroupType, model: DefaultTableModel): JButton {
         return model.dataVector.filter { it[0] == groupType.groupCaption }.map { it[1] }.first() as JButton
     }
@@ -1588,15 +1645,18 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         throw IndexOutOfBoundsException("Can't find position by property type")
     }
 
-    @Test
-    fun `Shape change menu is shown when user clicks on wrench icon`() {
-        prepareTwoServiceTaskView()
-        clickOnId(serviceTaskStartDiagramId)
-        val serviceTaskTypeChange = findExactlyOneTypeChangeElem()
-        clickOnId(serviceTaskTypeChange!!)
+    private fun currentProperties() =
+        (propertiesTable.model as DefaultTableModel).dataVector.flatMap { it.toList() }.map {
+            when (it) {
+                is BasicArrowButton -> "BasicArrowButton"
+                is JButton -> it.text
+                else -> {
+                    it
+                }
+            }
+        }.filterNotNull()
 
-        verify(popupMenuProvider).popupChangeShapeType(serviceTaskStartBpmnId)
-    }
+
 }
 
 class CanvasTestable(private val painter: CanvasPainter, project: Project, settings: CanvasConstants) :
