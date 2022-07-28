@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.CascadeGroup
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.defaultXmlNestedValues
 import com.valb3r.bpmn.intellij.plugin.core.events.IndexUiOnlyValueUpdatedEvent
@@ -20,10 +21,10 @@ internal fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, Prope
             }
         }
     }
-    if (event.property.indexCascades) {
+    if (event.property.indexCascades == CascadeGroup.PARENTS_CASCADE || event.property.indexCascades == CascadeGroup.FLAT) {
         state[event.bpmnElementId]?.view()?.filter { it.key.group?.contains(event.property.group?.last()) == true }
             ?.forEach { (k, _) ->
-                uiEventCascade(event, cascades, k)
+                eventCascade(event, cascades, k)
             }
     }
 
@@ -31,7 +32,7 @@ internal fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, Prope
         val type = PropertyType.valueOf(it)
         state.forEach { (id, props) ->
             props.getAll(type).filter { it.value == event.referencedValue }.forEach { prop ->
-                uiEventCascade(event.copy(bpmnElementId = id, propertyIndex = prop.index), cascades, type)
+                eventCascade(event.copy(bpmnElementId = id, propertyIndex = prop.index), cascades, type)
             }
         }
     }
@@ -60,7 +61,7 @@ private fun addStaticDependentFieldsToXml(
     }
 }
 
-private fun uiEventCascade(
+private fun eventCascade(
     event: StringValueUpdatedEvent,
     cascades: MutableList<Event>,
     cascadePropTo: PropertyType
@@ -68,6 +69,9 @@ private fun uiEventCascade(
     val index = event.propertyIndex ?: listOf()
     if (event.newValue.isBlank()) {
         cascades += UiOnlyValueRemovedEvent(event.bpmnElementId, cascadePropTo, index)
+        if(event.property.indexCascades == CascadeGroup.FLAT){
+            cascades += StringValueUpdatedEvent(event.bpmnElementId, cascadePropTo, "")
+        }
     }
     cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, cascadePropTo, index, index.dropLast(1) + event.newValue)
 }

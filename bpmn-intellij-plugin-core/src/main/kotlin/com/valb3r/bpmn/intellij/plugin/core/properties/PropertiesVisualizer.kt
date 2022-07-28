@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.CascadeGroup
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -130,7 +131,7 @@ class PropertiesVisualizer(
                 control.second.index?.take(max(0, control.first.group!!.size - if (isExpandButton) 1 else 0))?.joinToString() ?: ""
             )
 
-            val ifInnerPadd = "".padStart(if (null == groupType || control.first.indexCascades) 0 else 2)
+            val ifInnerPadd = "".padStart(if (null == groupType || control.first.indexCascades != CascadeGroup.NONE) 0 else 2)
             val paddGroup = ifInnerPadd + "".padStart((control.second.index?.size ?: 1) * 2 - 2)
             if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex) && groupType.createExpansionButton) {
                 addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model, isAlwaysVisible)
