@@ -147,12 +147,12 @@ enum class PropertyType(
     FIXED_VALUE("eventExtensionElements.@keyDetectionType" ,"", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
     MAPPING_PAYLOAD_TO_EVENT_VARIABLE_NAME("extensionElementsMappingPayloadToEvent.@source", "Variable name", STRING, isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_TO), indexInGroupArrayName = "source",  updateOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true, indexCascades = CascadeGroup.PARENTS_CASCADE, positionInGroup = 1),
     MAPPING_PAYLOAD_TO_EVENT_PROPERTY_NAME("extensionElementsMappingPayloadToEvent.@target", "Event property name", STRING, isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_TO), indexInGroupArrayName = "source"),
-    MAPPING_PAYLOAD_TO_EVENT_TYPE("extensionElementsMappingPayloadToEvent.@type", "Type", LIST_SELECT, setForSelect = setOf("string", "integer", "double", "boolean"), isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_TO), indexInGroupArrayName = "source"),
+    MAPPING_PAYLOAD_TO_EVENT_TYPE("extensionElementsMappingPayloadToEvent.@type", "Type", LIST_SELECT, setForSelect = setOf("","string", "integer", "double", "boolean"), isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_TO), indexInGroupArrayName = "source"),
     MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME("extensionElementsMappingPayloadFromEvent.@source", "Variable name", STRING, group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), isUsedOnlyBy = setOf(BpmnSendEventTask::class), indexInGroupArrayName = "source",  updateOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true, positionInGroup = 1),
     MAPPING_PAYLOAD_FROM_EVENT_PROPERTY_NAME("extensionElementsMappingPayloadFromEvent.@target", "Event property name", STRING, group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), isUsedOnlyBy = setOf(BpmnSendEventTask::class), indexInGroupArrayName = "source"),
-    MAPPING_PAYLOAD_FROM_EVENT_TYPE("extensionElementsMappingPayloadFromEvent.@type", "Type", LIST_SELECT, setForSelect = setOf("string", "integer", "double", "boolean"), isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), indexInGroupArrayName = "source"),
+    MAPPING_PAYLOAD_FROM_EVENT_TYPE("extensionElementsMappingPayloadFromEvent.@type", "Type", LIST_SELECT, setForSelect = setOf("","string", "integer", "double", "boolean"), isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), indexInGroupArrayName = "source"),
     EXECUTION_LISTENER_CLASS("executionListener.@clazz", "Class", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER), indexInGroupArrayName = "clazz", updateOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true, positionInGroup = 1),
-    EXECUTION_LISTENER_EVENT("executionListener.@event", "Event", LIST_SELECT, setForSelect = setOf("start", "end", "take"), group = listOf(FunctionalGroupType.EXECUTION_LISTENER), indexInGroupArrayName = "clazz"),
+    EXECUTION_LISTENER_EVENT("executionListener.@event", "Event", LIST_SELECT, setForSelect = setOf("","start", "end", "take"), group = listOf(FunctionalGroupType.EXECUTION_LISTENER), indexInGroupArrayName = "clazz"),
     EXECUTION_LISTENER_FIELD_NAME("executionListener.@fields.@name", "Name", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, updateOrder = 95),
     EXECUTION_LISTENER_FIELD_STRING("executionListener.@fields.@string", "String", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", updateOrder = 90);
 
@@ -217,7 +217,7 @@ enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewEl
     ),
     EXECUTION_LISTENER("Execution listeners", actionCaption = "Add execution listeners", actionResult = NewElem("EXECUTION_LISTENER_CLASS", "Class %d"),
         actionUiOnlyResult = listOf(
-            NewElem("EXECUTION_LISTENER_EVENT", "start"),
+            NewElem("EXECUTION_LISTENER_EVENT", ""),
             NewElem("EXECUTION_LISTENER_FIELD_NAME", "", uiOnlyaddedIndex = listOf("")),
             NewElem("EXECUTION_LISTENER_FIELD_STRING", "", uiOnlyaddedIndex = listOf(""))
         )
