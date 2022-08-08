@@ -299,6 +299,17 @@ abstract class BaseUiTest {
         propertiesVisualizer(project).clear()
     }
 
+    protected fun changePropertySelectedElementVisualizer(elementId: BpmnElementId, type: PropertyType, newProp: String) {
+        val property = Pair(elementId, type)
+        propertiesVisualizer(project).visualize(
+            newElementsFactory(project),
+            currentStateProvider(project).currentState().elemPropertiesByStaticElementId,
+            elementId
+        )
+        whenever(textFieldsConstructed[property]!!.text).thenReturn(newProp)
+        propertiesVisualizer(project).clear()
+    }
+
 
     protected fun newServiceTask(intermediateX: Float, intermediateY: Float): BpmnElementId {
         val task = bpmnServiceTaskStart.copy(id = BpmnElementId("sid-" + UUID.randomUUID().toString()))
@@ -567,7 +578,7 @@ abstract class BaseUiTest {
         )
         val executionListener: List<ExeсutionListener> = listOf(
             ExeсutionListener("class", "start", listOf(
-                ListenerField("listenr filed name", "listener field string")
+                ListenerField("listener filed name", "listener field string")
         )))
         bpmnSendEventTask = bpmnSendEventTask.copy(
             extensionElementsMappingPayloadToEvent = extensionElementsMappingPayloadToEvent,
