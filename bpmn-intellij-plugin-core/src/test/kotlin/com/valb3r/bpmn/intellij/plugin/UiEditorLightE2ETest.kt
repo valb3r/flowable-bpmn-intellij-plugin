@@ -1050,6 +1050,20 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
     }
 
     @Test
+    fun `remove last property in group`(){
+        fillGroupsSendEventTask()
+        prepareSendEventTask()
+        canvas.click(Point2D.Float(5F, 5F))
+        clickOnId(sendEventTaskDiagramId)
+        currentProperties().shouldContain("Add execution listeners")
+        currentProperties().shouldContain("  Class")
+        changePropertySelectedElementVisualizer(sendEventTaskBpmnId, PropertyType.EXECUTION_LISTENER_CLASS, "")
+        clickOnId(sendEventTaskDiagramId)
+        currentProperties().shouldNotContain("  Class")
+        currentProperties().shouldContain("Add execution listeners")
+    }
+
+    @Test
     fun `add one execution listener group in send event`() {
         prepareSendEventTask()
         val model: () -> DefaultTableModel = { propertiesTable.model as DefaultTableModel }
@@ -1512,8 +1526,13 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         clickOnId(userTaskDiagramId)
         whenever(textFieldsConstructed[Pair(userTaskBpmnId, PropertyType.FORM_PROPERTY_ID)]!!.text).thenReturn("")
         clickOnId(userTaskDiagramId)
-        currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_ID].shouldBeNull()
-        currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_NAME].shouldBeNull()
+        val formProperty = currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_ID]
+        formProperty!!.value.shouldBeNull()
+        formProperty.index.shouldBeNull()
+        val formPropName = currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_NAME]
+        formPropName!!.value.shouldBeNull()
+        formPropName!!.index.shouldBeNull()
+
 //        currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_VALUE_ID].shouldBeNull()
     }
 

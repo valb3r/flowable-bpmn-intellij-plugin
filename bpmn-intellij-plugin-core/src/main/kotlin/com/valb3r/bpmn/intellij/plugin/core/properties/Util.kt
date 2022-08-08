@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.properties
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -12,6 +13,8 @@ import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.UiOnlyValueRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 
+private val log = Logger.getInstance(PropertiesVisualizer::class.java)
+
 internal fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, PropertyTable>, event: StringValueUpdatedEvent, project: Project) {
     val cascades = mutableListOf<Event>()
     if (null != event.referencedValue) {
@@ -23,8 +26,16 @@ internal fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, Prope
     }
     if (event.property.indexCascades == CascadeGroup.PARENTS_CASCADE || event.property.indexCascades == CascadeGroup.FLAT) {
         state[event.bpmnElementId]?.view()?.filter { it.key.group?.contains(event.property.group?.last()) == true }
-            ?.forEach { (k, _) ->
-                eventCascade(event, cascades, k)
+            ?.forEach { (cascadeType, cascadeProperty) ->
+                cascadeProperty.filter { event.propertyIndex?.forEachIndexed { index, s ->
+                    if(it.index!![index] != s) {
+                        return@filter false
+                    }
+                }
+                return@filter true
+                }.forEach {
+                    eventCascade(event, cascades, cascadeType, it.index)
+                }
             }
     }
 
@@ -64,14 +75,24 @@ private fun addStaticDependentFieldsToXml(
 private fun eventCascade(
     event: StringValueUpdatedEvent,
     cascades: MutableList<Event>,
-    cascadePropTo: PropertyType
+    cascadePropTo: PropertyType,
+    cascadePropertyIndex: List<String>? = null
 ) {
-    val index = event.propertyIndex ?: listOf()
+    val index = cascadePropertyIndex ?: event.propertyIndex ?: listOf()
     if (event.newValue.isBlank()) {
         cascades += UiOnlyValueRemovedEvent(event.bpmnElementId, cascadePropTo, index)
         if(event.property.indexCascades == CascadeGroup.FLAT){
             cascades += StringValueUpdatedEvent(event.bpmnElementId, cascadePropTo, "")
         }
+        return
     }
-    cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, cascadePropTo, index, index.dropLast(1) + event.newValue)
+    cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, cascadePropTo, index, calculateIndex(event, cascadePropertyIndex))
+}
+
+fun calculateIndex(event: StringValueUpdatedEvent, cascadeIndex: List<String>?): List<String> {
+    if (cascadeIndex == null) return (event.propertyIndex?.dropLast(1) ?: listOf()) + event.newValue
+    val newIndexPropertyList = cascadeIndex.toMutableList()
+    val replacedElementIndex = event.propertyIndex!!.size - 1
+    newIndexPropertyList[replacedElementIndex] = event.newValue
+    return newIndexPropertyList.toList()
 }

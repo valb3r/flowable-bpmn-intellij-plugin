@@ -130,7 +130,6 @@ class PropertiesVisualizer(
                 if (isExpandButton && control.first.isNestedProperty()) control.first.group?.getOrNull(control.first.group!!.size - 2) else groupType,
                 control.second.index?.take(max(0, control.first.group!!.size - if (isExpandButton) 1 else 0))?.joinToString() ?: ""
             )
-
             val ifInnerPadd = "".padStart(if (null == groupType || control.first.indexCascades != CascadeGroup.NONE) 0 else 2)
             val paddGroup = ifInnerPadd + "".padStart((control.second.index?.size ?: 1) * 2 - 2)
             if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex) && groupType.createExpansionButton) {
