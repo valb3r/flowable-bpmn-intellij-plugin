@@ -13,8 +13,6 @@ import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.UiOnlyValueRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 
-private val log = Logger.getInstance(PropertiesVisualizer::class.java)
-
 internal fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, PropertyTable>, event: StringValueUpdatedEvent, project: Project) {
     val cascades = mutableListOf<Event>()
     if (null != event.referencedValue) {
@@ -27,9 +25,8 @@ internal fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, Prope
     if (event.property.indexCascades == CascadeGroup.PARENTS_CASCADE || event.property.indexCascades == CascadeGroup.FLAT) {
         state[event.bpmnElementId]?.view()?.filter { it.key.group?.contains(event.property.group?.last()) == true }
             ?.forEach { (cascadeType, cascadeProperty) ->
-                cascadeProperty.filter {event.propertyIndex?.forEachIndexed { index, s ->
-                    println(it)
-                    if(it.index == null || it.index!![index] != s) {
+                cascadeProperty.filter { event.propertyIndex?.forEachIndexed { index, s ->
+                    if(it.index!![index] != s) {
                         return@filter false
                     }
                 }
