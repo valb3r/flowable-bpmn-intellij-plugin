@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.CascadeGroup
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -130,8 +129,8 @@ class PropertiesVisualizer(
                 if (isExpandButton && control.first.isNestedProperty()) control.first.group?.getOrNull(control.first.group!!.size - 2) else groupType,
                 control.second.index?.take(max(0, control.first.group!!.size - if (isExpandButton) 1 else 0))?.joinToString() ?: ""
             )
-            val ifInnerPadd = "".padStart(if (null == groupType || control.first.indexCascades != CascadeGroup.NONE) 0 else 2)
-            val paddGroup = ifInnerPadd + "".padStart((control.second.index?.size ?: 1) * 2 - 2)
+            val lengthInnerPad = control.second.index?.let {(it.size - 1) * 2} ?: 0
+            val paddGroup = "".padStart(lengthInnerPad * 2)
             if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex) && groupType.createExpansionButton) {
                 addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model, isAlwaysVisible)
                 model.addRow(arrayOf(
@@ -144,8 +143,8 @@ class PropertiesVisualizer(
             if (control.first.hideIfNullOrEmpty && (null == control.second.value || (control.second.value is String && (control.second.value as String).isBlank()))) {
                 continue
             }
-            val lengthPad = control.second.index?.let { it.size * 2 - if (groupType?.createExpansionButton!!) 0 else 2 } ?: 0
-            val padd = ifInnerPadd + "".padStart(lengthPad)
+            val nestedGroupLength = (2 + (if(!isExpandButton) 2 else 0) - (if (groupType?.createExpansionButton == false) 2 else 0))
+            val padd = paddGroup + "".padStart(if(groupType == null) 0 else nestedGroupLength)
             val caption = padd + control.first.caption
             var row = when (control.first.valueType) {
                 STRING -> arrayOf(caption, buildTextField(state, bpmnElementId, control.first, control.second))
