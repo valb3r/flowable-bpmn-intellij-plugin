@@ -981,15 +981,15 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
                 "  Channel type",
                 "Execution listeners",
                 "Add execution listeners",
-                "  Event",
+                "    Event",
                 "Mapping from event payload",
                 "Add mapping payload",
-                "  Event property name",
-                "  Type",
+                "    Event property name",
+                "    Type",
                 "Mapping to event payload",
                 "Add mapping payload",
-                "  Event property name",
-                "  Type",
+                "    Event property name",
+                "    Type",
             )
         )
     }
