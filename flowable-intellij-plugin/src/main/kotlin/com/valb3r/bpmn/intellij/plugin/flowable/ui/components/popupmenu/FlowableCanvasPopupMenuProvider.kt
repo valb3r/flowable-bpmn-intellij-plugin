@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.flowable.ui.components.popupmenu
 
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendEventTask
 import com.valb3r.bpmn.intellij.plugin.core.popupmenu.BaseCanvasPopupMenuProvider
 import java.awt.geom.Point2D
 import javax.swing.JMenu
@@ -36,6 +37,7 @@ class FlowableCanvasPopupMenuProvider(val project: Project) : BaseCanvasPopupMen
         menu.addNewElementItem(sceneLocation, focus, DECISION_TASK)
         menu.addNewElementItem(sceneLocation, focus, SHELL_TASK)
         menu.addNewElementItem(sceneLocation, focus, EXTERNAL_TASK)
+        menu.addNewElementItem(sceneLocation, focus, SEND_EVENT_TASK)
         return menu
     }
 
@@ -96,7 +98,7 @@ class FlowableCanvasPopupMenuProvider(val project: Project) : BaseCanvasPopupMen
         menu.addNewElementItem(sceneLocation, focus, TERMINATE_END_EVENT)
         return menu
     }
-    
+
     override fun mutateStartEvent(popup: JPopupMenu, focus: BpmnElementId) {
         popup.addMutateElementItem(focus, START_EVENT)
         popup.addMutateElementItem(focus, START_CONDITIONAL_EVENT)

@@ -146,6 +146,7 @@ abstract class BaseBpmnParser: BpmnParser {
         mapper.enable(SerializationFeature.INDENT_OUTPUT)
         mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
         return mapper as XmlMapper
     }
 
@@ -373,6 +374,7 @@ abstract class BaseBpmnParser: BpmnParser {
         is BpmnReceiveTask -> diagramParent.addElement(modelNs().named("receiveTask"))
         is BpmnManualTask -> diagramParent.addElement(modelNs().named("manualTask"))
         is BpmnCamelTask -> createServiceTaskWithType(diagramParent, "camel")
+        is BpmnSendEventTask -> createServiceTaskWithType(diagramParent, "send-event")
         is BpmnHttpTask -> createServiceTaskWithType(diagramParent, "http")
         is BpmnExternalTask -> createServiceTaskWithType(diagramParent, "external")
         is BpmnMailTask -> createServiceTaskWithType(diagramParent, "mail")
@@ -685,7 +687,7 @@ abstract class BaseBpmnParser: BpmnParser {
         }
 
         return when (type) {
-            STRING, CLASS, EXPRESSION, ATTACHED_SEQUENCE_SELECT -> value as String
+            STRING, CLASS, EXPRESSION, ATTACHED_SEQUENCE_SELECT, LIST_SELECT -> value as String
             BOOLEAN -> (value as Boolean).toString()
         }
     }

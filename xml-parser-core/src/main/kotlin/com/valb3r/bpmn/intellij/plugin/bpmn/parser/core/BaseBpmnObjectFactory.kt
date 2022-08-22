@@ -55,6 +55,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             BpmnScriptTask::class -> BpmnScriptTask(generateBpmnId())
             BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId())
             BpmnExternalTask::class -> BpmnExternalTask(generateBpmnId())
+            BpmnSendEventTask::class -> BpmnSendEventTask(generateBpmnId())
             BpmnBusinessRuleTask::class -> BpmnBusinessRuleTask(generateBpmnId())
             BpmnReceiveTask::class -> BpmnReceiveTask(generateBpmnId())
             BpmnManualTask::class -> BpmnManualTask(generateBpmnId())
@@ -143,9 +144,10 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         val result: MutableMap<PropertyType, MutableList<Property>> = mutableMapOf()
         val propertyTree = mapper.valueToTree<JsonNode>(dto)
         for (type in propertyTypes()) {
-            parseValue(type.path, type, propertyTree, result, 0)
+            if (type.isUsedOnlyBy.isEmpty() || type.isUsedOnlyBy.contains(dto::class)) {
+                parseValue(type.path, type, propertyTree, result, 0)
+            }
         }
-
         return result
     }
 
@@ -239,7 +241,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         }
 
         val propVal = when (type.valueType) {
-            PropertyValueType.STRING, PropertyValueType.CLASS, PropertyValueType.EXPRESSION, PropertyValueType.ATTACHED_SEQUENCE_SELECT
+            PropertyValueType.STRING, PropertyValueType.CLASS, PropertyValueType.EXPRESSION, PropertyValueType.ATTACHED_SEQUENCE_SELECT, PropertyValueType.LIST_SELECT
             -> if (node.isNull) makeProperty(null) else makeProperty(node.asText())
             PropertyValueType.BOOLEAN -> makeProperty(node.asBoolean())
         }

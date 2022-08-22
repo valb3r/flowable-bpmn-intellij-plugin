@@ -51,3 +51,5 @@ internal class StateBasedPropertyUpdateTest: BaseUiTest() {
             ?.shouldBeEqualTo(Property("expression 1", listOf("new name")))
     }
 }
+
+

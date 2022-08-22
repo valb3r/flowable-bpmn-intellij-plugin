@@ -1,6 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.info
 
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendEventTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
+import kotlin.reflect.KClass
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.EXPRESSION as T_EXPRESSION
 
 enum class PropertyType(
@@ -15,12 +18,15 @@ enum class PropertyType(
     val defaultValueIfNull: Any? = null,
     val group: List<FunctionalGroupType>? = null,
     val indexInGroupArrayName: String? = null,
-    val indexCascades: Boolean = false,
+    val indexCascades: CascadeGroup = CascadeGroup.NONE,
     val explicitIndexCascades: List<String>? = null,
     val removeEnclosingNodeIfNullOrEmpty: Boolean = false,
     val hideIfNullOrEmpty: Boolean = false,
     val visible: Boolean = true,
-    val multiline: Boolean = false
+    val multiline: Boolean = false,
+    val positionInGroup: Int = 65534, // Explicit order indicator - where to place control in UI
+    val setForSelect: Set<String>? = null,
+    val isUsedOnlyBy: Set<KClass<out WithBpmnId>> = setOf() // In case of empty list us used by any class
 ) {
     ID("id", "ID", STRING, "id.id", true, null, 1000, explicitIndexCascades = listOf("BPMN_INCOMING", "BPMN_OUTGOING")), // ID should fire last
     NAME("name", "Name", STRING),
@@ -113,23 +119,60 @@ enum class PropertyType(
     OUTPUT_VARIABLE("outputVariable", "Output variable", STRING),
     DIRECTORY("directory", "Working directory", STRING),
     FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
-    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, group = listOf(FunctionalGroupType.ADD_FIELD), indexInGroupArrayName = "name", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true), // Is sub-id
+    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, group = listOf(FunctionalGroupType.ADD_FIELD), indexInGroupArrayName = "name", updateOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true), // Is sub-id
     FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", T_EXPRESSION, group = listOf(FunctionalGroupType.ADD_FIELD), indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
     FIELD_STRING("fieldsExtension.@string", "String value", STRING, group = listOf(FunctionalGroupType.ADD_FIELD), indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
-    FORM_PROPERTY_ID("formPropertiesExtension.@id", "Form property ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true), // Is sub-id
+    FORM_PROPERTY_ID("formPropertiesExtension.@id", "Form property ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id", updateOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true), // Is sub-id
     FORM_PROPERTY_NAME("formPropertiesExtension.@name", "Property name", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_TYPE("formPropertiesExtension.@type", "Type", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_VARIABLE("formPropertiesExtension.@variable", "Variable", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_DEFAULT("formPropertiesExtension.@default", "Default value", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_EXPRESSION("formPropertiesExtension.@expression", "Expression", T_EXPRESSION, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_DATE_PATTERN("formPropertiesExtension.@datePattern", "Date pattern", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
-    FORM_PROPERTY_VALUE_ID("formPropertiesExtension.@value.@id", "Value ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id", updateOrder = 100, indexCascades = true, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),  // Is sub-id
+    FORM_PROPERTY_VALUE_ID("formPropertiesExtension.@value.@id", "Value ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id", updateOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),  // Is sub-id
     FORM_PROPERTY_VALUE_NAME("formPropertiesExtension.@value.@name", "Value name", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id"),
+    EVENT_TYPE("eventExtensionElements.@eventType", "Event type", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), updateOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false, indexInGroupArrayName = "eventType", indexCascades = CascadeGroup.FLAT, positionInGroup = 1),
+    EVENT_NAME("eventExtensionElements.@eventName", "Event name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
+    TRIGGER_EVENT_TYPE("eventExtensionElements.@triggerEventType", "Trigger event key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
+    CHANNEL_KEY("eventExtensionElements.@channelKey" , "Channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
+    CHANNEL_NAME("eventExtensionElements.@channelName" , "Channel name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
+    CHANNEL_DESTINATION("eventExtensionElements.@channelDestination" , "Channel destination", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
+    CHANNEL_TYPE("eventExtensionElements.@channelType" ,"Channel type", LIST_SELECT, setForSelect = setOf("", "jms", "kafka", "rabbitmq"), group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
+    TRIGGER_EVENT_NAME("eventExtensionElements.@triggerEventName" , "Trigger event name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
+    TRIGGER_CHANNEL_KEY("eventExtensionElements.@triggerChannelKey" , "Trigger channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
+    TRIGGER_CHANNEL_NAME("eventExtensionElements.@triggerChannelName" , "Trigger channel name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
+    TRIGGER_CHANNEL_DESTINATION("eventExtensionElements.@triggerChannelDestination" , "Trigger channel destination", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
+    TRIGGER_CHANNEL_TYPE("eventExtensionElements.@triggerChannelType" ,"Trigger channel type", LIST_SELECT, setForSelect = setOf("", "jms", "kafka", "rabbitmq"), group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
+    EVENT_KEY_FIXED_VALUE("eventExtensionElements.@keyDetectionValue" , "Event key fixed value", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
+    FIXED_VALUE("eventExtensionElements.@keyDetectionType" ,"", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
+    MAPPING_PAYLOAD_TO_EVENT_VARIABLE_NAME("extensionElementsMappingPayloadToEvent.@source", "Variable name", STRING, isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_TO), indexInGroupArrayName = "source",  updateOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true, indexCascades = CascadeGroup.PARENTS_CASCADE, positionInGroup = 1),
+    MAPPING_PAYLOAD_TO_EVENT_PROPERTY_NAME("extensionElementsMappingPayloadToEvent.@target", "Event property name", STRING, isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_TO), indexInGroupArrayName = "source"),
+    MAPPING_PAYLOAD_TO_EVENT_TYPE("extensionElementsMappingPayloadToEvent.@type", "Type", LIST_SELECT, setForSelect = setOf("","string", "integer", "double", "boolean"), isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_TO), indexInGroupArrayName = "source"),
+    MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME("extensionElementsMappingPayloadFromEvent.@source", "Variable name", STRING, group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), isUsedOnlyBy = setOf(BpmnSendEventTask::class), indexInGroupArrayName = "source",  updateOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true, positionInGroup = 1),
+    MAPPING_PAYLOAD_FROM_EVENT_PROPERTY_NAME("extensionElementsMappingPayloadFromEvent.@target", "Event property name", STRING, group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), isUsedOnlyBy = setOf(BpmnSendEventTask::class), indexInGroupArrayName = "source"),
+    MAPPING_PAYLOAD_FROM_EVENT_TYPE("extensionElementsMappingPayloadFromEvent.@type", "Type", LIST_SELECT, setForSelect = setOf("","string", "integer", "double", "boolean"), isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), indexInGroupArrayName = "source"),
+    EXECUTION_LISTENER_CLASS("executionListener.@clazz", "Class", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER), indexInGroupArrayName = "clazz", updateOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),
+    EXECUTION_LISTENER_EVENT("executionListener.@event", "Event", LIST_SELECT, setForSelect = setOf("","start", "end", "take"), group = listOf(FunctionalGroupType.EXECUTION_LISTENER), indexInGroupArrayName = "clazz"),
+    EXECUTION_LISTENER_FIELD_NAME("executionListener.@fields.@name", "Name", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, updateOrder = 95),
+    EXECUTION_LISTENER_FIELD_STRING("executionListener.@fields.@string", "String", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", updateOrder = 90);
+
+    fun isNestedProperty(): Boolean {
+        return (group?.size ?: 0) > 1
+    }
 }
 
-enum class FunctionalGroupType(val groupCaption: String, val actionCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf()) {
-    ADD_FIELD("Fields", "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", ""))),
-    ADD_FORM_PROPERTY("Form properties", "Add property", actionResult = NewElem("FORM_PROPERTY_ID", "Property %d"),
+val defaultXmlNestedValues: List<DefaultXmlNestedValue> = listOf(
+    DefaultXmlNestedValue(PropertyType.EVENT_KEY_FIXED_VALUE, PropertyType.FIXED_VALUE, "fixedValue")
+)
+data class DefaultXmlNestedValue(val headProp: PropertyType, val dependProp: PropertyType, val valueDependProp: String)
+data class NewElem(val propertyType: String, val valuePattern: String = "", val uiOnlyaddedIndex: List<String> = emptyList())
+
+enum class CascadeGroup { 
+    PARENTS_CASCADE, NONE, FLAT
+}
+enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf(), val createExpansionButton: Boolean = true, val actionCaption: String = "",) {
+    ADD_FIELD("Fields", actionCaption = "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", ""))),
+    ADD_FORM_PROPERTY("Form properties", actionCaption = "Add property", actionResult = NewElem("FORM_PROPERTY_ID", "Property %d"),
         actionUiOnlyResult = listOf(
             NewElem("FORM_PROPERTY_NAME", ""),
             NewElem("FORM_PROPERTY_TYPE", ""),
@@ -141,11 +184,47 @@ enum class FunctionalGroupType(val groupCaption: String, val actionCaption: Stri
             NewElem("FORM_PROPERTY_VALUE_NAME", "", uiOnlyaddedIndex = listOf(""))
         )
     ),
-    ADD_FORM_PROPERTY_VALUE("Form property value", "Add value", actionResult = NewElem("FORM_PROPERTY_VALUE_ID", "Property value %d"),
+    ADD_FORM_PROPERTY_VALUE("Form property value", actionCaption = "Add value", actionResult = NewElem("FORM_PROPERTY_VALUE_ID", "Property value %d"),
         actionUiOnlyResult = listOf(
             NewElem("FORM_PROPERTY_VALUE_NAME", "")
         )
+    ),
+    ADD_EVENT("Event fields", createExpansionButton = false, actionResult = NewElem("EVENT_TYPE", ""),
+        actionUiOnlyResult = listOf(
+            NewElem("EVENT_NAME", ""),
+            NewElem("TRIGGER_EVENT_TYPE", ""),
+            NewElem("CHANEL_KEY", ""),
+            NewElem("CHANNEL_NAME", ""),
+            NewElem("CHANNEL_DESTINATION", ""),
+            NewElem("TRIGGER_EVENT_NAME", ""),
+            NewElem("TRIGGER_CHANNEL_KEY", ""),
+            NewElem("TRIGGER_CHANNEL_NAME", ""),
+            NewElem("TRIGGER_CHANNEL_DESTINATION", ""),
+            NewElem("EVENT_KEY_FIXED_VALUE", ""),
+        )
+    ),
+    MAPPING_PAYLOAD_TO("Mapping to event payload", actionCaption = "Add mapping payload", actionResult = NewElem("MAPPING_PAYLOAD_TO_EVENT_VARIABLE_NAME", "Name %d"),
+        actionUiOnlyResult = listOf(
+            NewElem("MAPPING_PAYLOAD_TO_EVENT_PROPERTY_NAME", ""),
+            NewElem("MAPPING_PAYLOAD_TO_EVENT_TYPE", ""),
+        )
+    ),
+    MAPPING_PAYLOAD_FROM("Mapping from event payload", actionCaption = "Add mapping payload", actionResult = NewElem("MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME", "Name %d"),
+        actionUiOnlyResult = listOf(
+            NewElem("MAPPING_PAYLOAD_FROM_EVENT_PROPERTY_NAME", ""),
+            NewElem("MAPPING_PAYLOAD_FROM_EVENT_TYPE", ""),
+        )
+    ),
+    EXECUTION_LISTENER("Execution listeners", actionCaption = "Add execution listeners", actionResult = NewElem("EXECUTION_LISTENER_CLASS", "Class %d"),
+        actionUiOnlyResult = listOf(
+            NewElem("EXECUTION_LISTENER_EVENT", ""),
+            NewElem("EXECUTION_LISTENER_FIELD_NAME", "", uiOnlyaddedIndex = listOf("")),
+            NewElem("EXECUTION_LISTENER_FIELD_STRING", "", uiOnlyaddedIndex = listOf(""))
+        )
+    ),
+    EXECUTION_LISTENER_FILED("Fields", actionCaption = "Add fields listener", actionResult = NewElem("EXECUTION_LISTENER_FIELD_NAME", "Name %d"),
+        actionUiOnlyResult = listOf(
+            NewElem("EXECUTION_LISTENER_FIELD_STRING", ""),
+        )
     )
 }
-
-data class NewElem(val propertyType: String, val valuePattern: String = "", val uiOnlyaddedIndex: List<String> = emptyList())

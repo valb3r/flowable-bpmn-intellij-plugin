@@ -96,6 +96,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         body.sendTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.receiveTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.camelTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.sendEventTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.httpTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.externalTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
         body.mailTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }

@@ -8,18 +8,17 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser
 
-class FormPropExtensionElementDeserializer(vc: Class<*>? = null) : StdDeserializer<FormPropExtensionElement?>(vc) {
+class FormPropExtensionElementDeserializer(vc: Class<*>? = null) : StdDeserializer<ExtensionElement?>(vc) {
 
-    override fun deserialize(parser: JsonParser, context: DeserializationContext?): FormPropExtensionElement {
+    override fun deserialize(parser: JsonParser, context: DeserializationContext?): ExtensionElement {
         val node: JsonNode = parser.codec.readTree(parser)
         val staxName = (parser as FromXmlParser).staxReader.localName
         val mapper: ObjectMapper = parser.codec as ObjectMapper
 
         return when (staxName) {
-            "formProperty" -> readFormProperty(
-                mapper,
-                node
-            ) // FIXME the ignored field that is updated by custom deserializer because `parser.codec.readTree(parser)` returns single object instead of array
+            "formProperty" -> readFormProperty(mapper, node)
+            "executionListener" -> mapper.treeToValue(node, ExecutionListener::class.java)
+            // FIXME the ignored field that is updated by custom deserializer because `parser.codec.readTree(parser)` returns single object instead of array
             else -> FormPropUnhandledExtensionElement()
         }
     }

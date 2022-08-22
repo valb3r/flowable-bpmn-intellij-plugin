@@ -322,6 +322,8 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         BusinessRuleTask.BusinessRuleTaskMapping::class,
         ServiceTask.ServiceTaskMapping::class,
         ManualTask.ManualTaskMapping::class,
+        Task.TaskMapping::class,
+        SendTask.SendTaskMapping::class,
         ReceiveTask.ReceiveTaskMapping::class,
         ScriptTask.ScriptTaskMapping::class,
         UserTask.UserTaskMapping::class,

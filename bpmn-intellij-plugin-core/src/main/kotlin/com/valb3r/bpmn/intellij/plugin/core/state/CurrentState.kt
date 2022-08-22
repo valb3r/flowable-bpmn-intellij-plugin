@@ -250,10 +250,11 @@ class CurrentStateProvider(private val project: Project) {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
         updated[event.property] = updated.getAll(event.property).map {
             if (it.index == event.propertyIndex || (null == it.index && event.propertyIndex.isEmpty())) {
-                it.copy(index = event.newValue)
-            } else it
-        }.toMutableList()
-        updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
+//                if (it.index!![0] == event.propertyIndex[0] || (null == it.index && event.propertyIndex.isEmpty())) {
+                    it.copy(index = event.newValue)
+                } else it
+            }.toMutableList()
+            updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
     }
 
     private fun addUiOnlyProperty(event: UiOnlyValueAddedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
@@ -261,9 +262,21 @@ class CurrentStateProvider(private val project: Project) {
         updated[event.property] = (updated.getAllInitialized(event.property) + Property(event.newValue, event.propertyIndex!!)).toSet().toMutableList()
     }
 
-    private fun removeUiOnlyProperty(event: UiOnlyValueRemovedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
+    private fun removeUiOnlyProperty(event:  UiOnlyValueRemovedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: return
-        updated[event.property] = (updated.getAll(event.property).filter { it.index != event.propertyIndex }).toSet().toMutableList()
+        val preparedProperty =
+            (updated.getAll(event.property).filter { it.index != event.propertyIndex }).toSet().toMutableList()
+            if (preparedProperty.size > 0) {
+            updated[event.property] = preparedProperty
+        } else {
+            if (event.property.group!!.size > 1) {
+                val prepareIndex = event.propertyIndex!!.toMutableList()
+                prepareIndex[prepareIndex.size - 1] = ""
+                updated[event.property] = mutableListOf(Property(null, prepareIndex.toList()))
+            } else {
+                updated[event.property] = mutableListOf(Property(null, null))
+            }
+        }
     }
 
     private fun handleDiagramRemoved(diagramId: DiagramElementId, updatedShapes: MutableList<ShapeElement>, updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>, updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>) {
