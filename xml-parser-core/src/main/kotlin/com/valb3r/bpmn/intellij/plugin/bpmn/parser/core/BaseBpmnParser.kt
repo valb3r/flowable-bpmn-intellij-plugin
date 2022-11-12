@@ -9,7 +9,9 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
@@ -144,6 +146,7 @@ abstract class BaseBpmnParser: BpmnParser {
         mapper.enable(SerializationFeature.INDENT_OUTPUT)
         mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
         return mapper as XmlMapper
     }
 
@@ -160,11 +163,13 @@ abstract class BaseBpmnParser: BpmnParser {
     private fun doUpdate(doc: Document, events: List<EventPropagatableToXml>) {
         for (event in events) {
             when (event) {
+                //my event ->
                 is LocationUpdateWithId -> applyLocationUpdate(doc, event)
                 is BpmnShapeResizedAndMoved -> applyShapeRectUpdate(doc, event)
                 is NewWaypoints -> applyNewWaypoints(doc, event)
                 is DiagramElementRemoved -> applyDiagramElementRemoved(doc, event)
-                is BpmnElementRemoved -> applyBpmnElementRemoved(doc, event)
+                is BpmnElementRemoved -> applyBpmnElementRemoved(doc, event.bpmnElementId)
+                is BpmnElementChange -> applyChangeElement(doc, event)
                 is BpmnShapeObjectAdded -> applyBpmnShapeObjectAdded(doc, event)
                 is BpmnEdgeObjectAdded -> applyBpmnEdgeObjectAdded(doc, event)
                 is PropertyUpdateWithId -> applyPropertyUpdateWithId(doc, event)
@@ -257,9 +262,23 @@ abstract class BaseBpmnParser: BpmnParser {
         trimWhitespace(parent, false)
     }
 
-    private fun applyBpmnElementRemoved(doc: Document, update: BpmnElementRemoved) {
+    private fun applyChangeElement(doc: Document, update: BpmnElementChange) {
         val node = doc.selectSingleNode(
-            "//*[local-name()='process']//*[@id='${update.bpmnElementId.id}'][1]"
+            "//*[local-name()='process']//*[@id='${update.elementId.id}'][1]"
+        ) as Node
+
+        val parent = node.parent
+        node.parent.remove(node)
+        trimWhitespace(parent, false)
+
+        val newNode = createBpmnObject(update.newBpmnElement, parent) ?: throw IllegalArgumentException("Can't store: " + update.parentIdForXml)
+        update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.index?.toMutableList()) }
+        trimWhitespace(parent, false)
+    }
+
+    private fun applyBpmnElementRemoved(doc: Document, bpmnElementId: BpmnElementId) {
+        val node = doc.selectSingleNode(
+            "//*[local-name()='process']//*[@id='${bpmnElementId.id}'][1]"
         ) as Node
 
         val parent = node.parent
@@ -273,7 +292,7 @@ abstract class BaseBpmnParser: BpmnParser {
                     ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnObject.parentIdForXml.id}'][1]") as Element?
                 )!!
 
-        val newNode = createBpmnObject(update, diagramParent) ?: throw IllegalArgumentException("Can't store: " + update.bpmnObject)
+        val newNode = createBpmnObject(update.bpmnObject.element, diagramParent) ?: throw IllegalArgumentException("Can't store: " + update.bpmnObject)
 
         update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.index?.toMutableList()) }
         trimWhitespace(diagramParent, false)
@@ -293,7 +312,7 @@ abstract class BaseBpmnParser: BpmnParser {
         trimWhitespace(shapeParent, false)
     }
 
-    protected open fun createBpmnObject(update: BpmnShapeObjectAdded, diagramParent: Element) = when (update.bpmnObject.element) {
+    protected open fun createBpmnObject(element: WithBpmnId, diagramParent: Element) = when (element) {
         // Events
         // Start
         is BpmnStartEvent -> createStartEventWithType(diagramParent, null)
@@ -355,6 +374,7 @@ abstract class BaseBpmnParser: BpmnParser {
         is BpmnReceiveTask -> diagramParent.addElement(modelNs().named("receiveTask"))
         is BpmnManualTask -> diagramParent.addElement(modelNs().named("manualTask"))
         is BpmnCamelTask -> createServiceTaskWithType(diagramParent, "camel")
+        is BpmnSendEventTask -> createServiceTaskWithType(diagramParent, "send-event")
         is BpmnHttpTask -> createServiceTaskWithType(diagramParent, "http")
         is BpmnExternalTask -> createServiceTaskWithType(diagramParent, "external")
         is BpmnMailTask -> createServiceTaskWithType(diagramParent, "mail")
@@ -453,7 +473,7 @@ abstract class BaseBpmnParser: BpmnParser {
             doc.selectSingleNode("//*[local-name()='process'][1]//*[@id='${update.bpmnElementId.id}'][1]") as Element?
                 ?: doc.selectSingleNode("//*[local-name()='process'][@id='${update.bpmnElementId.id}'][1]") as Element
 
-        setToNode(node, update.property, update.newValue, update.propertyIndex?.toMutableList())
+            setToNode(node, update.property, update.newValue, update.propertyIndex?.toMutableList())
 
         if (null == update.newIdValue) {
             return
@@ -606,7 +626,7 @@ abstract class BaseBpmnParser: BpmnParser {
     }
 
     private fun setAttribute(node: Element, details: PropertyTypeDetails, name: String, value: String?) {
-        val qname = qname(name)
+            val qname = qname(name)
 
         if (value.isNullOrEmpty()) {
             if (destroyEnclosingNode(details, node)) return
@@ -653,7 +673,6 @@ abstract class BaseBpmnParser: BpmnParser {
         if (!details.propertyType.removeEnclosingNodeIfNullOrEmpty) {
             return false
         }
-
         node.parent.remove(node)
         return true
     }
@@ -668,7 +687,7 @@ abstract class BaseBpmnParser: BpmnParser {
         }
 
         return when (type) {
-            STRING, CLASS, EXPRESSION, ATTACHED_SEQUENCE_SELECT -> value as String
+            STRING, CLASS, EXPRESSION, ATTACHED_SEQUENCE_SELECT, LIST_SELECT -> value as String
             BOOLEAN -> (value as Boolean).toString()
         }
     }

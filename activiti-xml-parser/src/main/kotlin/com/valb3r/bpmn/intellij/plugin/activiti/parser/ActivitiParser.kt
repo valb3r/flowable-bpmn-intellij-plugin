@@ -105,7 +105,11 @@ enum class ActivitiPropertyTypeDetails(val details: PropertyTypeDetails) {
     FORM_PROPERTY_EXPRESSION(PropertyTypeDetails(PropertyType.FORM_PROPERTY_EXPRESSION, "extensionElements.activiti:formProperty?id=@.expression", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_DATE_PATTERN(PropertyTypeDetails(PropertyType.FORM_PROPERTY_DATE_PATTERN, "extensionElements.activiti:formProperty?id=@.datePattern", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_VALUE_ID(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_ID, "extensionElements.activiti:formProperty?id=@.activiti:value?id=@.id", XmlType.ATTRIBUTE)),
-    FORM_PROPERTY_VALUE_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_NAME, "extensionElements.activiti:formProperty?id=@.activiti:value?id=@.name", XmlType.ATTRIBUTE))
+    FORM_PROPERTY_VALUE_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_NAME, "extensionElements.activiti:formProperty?id=@.activiti:value?id=@.name", XmlType.ATTRIBUTE)),
+    EXECUTION_LISTENER_CLASS(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_CLASS, "extensionElements.activiti:executionListener?class=@.class", XmlType.ATTRIBUTE)),
+    EXECUTION_LISTENER_EVENT(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_EVENT, "extensionElements.activiti:executionListener?class=@.event", XmlType.ATTRIBUTE)),
+    EXECUTION_LISTENER_FIELD_NAME(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_FIELD_NAME, "extensionElements.activiti:executionListener?class=@.activiti:field?name=@.name", XmlType.ATTRIBUTE)),
+    EXECUTION_LISTENER_FIELD_STRING(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_FIELD_STRING, "extensionElements.activiti:executionListener?class=@.activiti:field?name=@.activiti:string.text", XmlType.CDATA)),
 }
 
 open class ActivitiParser : BaseBpmnParser() {

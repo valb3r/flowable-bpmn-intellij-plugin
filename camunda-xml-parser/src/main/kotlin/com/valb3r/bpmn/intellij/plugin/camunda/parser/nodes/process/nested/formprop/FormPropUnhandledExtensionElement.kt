@@ -3,4 +3,4 @@ package com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.form
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
 @JsonDeserialize(`as` = FormPropUnhandledExtensionElement::class)
-class FormPropUnhandledExtensionElement : FormPropExtensionElement()
+class FormPropUnhandledExtensionElement : ExtensionElement()

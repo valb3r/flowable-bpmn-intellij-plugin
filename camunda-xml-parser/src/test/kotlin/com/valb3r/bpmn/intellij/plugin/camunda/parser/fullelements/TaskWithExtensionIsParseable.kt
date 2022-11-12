@@ -2,6 +2,9 @@ package com.valb3r.bpmn.intellij.plugin.camunda.parser.fullelements
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ListenerField
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaObjectFactory
@@ -20,6 +23,22 @@ internal class TaskWithExtensionIsParseable {
     private val parser = CamundaParser()
     private val singlePropElementId = BpmnElementId("simpleFullSingleTask")
     private val multiplePropElementId = BpmnElementId("simpleMultiFullTask")
+
+    @Test
+    fun `Task parse XML Listener`() {
+        val processObject = parser.parse(FILE.asResource()!!)
+
+        val task = readSingleIntermediateLinkCatchingEventSingleProp(processObject)
+        task.id.shouldBeEqualTo(singlePropElementId)
+        task.name.shouldBeEqualTo("Simple task")
+        task.documentation.shouldBeEqualTo("Simple task docs")
+        task.executionListener!!.shouldContainSame(listOf(
+            ExeсutionListener("com.start.Listener", "start", listOf(
+                ListenerField("field1", null)
+            ))
+        ))
+
+    }
 
     @Test
     fun `Task (single props) with nested extensions is parseable`() {

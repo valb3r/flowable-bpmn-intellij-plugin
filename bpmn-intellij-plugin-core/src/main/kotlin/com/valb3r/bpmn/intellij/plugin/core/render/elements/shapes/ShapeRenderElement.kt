@@ -25,6 +25,8 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.internal.CascadeTran
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.NullViewTransform
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.viewtransform.RectangleTransformationIntrospection
 import com.valb3r.bpmn.intellij.plugin.core.state.CurrentState
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.popupMenuProvider
+import com.valb3r.bpmn.intellij.plugin.core.xmlnav.xmlNavigator
 import java.awt.geom.Line2D
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -73,14 +75,47 @@ abstract class ShapeRenderElement(
     }
 
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {
+        val spaceCoeff = 1.5f
+        val actionCount = 3
+        val start = state().ctx.canvas.camera.fromCameraView(Point2D.Float(0.0f, 0.0f))
+        val end = state().ctx.canvas.camera.fromCameraView(Point2D.Float(0.0f, ACTIONS_ICO_SIZE * spaceCoeff))
+        val ySpacing = end.y - start.y
+
+        val rect = currentOnScreenRect(state().ctx.canvas.camera)
+        val left = state().ctx.canvas.camera.toCameraView(Point2D.Float(rect.x, rect.y))
+        val right = state().ctx.canvas.camera.toCameraView(Point2D.Float(rect.x + rect.width, rect.y + rect.height))
+
+        var currY = y
         val delId = elementId.elemIdToRemove()
-        val deleteIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, y, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.recycleBin)
+        val deleteIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.recycleBin)
         state().ctx.interactionContext.clickCallbacks[delId] = { dest ->
             dest.addElementRemovedEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement())
         }
 
-        return mutableMapOf(
+        if (ACTIONS_ICO_SIZE * actionCount >= (right.y - left.y)) {
+            return mutableMapOf(
                 delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
+            )
+        }
+
+        currY += spaceCoeff * ySpacing
+        val changeShapeId = elementId.elemIdToChangeShape()
+        val changeShapeIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.wrench)
+        state().ctx.interactionContext.clickCallbacks[changeShapeId] = { dest ->
+            popupMenuProvider(state().ctx.project).popupChangeShapeType(
+                bpmnElementId
+            ).show(currentCanvas(state().ctx.project), right.x.toInt(), right.y.toInt())
+        }
+
+        currY += spaceCoeff * ySpacing
+        val toXmlId = DiagramElementId("TOXML:$elementId")
+        val toXmlArea = state().ctx.canvas.drawText(Point2D.Float(x, currY), "<XML/>", Colors.INNER_TEXT_COLOR.color)
+        state().ctx.interactionContext.clickCallbacks[toXmlId] = { dest -> xmlNavigator(state().ctx.project).jumpTo(bpmnElementId)}
+
+        return mutableMapOf(
+            delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId),
+            changeShapeId to AreaWithZindex(changeShapeIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId),
+            toXmlId to AreaWithZindex(toXmlArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
         )
     }
 

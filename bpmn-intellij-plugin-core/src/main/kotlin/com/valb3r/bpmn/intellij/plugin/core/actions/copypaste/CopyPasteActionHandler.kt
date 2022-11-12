@@ -257,7 +257,6 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
                     )
             )
         }
-
         return result.map { it.copy(props = copied(it.props, updatedIds), edge = copied(it.edge, delta, updatedIds, updatedDiagramIds)) }.toMutableList()
     }
 
