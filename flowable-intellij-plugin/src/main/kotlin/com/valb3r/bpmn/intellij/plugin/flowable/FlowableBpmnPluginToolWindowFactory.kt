@@ -10,6 +10,7 @@ import com.intellij.ui.content.ContentFactory
 import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
 import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
+import com.valb3r.bpmn.intellij.plugin.core.getContentFactory
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.parser.registerParser
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
@@ -48,7 +49,7 @@ class FlowableBpmnPluginToolWindowFactory: ToolWindowFactory {
         windowService.bpmnToolWindow = bpmnWindow
 
         // register the tool window content
-        val content = ContentFactory.SERVICE.getInstance().createContent(
+        val content = getContentFactory().createContent(
                 bpmnWindow.getContent(),
                 "",
                 false
