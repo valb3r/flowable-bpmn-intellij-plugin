@@ -43,7 +43,7 @@ intellij {
 }
 
 runPluginVerifier {
-    ideVersions = ["IU-2019.3.5"]
+    ideVersions = ["IU-2020.3"]
 }
 
 verifyPlugin {
