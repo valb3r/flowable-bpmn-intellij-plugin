@@ -6,7 +6,6 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
-import com.intellij.ui.content.ContentFactory
 import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
 import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow

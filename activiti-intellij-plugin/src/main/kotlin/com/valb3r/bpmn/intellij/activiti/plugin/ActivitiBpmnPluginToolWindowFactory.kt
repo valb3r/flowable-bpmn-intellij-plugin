@@ -7,7 +7,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
-import com.intellij.ui.content.ContentFactory
 import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.activiti.plugin.popupmenu.ActivitiCanvasPopupMenuProvider
 import com.valb3r.bpmn.intellij.activiti.plugin.xmlnav.ActivitiXmlNavigator
