@@ -7,7 +7,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
-import com.intellij.ui.content.ContentFactory
 import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.activiti.plugin.popupmenu.ActivitiCanvasPopupMenuProvider
 import com.valb3r.bpmn.intellij.activiti.plugin.xmlnav.ActivitiXmlNavigator
@@ -17,6 +16,7 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
 import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
+import com.valb3r.bpmn.intellij.plugin.core.getContentFactory
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.parser.registerParser
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
@@ -54,7 +54,7 @@ class ActivitiBpmnPluginToolWindowFactory: ToolWindowFactory {
         windowService.bpmnToolWindow = bpmnWindow
 
         // register the tool window content
-        val content = ContentFactory.SERVICE.getInstance().createContent(
+        val content = getContentFactory().createContent(
                 bpmnWindow.getContent(),
                 "",
                 false

@@ -97,7 +97,7 @@
     <!-- <helpset file="myhelp.jar" path="/Help.hs" /> -->
 
     <!-- Minimum and maximum build of IDE compatible with the plugin -->
-    <idea-version since-build="192"/>
+    <idea-version since-build="193.5233.102"/>
 
     <!-- Resource bundle (/messages/MyPluginBundle.properties) to be used with `key` attributes in extension points
          and implicit keys like `action.[pluginID].[ActionID].text` -->
@@ -302,7 +302,7 @@
 
     <!-- Pre/Post load -->
     <extensions defaultExtensionNs="com.intellij">
-        <preloadingActivity implementation="com.valb3r.bpmn.intellij.plugin.flowable.FlowablePluginPreloaded"/>
+        <backgroundPostStartupActivity implementation="com.valb3r.bpmn.intellij.plugin.flowable.FlowablePluginPreloaded"/>
     </extensions>
 
     <!-- Notification balloons TODO: Not clear if it may cause any issues with 2018-2020.2 as extension is supported with 2020.3+ -->
