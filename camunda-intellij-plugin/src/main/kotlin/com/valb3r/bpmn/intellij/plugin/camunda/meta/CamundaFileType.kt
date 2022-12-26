@@ -1,7 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.camunda.meta
 
 import com.intellij.ide.highlighter.XmlLikeFileType
-import com.intellij.lang.Language
 import com.intellij.lang.xml.XMLLanguage
 import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
@@ -21,7 +20,7 @@ class CamundaFileType private constructor() : XmlLikeFileType(XMLLanguage.INSTAN
     }
 
     override fun getIcon(): Icon {
-        return IconLoader.getIcon("META-INF/pluginIcon.svg")
+        return IconLoader.getIcon("META-INF/pluginIcon.svg", CamundaFileType::class.java)
     }
 
     companion object Instance {
