@@ -32,7 +32,10 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build, test with Gradle
-        run: ./gradlew clean build buildPlugin runPluginVerifier -x :bpmn-intellij-plugin-commons:listProductsReleases -x :bpmn-intellij-plugin-core:listProductsReleases
+        run: |
+          ./gradlew clean build buildPlugin runPluginVerifier jacocoTestReport \
+            -x :bpmn-intellij-plugin-commons:runPluginVerifier \
+            -x :bpmn-intellij-plugin-core:runPluginVerifier
       - name: Release plugin(s)
         run: ./gradlew publishPlugin
         env:
