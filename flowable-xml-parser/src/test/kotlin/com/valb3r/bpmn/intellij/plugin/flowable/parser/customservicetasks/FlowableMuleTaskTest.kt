@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnMuleTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -39,7 +39,7 @@ internal class FlowableMuleTaskTest {
         task.payloadExpression.shouldBeEqualTo("\${foo.bar}")
         task.resultVariableCdata.shouldBeEqualTo("RESULT")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -86,7 +86,7 @@ internal class FlowableMuleTaskTest {
         return readMuleTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readMuleTask(processObject: BpmnProcessObject): BpmnMuleTask {
-        return processObject.process.body!!.muleTask!!.shouldHaveSingleItem()
+    private fun readMuleTask(processObject: BpmnFileObject): BpmnMuleTask {
+        return processObject.processes[0].body!!.muleTask!!.shouldHaveSingleItem()
     }
 }

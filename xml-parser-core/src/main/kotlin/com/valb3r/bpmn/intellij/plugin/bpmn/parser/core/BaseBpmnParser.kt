@@ -8,7 +8,7 @@ import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
@@ -56,7 +56,7 @@ data class PropertyTypeDetails(
 
 abstract class BaseBpmnParser: BpmnParser {
 
-    abstract override fun parse(input: String): BpmnProcessObject
+    abstract override fun parse(input: String): BpmnFileObject
 
     override fun validateForErrors(input: String): String? {
         if (!input.contains("BPMNDiagram")) {

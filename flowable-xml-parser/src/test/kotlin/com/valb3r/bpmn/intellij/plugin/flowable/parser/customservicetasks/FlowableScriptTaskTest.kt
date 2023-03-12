@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnScriptTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -38,7 +38,7 @@ internal class FlowableScriptTaskTest {
         task.autoStoreVariables.shouldBeEqualTo(true)
         task.scriptBody.shouldBeEqualTo("echo \"Foo Bar!\" > /tmp/foo.txt")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -81,7 +81,7 @@ internal class FlowableScriptTaskTest {
         return readScriptTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readScriptTask(processObject: BpmnProcessObject): BpmnScriptTask {
-        return processObject.process.body!!.scriptTask!!.shouldHaveSingleItem()
+    private fun readScriptTask(processObject: BpmnFileObject): BpmnScriptTask {
+        return processObject.processes[0].body!!.scriptTask!!.shouldHaveSingleItem()
     }
 }

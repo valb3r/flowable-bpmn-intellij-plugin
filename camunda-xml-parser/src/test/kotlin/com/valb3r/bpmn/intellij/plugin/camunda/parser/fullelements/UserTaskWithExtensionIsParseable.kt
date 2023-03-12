@@ -1,8 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.camunda.parser.fullelements
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -34,7 +33,7 @@ internal class UserTaskWithExtensionIsParseable {
         task.candidateGroups.shouldBeEqualTo("candidates1")
         task.documentation.shouldBeEqualTo("Some docs")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.ASSIGNEE]!!.value.shouldBeEqualTo(task.assignee)
@@ -118,7 +117,7 @@ internal class UserTaskWithExtensionIsParseable {
         task.candidateGroups.shouldBeEqualTo("candidates1")
         task.documentation.shouldBeEqualTo("Some docs")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.ASSIGNEE]!!.value.shouldBeEqualTo(task.assignee)
@@ -200,15 +199,15 @@ internal class UserTaskWithExtensionIsParseable {
         return readStartEventSingleProp(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(singlePropElementId, property, newValue, propertyIndex = propertyIndex.split(","))))
     }
 
-    private fun readStartEventSingleProp(processObject: BpmnProcessObject): BpmnUserTask {
-        return processObject.process.body!!.userTask!!.shouldHaveSize(2)[0]
+    private fun readStartEventSingleProp(processObject: BpmnFileObject): BpmnUserTask {
+        return processObject.processes[0].body!!.userTask!!.shouldHaveSize(2)[0]
     }
 
     private fun readAndUpdateMultiPropTask(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnUserTask {
         return readStartEventMultiProp(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(multiplePropElementId, property, newValue, propertyIndex = propertyIndex.split(","))))
     }
 
-    private fun readStartEventMultiProp(processObject: BpmnProcessObject): BpmnUserTask {
-        return processObject.process.body!!.userTask!!.shouldHaveSize(2)[1]
+    private fun readStartEventMultiProp(processObject: BpmnFileObject): BpmnUserTask {
+        return processObject.processes[0].body!!.userTask!!.shouldHaveSize(2)[1]
     }
 }

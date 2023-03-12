@@ -19,7 +19,7 @@ class WindowsEncodingAndCrLfTest {
         val updateNameTo = "提交请假"
         val ActivityParser = ActivitiParser()
         val updated = ActivityParser.update(initial, listOf(StringValueUpdatedEvent(BpmnElementId("empty-process-name"), PropertyType.NAME, updateNameTo)))
-        ActivityParser.parse(updated).process.name.shouldBeEqualTo(updateNameTo)
+        ActivityParser.parse(updated).processes[0].name.shouldBeEqualTo(updateNameTo)
     }
 
     private fun setKoi8DefaultEncoding() {

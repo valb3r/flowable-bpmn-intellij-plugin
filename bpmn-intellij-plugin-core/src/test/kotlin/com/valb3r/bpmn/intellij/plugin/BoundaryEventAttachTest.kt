@@ -293,7 +293,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
 
             sequence.sourceRef.shouldBe(optionalBoundaryErrorEventBpmnId.id)
             sequence.targetRef.shouldBe("")
@@ -323,7 +323,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
 
             sequence.sourceRef.shouldBe(optionalBoundaryErrorEventBpmnId.id)
             sequence.targetRef.shouldBe("")

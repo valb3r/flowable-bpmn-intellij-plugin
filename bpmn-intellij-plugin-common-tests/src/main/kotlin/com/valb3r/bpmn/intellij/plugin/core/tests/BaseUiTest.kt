@@ -8,8 +8,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.messages.MessageBus
 import com.intellij.util.messages.MessageBusConnection
 import com.nhaarman.mockitokotlin2.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
@@ -146,17 +146,22 @@ abstract class BaseUiTest {
     protected val uiEventBus = setUiEventBus(project, UiEventBus())
     protected var renderResult: RenderResult? = null
 
-    protected val basicProcess = BpmnProcessObject(
+    protected val basicProcess = BpmnFileObject(
+        listOf(
             BpmnProcess(
-                    parentProcessBpmnId,
-                    "mainProcess",
-                    null,
-                    null,
-                    null,
-                    null
-            ),
-            mutableListOf()
+                parentProcessBpmnId,
+                "mainProcess",
+                null,
+                null,
+                null,
+                null,
+                null
+            )
+        ),
+        mutableListOf(),
+        mutableListOf()
     )
+    protected val mainProcessOfBasicProcess = basicProcess.processes[0]
 
     protected val basicProcessBody = BpmnProcessBody(null, null, null, null,
         null, null, null, null, null, null,
@@ -318,7 +323,7 @@ abstract class BaseUiTest {
                 bounds = BoundsElement(intermediateX, intermediateY, taskSize, taskSize)
         )
         updateEventsRegistry(project).addObjectEvent(
-                BpmnShapeObjectAddedEvent(WithParentId(basicProcess.process.id, task), shape, PropertyTable(mutableMapOf(PropertyType.ID to mutableListOf(Property(task.id)))))
+                BpmnShapeObjectAddedEvent(WithParentId(mainProcessOfBasicProcess.id, task), shape, PropertyTable(mutableMapOf(PropertyType.ID to mutableListOf(Property(task.id)))))
         )
 
         return task.id
@@ -411,12 +416,12 @@ abstract class BaseUiTest {
 
     protected fun prepareOneSubProcessView() {
         val process = basicProcess.copy(
-                basicProcess.process.copy(
-                        body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess))
+                listOf(
+                    mainProcessOfBasicProcess.copy(body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess)))
                 ),
-                listOf(DiagramElement(
+                diagram = listOf(DiagramElement(
                         diagramMainElementId,
-                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSubProcess), listOf()))
+                        PlaneElement(diagramMainPlaneElementId, mainProcessOfBasicProcess.id, listOf(diagramSubProcess), listOf()))
                 )
         )
         whenever(parser.parse("")).thenReturn(process)
@@ -425,18 +430,19 @@ abstract class BaseUiTest {
 
     protected fun prepareOneSubProcessWithTwoServiceTasksView() {
         val process = basicProcess.copy(
-                basicProcess.process.copy(
+                listOf(
+                    mainProcessOfBasicProcess.copy(
                         body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd), subProcess = listOf(bpmnSubProcess)),
                         children = mapOf(
                                 subprocessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
-                        )
+                        ))
                 ),
-                listOf(
+                diagram = listOf(
                         DiagramElement(
                                 diagramMainElementId,
                                 PlaneElement(
                                         diagramMainPlaneElementId,
-                                        basicProcess.process.id,
+                                        mainProcessOfBasicProcess.id,
                                         listOf(diagramSubProcess, diagramServiceTaskStart, diagramServiceTaskEnd),
                                         listOf()
                                 )
@@ -449,18 +455,19 @@ abstract class BaseUiTest {
 
     protected fun prepareOneSubProcessWithTwoLinkedServiceTasksView() {
         val process = basicProcess.copy(
-                basicProcess.process.copy(
+                listOf(
+                    mainProcessOfBasicProcess.copy(
                         body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess)),
                         children = mapOf(
                                 subprocessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
-                        )
+                        ))
                 ),
-                listOf(
+                diagram = listOf(
                         DiagramElement(
                                 diagramMainElementId,
                                 PlaneElement(
                                         diagramMainPlaneElementId,
-                                        basicProcess.process.id,
+                                        mainProcessOfBasicProcess.id,
                                         listOf(diagramSubProcess, diagramServiceTaskStart, diagramServiceTaskEnd),
                                         listOf()
                                 )
@@ -475,19 +482,19 @@ abstract class BaseUiTest {
 
     protected fun prepareOneSubProcessThenNestedSubProcessWithOneServiceTaskView() {
         val process = basicProcess.copy(
-                basicProcess.process.copy(
+                listOf(mainProcessOfBasicProcess.copy(
                         body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd), subProcess = listOf(bpmnSubProcess)),
                         children = mapOf(
                                 subprocessBpmnId to basicProcessBody.copy(subProcess = listOf(bpmnNestedSubProcess)),
                                 subprocessInSubProcessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart))
-                        )
+                        ))
                 ),
-                listOf(
+                diagram = listOf(
                         DiagramElement(
                                 diagramMainElementId,
                                 PlaneElement(
                                         diagramMainPlaneElementId,
-                                        basicProcess.process.id,
+                                        mainProcessOfBasicProcess.id,
                                         listOf(diagramSubProcess, diagramNestedSubProcess, diagramServiceTaskStart),
                                         listOf()
                                 )
@@ -507,19 +514,20 @@ abstract class BaseUiTest {
         )
 
         val process = basicProcess.copy(
-            basicProcess.process.copy(
+            listOf(
+                mainProcessOfBasicProcess.copy(
                 body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd), subProcess = listOf(bpmnSubProcess), boundaryErrorEvent = listOf(boundaryEventOnRoot)),
                 children = mapOf(
                     subprocessBpmnId to basicProcessBody.copy(subProcess = listOf(bpmnNestedSubProcess)),
                     subprocessInSubProcessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart))
-                )
+                ))
             ),
-            listOf(
+            diagram = listOf(
                 DiagramElement(
                     diagramMainElementId,
                     PlaneElement(
                         diagramMainPlaneElementId,
-                        basicProcess.process.id,
+                        mainProcessOfBasicProcess.id,
                         listOf(diagramSubProcess, diagramNestedSubProcess, diagramServiceTaskStart, boundaryEventOnRootShape),
                         listOf()
                     )
@@ -532,19 +540,19 @@ abstract class BaseUiTest {
 
     protected fun prepareOneSubProcessThenNestedSubProcessWithReversedChildParentOrder() {
         val process = basicProcess.copy(
-                basicProcess.process.copy(
+                listOf(mainProcessOfBasicProcess.copy(
                         body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess)),
                         children = mapOf(
                                 subprocessBpmnId to basicProcessBody.copy(subProcess = listOf(bpmnNestedSubProcess)),
                                 subprocessInSubProcessBpmnId to basicProcessBody.copy()
-                        )
+                        ))
                 ),
-                listOf(
+                diagram = listOf(
                         DiagramElement(
                                 diagramMainElementId,
                                 PlaneElement(
                                         diagramMainPlaneElementId,
-                                        basicProcess.process.id,
+                                        mainProcessOfBasicProcess.id,
                                         listOf(diagramNestedSubProcess, diagramSubProcess),
                                         listOf()
                                 )
@@ -557,12 +565,12 @@ abstract class BaseUiTest {
 
     protected fun prepareSendEventTask(){
         val process = basicProcess.copy(
-            basicProcess.process.copy(
+            listOf(basicProcess.processes[0].copy(
                 body = basicProcessBody.copy(sendEventTask = listOf(bpmnSendEventTask))
-            ),
-            listOf(DiagramElement(
+            )),
+            diagram = listOf(DiagramElement(
                 diagramMainElementId,
-                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSendEventTask), listOf()))
+                PlaneElement(diagramMainPlaneElementId, basicProcess.processes[0].id, listOf(diagramSendEventTask), listOf()))
             )
         )
         whenever(parser.parse("")).thenReturn(process)
@@ -591,12 +599,12 @@ abstract class BaseUiTest {
 
     protected fun prepareUserTask(task: BpmnUserTask) {
         val process = basicProcess.copy(
-            basicProcess.process.copy(
+            listOf(basicProcess.processes[0].copy(
                 body = basicProcessBody.copy(userTask = listOf(task))
-            ),
-            listOf(DiagramElement(
+            )),
+            diagram = listOf(DiagramElement(
                 diagramMainElementId,
-                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramUserTask), listOf()))
+                PlaneElement(diagramMainPlaneElementId, basicProcess.processes[0].id, listOf(diagramUserTask), listOf()))
             )
         )
         whenever(parser.parse("")).thenReturn(process)
@@ -609,12 +617,12 @@ abstract class BaseUiTest {
 
     protected fun prepareTwoServiceTaskView(one: BpmnServiceTask, two: BpmnServiceTask) {
         val process = basicProcess.copy(
-            basicProcess.process.copy(
+            listOf(mainProcessOfBasicProcess.copy(
                 body = basicProcessBody.copy(serviceTask = listOf(one, two))
-            ),
-            listOf(DiagramElement(
+            )),
+            diagram = listOf(DiagramElement(
                 diagramMainElementId,
-                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, diagramServiceTaskEnd), listOf()))
+                PlaneElement(diagramMainPlaneElementId, mainProcessOfBasicProcess.id, listOf(diagramServiceTaskStart, diagramServiceTaskEnd), listOf()))
             )
         )
         whenever(parser.parse("")).thenReturn(process)
@@ -630,12 +638,12 @@ abstract class BaseUiTest {
         )
 
         val process = basicProcess.copy(
-                basicProcess.process.copy(
+                listOf(mainProcessOfBasicProcess.copy(
                     body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart), boundaryErrorEvent = listOf(boundaryEventOnServiceTask))
-                ),
-                listOf(DiagramElement(
+                )),
+                diagram = listOf(DiagramElement(
                         diagramMainElementId,
-                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, boundaryEventOnServiceTaskShape), listOf()))
+                        PlaneElement(diagramMainPlaneElementId, mainProcessOfBasicProcess.id, listOf(diagramServiceTaskStart, boundaryEventOnServiceTaskShape), listOf()))
                 )
         )
         whenever(parser.parse("")).thenReturn(process)
@@ -651,12 +659,12 @@ abstract class BaseUiTest {
         )
 
         val process = basicProcess.copy(
-                basicProcess.process.copy(
+                listOf(mainProcessOfBasicProcess.copy(
                         body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart), boundaryErrorEvent = listOf(boundaryEventOnRoot))
-                ),
-                listOf(DiagramElement(
+                )),
+                diagram = listOf(DiagramElement(
                         diagramMainElementId,
-                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, boundaryEventOnRootShape), listOf()))
+                        PlaneElement(diagramMainPlaneElementId, mainProcessOfBasicProcess.id, listOf(diagramServiceTaskStart, boundaryEventOnRootShape), listOf()))
                 )
         )
         whenever(parser.parse("")).thenReturn(process)
@@ -672,15 +680,15 @@ abstract class BaseUiTest {
         )
 
         val process = basicProcess.copy(
-                basicProcess.process.copy(
+                listOf(mainProcessOfBasicProcess.copy(
                         body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess), boundaryErrorEvent = listOf(boundaryEventOnRoot)),
                         children = mapOf(
                                 subprocessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart))
                         )
-                ),
-                listOf(DiagramElement(
+                )),
+                diagram = listOf(DiagramElement(
                         diagramMainElementId,
-                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSubProcess, diagramServiceTaskStart, boundaryEventOnRootShape), listOf()))
+                        PlaneElement(diagramMainPlaneElementId, mainProcessOfBasicProcess.id, listOf(diagramSubProcess, diagramServiceTaskStart, boundaryEventOnRootShape), listOf()))
                 )
         )
         whenever(parser.parse("")).thenReturn(process)
@@ -696,15 +704,15 @@ abstract class BaseUiTest {
         )
 
         val process = basicProcess.copy(
-                basicProcess.process.copy(
+                listOf(mainProcessOfBasicProcess.copy(
                         body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess)),
                         children = mapOf(
                                 subprocessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart), boundaryErrorEvent = listOf(boundaryEventOnServiceTask))
                         )
-                ),
-                listOf(DiagramElement(
+                )),
+                diagram = listOf(DiagramElement(
                         diagramMainElementId,
-                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSubProcess, diagramServiceTaskStart, boundaryEventOnServiceTaskShape), listOf()))
+                        PlaneElement(diagramMainPlaneElementId, mainProcessOfBasicProcess.id, listOf(diagramSubProcess, diagramServiceTaskStart, boundaryEventOnServiceTaskShape), listOf()))
                 )
         )
         whenever(parser.parse("")).thenReturn(process)
@@ -720,13 +728,13 @@ abstract class BaseUiTest {
         )
 
         val process = basicProcess.copy(
-            basicProcess.process.copy(
+            listOf(mainProcessOfBasicProcess.copy(
                 body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart), boundaryErrorEvent = listOf(boundaryEventOnServiceTask), subProcess = listOf(bpmnSubProcess)),
                 children = mapOf(subprocessBpmnId to basicProcessBody)
-            ),
-            listOf(DiagramElement(
+            )),
+            diagram = listOf(DiagramElement(
                 diagramMainElementId,
-                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSubProcess, diagramServiceTaskStart, boundaryEventOnServiceTaskShape), listOf()))
+                PlaneElement(diagramMainPlaneElementId, mainProcessOfBasicProcess.id, listOf(diagramSubProcess, diagramServiceTaskStart, boundaryEventOnServiceTaskShape), listOf()))
             )
         )
         whenever(parser.parse("")).thenReturn(process)
@@ -742,7 +750,7 @@ abstract class BaseUiTest {
         )
 
         val process = basicProcess.copy(
-                basicProcess.process.copy(
+                listOf(mainProcessOfBasicProcess.copy(
                         body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess)),
                         children = mapOf(
                                 subprocessBpmnId to basicProcessBody.copy(
@@ -755,13 +763,13 @@ abstract class BaseUiTest {
                                     sequenceFlow = listOf(bpmnSequenceFlow)
                                 )
                         )
-                ),
-                listOf(
+                )),
+                diagram = listOf(
                         DiagramElement(
                                 diagramMainElementId,
                                 PlaneElement(
                                         diagramMainPlaneElementId,
-                                        basicProcess.process.id,
+                                        mainProcessOfBasicProcess.id,
                                         listOf(diagramNestedSubProcess, diagramSubProcess, diagramServiceTaskStart, diagramServiceTaskEnd, boundaryEventOnServiceTaskShape),
                                         listOf(diagramSequenceFlow)
                                 )

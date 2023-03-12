@@ -39,6 +39,7 @@ interface IconProvider {
     val sequence: Icon
     val anchorOn: Icon
     val anchorOff: Icon
+    val dumpRenderTree: Icon
     val exclusiveGateway: SvgIcon
     val parallelGateway: SvgIcon
     val inclusiveGateway: SvgIcon
@@ -128,6 +129,7 @@ data class IconProviderImpl(
         override val sequence: Icon = IconLoader.getIcon("/icons/ui-icons/sequence.png", IconProvider::class.java),
         override val anchorOn: Icon = IconLoader.getIcon("/icons/actions/anchor.png", IconProvider::class.java),
         override val anchorOff: Icon = IconLoader.getIcon("/icons/actions/anchor-off.png", IconProvider::class.java),
+        override val dumpRenderTree: Icon = IconLoader.getIcon("/icons/actions/dump-render-tree.png"),
         override val plus: Icon = IconLoader.getIcon("/icons/ui-icons/plus.png", IconProvider::class.java),
         override val minus: Icon = IconLoader.getIcon("/icons/ui-icons/minus.png", IconProvider::class.java),
         override val exclusiveGateway: SvgIcon = "/icons/ui-icons/svg/exclusive-gateway.svg".asResource()!!,

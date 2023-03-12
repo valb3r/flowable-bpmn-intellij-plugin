@@ -2,7 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.camunda.parser
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnComplexGateway
@@ -134,18 +134,18 @@ class CamundaParser : BaseBpmnParser() {
 
     private val mapper: XmlMapper = mapper()
 
-    override fun parse(input: String): BpmnProcessObject {
+    override fun parse(input: String): BpmnFileObject {
         val dto = mapper.readValue<BpmnFile>(input)
         return toProcessObject(dto)
     }
 
-    private fun toProcessObject(dto: BpmnFile): BpmnProcessObject {
-        // TODO - Multi process support?
+    private fun toProcessObject(dto: BpmnFile): BpmnFileObject {
         markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
-        val process = dto.processes[0].toElement()
+        val processes = dto.processes.map { it.toElement() }
+        val collaborations = dto.collaborations?.map { it.toElement() } ?: emptyList()
         val diagrams = dto.diagrams!!.map { it.toElement() }
 
-        return BpmnProcessObject(process, diagrams)
+        return BpmnFileObject(processes, collaborations, diagrams)
     }
 
     override fun modelNs(): NS {

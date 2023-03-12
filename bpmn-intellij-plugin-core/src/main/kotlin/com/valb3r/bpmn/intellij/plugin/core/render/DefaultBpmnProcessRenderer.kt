@@ -1,7 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.intellij.openapi.project.Project
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnCollaboration
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnParticipant
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
@@ -12,6 +14,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnLane
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -27,9 +30,11 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseDiagramRenderEle
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.edges.EdgeRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.internal.InvisibleShape
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.shapes.*
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import groovy.lang.Tuple2
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
@@ -47,7 +52,7 @@ data class RenderedState(val state: RenderState, val elementsById: Map<BpmnEleme
 
     fun canCopyOrCut(): Boolean {
         return state.ctx.selectedIds
-                .mapNotNull { state.currentState.elementByDiagramId[it] }
+                .mapNotNull { state.currentState.elementsByDiagramId[it] }
                 .mapNotNull { elementsById[it] }
                 .isNotEmpty()
     }
@@ -55,7 +60,7 @@ data class RenderedState(val state: RenderState, val elementsById: Map<BpmnEleme
     fun allChildrenOf(elem: Set<DiagramElementId>): Set<DiagramElementId> {
         val result = mutableSetOf<DiagramElementId>()
 
-        result += elem.map { state.currentState.elementByDiagramId[it] }
+        result += elem.map { state.currentState.elementsByDiagramId[it] }
                 .mapNotNull { elementsById[it] }
                 .flatMap { allChildrenOf(it) }
 
@@ -68,6 +73,8 @@ data class RenderedState(val state: RenderState, val elementsById: Map<BpmnEleme
         result += elem.children.flatMap { allChildrenOf(it) }
         return result
     }
+
+    override fun toString(): String = "" // To prevent StackOverflow during debug
 }
 
 fun lastRenderedState(project: Project): RenderedState? {
@@ -105,7 +112,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     private fun doRender(ctx: RenderContext, onlyDiagram: Boolean = false): RenderResult {
         val elementsByDiagramId = mutableMapOf<DiagramElementId, BaseDiagramRenderElement>()
         val currentState = ctx.stateProvider.currentState()
-        val history = currentDebugger(project)?.executionSequence(project, currentState.processId.id)?.history ?: emptyList()
+        val history = currentDebugger(project)?.executionSequence(project, currentState.primaryProcessId.id)?.history ?: emptyList()
         val state = RenderState(
             elementsByDiagramId,
             mutableMapOf(),
@@ -156,7 +163,8 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         val result = TreeState(state, elementsById, elementsByDiagramId, version)
 
         val root = createRootProcessElem({ result.state }, elements, elementsById)
-        createShapes({ result.state }, elements, elementsById)
+        createCollaborationAndCollaborationProcesses({ result.state }, root, elements, elementsById)
+        createShapes({ result.state }, root, elements, elementsById)
         createEdges({ result.state }, elements, elementsById)
         linkChildrenToParent({ result.state }, elementsById)
         // Not all elements have BpmnElementId, but they have DiagramElementId
@@ -167,14 +175,30 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     }
 
     private fun createRootProcessElem(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>): BaseBpmnRenderElement {
-        val processElem = PlaneRenderElement(state().currentState.processDiagramId(), state().currentState.processId, state, mutableListOf())
+        val processElem = PlaneRenderElement(state().currentState.primaryProcessDiagramId(), state().currentState.primaryProcessId, state, mutableListOf())
         elements += processElem
-        elementsById[state().currentState.processId] = processElem
+        elementsById[state().currentState.primaryProcessId] = processElem
         return processElem
     }
 
-    private fun createShapes(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
-        state().currentState.shapes.forEach {
+    private fun createCollaborationAndCollaborationProcesses(state: () -> RenderState, root: BaseBpmnRenderElement, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+        state().currentState.elementByBpmnId.values.map { it.element }.filterIsInstance<BpmnCollaboration>().filter { it.id != root.bpmnElementId }.forEach {
+            val processElem = InvisibleShape(DiagramElementId("__collaboration:_${it.id}"), it.id, state)
+            elements += processElem
+            elementsById[it.id] = processElem
+        }
+
+        val rootProcessId = state().currentState.primaryProcessId
+        val collaborations = state().currentState.processes.filter { it != rootProcessId }
+        collaborations.forEach {
+            val processElem = InvisibleShape(DiagramElementId("__collaboration:_process_${it.id}"), it, state)
+            elements += processElem
+            elementsById[it] = processElem
+        }
+    }
+
+    private fun createShapes(state: () -> RenderState, root: BaseBpmnRenderElement, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
+        state().currentState.shapes.filter { it.bpmnElement !=  root.bpmnElementId }.forEach {
             val elem = state().currentState.elementByBpmnId[it.bpmnElement]
             elem?.let { bpmn ->
                 mapFromShape(state, it.id, it, bpmn.element).let { shape ->
@@ -196,7 +220,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     private fun linkChildrenToParent(state: () -> RenderState, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
         elementsById.forEach { (id, renderElem) ->
             val elem = state().currentState.elementByBpmnId[id]
-            elem?.parent?.let {elementsById[it]}?.let { if (it is BaseBpmnRenderElement) it else null }?.let { parent ->
+            elem?.parent?.let { elementsById[it] }?.let { if (it is BaseBpmnRenderElement) it else null }?.let { parent ->
                 parent.children.add(renderElem)
                 parent.let { renderElem.parents.add(it) }
             }
@@ -249,6 +273,9 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             is BpmnTransactionCollapsedSubprocess -> ExpandableShapeNoIcon(id, bpmn.id, isCollapsed(bpmn.id, state), icons.plus, icons.minus, shape, state, areaType = AreaType.SHAPE_THAT_NESTS)
             is BpmnCallActivity -> NoIconShape(id, bpmn.id, shape, state)
             is BpmnAdHocSubProcess -> BottomMiddleIconShape(id, bpmn.id, icons.tilde, shape, state, areaType = AreaType.SHAPE_THAT_NESTS)
+            is BpmnLane -> ShapeGroupElement(id, bpmn.id, shape, state, Colors.PROCESS_COLOR, Colors.ELEMENT_BORDER_COLOR, Colors.SUBPROCESS_TEXT_COLOR, areaType = AreaType.SHAPE_THAT_NESTS)
+            is BpmnParticipant -> ShapeGroupParentElement(id, bpmn.id, shape, state, Colors.PROCESS_COLOR, Colors.ELEMENT_BORDER_COLOR, Colors.SUBPROCESS_TEXT_COLOR, areaType = AreaType.SHAPE_THAT_NESTS)
+            is BpmnCollaboration -> InvisibleShape(id, bpmn.id, state)
             is BpmnExclusiveGateway -> IconShape(id, bpmn.id, icons.exclusiveGateway, shape, state)
             is BpmnParallelGateway -> IconShape(id, bpmn.id, icons.parallelGateway, shape, state)
             is BpmnInclusiveGateway -> IconShape(id, bpmn.id, icons.inclusiveGateway, shape, state)
@@ -342,7 +369,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         locationY += drawIconWithAction(state, zoomOutId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(ZoomOutEvent()) }, icons.zoomOut).second + iconMargin
         locationX = undoRedoStartMargin
         locationX += drawIconWithAction(state, zoomResetId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(ResetAndCenterEvent()) }, icons.zoomReset).first + iconMargin
-        locationY += drawIconWithAction(state, centerImageId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(CenterModelEvent()) }, icons.centerImage).first + iconMargin
+        locationY += drawIconWithAction(state, centerImageId, locationX, locationY, renderedArea, { currentUiEventBus(project).publish(CenterModelEvent()) }, icons.centerImage).second + iconMargin
         locationX = undoRedoStartMargin
         val currentGridState = gridState.get()
         val gridIcon = gridIcons[currentGridState]()
@@ -352,7 +379,12 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         }
         locationX += drawIconWithAction(state, gridStateId, locationX, locationY, renderedArea, nextGridStep, gridIcon).first + iconMargin
         val verticalAnchors = verticalAnchorsEnabled.get()
-        drawIconWithAction(state, anchorEnabled, locationX, locationY, renderedArea, { verticalAnchorsEnabled.set(!verticalAnchors)}, if (verticalAnchors) icons.anchorOff else icons.anchorOn).first + iconMargin
+        locationY += drawIconWithAction(state, anchorEnabled, locationX, locationY, renderedArea, { verticalAnchorsEnabled.set(!verticalAnchors)}, if (verticalAnchors) icons.anchorOff else icons.anchorOn).second + iconMargin
+        locationX = undoRedoStartMargin
+
+        if (currentSettings().enableDevelopmentFunctions) {
+            locationX += drawIconWithAction(state, DiagramElementId("__development_tool_render_tree_state"), locationX, locationY, renderedArea, { dumpRenderTree(project) }, icons.dumpRenderTree).first + iconMargin
+        }
     }
 
     private fun drawIconWithAction(

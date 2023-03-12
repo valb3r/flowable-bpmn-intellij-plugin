@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.NullNode
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnObjectFactory
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ConditionExpression
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
@@ -19,6 +18,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnLane
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnLaneSet
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.*
@@ -27,7 +28,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -127,7 +130,8 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
     override fun <T : WithBpmnId> propertiesOf(obj: T): PropertyTable {
         val table = when (obj) {
             is BpmnStartEventAlike, is EndEventAlike, is BpmnBoundaryEventAlike, is BpmnTaskAlike, is BpmnGatewayAlike,
-            is IntermediateCatchingEventAlike, is IntermediateThrowingEventAlike, is BpmnProcess
+            is IntermediateCatchingEventAlike, is IntermediateThrowingEventAlike, is BpmnProcess,
+            is BpmnCollaboration, is BpmnParticipant, is BpmnMessageFlow, is BpmnLaneSet, is BpmnLane
             -> processDtoToPropertyMap(obj)
 
             is BpmnStructuralElementAlike -> fillForCallActivity(obj)

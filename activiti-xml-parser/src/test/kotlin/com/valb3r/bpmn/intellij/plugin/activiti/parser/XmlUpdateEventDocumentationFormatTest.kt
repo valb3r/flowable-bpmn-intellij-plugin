@@ -2,7 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.activiti.parser
 
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BpmnShapeObjectAddedEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
@@ -68,17 +68,17 @@ class XmlUpdateEventDocumentationFormatTest {
     fun `Removing element does not break 'documentation' element formatting`() {
         val originalProcess = readProcess()
         val updatedProcess = readAndUpdateProcess(BpmnElementRemovedEvent(BpmnElementId(startEventId)))
-        updatedProcess.process.body!!.scriptTask!![0].documentation
-            .shouldBeEqualTo(originalProcess.process.body!!.scriptTask!![0].documentation)
+        updatedProcess.processes[0].body!!.scriptTask!![0].documentation
+            .shouldBeEqualTo(originalProcess.processes[0].body!!.scriptTask!![0].documentation)
     }
 
-    private fun readProcess(): BpmnProcessObject {
+    private fun readProcess(): BpmnFileObject {
         val process = parser.parse(documentationProcessName.asResource()!!)
         process.shouldNotBeNull()
         return process
     }
 
-    private fun readAndUpdateProcess(event: EventPropagatableToXml): BpmnProcessObject {
+    private fun readAndUpdateProcess(event: EventPropagatableToXml): BpmnFileObject {
         val updated = parser.update(
             documentationProcessName.asResource()!!,
             listOf(event)

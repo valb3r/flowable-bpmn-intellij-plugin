@@ -1,7 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.state
 
 import com.intellij.openapi.project.Project
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
@@ -30,46 +30,50 @@ fun currentStateProvider(project: Project): CurrentStateProvider {
 }
 
 data class CurrentState(
-        var processId: BpmnElementId,
-        val shapes: List<ShapeElement>,
-        val edges: List<EdgeWithIdentifiableWaypoints>,
-        val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
-        val elementByBpmnId: Map<BpmnElementId, WithParentId>,
-        val elemPropertiesByStaticElementId: Map<BpmnElementId, PropertyTable>,
-        val propertyWithElementByPropertyType: Map<PropertyType, Map<BpmnElementId, Property>>,
-        val elemUiOnlyPropertiesByStaticElementId: Map<BpmnElementId, Map<UiOnlyPropertyType, Property>>,
-        val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>,
-        val version: Long,
-        val diagramByElementId: Map<BpmnElementId, DiagramElementId> = elementByDiagramId.map { Pair(it.value, it.key) }.toMap(),
+    val primaryProcessId: BpmnElementId,
+    val processes: Set<BpmnElementId>,
+    val shapes: List<ShapeElement>,
+    val edges: List<EdgeWithIdentifiableWaypoints>,
+    val elementsByDiagramId: Map<DiagramElementId, BpmnElementId>,
+    val elementByBpmnId: Map<BpmnElementId, WithParentId>,
+    val elemPropertiesByStaticElementId: Map<BpmnElementId, PropertyTable>,
+    val propertyWithElementByPropertyType: Map<PropertyType, Map<BpmnElementId, Property>>,
+    val elemUiOnlyPropertiesByStaticElementId: Map<BpmnElementId, Map<UiOnlyPropertyType, Property>>,
+    val undoRedo: Set<ProcessModelUpdateEvents.UndoRedo>,
+    val version: Long,
+    val diagramByElementId: Map<BpmnElementId, DiagramElementId> = elementsByDiagramId.map { Pair(it.value, it.key) }.toMap(),
 ) {
-    fun processDiagramId(): DiagramElementId {
-        return processDiagramId(processId)
+    fun primaryProcessDiagramId(): DiagramElementId {
+        return primaryProcessDiagramId(primaryProcessId)
     }
 
     companion object {
-        fun processDiagramId(processId: BpmnElementId): DiagramElementId {
+        fun primaryProcessDiagramId(processId: BpmnElementId): DiagramElementId {
             return DiagramElementId(processId.id)
         }
     }
 }
 
+private val ZERO_STATE = CurrentState(BpmnElementId(""), emptySet(), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet(), 0L)
+
 // Global singleton
 class CurrentStateProvider(private val project: Project) {
     private val mapper = Mappers.getMapper(MapTransactionalSubprocessToSubprocess::class.java)
 
-    private var fileState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet(), 0L)
-    private var currentState = CurrentState(BpmnElementId(""), emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptySet(), 0L)
+    private var fileState = ZERO_STATE.copy()
+    private var currentState = ZERO_STATE.copy()
     private val version = AtomicLong(0L)
 
-    fun resetStateTo(fileContent: String, processObject: BpmnProcessObjectView) {
+    fun resetStateTo(fileContent: String, view: BpmnFileView) {
         version.set(0L)
         fileState = CurrentState(
-                processObject.processId,
-                processObject.diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() },
-                processObject.diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList() }.map { EdgeElementState(it) },
-                processObject.elementByDiagramId,
-                processObject.elementByStaticId,
-                processObject.elemPropertiesByElementId,
+                view.primaryProcessId,
+                view.processes.map { it.processId }.toSet(),
+                view.processes.flatMap { proc -> proc.diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() } },
+                view.processes.flatMap { proc -> proc.diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList() }.map { EdgeElementState(it) } },
+                extractDiagramElementToBpmnIds(view),
+                extractBpmnElements(view),
+                extractProperties(view),
                 emptyMap(),
                 emptyMap(),
                 emptySet(),
@@ -83,15 +87,27 @@ class CurrentStateProvider(private val project: Project) {
         return handleUpdates(currentState)
     }
 
+    private fun extractProperties(view: BpmnFileView) =
+        view.processes.flatMap { proc -> proc.processElemPropertiesByElementId.entries }.groupBy { it.key }.mapValues { it.value.first().value } +
+                view.collaborations.flatMap { coll -> coll.collaborationElemPropertiesByElementId.entries }.groupBy { it.key }.mapValues { it.value.first().value }
+
+    private fun extractBpmnElements(view: BpmnFileView) =
+        view.processes.flatMap { proc -> proc.processElementByStaticId.entries }.groupBy { it.key }.mapValues { it.value.first().value } +
+                view.collaborations.flatMap { coll -> coll.collaborationElementByStaticId.entries }.groupBy { it.key }.mapValues { it.value.first().value }
+
+    private fun extractDiagramElementToBpmnIds(view: BpmnFileView) =
+        view.processes.flatMap { proc -> proc.allElementsByDiagramId.entries }.groupBy { it.key }.mapValues { it.value.first().value }
+
     private fun handleUpdates(state: CurrentState): CurrentState {
         var updatedShapes = state.shapes.toMutableList()
         var updatedEdges = state.edges.toMutableList()
-        val updatedElementByDiagramId = state.elementByDiagramId.toMutableMap()
+        val updatedElementByDiagramId = state.elementsByDiagramId.toMutableMap()
         val updatedElementByStaticId = state.elementByBpmnId.toMutableMap()
         val updatedElemPropertiesByStaticElementId = state.elemPropertiesByStaticElementId.mapValues { it.value.copy() }.toMutableMap()
         val updatedPropertyWithElementByPropertyType = mutableMapOf<PropertyType, MutableMap<BpmnElementId, Property>>()
         val updatedElemUiOnlyPropertiesByStaticElementId = state.elemUiOnlyPropertiesByStaticElementId.toMutableMap()
-        var updatedProcessId = state.processId
+        var updatedProcessId = state.primaryProcessId
+        val updatedProcessSet = state.processes.toMutableSet()
         val updateEventsRegistry: ProcessModelUpdateEvents = updateEventsRegistry(project)
         val undoRedoStatus = updateEventsRegistry.undoRedoStatus()
         val updates = updateEventsRegistry.getUpdateEventList()
@@ -110,13 +126,18 @@ class CurrentStateProvider(private val project: Project) {
                     updatedEdges = updatedEdges.map { edge -> if (edge.id == event.edgeElementId) updateWaypointLocation(edge, event) else edge }.toMutableList()
                 }
                 is BpmnElementRemoved -> {
-                    handleRemoved(event.bpmnElementId, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
+                    handleRemoved(event.bpmnElementId, updatedProcessSet, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
                 }
                 is BpmnElementChange -> {
                     handleChangeType(event.elementId, event.newBpmnElement, updatedElementByStaticId, event.props, updatedElemPropertiesByStaticElementId)
                 }
                 is DiagramElementRemoved -> {
                     handleDiagramRemoved(event.elementId, updatedShapes, updatedEdges, updatedElementByDiagramId)
+                }
+                is BpmnProcessObjectAdded -> {
+                    updatedProcessSet.add(event.bpmnObject.id)
+                    updatedElementByStaticId[event.bpmnObject.id] = event.bpmnObject
+                    updatedElemPropertiesByStaticElementId[event.bpmnObject.id] = event.props.copy()
                 }
                 is BpmnShapeObjectAdded -> {
                     updatedShapes.add(event.shape)
@@ -162,6 +183,7 @@ class CurrentStateProvider(private val project: Project) {
 
         return CurrentState(
                 updatedProcessId,
+                updatedProcessSet,
                 updatedShapes,
                 updatedEdges,
                 updatedElementByDiagramId,
@@ -289,12 +311,14 @@ class CurrentStateProvider(private val project: Project) {
 
     private fun handleRemoved(
             elementId: BpmnElementId,
+            processes: MutableSet<BpmnElementId>,
             updatedShapes: MutableList<ShapeElement>,
             updatedEdges: MutableList<EdgeWithIdentifiableWaypoints>,
             updatedElementByDiagramId: MutableMap<DiagramElementId, BpmnElementId>,
             updatedElementByStaticId: MutableMap<BpmnElementId, WithParentId>,
             updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>
     ) {
+        processes.remove(elementId)
         val shape = updatedShapes.find { it.bpmnElement == elementId }
         val edge = updatedEdges.find { it.bpmnElement == elementId }
         shape?.let { updatedElementByDiagramId.remove(it.id); updatedShapes.remove(it) }
@@ -351,7 +375,7 @@ class CurrentStateProvider(private val project: Project) {
         updatedElemPropertiesByStaticElementId[newElementId] = elemPropUpdated
 
         if (elementId == processId) {
-            updatedElementByDiagramId[CurrentState.processDiagramId(newElementId)] = newElementId
+            updatedElementByDiagramId[CurrentState.primaryProcessDiagramId(newElementId)] = newElementId
             return newElementId
         }
 

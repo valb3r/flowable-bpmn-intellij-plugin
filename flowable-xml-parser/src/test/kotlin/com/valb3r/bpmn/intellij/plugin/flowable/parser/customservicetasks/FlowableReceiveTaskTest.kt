@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnReceiveTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -35,7 +35,7 @@ internal class FlowableReceiveTaskTest {
         // TODO 'exclusive' ?
         task.isForCompensation!!.shouldBeTrue()
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -70,7 +70,7 @@ internal class FlowableReceiveTaskTest {
         return readReceiveTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readReceiveTask(processObject: BpmnProcessObject): BpmnReceiveTask {
-        return processObject.process.body!!.receiveTask!!.shouldHaveSingleItem()
+    private fun readReceiveTask(processObject: BpmnFileObject): BpmnReceiveTask {
+        return processObject.processes[0].body!!.receiveTask!!.shouldHaveSingleItem()
     }
 }

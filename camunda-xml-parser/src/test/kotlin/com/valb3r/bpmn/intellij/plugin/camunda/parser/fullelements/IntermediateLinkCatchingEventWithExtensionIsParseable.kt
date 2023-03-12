@@ -1,9 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.camunda.parser.fullelements
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaObjectFactory
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaParser
@@ -11,7 +10,6 @@ import com.valb3r.bpmn.intellij.plugin.camunda.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldContainSame
 import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.Test
 
@@ -32,7 +30,7 @@ internal class IntermediateLinkCatchingEventWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Link intermediate cache event")
         task.documentation.shouldBeEqualTo("A link intermediate catch event")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -55,7 +53,7 @@ internal class IntermediateLinkCatchingEventWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Link intermediate cache event")
         task.documentation.shouldBeEqualTo("A link intermediate catch event")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.collaborations, processObject.diagram).toView(CamundaObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -72,15 +70,15 @@ internal class IntermediateLinkCatchingEventWithExtensionIsParseable {
         return readSingleIntermediateLinkCatchingEventSingleProp(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(singlePropElementId, property, newValue, propertyIndex = propertyIndex.split(","))))
     }
 
-    private fun readSingleIntermediateLinkCatchingEventSingleProp(processObject: BpmnProcessObject): BpmnIntermediateLinkCatchingEvent {
-        return processObject.process.body!!.intermediateLinkCatchingEvent!!.shouldHaveSize(2)[0]
+    private fun readSingleIntermediateLinkCatchingEventSingleProp(processObject: BpmnFileObject): BpmnIntermediateLinkCatchingEvent {
+        return processObject.processes[0].body!!.intermediateLinkCatchingEvent!!.shouldHaveSize(2)[0]
     }
 
     private fun readAndUpdateMultiPropIntermediateLinkCatchingEvent(property: PropertyType, newValue: String, propertyIndex: String = ""): BpmnIntermediateLinkCatchingEvent {
         return readStartEventMultiIntermediateLinkCatchingEvent(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(multiplePropElementId, property, newValue, propertyIndex = propertyIndex.split(","))))
     }
 
-    private fun readStartEventMultiIntermediateLinkCatchingEvent(processObject: BpmnProcessObject): BpmnIntermediateLinkCatchingEvent {
-        return processObject.process.body!!.intermediateLinkCatchingEvent!!.shouldHaveSize(2)[1]
+    private fun readStartEventMultiIntermediateLinkCatchingEvent(processObject: BpmnFileObject): BpmnIntermediateLinkCatchingEvent {
+        return processObject.processes[0].body!!.intermediateLinkCatchingEvent!!.shouldHaveSize(2)[1]
     }
 }

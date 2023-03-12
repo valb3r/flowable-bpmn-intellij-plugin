@@ -6,7 +6,7 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnCamelTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -36,7 +36,7 @@ internal class ActivityCamelTaskTest {
         task.isForCompensation!!.shouldBeTrue()
         task.camelContext.shouldBeEqualTo("CAMEL_CTX")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(ActivitiObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -93,7 +93,7 @@ internal class ActivityCamelTaskTest {
         return readCamelTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readCamelTask(processObject: BpmnProcessObject): BpmnCamelTask {
-        return processObject.process.body!!.camelTask!!.shouldHaveSingleItem()
+    private fun readCamelTask(processObject: BpmnFileObject): BpmnCamelTask {
+        return processObject.processes[0].body!!.camelTask!!.shouldHaveSingleItem()
     }
 }

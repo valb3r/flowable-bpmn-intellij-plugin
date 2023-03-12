@@ -6,13 +6,12 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 private const val FILE = "custom-service-tasks/user-task.bpmn20.xml"
 
@@ -42,7 +41,7 @@ internal class ActivityUserTaskTest {
         task.priority.shouldBeEqualTo("1")
         task.skipExpression.shouldBeNull() // Unsupported by Activity
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(ActivitiObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -103,7 +102,7 @@ internal class ActivityUserTaskTest {
         return readUserTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readUserTask(processObject: BpmnProcessObject): BpmnUserTask {
-        return processObject.process.body!!.userTask!!.shouldHaveSingleItem()
+    private fun readUserTask(processObject: BpmnFileObject): BpmnUserTask {
+        return processObject.processes[0].body!!.userTask!!.shouldHaveSingleItem()
     }
 }

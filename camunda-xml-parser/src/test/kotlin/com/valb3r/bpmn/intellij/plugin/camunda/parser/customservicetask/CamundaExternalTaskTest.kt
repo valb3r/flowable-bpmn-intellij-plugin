@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.camunda.parser.customservicetask
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -37,7 +37,7 @@ class CamundaExternalTaskTest {
         task.asyncAfter!!.shouldBeTrue()
         // TODO 'exclusive' ?
 //        CamundaObjectFactory
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(CamundaObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -78,7 +78,7 @@ class CamundaExternalTaskTest {
         return readExternalTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readExternalTask(processObject: BpmnProcessObject): BpmnExternalTask {
-        return processObject.process.body!!.externalTask!!.shouldHaveSingleItem()
+    private fun readExternalTask(processObject: BpmnFileObject): BpmnExternalTask {
+        return processObject.processes[0].body!!.externalTask!!.shouldHaveSingleItem()
     }
 }

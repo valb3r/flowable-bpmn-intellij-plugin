@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
@@ -25,7 +25,7 @@ internal class FlowableParserDumbTest {
     
     @Test
     fun `XML process with all Flowable elements is parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("popurri.bpmn20.xml".asResource()!!)
 
@@ -34,7 +34,7 @@ internal class FlowableParserDumbTest {
 
     @Test
     fun `XML process without name should be parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("empty-process-name.bpmn20.xml".asResource()!!)
 
@@ -44,7 +44,7 @@ internal class FlowableParserDumbTest {
 
     @Test
     fun `XML process with interlaced elements of same type should be parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("duplicates.bpmn20.xml".asResource()!!)
 
@@ -53,7 +53,7 @@ internal class FlowableParserDumbTest {
 
     @Test
     fun `XML process with nested subprocess elements of same type should be parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("nested.bpmn20.xml".asResource()!!)
 
@@ -62,38 +62,38 @@ internal class FlowableParserDumbTest {
 
     @Test
     fun `XML process with nested subprocess elements that have interlaced subelems of same type should be parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("nested-interlaced.bpmn20.xml".asResource()!!)
 
         processObject.shouldNotBeNull()
-        processObject.process.body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
-        processObject.process.children!![BpmnElementId("sid-775FFB07-8CFB-4F82-A6EA-AB0E9BBB79A6")]!!.serviceTask!!.shouldHaveSize(2)
-        processObject.process.children!![BpmnElementId("sid-775FFB07-8CFB-4F82-A6EA-AB0E9BBB79A6")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlaced")
+        processObject.processes[0].body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
+        processObject.processes[0].children!![BpmnElementId("sid-775FFB07-8CFB-4F82-A6EA-AB0E9BBB79A6")]!!.serviceTask!!.shouldHaveSize(2)
+        processObject.processes[0].children!![BpmnElementId("sid-775FFB07-8CFB-4F82-A6EA-AB0E9BBB79A6")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlaced")
     }
 
     @Test
     fun `XML process with nested adhoc subprocess elements that have interlaced subelems of same type should be parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("nested-interlaced.bpmn20.xml".asResource()!!)
 
         processObject.shouldNotBeNull()
-        processObject.process.body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
-        processObject.process.children!![BpmnElementId("sid-5EEB495F-ACAC-4C04-99E1-691D906B3A30")]!!.serviceTask!!.shouldHaveSize(2)
-        processObject.process.children!![BpmnElementId("sid-5EEB495F-ACAC-4C04-99E1-691D906B3A30")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlacedOther")
+        processObject.processes[0].body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
+        processObject.processes[0].children!![BpmnElementId("sid-5EEB495F-ACAC-4C04-99E1-691D906B3A30")]!!.serviceTask!!.shouldHaveSize(2)
+        processObject.processes[0].children!![BpmnElementId("sid-5EEB495F-ACAC-4C04-99E1-691D906B3A30")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlacedOther")
     }
 
     @Test
     fun `XML process with nested transactional subprocess elements that have interlaced subelems of same type should be parseable without error`() {
-        val processObject: BpmnProcessObject?
+        val processObject: BpmnFileObject?
 
         processObject = FlowableParser().parse("nested-interlaced.bpmn20.xml".asResource()!!)
 
         processObject.shouldNotBeNull()
-        processObject.process.body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
-        processObject.process.children!![BpmnElementId("sid-1BB4FA80-C87F-4A05-95DF-753D06EE7424")]!!.serviceTask!!.shouldHaveSize(2)
-        processObject.process.children!![BpmnElementId("sid-1BB4FA80-C87F-4A05-95DF-753D06EE7424")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlacedYetOther")
+        processObject.processes[0].body!!.serviceTask!!.map { it.id.id }.shouldContainAll(arrayOf("parentInterlaceBeginServiceTask", "parentInterlaceEndServiceTask"))
+        processObject.processes[0].children!![BpmnElementId("sid-1BB4FA80-C87F-4A05-95DF-753D06EE7424")]!!.serviceTask!!.shouldHaveSize(2)
+        processObject.processes[0].children!![BpmnElementId("sid-1BB4FA80-C87F-4A05-95DF-753D06EE7424")]!!.serviceTask!!.map { it.id.id }.shouldContain("nestedServiceTaskInterlacedYetOther")
     }
 
     @Test
@@ -223,7 +223,7 @@ internal class FlowableParserDumbTest {
 
         updated.shouldNotBeNull()
         val updatedProcess = FlowableParser().parse(updated)
-        updatedProcess.process.children!![BpmnElementId("sid-3AD3FAD5-389C-4066-8CB0-C4090CA91F6D")]!!.sequenceFlow!!.map { it.id }.shouldContain(newId)
+        updatedProcess.processes[0].children!![BpmnElementId("sid-3AD3FAD5-389C-4066-8CB0-C4090CA91F6D")]!!.sequenceFlow!!.map { it.id }.shouldContain(newId)
     }
 
     @Test
@@ -258,7 +258,7 @@ internal class FlowableParserDumbTest {
 
         updated.shouldNotBeNull()
         val processObject = FlowableParser().parse(updated)
-        processObject.process.body!!.transaction!!.map { it.id.id }.shouldContain("sid-C4389D7E-1083-47D2-BECC-99479E63D18B")
+        processObject.processes[0].body!!.transaction!!.map { it.id.id }.shouldContain("sid-C4389D7E-1083-47D2-BECC-99479E63D18B")
     }
 
     @Test
@@ -280,7 +280,7 @@ internal class FlowableParserDumbTest {
 
         updated.shouldNotBeNull()
         val updatedProcess = FlowableParser().parse(updated)
-        val sequenceFlow = updatedProcess.process.body!!.sequenceFlow!!.filter { it.id.id == "onGatewayOk"}.shouldHaveSingleItem()
+        val sequenceFlow = updatedProcess.processes[0].body!!.sequenceFlow!!.filter { it.id.id == "onGatewayOk"}.shouldHaveSingleItem()
         sequenceFlow.conditionExpression!!.text.shouldBeNull()
     }
 
@@ -293,7 +293,7 @@ internal class FlowableParserDumbTest {
 
         updated.shouldNotBeNull()
         val updatedProcess = FlowableParser().parse(updated)
-        val sequenceFlow = updatedProcess.process.body!!.sequenceFlow!!.filter { it.id.id == "onGatewayNokId"}.shouldHaveSingleItem()
+        val sequenceFlow = updatedProcess.processes[0].body!!.sequenceFlow!!.filter { it.id.id == "onGatewayNokId"}.shouldHaveSingleItem()
         sequenceFlow.conditionExpression!!.text.shouldBeNull()
     }
 }

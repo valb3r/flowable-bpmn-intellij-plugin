@@ -6,7 +6,7 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnReceiveTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -35,7 +35,7 @@ internal class ActivityReceiveTaskTest {
         // TODO 'exclusive' ?
         task.isForCompensation!!.shouldBeTrue()
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(ActivitiObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -70,7 +70,7 @@ internal class ActivityReceiveTaskTest {
         return readReceiveTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readReceiveTask(processObject: BpmnProcessObject): BpmnReceiveTask {
-        return processObject.process.body!!.receiveTask!!.shouldHaveSingleItem()
+    private fun readReceiveTask(processObject: BpmnFileObject): BpmnReceiveTask {
+        return processObject.processes[0].body!!.receiveTask!!.shouldHaveSingleItem()
     }
 }

@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -43,7 +43,7 @@ internal class FlowableServiceTaskTest {
         task.useLocalScopeForResultVariable!!.shouldBeTrue()
         // TODO handle deep extension elements - field
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -97,7 +97,7 @@ internal class FlowableServiceTaskTest {
         return readServiceTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readServiceTask(processObject: BpmnProcessObject): BpmnServiceTask {
-        return processObject.process.body!!.serviceTask!!.shouldHaveSingleItem()
+    private fun readServiceTask(processObject: BpmnFileObject): BpmnServiceTask {
+        return processObject.processes[0].body!!.serviceTask!!.shouldHaveSingleItem()
     }
 }

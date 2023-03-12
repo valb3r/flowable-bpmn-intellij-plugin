@@ -1,9 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnHttpTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
@@ -36,7 +35,7 @@ class FlowableExternalTaskTest {
         // TODO 'exclusive' ?
         task.isForCompensation!!.shouldBeTrue()
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -74,7 +73,7 @@ class FlowableExternalTaskTest {
         return readExternalTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readExternalTask(processObject: BpmnProcessObject): BpmnExternalTask {
-        return processObject.process.body!!.externalTask!!.shouldHaveSingleItem()
+    private fun readExternalTask(processObject: BpmnFileObject): BpmnExternalTask {
+        return processObject.processes[0].body!!.externalTask!!.shouldHaveSingleItem()
     }
 }

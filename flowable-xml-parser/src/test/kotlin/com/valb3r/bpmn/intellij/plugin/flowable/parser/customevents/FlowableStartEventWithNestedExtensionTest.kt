@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.customevents
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
@@ -30,7 +30,7 @@ internal class FlowableUsereventWithNestedExtensionTest {
         val event = readStartEventWithExtensions(processObject)
         event.id.shouldBeEqualTo(elementId)
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[event.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[event.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(event.id.id)
 
         props.getAll(PropertyType.FORM_PROPERTY_ID).shouldContainSame(arrayOf(
@@ -81,7 +81,7 @@ internal class FlowableUsereventWithNestedExtensionTest {
         return readStartEventWithExtensions(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue, propertyIndex = propertyIndex.split(","))))
     }
 
-    private fun readStartEventWithExtensions(processObject: BpmnProcessObject): BpmnStartEvent {
-        return processObject.process.body!!.startEvent!!.shouldHaveSize(1)[0]
+    private fun readStartEventWithExtensions(processObject: BpmnFileObject): BpmnStartEvent {
+        return processObject.processes[0].body!!.startEvent!!.shouldHaveSize(1)[0]
     }
 }

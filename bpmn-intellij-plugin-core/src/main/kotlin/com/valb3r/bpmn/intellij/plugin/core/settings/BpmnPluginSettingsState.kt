@@ -50,6 +50,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
         var openExtensions = mutableSetOf("bpmn20.xml")
 
         var enableFps = false
+        var enableDevelopmentFunctions = false
 
         fun stateEquals(other: PluginStateData): Boolean {
             if (zoomMin != other.zoomMin) return false
@@ -64,6 +65,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             if (dataFontName != other.dataFontName) return false
             if (openExtensions != other.openExtensions) return false
             if (enableFps != other.enableFps) return false
+            if (enableDevelopmentFunctions != other.enableDevelopmentFunctions) return false
 
             return true
         }
@@ -82,6 +84,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             data.dataFontName = dataFontName
             data.openExtensions = openExtensions
             data.enableFps = enableFps
+            data.enableDevelopmentFunctions = enableDevelopmentFunctions
             return data
         }
     }

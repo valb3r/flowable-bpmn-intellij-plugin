@@ -116,10 +116,10 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, shapeBpmn, draggedTo, *propUpdate))
 
             shapeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnServiceTask>()
-            shapeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            shapeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
 
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
@@ -164,7 +164,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, draggedTo, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -207,7 +207,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, draggedTo, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -257,7 +257,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, draggedToMid, draggedToTarget, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -267,7 +267,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
             intermediateTargetChangeToParentPropUpd.bpmnElementId.shouldBe(edgeBpmn.bpmnObject.id)
             intermediateTargetChangeToParentPropUpd.property.shouldBe(PropertyType.TARGET_REF)
-            intermediateTargetChangeToParentPropUpd.newValue.shouldBe(basicProcess.process.id.id)
+            intermediateTargetChangeToParentPropUpd.newValue.shouldBe(basicProcess.processes[0].id.id)
 
             draggedToTarget.diagramElementId.shouldBeEqualTo(lastEndpointId)
             draggedToTarget.dx.shouldBeNear(endElemX - point.x - draggedToMid.dx, 0.1f)
@@ -301,7 +301,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, *propUpdate, newWaypoint))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -369,7 +369,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, newMidWaypoint, newQuarterWaypoint, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -444,7 +444,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, dragTask, dragEdge, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -486,7 +486,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -544,7 +544,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, *propUpdate, dragTask, dragEdge))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -555,7 +555,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
             cascadeIdUpdate.first().bpmnElementId.id.shouldBeEqualTo(newId)
             cascadeIdUpdate.first().property.shouldBeEqualTo(PropertyType.SOURCE_REF)
-            cascadeIdUpdate.first().newValue.shouldBeEqualTo(basicProcess.process.id.id)
+            cascadeIdUpdate.first().newValue.shouldBeEqualTo(basicProcess.processes[0].id.id)
 
             cascadeIdUpdate.last().bpmnElementId.id.shouldBeEqualTo(newId)
             cascadeIdUpdate.last().property.shouldBeEqualTo(PropertyType.SOURCE_REF)
@@ -605,7 +605,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, *propUpdate, dragTask, dragEdge))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -709,7 +709,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, dragStart, dragEdge, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -796,7 +796,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, removeEdgeDiagram, removeEdgeBpmn, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -840,7 +840,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, newWaypoint, removeWaypoint, *propUpdate))
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -898,7 +898,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn) + diagramRemoved + bpmnRemoved + propUpdate)
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
-            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            edgeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
             sequence.sourceRef.shouldBe(serviceTaskStartBpmnId.id)
             sequence.targetRef.shouldBe("")
 
@@ -1135,7 +1135,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             lastValue.shouldContainSame(listOf(edgeBpmn, shapeBpmn, draggedTo, *propUpdate))
 
             shapeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnServiceTask>()
-            shapeBpmn.bpmnObject.parent.shouldBe(basicProcess.process.id)
+            shapeBpmn.bpmnObject.parent.shouldBe(basicProcess.processes[0].id)
 
             val sequence = edgeBpmn.bpmnObject.element.shouldBeInstanceOf<BpmnSequenceFlow>()
             edgeBpmn.bpmnObject.parent.shouldBe(subprocessBpmnId)
@@ -1619,7 +1619,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         canvas.click(onlyRootProcessPoint)
         lastRenderedState(project)!!.state.ctx.selectedIds.shouldBeEmpty()
         lastRenderedState(project)!!.state.ctx.stateProvider.currentState()
-            .elementByDiagramId[CurrentState.processDiagramId(BpmnElementId(newRootProcessId))].shouldNotBeNull()
+            .elementsByDiagramId[CurrentState.primaryProcessDiagramId(BpmnElementId(newRootProcessId))].shouldNotBeNull()
 
 
         val anotherNewRootProcessId = "another-new-root-process-id"
@@ -1631,7 +1631,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         canvas.click(onlyRootProcessPoint)
         lastRenderedState(project)!!.state.ctx.selectedIds.shouldBeEmpty()
         lastRenderedState(project)!!.state.ctx.stateProvider.currentState()
-            .elementByDiagramId[CurrentState.processDiagramId(BpmnElementId(anotherNewRootProcessId))].shouldNotBeNull()
+            .elementsByDiagramId[CurrentState.primaryProcessDiagramId(BpmnElementId(anotherNewRootProcessId))].shouldNotBeNull()
     }
 
     @Test

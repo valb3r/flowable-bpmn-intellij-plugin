@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -23,12 +23,12 @@ internal class FlowableServiceTaskWithExtensionElementsTest {
     @Test
     fun `Service task with failedJobRetryTimeCycle is parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
-        val task = processObject.process.body!!.serviceTask!![0]
+        val task = processObject.processes[0].body!!.serviceTask!![0]
 
         task.id.shouldBeEqualTo(elementId)
         task.failedJobRetryTimeCycle.shouldBeEqualTo("R10/PT5M")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.FAILED_JOB_RETRY_CYCLE]!!.value.shouldBeEqualTo(task.failedJobRetryTimeCycle)
     }
 
@@ -41,7 +41,7 @@ internal class FlowableServiceTaskWithExtensionElementsTest {
         return readServiceTask(readAndUpdateProcess(parser, FILE, StringValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readServiceTask(processObject: BpmnProcessObject): BpmnServiceTask {
-        return processObject.process.body!!.serviceTask!!.shouldHaveSingleItem()
+    private fun readServiceTask(processObject: BpmnFileObject): BpmnServiceTask {
+        return processObject.processes[0].body!!.serviceTask!!.shouldHaveSingleItem()
     }
 }

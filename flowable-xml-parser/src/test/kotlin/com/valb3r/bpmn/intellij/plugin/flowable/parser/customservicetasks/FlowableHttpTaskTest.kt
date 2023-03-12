@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnHttpTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -56,7 +56,7 @@ internal class FlowableHttpTaskTest {
         task.saveResponseParametersTransient.shouldBeEqualTo("TRANSIENT_RESPONSE")
         task.saveResponseVariableAsJson.shouldBeEqualTo("AS_JSON")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -140,7 +140,7 @@ internal class FlowableHttpTaskTest {
         return readHttpTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readHttpTask(processObject: BpmnProcessObject): BpmnHttpTask {
-        return processObject.process.body!!.httpTask!!.shouldHaveSingleItem()
+    private fun readHttpTask(processObject: BpmnFileObject): BpmnHttpTask {
+        return processObject.processes[0].body!!.httpTask!!.shouldHaveSingleItem()
     }
 }

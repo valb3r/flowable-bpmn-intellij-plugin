@@ -16,4 +16,8 @@ abstract class BaseBpmnRenderElement(
         delete += BpmnElementRemovedEvent(bpmnElementId)
         return delete
     }
+
+    override fun toString(): String {
+        return bpmnElementId.id
+    }
 }

@@ -19,6 +19,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEve
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.collaboration.Collaboration
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.DiagramElementIdMapper
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.diagram.Plane
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.*
@@ -47,6 +48,11 @@ class BpmnFile(
     @JsonMerge
     @JacksonXmlElementWrapper(useWrapping = false)
     var messages: List<MessageNode>? = null,
+
+    @JacksonXmlProperty(localName = "collaboration")
+    @JsonMerge
+    @JacksonXmlElementWrapper(useWrapping = false)
+    var collaborations: List<Collaboration>? = null,
 
     @JacksonXmlProperty(localName = "process")
     @JsonMerge

@@ -1,47 +1,104 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api
 
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnCollaboration
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnLane
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnLaneSet
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 
 // TODO - move to some implementation module
-data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<DiagramElement>) {
+data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: List<BpmnCollaboration>, val diagram: List<DiagramElement>) {
 
-    fun toView(factory: BpmnObjectFactory) : BpmnProcessObjectView {
-        val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
-        val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
-        val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
+    constructor(processes: List<BpmnProcess>, diagram: List<DiagramElement>) : this(processes, listOf(), diagram)
 
-        fillFor(BpmnElementId(""), factory, process, elementByStaticId, propertiesById)
-        elementByDiagramId[DiagramElementId(process.id.id)] = process.id
+    fun toView(factory: BpmnObjectFactory) : BpmnFileView {
+        val mappedCollaborations = mapCollaborations(factory)
+        val rootProcessOrCollaborationId = mappedCollaborations.firstOrNull()?.collaborationId ?: BpmnElementId("")
+        val collaborationProcessRoots = collaborations.flatMap { it.participant ?: emptyList() }
+            .filter { null != it.processRef }
+            .groupBy { it.processRef!! }
+            .mapValues { entry -> entry.value.first().id }
+        val mappedProcesses = mapProcesses(factory, rootProcessOrCollaborationId, collaborationProcessRoots)
 
-        // 1st pass
-        process.body?.let { extractElementsFromBody(process.id, it, factory, elementByStaticId, propertiesById) }
-        process.children?.forEach { (id, body) -> extractElementsFromBody(id, body, factory, elementByStaticId, propertiesById)}
-        // 2nd pass
-        process.body?.let { reassignParentsBasedOnTargetRef(process.id, it, factory, elementByStaticId, propertiesById) }
-        process.children?.forEach { (id, body) -> reassignParentsBasedOnTargetRef(id, body, factory, elementByStaticId, propertiesById)}
+        return BpmnFileView(rootProcessOrCollaborationId, mappedProcesses, mappedCollaborations)
+    }
 
-        diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList()}
+    private fun mapCollaborations(factory: BpmnObjectFactory): List<BpmnCollaborationView> {
+        val mappedCollaborations = mutableListOf<BpmnCollaborationView>()
+        for (collaboration in collaborations) {
+            val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
+            val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
+
+            fillFor(BpmnElementId(""), factory, collaboration, elementByStaticId, propertiesById)
+
+            collaboration.participant?.forEach { fillFor(collaboration.id, factory, it, elementByStaticId, propertiesById)}
+            collaboration.messageFlow?.forEach { fillFor(collaboration.id, factory, it, elementByStaticId, propertiesById)}
+
+            mappedCollaborations += BpmnCollaborationView(
+                collaboration.id,
+                elementByStaticId,
+                propertiesById
+            )
+        }
+
+        return mappedCollaborations
+    }
+
+    private fun mapProcesses(factory: BpmnObjectFactory, rootId: BpmnElementId, collaborationByProcess: Map<String, BpmnElementId>): List<BpmnProcessObjectView> {
+        val mappedProcesses = mutableListOf<BpmnProcessObjectView>()
+        val allElementsByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
+        for (process in processes) {
+            val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
+            val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
+
+            fillFor(collaborationByProcess.getOrDefault(process.id.id, rootId), factory, process, elementByStaticId, propertiesById)
+            allElementsByDiagramId[DiagramElementId(process.id.id)] = process.id
+
+            // 1st pass
+            process.body?.let { extractElementsFromBody(process.id, it, factory, elementByStaticId, propertiesById) }
+            process.children?.forEach { (id, body) -> extractElementsFromBody(id, body, factory, elementByStaticId, propertiesById) }
+            process.laneSets?.forEach { extractElementsFromLanes(process.id, it, factory, elementByStaticId, propertiesById) }
+            // 2nd pass
+            process.body?.let { reassignParentsBasedOnTargetRef(process.id, it, factory, elementByStaticId, propertiesById) }
+            process.children?.forEach { (id, body) -> reassignParentsBasedOnTargetRef(id, body, factory, elementByStaticId, propertiesById) }
+            diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList() }
                 .filter { null != it.bpmnElement }
-                .forEach { elementByDiagramId[it.id] = it.bpmnElement!! }
+                .forEach { allElementsByDiagramId[it.id] = it.bpmnElement!! }
 
-        diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() }
-                .forEach { elementByDiagramId[it.id] = it.bpmnElement }
+            diagram.flatMap { it.bpmnPlane.bpmnShape ?: emptyList() }
+                .forEach { allElementsByDiagramId[it.id] = it.bpmnElement }
 
-        return BpmnProcessObjectView(
+            remapElementsToLanes(elementByStaticId)
+
+            mappedProcesses += BpmnProcessObjectView(
                 process.id,
-                elementByDiagramId,
+                allElementsByDiagramId,
                 elementByStaticId,
                 propertiesById,
                 diagram
-        )
+            )
+        }
+
+        return mappedProcesses
+    }
+
+    private fun remapElementsToLanes(elems: MutableMap<BpmnElementId, WithParentId>) {
+        val lanes = elems.values.map { it.element }.filterIsInstance<BpmnLane>()
+        val elementByParentLane = lanes.flatMap { lane -> lane.flowNodeRef?.map { it to lane.id } ?: emptyList() }
+            .groupBy { it.first.ref }
+            .mapValues { it.value.first().second.id }
+
+        elems.replaceAll { k, v ->
+            val laneId = elementByParentLane[k.id]?.let { BpmnElementId(it) }
+            return@replaceAll v.copy(parent = laneId ?: v.parent)
+        }
     }
 
     private fun extractElementsFromBody(
@@ -124,6 +181,15 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         body.sequenceFlow?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
     }
 
+    private fun extractElementsFromLanes(
+        parentId: BpmnElementId,
+        laneSet: BpmnLaneSet,
+        factory: BpmnObjectFactory,
+        elementByStaticId: MutableMap<BpmnElementId, WithParentId>,
+        propertiesById: MutableMap<BpmnElementId, PropertyTable>) {
+        laneSet.lanes?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+    }
+
     private fun reassignParentsBasedOnTargetRef(
             parentId: BpmnElementId,
             body: BpmnProcessBody,
@@ -170,12 +236,24 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
     }
 }
 
+data class BpmnFileView(
+    val primaryProcessId: BpmnElementId,
+    val processes: List<BpmnProcessObjectView>,
+    val collaborations: List<BpmnCollaborationView>
+)
+
+data class BpmnCollaborationView(
+    val collaborationId: BpmnElementId,
+    val collaborationElementByStaticId: Map<BpmnElementId, WithParentId>,
+    val collaborationElemPropertiesByElementId: Map<BpmnElementId, PropertyTable>
+)
+
 data class BpmnProcessObjectView(
-        val processId: BpmnElementId,
-        val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
-        val elementByStaticId: Map<BpmnElementId, WithParentId>,
-        val elemPropertiesByElementId: Map<BpmnElementId, PropertyTable>,
-        val diagram: List<DiagramElement>
+    val processId: BpmnElementId,
+    val allElementsByDiagramId: Map<DiagramElementId, BpmnElementId>,
+    val processElementByStaticId: Map<BpmnElementId, WithParentId>,
+    val processElemPropertiesByElementId: Map<BpmnElementId, PropertyTable>,
+    val diagram: List<DiagramElement>
 )
 
 data class PropertyTable(private val properties: MutableMap<PropertyType, MutableList<Property>>) {

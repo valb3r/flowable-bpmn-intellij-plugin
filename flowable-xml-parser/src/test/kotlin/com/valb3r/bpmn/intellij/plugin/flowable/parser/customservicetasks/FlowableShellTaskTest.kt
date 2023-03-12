@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.customservicetasks
 
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnShellTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -46,7 +46,7 @@ internal class FlowableShellTaskTest {
         task.outputVariable.shouldBeEqualTo("OUTPUT_VAR")
         task.directory.shouldBeEqualTo("/tmp")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(FlowableObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -114,7 +114,7 @@ internal class FlowableShellTaskTest {
         return readShellTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readShellTask(processObject: BpmnProcessObject): BpmnShellTask {
-        return processObject.process.body!!.shellTask!!.shouldHaveSingleItem()
+    private fun readShellTask(processObject: BpmnFileObject): BpmnShellTask {
+        return processObject.processes[0].body!!.shellTask!!.shouldHaveSingleItem()
     }
 }

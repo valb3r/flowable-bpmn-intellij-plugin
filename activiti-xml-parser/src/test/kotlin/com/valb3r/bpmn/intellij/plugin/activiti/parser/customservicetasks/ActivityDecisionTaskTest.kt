@@ -6,13 +6,12 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnDecisionTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import org.amshove.kluent.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 private const val FILE = "custom-service-tasks/decision-task.bpmn20.xml"
 
@@ -36,7 +35,7 @@ internal class ActivityDecisionTaskTest {
         task.decisionTaskThrowErrorOnNoHits.shouldBeNull() // Not supported by activity
         task.fallbackToDefaultTenantCdata.shouldBeNull() // Not supported by activity
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnFileObject(processObject.processes, processObject.diagram).toView(ActivitiObjectFactory()).processes[0].processElemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -78,7 +77,7 @@ internal class ActivityDecisionTaskTest {
         return readDecisionTask(readAndUpdateProcess(parser, FILE, BooleanValueUpdatedEvent(elementId, property, newValue)))
     }
 
-    private fun readDecisionTask(processObject: BpmnProcessObject): BpmnDecisionTask {
-        return processObject.process.body!!.decisionTask!!.shouldHaveSingleItem()
+    private fun readDecisionTask(processObject: BpmnFileObject): BpmnDecisionTask {
+        return processObject.processes[0].body!!.decisionTask!!.shouldHaveSingleItem()
     }
 }

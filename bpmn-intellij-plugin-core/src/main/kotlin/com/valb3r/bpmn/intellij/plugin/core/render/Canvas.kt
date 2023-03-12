@@ -7,7 +7,7 @@ import com.google.common.collect.EvictingQueue
 import com.google.common.math.Quantiles.percentiles
 import com.intellij.openapi.project.Project
 import com.intellij.util.ui.UIUtil
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObjectView
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnFileView
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -25,6 +25,9 @@ import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
+import java.awt.geom.AffineTransform
+import java.awt.geom.Area
+import java.awt.geom.PathIterator.SEG_CLOSE
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
@@ -184,14 +187,14 @@ open class Canvas(private val project: Project, private val settings: CanvasCons
         return renderedImage
     }
 
-    fun reset(fileContent: String, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
+    fun reset(fileContent: String, view: BpmnFileView, renderer: BpmnProcessRenderer) {
         this.cachedTreeState = null
         this.renderer = renderer
         this.latestOnScreenModelDimensions = null
         this.camera = Camera(settings.defaultCameraOrigin, Point2D.Float(settings.defaultZoomRatio, settings.defaultZoomRatio))
         this.propsVisualizer = propertiesVisualizer(project)
         this.propsVisualizer?.clear()
-        this.stateProvider.resetStateTo(fileContent, processObject)
+        this.stateProvider.resetStateTo(fileContent, view)
         selectedElements = mutableSetOf()
         repaint()
     }
@@ -425,7 +428,7 @@ open class Canvas(private val project: Project, private val settings: CanvasCons
         val elementIdForPropertiesTable = propertiesForElement.firstOrNull()
         val state = stateProvider.currentState()
         state
-            .elementByDiagramId[elementIdForPropertiesTable]
+            .elementsByDiagramId[elementIdForPropertiesTable]
             ?.let { elemId ->
                 state.elemPropertiesByStaticElementId[elemId]?.let {
                     propsVisualizer?.visualize(
@@ -486,7 +489,7 @@ open class Canvas(private val project: Project, private val settings: CanvasCons
                 continue
             }
 
-            val bpmnId = setOf(stateProvider.currentState().elementByDiagramId[elem.first], elem.second.bpmnElementId).filterNotNull().firstOrNull() ?: continue
+            val bpmnId = setOf(stateProvider.currentState().elementsByDiagramId[elem.first], elem.second.bpmnElementId).filterNotNull().firstOrNull() ?: continue
             val bpmnElem = stateProvider.currentState().elementByBpmnId[bpmnId]
             if (bpmnElem?.element is BpmnSequenceFlow) {
                 continue
@@ -517,15 +520,30 @@ open class Canvas(private val project: Project, private val settings: CanvasCons
         val intersection = areaByElement?.filter { it.value.area.intersects(withinRect) }
         val maxZindex = intersection?.maxBy { it: Map.Entry<DiagramElementId, AreaWithZindex> -> it.value.index }
         val result = mutableListOf<DiagramElementId>()
-        val centerRect = Point2D.Float(withinRect.centerX.toFloat(), withinRect.centerY.toFloat())
+        val minDistSq = fun (area: Area, pt: Point2D.Float): Float {
+            var minDist = Float.MAX_VALUE
+            val pts = FloatArray(6)
+            val iter = area.getPathIterator(AffineTransform())
+            while (!iter.isDone) {
+                if (SEG_CLOSE == iter.currentSegment(pts)) {
+                    iter.next()
+                    continue
+                }
+                val curvePt = Point2D.Float(pts[0], pts[1])
+                val dist = curvePt.distanceSq(pt).toFloat()
+                if (dist < minDist) {
+                    minDist = dist
+                }
+                iter.next()
+            }
+            return minDist
+        }
+
         intersection
             ?.filter { !excludeAreas.contains(it.value.areaType) }
-            ?.filter { it.value.index == maxZindex?.value?.index }
+            ?.filter { it.value.index == maxZindex?.value?.index || it.value.areaType == AreaType.EDGE }
             ?.minBy { it: Map.Entry<DiagramElementId, AreaWithZindex> ->
-                Point2D.Float(
-                    it.value.area.bounds2D.centerX.toFloat(),
-                    it.value.area.bounds2D.centerY.toFloat()
-                ).distance(centerRect)
+                minDistSq(it.value.area, cursorPoint)
             }
             ?.let { result += it.key; it.value.parentToSelect?.apply { result += this } }
         return result

@@ -4,7 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 
 interface BpmnParser {
 
-    fun parse(input: String): BpmnProcessObject
+    fun parse(input: String): BpmnFileObject
     fun validateForErrors(input: String): String?
     fun validateForWarnings(input: String): String?
 
