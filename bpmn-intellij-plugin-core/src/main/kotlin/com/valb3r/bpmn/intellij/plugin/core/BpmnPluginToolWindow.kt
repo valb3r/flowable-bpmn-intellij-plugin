@@ -180,7 +180,8 @@ open class BpmnPluginToolWindow(
 
     private fun createEditor(project: Project, bpmnFile: PsiFile, text: String): TextValueAccessor {
         val factory = JavaCodeFragmentFactory.getInstance(project)
-        val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, PsiType.CHAR, true)
+        // FIXME: PsiTypes.charType() is not available in IU-2022.3 and below!
+        val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, PsiTypes.charType(), true)
         fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
         val document = PsiDocumentManager.getInstance(project).getDocument(fragment)!!
         document.createGuardedBlock(0, 1).isGreedyToLeft = true
