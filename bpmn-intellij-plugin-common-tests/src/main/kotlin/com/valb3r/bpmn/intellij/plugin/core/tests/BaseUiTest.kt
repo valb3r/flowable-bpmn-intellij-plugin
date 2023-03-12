@@ -565,12 +565,12 @@ abstract class BaseUiTest {
 
     protected fun prepareSendEventTask(){
         val process = basicProcess.copy(
-            basicProcess.process.copy(
+            listOf(basicProcess.processes[0].copy(
                 body = basicProcessBody.copy(sendEventTask = listOf(bpmnSendEventTask))
-            ),
-            listOf(DiagramElement(
+            )),
+            diagram = listOf(DiagramElement(
                 diagramMainElementId,
-                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSendEventTask), listOf()))
+                PlaneElement(diagramMainPlaneElementId, basicProcess.processes[0].id, listOf(diagramSendEventTask), listOf()))
             )
         )
         whenever(parser.parse("")).thenReturn(process)
@@ -599,12 +599,12 @@ abstract class BaseUiTest {
 
     protected fun prepareUserTask(task: BpmnUserTask) {
         val process = basicProcess.copy(
-            basicProcess.process.copy(
+            listOf(basicProcess.processes[0].copy(
                 body = basicProcessBody.copy(userTask = listOf(task))
-            ),
-            listOf(DiagramElement(
+            )),
+            diagram = listOf(DiagramElement(
                 diagramMainElementId,
-                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramUserTask), listOf()))
+                PlaneElement(diagramMainPlaneElementId, basicProcess.processes[0].id, listOf(diagramUserTask), listOf()))
             )
         )
         whenever(parser.parse("")).thenReturn(process)
