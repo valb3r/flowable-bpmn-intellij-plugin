@@ -24,9 +24,13 @@ import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.ButtonlessScrollBarUI
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.core.events.FileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.events.IntelliJFileCommitter
+import com.valb3r.bpmn.intellij.plugin.core.events.NoOpFileCommitter
+import com.valb3r.bpmn.intellij.plugin.core.events.initializeUpdateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.parser.currentParser
 import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
@@ -69,6 +73,7 @@ open class BpmnPluginToolWindow(
 
     init {
         log.info("BPMN plugin started")
+        initializeUpdateEventsRegistry(project, NoOpFileCommitter())
         // attach event listeners to canvas
         val mouseEventHandler = setCurrentMouseEventHandler(project, this.canvas)
         this.canvas.addMouseListener(mouseEventHandler)
