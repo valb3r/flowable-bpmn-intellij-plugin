@@ -28,6 +28,18 @@ interface FileCommitter {
     fun executeCommitAndGetHash(content: String?, events: List<EventPropagatableToXml>, hasher: (String) -> String, updateHash: (String) -> Unit)
 }
 
+class NoOpFileCommitter: FileCommitter {
+
+    override fun executeCommitAndGetHash(
+        content: String?,
+        events: List<EventPropagatableToXml>,
+        hasher: (String) -> String,
+        updateHash: (String) -> Unit
+    ) {
+        // NOP
+    }
+}
+
 class IntelliJFileCommitter(private val parser: BpmnParser, private val project: Project, private val file: VirtualFile): FileCommitter {
 
     override fun executeCommitAndGetHash(content: String?, events: List<EventPropagatableToXml>, hasher: (String) -> String, updateHash: (String) -> Unit) {
