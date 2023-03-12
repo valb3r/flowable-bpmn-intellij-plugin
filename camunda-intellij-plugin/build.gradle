@@ -46,11 +46,6 @@ runPluginVerifier {
     ideVersions = ["IU-2021.3"]
 }
 
-runIde {
-    jbrVersion = jbrJdkVersion
-    jvmArgs("-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition", "-Xmx2G")
-}
-
 verifyPlugin {
     ignoreWarnings = true
 }
