@@ -18,7 +18,7 @@ open class BpmnFileSchemasProvider: XmlSchemaProvider() {
     )
 
     override fun isAvailable(file: XmlFile): Boolean {
-        return currentSettings().openExtensions.any { file.name.endsWith(it) }
+        return !currentSettings().disableXsdSchema && currentSettings().openExtensions.any { file.name.endsWith(it) }
     }
 
     override fun getSchema(url: String, module: Module?, baseFile: PsiFile): XmlFile? {
