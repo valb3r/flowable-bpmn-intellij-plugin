@@ -20,7 +20,7 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
 
     fun toView(factory: BpmnObjectFactory) : BpmnFileView {
         val mappedCollaborations = mapCollaborations(factory)
-        val rootProcessOrCollaborationId = mappedCollaborations.firstOrNull()?.collaborationId ?: BpmnElementId("")
+        val rootProcessOrCollaborationId = mappedCollaborations.firstOrNull()?.collaborationId ?: this.processes[0].id
         val collaborationProcessRoots = collaborations.flatMap { it.participant ?: emptyList() }
             .filter { null != it.processRef }
             .groupBy { it.processRef!! }
@@ -214,7 +214,9 @@ data class BpmnFileObject(val processes: List<BpmnProcess>, val collaborations: 
             activity: WithBpmnId,
             elementById: MutableMap<BpmnElementId, WithParentId>,
             propertiesByElemType: MutableMap<BpmnElementId, PropertyTable>) {
-        elementById[activity.id] = WithParentId(parentId, activity)
+        if (activity.id != parentId) { // Handle the case of plain processes (without collaboration)
+            elementById[activity.id] = WithParentId(parentId, activity)
+        }
         propertiesByElemType[activity.id] = factory.propertiesOf(activity)
     }
 

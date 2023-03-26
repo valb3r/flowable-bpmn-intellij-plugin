@@ -9,6 +9,8 @@ import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementTypeChangeEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnShapeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseBpmnRenderElement
+import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.render.snapToGridIfNecessary
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import java.awt.event.ActionEvent
@@ -36,9 +38,14 @@ class ShapeCreator<T : WithBpmnId> (private val project: Project, private val cl
     override fun actionPerformed(e: ActionEvent?) {
         val newObject = newElementsFactory(project).newBpmnObject(clazz)
         val shape = newShapeElement(project, sceneLocation, newObject)
+        val probablyParentElement = lastRenderedState(project)!!.elementsById[parent]!!
+        if (probablyParentElement !is BaseBpmnRenderElement) {
+            // TODO - error here?
+            return
+        }
 
-        updateEventsRegistry(project).addObjectEvent(
-                BpmnShapeObjectAddedEvent(WithParentId(parent, newObject), shape, newElementsFactory(project).propertiesOf(newObject))
+        updateEventsRegistry(project).addEvents(
+                probablyParentElement.onElementCreatedOnTopThis(newObject, shape, newElementsFactory(project).propertiesOf(newObject))
         )
     }
 }
