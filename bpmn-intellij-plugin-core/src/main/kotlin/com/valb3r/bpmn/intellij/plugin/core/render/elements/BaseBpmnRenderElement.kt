@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.render.elements
 
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnObjectFactory
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
@@ -9,6 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnShapeObjectAddedEvent
+import kotlin.reflect.KClass
 
 abstract class BaseBpmnRenderElement(
         elementId: DiagramElementId,
@@ -27,7 +29,10 @@ abstract class BaseBpmnRenderElement(
         return bpmnElementId.id
     }
 
-    open fun onElementCreatedOnTopThis(newElement: WithBpmnId, shape: ShapeElement, properties: PropertyTable): MutableList<Event>  {
-        return mutableListOf(BpmnShapeObjectAddedEvent(WithParentId(this.bpmnElementId, newElement), shape, properties))
+    open fun <T: WithBpmnId> onElementCreatedOnTopThis(clazz: KClass<T>, factory: BpmnObjectFactory, newShape: (T) -> ShapeElement): MutableList<Event>  {
+        val elem = factory.newBpmnObject(clazz)
+        val shape = newShape(elem)
+        val props = factory.propertiesOf(elem)
+        return mutableListOf(BpmnShapeObjectAddedEvent(WithParentId(this.bpmnElementId, elem), shape, props))
     }
 }

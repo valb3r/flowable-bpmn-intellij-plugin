@@ -171,6 +171,7 @@ class CurrentStateProvider(private val project: Project) {
                 is IndexUiOnlyValueUpdatedEvent -> updateIndexProperty(event, updatedElemPropertiesByStaticElementId)
                 is UiOnlyValueAddedEvent -> addUiOnlyProperty(event, updatedElemPropertiesByStaticElementId)
                 is UiOnlyValueRemovedEvent -> removeUiOnlyProperty(event, updatedElemPropertiesByStaticElementId)
+                is BpmnFlowNodeRefAddedEvent -> { /* Nothing here - purely fictitious event handled by XML parser only */ }
                 else -> throw IllegalStateException("Can't handle event ${event.javaClass}")
             }
         }

@@ -36,8 +36,6 @@ private fun <T: WithBpmnId> newShapeElement(project: Project, sceneLocation: Poi
 class ShapeCreator<T : WithBpmnId> (private val project: Project, private val clazz: KClass<T>, private val sceneLocation: Point2D.Float, private val parent: BpmnElementId): ActionListener {
 
     override fun actionPerformed(e: ActionEvent?) {
-        val newObject = newElementsFactory(project).newBpmnObject(clazz)
-        val shape = newShapeElement(project, sceneLocation, newObject)
         val probablyParentElement = lastRenderedState(project)!!.elementsById[parent]!!
         if (probablyParentElement !is BaseBpmnRenderElement) {
             // TODO - error here?
@@ -45,7 +43,10 @@ class ShapeCreator<T : WithBpmnId> (private val project: Project, private val cl
         }
 
         updateEventsRegistry(project).addEvents(
-                probablyParentElement.onElementCreatedOnTopThis(newObject, shape, newElementsFactory(project).propertiesOf(newObject))
+                probablyParentElement.onElementCreatedOnTopThis(
+                    clazz,
+                    newElementsFactory(project)
+                ) { newShapeElement(project, sceneLocation, it) }
         )
     }
 }

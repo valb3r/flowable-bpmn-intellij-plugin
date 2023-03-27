@@ -174,6 +174,7 @@ abstract class BaseBpmnParser: BpmnParser {
                 is BpmnEdgeObjectAdded -> applyBpmnEdgeObjectAdded(doc, event)
                 is PropertyUpdateWithId -> applyPropertyUpdateWithId(doc, event)
                 is BpmnParentChanged -> applyParentChange(doc, event)
+                is BpmnFlowNodeRefAdded -> TODO()
             }
         }
     }

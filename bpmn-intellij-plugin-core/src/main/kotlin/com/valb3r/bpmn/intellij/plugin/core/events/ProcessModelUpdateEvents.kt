@@ -170,6 +170,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
                 is BpmnEdgeObjectAddedEvent -> addObjectEdgeEvent(toStore as Order<BpmnEdgeObjectAddedEvent>)
                 is BpmnElementRemovedEvent -> removeBpmnElement(event.bpmnElementId , toStore as Order<BpmnElementRemovedEvent> )
                 is BpmnElementTypeChangeEvent -> changeBpmnElement(event.elementId , toStore as Order<BpmnElementRemovedEvent>, toStore as Order<BpmnEdgeObjectAddedEvent>)
+                is BpmnFlowNodeRefAddedEvent -> { /* Nothing here - purely fictitious event handled by XML parser only */ }
                 else -> throw IllegalArgumentException("Can't bulk add: " + event::class.qualifiedName)
             }
         }

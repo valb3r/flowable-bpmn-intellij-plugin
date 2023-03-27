@@ -18,6 +18,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnFlowNodeRef
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnLane
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnLaneSet
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.*
@@ -127,7 +128,11 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         }
     }
 
-    override fun <T : WithBpmnId> propertiesOf(obj: T): PropertyTable {
+    override fun newFlowRef(): BpmnFlowNodeRef {
+        return BpmnFlowNodeRef("");
+    }
+
+    override fun <T> propertiesOf(obj: T): PropertyTable {
         val table = when (obj) {
             is BpmnStartEventAlike, is EndEventAlike, is BpmnBoundaryEventAlike, is BpmnTaskAlike, is BpmnGatewayAlike,
             is IntermediateCatchingEventAlike, is IntermediateThrowingEventAlike, is BpmnProcess,
@@ -136,7 +141,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
 
             is BpmnStructuralElementAlike -> fillForCallActivity(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
-            else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
+            else -> throw IllegalArgumentException("Can't parse properties of: ${obj!!::class.java}")
         }
         
         return PropertyTable(table)

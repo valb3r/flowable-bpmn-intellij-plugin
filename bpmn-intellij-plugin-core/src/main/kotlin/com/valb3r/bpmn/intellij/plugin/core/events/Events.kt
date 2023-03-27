@@ -4,6 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.lanes.BpmnFlowNodeRef
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
@@ -35,6 +36,8 @@ data class DiagramElementRemovedEvent(override val elementId: DiagramElementId):
 data class BpmnElementRemovedEvent(override val bpmnElementId: BpmnElementId): BpmnElementRemoved
 
 data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithParentId, override val shape: ShapeElement, override val props: PropertyTable): BpmnShapeObjectAdded
+
+data class BpmnFlowNodeRefAddedEvent(override val bpmnObject: BpmnFlowNodeRef): BpmnFlowNodeRefAdded
 
 data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithParentId, override val edge: EdgeWithIdentifiableWaypoints, override val props: PropertyTable): BpmnEdgeObjectAdded
 
