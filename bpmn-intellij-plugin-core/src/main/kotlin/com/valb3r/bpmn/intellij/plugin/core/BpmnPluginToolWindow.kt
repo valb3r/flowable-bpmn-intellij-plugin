@@ -185,7 +185,7 @@ open class BpmnPluginToolWindow(
 
     private fun createEditor(project: Project, bpmnFile: PsiFile, text: String): TextValueAccessor {
         val factory = JavaCodeFragmentFactory.getInstance(project)
-        val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, PsiType.CHAR, true)
+        val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, psiTypeChar(), true)
         fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
         val document = PsiDocumentManager.getInstance(project).getDocument(fragment)!!
         document.createGuardedBlock(0, 1).isGreedyToLeft = true
@@ -202,6 +202,15 @@ open class BpmnPluginToolWindow(
                 get() = textField.text
             override val component: JComponent
                 get() = textField
+        }
+    }
+
+    // Compatibility with newer (2023.+ and older IJ):
+    private fun psiTypeChar(): PsiPrimitiveType {
+        return try {
+            Class.forName("com.intellij.psi.PsiTypes").getMethod("charType").invoke(null) as PsiPrimitiveType
+        } catch (e: ClassNotFoundException){
+            Class.forName("com.intellij.psi.PsiType").getField("CHAR").get(null) as PsiPrimitiveType
         }
     }
 
