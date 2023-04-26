@@ -9,14 +9,14 @@ import java.time.LocalDate
 @State(name = "AdvertisementCache", storages = [(Storage("advertisement.iml.xml"))])
 class AdvertisementCache: PersistentStateComponent<AdvertisementCache.State> {
     class State {
-        var lastShow: LocalDate = LocalDate.MIN
+        var lastShowEpochDay: Long = LocalDate.MIN.toEpochDay()
     }
 
     private var myState = State()
     var lastShow: LocalDate
-        get() = myState.lastShow
+        get() = LocalDate.ofEpochDay(myState.lastShowEpochDay)
         set(lastShow){
-            myState.lastShow = lastShow
+            myState.lastShowEpochDay = lastShow.toEpochDay()
         }
     override fun getState(): State = myState
 
