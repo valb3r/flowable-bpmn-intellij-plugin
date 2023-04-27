@@ -26,6 +26,8 @@ import com.intellij.util.ui.ButtonlessScrollBarUI
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.core.advertisment.showTryPolyBpmnNotification
+import com.valb3r.bpmn.intellij.plugin.core.events.FileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.events.IntelliJFileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.parser.currentParser
 import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
@@ -135,6 +137,7 @@ open class BpmnPluginToolWindow(
         )
 
         invokeAndWaitIfNeeded { setupUiAfterRun() }
+        showTryPolyBpmnNotification(project)
     }
 
     private fun createMultiLineTextField(value: String): TextValueAccessor {
