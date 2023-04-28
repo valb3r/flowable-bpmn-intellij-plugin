@@ -302,7 +302,7 @@
     <!-- Notification balloons TODO: Not clear if it may cause any issues with 2018-2020.2 as extension is supported with 2020.3+ -->
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="Flowable BPMN Editor Notification group" displayType="BALLOON" key="com.valb3r.bpmn.intellij.flowable.plugin"/>
-        <projectService serviceImplementation="com.valb3r.bpmn.intellij.plugin.core.advertisment.AdvertisementCache"/>
+        <projectService serviceImplementation="com.valb3r.bpmn.intellij.plugin.core.advertisement.AdvertisementState"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
