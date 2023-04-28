@@ -11,7 +11,7 @@ fun showTryPolyBpmnNotification(project: Project) {
     val frequencyCheck = 30L
     if(checkDate == LocalDate.MIN || checkDate.plusDays(frequencyCheck).isBefore(now)) {
         AdvertisementCache.getInstance(project).lastShow = now
-        genericShowNotificationBalloon(project, "Advertisement", "Try <a href='https://polybpmn.com/'>PolyBPMN plugin</a>", NotificationType.INFORMATION, "Do not show again"){
+        genericShowNotificationBalloon(project, "Advertisement", "Try <a href='https://plugins.jetbrains.com/plugin/21361-polybpmn-visualizer'>PolyBPMN plugin</a>. <br> PolyBPMN's upgraded split editor to each file, revision file comparison and a wider selection of elements and properties..", NotificationType.INFORMATION, "Do not show again"){
             AdvertisementCache.getInstance(project).lastShow = LocalDate.MAX.minusDays(frequencyCheck).minusDays(1)
         }
     }
