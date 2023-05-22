@@ -60,7 +60,7 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     TARGET_REF(PropertyTypeDetails(PropertyType.TARGET_REF, "targetRef", XmlType.ATTRIBUTE)),
     BPMN_INCOMING(PropertyTypeDetails(PropertyType.BPMN_INCOMING, "incoming?\$=@.text", XmlType.CDATA)),
     BPMN_OUTGOING(PropertyTypeDetails(PropertyType.BPMN_OUTGOING, "outgoing?\$=@.text", XmlType.CDATA)),
-    // Unsupported? ATTACHED_TO_REF(PropertyTypeDetails(PropertyType.ATTACHED_TO_REF, "attachedToRef", XmlType.ATTRIBUTE)),
+    ATTACHED_TO_REF(PropertyTypeDetails(PropertyType.ATTACHED_TO_REF, "attachedToRef", XmlType.ATTRIBUTE)),
     CONDITION_EXPR_VALUE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_VALUE, "conditionExpression.text", XmlType.CDATA)),
     CONDITION_EXPR_TYPE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_TYPE, "conditionExpression.xsi:type", XmlType.ATTRIBUTE)),
     COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA)),

@@ -389,6 +389,8 @@ open class Canvas(private val project: Project, private val settings: CanvasCons
                         droppedOn
                 ) ?: emptyList()
             })
+            // Drag End may cause property(s) change, therefore forcing visualizer to rebuild on current state
+            updatePropertyVisualizer(selectedElements)
         }
 
         interactionCtx = interactionCtx.copy(draggedIds = emptySet(), dragTargetedIds = mutableSetOf(), dragCurrent = interactionCtx.dragStart, dragSelectionRect = null)
