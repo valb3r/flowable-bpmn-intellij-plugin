@@ -293,6 +293,7 @@
     <!-- Notification balloons TODO: Not clear if it may cause any issues with 2018-2020.2 as extension is supported with 2020.3+ -->
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="Activiti BPMN Editor Notification group" displayType="BALLOON" key="com.valb3r.bpmn.intellij.activiti.plugin"/>
+        <projectService serviceImplementation="com.valb3r.bpmn.intellij.plugin.core.advertisment.AdvertisementCache"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
