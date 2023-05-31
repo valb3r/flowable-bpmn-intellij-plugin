@@ -27,6 +27,7 @@ class BpmnPluginSettingsComponent() {
     private lateinit var openExtensions: JTextField
     private lateinit var enableFps: JCheckBox
     private lateinit var enableDevelopmentFunctions: JCheckBox
+    private lateinit var disableXsdSchema: JCheckBox
 
     init {
         AutoCompleteDecorator.decorate(uiFontName)
@@ -66,6 +67,7 @@ class BpmnPluginSettingsComponent() {
         dataFontSize.value = state.dataFontSize
         openExtensions.text = state.openExtensions.joinToString(DELIMITER)
         enableFps.isSelected = state.enableFps
+        disableXsdSchema.isSelected = state.disableXsdSchema
         enableDevelopmentFunctions.isSelected = state.enableDevelopmentFunctions
     }
 
@@ -112,6 +114,7 @@ class BpmnPluginSettingsComponent() {
             }
         })
         enableFps.addChangeListener { state.enableFps = enableFps.isSelected }
+        disableXsdSchema.addChangeListener { state.disableXsdSchema = disableXsdSchema.isSelected }
         enableDevelopmentFunctions.addChangeListener { state.enableDevelopmentFunctions = enableDevelopmentFunctions.isSelected }
     }
 
