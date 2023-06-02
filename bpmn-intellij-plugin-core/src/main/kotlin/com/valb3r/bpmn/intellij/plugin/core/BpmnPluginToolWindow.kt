@@ -81,7 +81,7 @@ open class BpmnPluginToolWindow(
         this.canvas.addMouseWheelListener(mouseEventHandler)
         this.canvas.isFocusable = true
         this.canvas.addKeyListener(KeyboardEventHandler(project, canvas))
-        this.canvasPanel.add(this.canvas)
+
         canvasAndProperties.dividerLocation = (canvasAndProperties.height * 0.8f).toInt()
 
         hackFixForMacOsScrollbars()
@@ -240,6 +240,7 @@ open class BpmnPluginToolWindow(
     }
 
     private fun setupUiBeforeRun() {
+        this.canvasPanel.removeAll()
         this.canvasPanel.isEnabled = false
         // clear the canvas panel, ready for new graph
         this.canvas.isVisible = false
@@ -247,6 +248,7 @@ open class BpmnPluginToolWindow(
     }
 
     private fun setupUiAfterRun() {
+        this.canvasPanel.add(this.canvas)
         // show the rendered canvas
         this.canvas.isVisible = true
         this.canvasPanel.updateUI()
