@@ -6,7 +6,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 import java.time.LocalDate
 
-@State(name = "AdvertisementState", storages = [(Storage("opensource-polybpmn-advertisement.xml"))])
+@State(name = "AdvertisementState", storages = [(Storage("opensource-polybpmn-advertisement.xml"))], defaultStateAsResource = true)
 class AdvertisementState: PersistentStateComponent<AdvertisementState.State> {
     class State {
         var advertisementCommonShownAtDay: Long = LocalDate.MIN.toEpochDay()
