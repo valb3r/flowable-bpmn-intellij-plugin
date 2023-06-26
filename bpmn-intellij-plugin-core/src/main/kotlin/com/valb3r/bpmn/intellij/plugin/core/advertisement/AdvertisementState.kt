@@ -9,14 +9,20 @@ import java.time.LocalDate
 @State(name = "AdvertisementState", storages = [(Storage("opensource-polybpmn-advertisement.xml"))])
 class AdvertisementState: PersistentStateComponent<AdvertisementState.State> {
     class State {
-        var advertisementShownAtDay: Long = LocalDate.MIN.toEpochDay()
+        var advertisementCommonShownAtDay: Long = LocalDate.MIN.toEpochDay()
+        var advertisementSwimpoolShownAtDay: Long = LocalDate.MIN.toEpochDay()
     }
 
     private var myState = State()
-    var lastShow: LocalDate
-        get() = LocalDate.ofEpochDay(myState.advertisementShownAtDay)
+    var lastShowCommon: LocalDate
+        get() = LocalDate.ofEpochDay(myState.advertisementCommonShownAtDay)
         set(lastShow){
-            myState.advertisementShownAtDay = lastShow.toEpochDay()
+            myState.advertisementCommonShownAtDay = lastShow.toEpochDay()
+        }
+    var lastShowSwimpoolAd: LocalDate
+        get() = LocalDate.ofEpochDay(myState.advertisementSwimpoolShownAtDay)
+        set(lastShow){
+            myState.advertisementSwimpoolShownAtDay = lastShow.toEpochDay()
         }
     override fun getState(): State = myState
 

@@ -21,7 +21,7 @@ class CamundaFileType private constructor() : XmlLikeFileType(XMLLanguage.INSTAN
     }
 
     override fun getIcon(): Icon {
-        return IconLoader.getIcon("META-INF/pluginIcon.svg")
+        return IconLoader.getIcon("META-INF/pluginIcon.svg", CamundaFileType::class.java)
     }
 
     companion object Instance {

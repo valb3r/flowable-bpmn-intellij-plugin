@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api
 
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnCollaboration
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
@@ -11,7 +12,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 
 // TODO - move to some implementation module
-data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<DiagramElement>) {
+data class BpmnProcessObject(val process: BpmnProcess, val collaboration: BpmnCollaboration?, val diagram: List<DiagramElement>) {
+
+    fun isContainSwimpool() = collaboration != null
 
     fun toView(factory: BpmnObjectFactory) : BpmnProcessObjectView {
         val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()

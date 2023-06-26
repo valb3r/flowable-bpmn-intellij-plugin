@@ -8,7 +8,4 @@ import com.valb3r.bpmn.intellij.plugin.camunda.settings.CamundaBpmnPluginSetting
 
 class CamundaPluginPreloaded: PreloadingActivity() {
 
-    override fun preload(indicator: ProgressIndicator) {
-        currentSettingsStateProvider.set { ServiceManager.getService(CamundaBpmnPluginSettingsState::class.java) }
-    }
 }
