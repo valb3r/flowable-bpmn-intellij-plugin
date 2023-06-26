@@ -17,7 +17,7 @@ internal class Activity7ParserBasicTest {
         processObject = ActivitiParser().parse("activiti7/simple-activiti7-process.bpmn20.xml".asResource()!!)
 
         processObject.shouldNotBeNull()
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(Activiti7ObjectFactory()).elemPropertiesByElementId
+        val props = BpmnProcessObject(processObject.process, null, processObject.diagram).toView(Activiti7ObjectFactory()).elemPropertiesByElementId
         props.shouldNotBeNull()
     }
 }

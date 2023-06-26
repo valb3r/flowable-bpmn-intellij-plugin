@@ -38,7 +38,7 @@ internal class ActivityScriptTaskTest {
         task.autoStoreVariables.shouldBeEqualTo(false)
         task.scriptBody.shouldBeEqualTo("echo \"Foo Bar!\" > /tmp/foo.txt")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)

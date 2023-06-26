@@ -31,7 +31,7 @@ internal class ServiceTaskWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Service task with single extension")
         task.documentation.shouldBeEqualTo("Some docs")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -77,7 +77,7 @@ internal class ServiceTaskWithExtensionIsParseable {
         task.name.shouldBeEqualTo("Service task with multiple extensions")
         task.documentation.shouldBeEqualTo("Some docs")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)

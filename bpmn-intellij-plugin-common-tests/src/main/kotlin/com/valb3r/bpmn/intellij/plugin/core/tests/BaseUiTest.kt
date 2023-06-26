@@ -133,6 +133,7 @@ abstract class BaseUiTest {
                     null,
                     null
             ),
+        null,
             mutableListOf()
     )
 
@@ -355,6 +356,7 @@ abstract class BaseUiTest {
                 basicProcess.process.copy(
                         body = basicProcessBody.copy(subProcess = listOf(bpmnSubProcess))
                 ),
+            null,
                 listOf(DiagramElement(
                         diagramMainElementId,
                         PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSubProcess), listOf()))
@@ -372,6 +374,7 @@ abstract class BaseUiTest {
                                 subprocessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
                         )
                 ),
+            null,
                 listOf(
                         DiagramElement(
                                 diagramMainElementId,
@@ -396,6 +399,7 @@ abstract class BaseUiTest {
                                 subprocessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd))
                         )
                 ),
+            null,
                 listOf(
                         DiagramElement(
                                 diagramMainElementId,
@@ -423,6 +427,7 @@ abstract class BaseUiTest {
                                 subprocessInSubProcessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart))
                         )
                 ),
+            null,
                 listOf(
                         DiagramElement(
                                 diagramMainElementId,
@@ -455,6 +460,7 @@ abstract class BaseUiTest {
                     subprocessInSubProcessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart))
                 )
             ),
+            null,
             listOf(
                 DiagramElement(
                     diagramMainElementId,
@@ -480,6 +486,7 @@ abstract class BaseUiTest {
                                 subprocessInSubProcessBpmnId to basicProcessBody.copy()
                         )
                 ),
+            null,
                 listOf(
                         DiagramElement(
                                 diagramMainElementId,
@@ -506,6 +513,7 @@ abstract class BaseUiTest {
             basicProcess.process.copy(
                 body = basicProcessBody.copy(serviceTask = listOf(one, two))
             ),
+            null,
             listOf(DiagramElement(
                 diagramMainElementId,
                 PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, diagramServiceTaskEnd), listOf()))
@@ -527,6 +535,7 @@ abstract class BaseUiTest {
                 basicProcess.process.copy(
                     body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart), boundaryErrorEvent = listOf(boundaryEventOnServiceTask))
                 ),
+            null,
                 listOf(DiagramElement(
                         diagramMainElementId,
                         PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, boundaryEventOnServiceTaskShape), listOf()))
@@ -548,6 +557,7 @@ abstract class BaseUiTest {
                 basicProcess.process.copy(
                         body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart), boundaryErrorEvent = listOf(boundaryEventOnRoot))
                 ),
+            null,
                 listOf(DiagramElement(
                         diagramMainElementId,
                         PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart, boundaryEventOnRootShape), listOf()))
@@ -572,6 +582,7 @@ abstract class BaseUiTest {
                                 subprocessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart))
                         )
                 ),
+            null,
                 listOf(DiagramElement(
                         diagramMainElementId,
                         PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSubProcess, diagramServiceTaskStart, boundaryEventOnRootShape), listOf()))
@@ -596,6 +607,7 @@ abstract class BaseUiTest {
                                 subprocessBpmnId to basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart), boundaryErrorEvent = listOf(boundaryEventOnServiceTask))
                         )
                 ),
+            null,
                 listOf(DiagramElement(
                         diagramMainElementId,
                         PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSubProcess, diagramServiceTaskStart, boundaryEventOnServiceTaskShape), listOf()))
@@ -618,6 +630,7 @@ abstract class BaseUiTest {
                 body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart), boundaryErrorEvent = listOf(boundaryEventOnServiceTask), subProcess = listOf(bpmnSubProcess)),
                 children = mapOf(subprocessBpmnId to basicProcessBody)
             ),
+            null,
             listOf(DiagramElement(
                 diagramMainElementId,
                 PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramSubProcess, diagramServiceTaskStart, boundaryEventOnServiceTaskShape), listOf()))
@@ -650,6 +663,7 @@ abstract class BaseUiTest {
                                 )
                         )
                 ),
+            null,
                 listOf(
                         DiagramElement(
                                 diagramMainElementId,

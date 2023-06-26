@@ -30,7 +30,7 @@ internal class ActivitiUsereventWithNestedExtensionTest {
         val event = readStartEventWithExtensions(processObject)
         event.id.shouldBeEqualTo(elementId)
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[event.id]!!
+        val props = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(ActivitiObjectFactory()).elemPropertiesByElementId[event.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(event.id.id)
 
         props.getAll(PropertyType.FORM_PROPERTY_ID).shouldContainSame(arrayOf(

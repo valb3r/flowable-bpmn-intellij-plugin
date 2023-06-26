@@ -44,7 +44,7 @@ internal class FlowableMailTaskTest {
         task.html.shouldBeEqualTo("<html>Hello</html>")
         task.charset.shouldBeEqualTo("UTF-8")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)

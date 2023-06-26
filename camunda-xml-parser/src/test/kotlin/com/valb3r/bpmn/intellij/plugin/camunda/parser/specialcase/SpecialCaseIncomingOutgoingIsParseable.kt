@@ -31,9 +31,9 @@ internal class SpecialCaseIncomingOutgoingIsParseable {
     fun `Service task (single props) with incoming-outgoing is parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
 
-        val startEventProps = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[singleStartEvent]!!
-        val serviceTaskProps = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[singleServiceTask]!!
-        val endEventProps = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[singleEndEvent]!!
+        val startEventProps = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[singleStartEvent]!!
+        val serviceTaskProps = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[singleServiceTask]!!
+        val endEventProps = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[singleEndEvent]!!
 
         startEventProps[PropertyType.BPMN_INCOMING]?.value?.shouldBeNull()
         startEventProps[PropertyType.BPMN_OUTGOING]?.shouldBeEqualTo(Property("flowFromStartEvent", listOf("flowFromStartEvent")))
@@ -61,9 +61,9 @@ internal class SpecialCaseIncomingOutgoingIsParseable {
     fun `Service task (multiple props) with incoming-outgoing is parseable`() {
         val processObject = parser.parse(FILE.asResource()!!)
 
-        val startEventProps = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[multiStartEvent]!!
-        val serviceTaskProps = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[multiServiceTask]!!
-        val endEventProps = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[multiEndEvent]!!
+        val startEventProps = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[multiStartEvent]!!
+        val serviceTaskProps = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[multiServiceTask]!!
+        val endEventProps = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[multiEndEvent]!!
 
         startEventProps[PropertyType.BPMN_INCOMING]?.value?.shouldBeNull()
         startEventProps.getAll(PropertyType.BPMN_OUTGOING).shouldBeEqualTo(listOf(Property("fromStart1", listOf("fromStart1")), Property("fromStart2", listOf("fromStart2"))))

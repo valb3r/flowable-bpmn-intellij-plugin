@@ -56,7 +56,7 @@ internal class FlowableHttpTaskTest {
         task.saveResponseParametersTransient.shouldBeEqualTo("TRANSIENT_RESPONSE")
         task.saveResponseVariableAsJson.shouldBeEqualTo("AS_JSON")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)

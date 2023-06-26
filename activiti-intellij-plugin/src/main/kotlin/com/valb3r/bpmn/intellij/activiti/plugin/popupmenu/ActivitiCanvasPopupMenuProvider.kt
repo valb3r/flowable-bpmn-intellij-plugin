@@ -41,61 +41,61 @@ import javax.swing.JPopupMenu
 class ActivitiCanvasPopupMenuProvider(private val project: Project) : CanvasPopupMenuProvider {
 
     // Functional
-    private val COPY = IconLoader.getIcon("/icons/actions/copy.png")
-    private val CUT = IconLoader.getIcon("/icons/actions/cut.png")
-    private val PASTE = IconLoader.getIcon("/icons/actions/paste.png")
-    private val SAVE_TO_PNG = IconLoader.getIcon("/icons/actions/save-to-png.png")
+    private val COPY = IconLoader.getIcon("/icons/actions/copy.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val CUT = IconLoader.getIcon("/icons/actions/cut.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val PASTE = IconLoader.getIcon("/icons/actions/paste.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val SAVE_TO_PNG = IconLoader.getIcon("/icons/actions/save-to-png.png", ActivitiCanvasPopupMenuProvider::class.java)
 
     // Events
     // Start
-    private val START_EVENT = IconLoader.getIcon("/icons/popupmenu/start-event.png")
-    private val START_MESSAGE_EVENT = IconLoader.getIcon("/icons/popupmenu/message-start-event.png")
-    private val START_ERROR_EVENT = IconLoader.getIcon("/icons/popupmenu/error-start-event.png")
-    private val START_SIGNAL_EVENT = IconLoader.getIcon("/icons/popupmenu/signal-start-event.png")
-    private val START_TIMER_EVENT = IconLoader.getIcon("/icons/popupmenu/timer-start-event.png")
+    private val START_EVENT = IconLoader.getIcon("/icons/popupmenu/start-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val START_MESSAGE_EVENT = IconLoader.getIcon("/icons/popupmenu/message-start-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val START_ERROR_EVENT = IconLoader.getIcon("/icons/popupmenu/error-start-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val START_SIGNAL_EVENT = IconLoader.getIcon("/icons/popupmenu/signal-start-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val START_TIMER_EVENT = IconLoader.getIcon("/icons/popupmenu/timer-start-event.png", ActivitiCanvasPopupMenuProvider::class.java)
     // End
-    private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png")
-    private val CANCEL_END_EVENT = IconLoader.getIcon("/icons/popupmenu/cancel-end-event.png")
-    private val ERROR_END_EVENT = IconLoader.getIcon("/icons/popupmenu/error-end-event.png")
-    private val TERMINATE_END_EVENT = IconLoader.getIcon("/icons/popupmenu/terminate-end-event.png")
+    private val END_EVENT = IconLoader.getIcon("/icons/popupmenu/end-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val CANCEL_END_EVENT = IconLoader.getIcon("/icons/popupmenu/cancel-end-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val ERROR_END_EVENT = IconLoader.getIcon("/icons/popupmenu/error-end-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val TERMINATE_END_EVENT = IconLoader.getIcon("/icons/popupmenu/terminate-end-event.png", ActivitiCanvasPopupMenuProvider::class.java)
     // Boundary
-    private val BOUNDARY_CANCEL_EVENT = IconLoader.getIcon("/icons/popupmenu/cancel-boundary-event.png")
-    private val BOUNDARY_COMPENSATION_EVENT = IconLoader.getIcon("/icons/popupmenu/compensation-boundary-event.png")
-    private val BOUNDARY_ERROR_EVENT = IconLoader.getIcon("/icons/popupmenu/error-boundary-event.png")
-    private val BOUNDARY_MESSAGE_EVENT = IconLoader.getIcon("/icons/popupmenu/message-boundary-event.png")
-    private val BOUNDARY_SIGNAL_EVENT = IconLoader.getIcon("/icons/popupmenu/signal-boundary-event.png")
-    private val BOUNDARY_TIMER_EVENT = IconLoader.getIcon("/icons/popupmenu/timer-boundary-event.png")
+    private val BOUNDARY_CANCEL_EVENT = IconLoader.getIcon("/icons/popupmenu/cancel-boundary-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val BOUNDARY_COMPENSATION_EVENT = IconLoader.getIcon("/icons/popupmenu/compensation-boundary-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val BOUNDARY_ERROR_EVENT = IconLoader.getIcon("/icons/popupmenu/error-boundary-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val BOUNDARY_MESSAGE_EVENT = IconLoader.getIcon("/icons/popupmenu/message-boundary-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val BOUNDARY_SIGNAL_EVENT = IconLoader.getIcon("/icons/popupmenu/signal-boundary-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val BOUNDARY_TIMER_EVENT = IconLoader.getIcon("/icons/popupmenu/timer-boundary-event.png", ActivitiCanvasPopupMenuProvider::class.java)
     // Intermediate events
     // Catch
-    private val INTERMEDIATE_TIMER_CATCHING = IconLoader.getIcon("/icons/popupmenu/timer-catch-event.png")
-    private val INTERMEDIATE_MESSAGE_CATCHING = IconLoader.getIcon("/icons/popupmenu/message-catch-event.png")
-    private val INTERMEDIATE_SIGNAL_CATCHING = IconLoader.getIcon("/icons/popupmenu/signal-catch-event.png")
+    private val INTERMEDIATE_TIMER_CATCHING = IconLoader.getIcon("/icons/popupmenu/timer-catch-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val INTERMEDIATE_MESSAGE_CATCHING = IconLoader.getIcon("/icons/popupmenu/message-catch-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val INTERMEDIATE_SIGNAL_CATCHING = IconLoader.getIcon("/icons/popupmenu/signal-catch-event.png", ActivitiCanvasPopupMenuProvider::class.java)
     // Throw
-    private val INTERMEDIATE_NONE_THROWING = IconLoader.getIcon("/icons/popupmenu/none-throw-event.png")
-    private val INTERMEDIATE_SIGNAL_THROWING = IconLoader.getIcon("/icons/popupmenu/signal-throw-event.png")
+    private val INTERMEDIATE_NONE_THROWING = IconLoader.getIcon("/icons/popupmenu/none-throw-event.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val INTERMEDIATE_SIGNAL_THROWING = IconLoader.getIcon("/icons/popupmenu/signal-throw-event.png", ActivitiCanvasPopupMenuProvider::class.java)
 
     // Service-task alike
-    private val SERVICE_TASK = IconLoader.getIcon("/icons/popupmenu/service-task.png")
-    private val USER_TASK = IconLoader.getIcon("/icons/popupmenu/user-task.png")
-    private val SCRIPT_TASK = IconLoader.getIcon("/icons/popupmenu/script-task.png")
-    private val BUSINESS_RULE_TASK = IconLoader.getIcon("/icons/popupmenu/business-rule-task.png")
-    private val RECEIVE_TASK = IconLoader.getIcon("/icons/popupmenu/receive-task.png")
-    private val MANUAL_TASK = IconLoader.getIcon("/icons/popupmenu/manual-task.png")
-    private val CAMEL_TASK = IconLoader.getIcon("/icons/popupmenu/camel-task.png")
-    private val MAIL_TASK = IconLoader.getIcon("/icons/popupmenu/mail-task.png")
-    private val MULE_TASK = IconLoader.getIcon("/icons/popupmenu/mule-task.png")
-    private val DECISION_TASK = IconLoader.getIcon("/icons/popupmenu/decision-task.png")
+    private val SERVICE_TASK = IconLoader.getIcon("/icons/popupmenu/service-task.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val USER_TASK = IconLoader.getIcon("/icons/popupmenu/user-task.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val SCRIPT_TASK = IconLoader.getIcon("/icons/popupmenu/script-task.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val BUSINESS_RULE_TASK = IconLoader.getIcon("/icons/popupmenu/business-rule-task.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val RECEIVE_TASK = IconLoader.getIcon("/icons/popupmenu/receive-task.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val MANUAL_TASK = IconLoader.getIcon("/icons/popupmenu/manual-task.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val CAMEL_TASK = IconLoader.getIcon("/icons/popupmenu/camel-task.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val MAIL_TASK = IconLoader.getIcon("/icons/popupmenu/mail-task.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val MULE_TASK = IconLoader.getIcon("/icons/popupmenu/mule-task.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val DECISION_TASK = IconLoader.getIcon("/icons/popupmenu/decision-task.png", ActivitiCanvasPopupMenuProvider::class.java)
 
     // Sub process alike
-    private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png")
-    private val SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/subprocess.png")
-    private val EVENT_SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/event-subprocess.png")
+    private val CALL_ACTIVITY = IconLoader.getIcon("/icons/popupmenu/call-activity.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/subprocess.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val EVENT_SUB_PROCESS = IconLoader.getIcon("/icons/popupmenu/event-subprocess.png", ActivitiCanvasPopupMenuProvider::class.java)
 
     // Gateway
-    private val EXCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/exclusive-gateway.png")
-    private val PARALLEL_GATEWAY = IconLoader.getIcon("/icons/popupmenu/parallel-gateway.png")
-    private val INCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/inclusive-gateway.png")
-    private val EVENT_GATEWAY = IconLoader.getIcon("/icons/popupmenu/event-gateway.png")
+    private val EXCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/exclusive-gateway.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val PARALLEL_GATEWAY = IconLoader.getIcon("/icons/popupmenu/parallel-gateway.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val INCLUSIVE_GATEWAY = IconLoader.getIcon("/icons/popupmenu/inclusive-gateway.png", ActivitiCanvasPopupMenuProvider::class.java)
+    private val EVENT_GATEWAY = IconLoader.getIcon("/icons/popupmenu/event-gateway.png", ActivitiCanvasPopupMenuProvider::class.java)
 
     override fun popupMenu(sceneLocation: Point2D.Float, parent: BpmnElementId): JBPopupMenu {
         val popup = JBPopupMenu()

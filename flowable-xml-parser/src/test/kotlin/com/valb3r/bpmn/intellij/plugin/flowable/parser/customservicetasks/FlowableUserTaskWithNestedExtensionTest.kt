@@ -32,7 +32,7 @@ internal class FlowableUserTaskWithNestedExtensionTest {
         task.name.shouldBeEqualTo("A user task")
         task.documentation.shouldBeEqualTo("A user task to do")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
@@ -98,7 +98,7 @@ internal class FlowableUserTaskWithNestedExtensionTest {
 
         val task = readEmptyUserTaskWithExtensions(processObject)
         task.id.shouldBeEqualTo(BpmnElementId("emptyUserTaskId"))
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
         props.getAll(PropertyType.FORM_PROPERTY_ID).shouldHaveSize(1)
     }
 

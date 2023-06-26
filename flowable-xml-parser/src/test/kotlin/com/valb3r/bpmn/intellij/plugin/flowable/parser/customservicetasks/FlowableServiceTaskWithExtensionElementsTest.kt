@@ -28,7 +28,7 @@ internal class FlowableServiceTaskWithExtensionElementsTest {
         task.id.shouldBeEqualTo(elementId)
         task.failedJobRetryTimeCycle.shouldBeEqualTo("R10/PT5M")
 
-        val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
+        val props = BpmnProcessObject(processObject.process, null,  processObject.diagram).toView(FlowableObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.FAILED_JOB_RETRY_CYCLE]!!.value.shouldBeEqualTo(task.failedJobRetryTimeCycle)
     }
 
