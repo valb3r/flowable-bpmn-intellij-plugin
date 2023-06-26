@@ -21,7 +21,7 @@ class FlowableFileType private constructor() : XmlLikeFileType(XMLLanguage.INSTA
   }
 
   override fun getIcon(): Icon {
-    return IconLoader.getIcon("META-INF/pluginIcon.svg")
+    return IconLoader.getIcon("META-INF/pluginIcon.svg", FlowableFileType::class.java)
   }
 
   companion object Instance {
