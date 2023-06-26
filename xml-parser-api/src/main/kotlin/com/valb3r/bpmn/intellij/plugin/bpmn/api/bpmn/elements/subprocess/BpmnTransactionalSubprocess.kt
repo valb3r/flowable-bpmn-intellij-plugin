@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.BpmnStructuralElementAlike
 
 data class BpmnTransactionalSubProcess(
         override val id: BpmnElementId,
@@ -14,7 +15,7 @@ data class BpmnTransactionalSubProcess(
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
         val transactionalSubprocess: Boolean // can't set default for @KotlinBuilder
-): WithBpmnId {
+): WithBpmnId, BpmnStructuralElementAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)

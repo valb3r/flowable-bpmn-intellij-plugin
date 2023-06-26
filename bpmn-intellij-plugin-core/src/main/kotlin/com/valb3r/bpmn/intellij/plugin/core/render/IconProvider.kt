@@ -17,6 +17,8 @@ interface IconProvider {
     val gridDense: Icon
     val noGrid: Icon
     val gear: Icon
+    val triggered: Icon
+    val external: Icon
     val script: Icon
     val businessRule: Icon
     val receive: Icon
@@ -71,6 +73,7 @@ interface IconProvider {
     val boundarySignalEvent: SvgIcon
     val boundaryTimerEvent: SvgIcon
     val recycleBin: SvgIcon
+    val wrench: SvgIcon
     val rightAngle: SvgIcon
     val selectParentSequence: SvgIcon
 }
@@ -95,36 +98,38 @@ private fun String.asResource(): SvgIcon {
 }
 
 data class IconProviderImpl(
-        override val undo: Icon = IconLoader.getIcon("/icons/actions/undo.png", IconProviderImpl::class.java),
-        override val redo: Icon = IconLoader.getIcon("/icons/actions/redo.png", IconProviderImpl::class.java),
-        override val centerImage: Icon = IconLoader.getIcon("/icons/actions/center_image.png", IconProviderImpl::class.java),
-        override val zoomIn: Icon = IconLoader.getIcon("/icons/actions/zoom_in.png", IconProviderImpl::class.java),
-        override val zoomOut: Icon = IconLoader.getIcon("/icons/actions/zoom_out.png", IconProviderImpl::class.java),
-        override val zoomReset: Icon = IconLoader.getIcon("/icons/actions/zoom_reset.png", IconProviderImpl::class.java),
-        override val grid: Icon = IconLoader.getIcon("/icons/actions/small-grid.png", IconProviderImpl::class.java),
-        override val gridDense: Icon = IconLoader.getIcon("/icons/actions/grid.png", IconProviderImpl::class.java),
-        override val noGrid: Icon = IconLoader.getIcon("/icons/actions/no-grid.png", IconProviderImpl::class.java),
-        override val gear: Icon = IconLoader.getIcon("/icons/ui-icons/gear.png", IconProviderImpl::class.java),
-        override val script: Icon = IconLoader.getIcon("/icons/ui-icons/script.png", IconProviderImpl::class.java),
-        override val businessRule: Icon = IconLoader.getIcon("/icons/ui-icons/business-rule.png", IconProviderImpl::class.java),
-        override val receive: Icon = IconLoader.getIcon("/icons/ui-icons/receive.png", IconProviderImpl::class.java),
-        override val manual: Icon = IconLoader.getIcon("/icons/ui-icons/manual.png", IconProviderImpl::class.java),
-        override val user: Icon = IconLoader.getIcon("/icons/ui-icons/user.png", IconProviderImpl::class.java),
-        override val camel: Icon = IconLoader.getIcon("/icons/ui-icons/camel.png", IconProviderImpl::class.java),
-        override val http: Icon = IconLoader.getIcon("/icons/ui-icons/http.png", IconProviderImpl::class.java),
-        override val mail: Icon = IconLoader.getIcon("/icons/ui-icons/mail.png", IconProviderImpl::class.java),
-        override val mule: Icon = IconLoader.getIcon("/icons/ui-icons/mule.png", IconProviderImpl::class.java),
-        override val envelope: Icon = IconLoader.getIcon("/icons/ui-icons/envelope.png", IconProviderImpl::class.java),
-        override val decision: Icon = IconLoader.getIcon("/icons/ui-icons/decision.png", IconProviderImpl::class.java),
-        override val shell: Icon = IconLoader.getIcon("/icons/ui-icons/shell.png", IconProviderImpl::class.java),
-        override val tilde: Icon = IconLoader.getIcon("/icons/ui-icons/tilde.png", IconProviderImpl::class.java),
-        override val dragToResizeTop: Icon = IconLoader.getIcon("/icons/ui-icons/drag-to-resize-top.png", IconProviderImpl::class.java),
-        override val dragToResizeBottom: Icon = IconLoader.getIcon("/icons/ui-icons/drag-to-resize-bottom.png", IconProviderImpl::class.java),
-        override val sequence: Icon = IconLoader.getIcon("/icons/ui-icons/sequence.png", IconProviderImpl::class.java),
-        override val anchorOn: Icon = IconLoader.getIcon("/icons/actions/anchor.png", IconProviderImpl::class.java),
-        override val anchorOff: Icon = IconLoader.getIcon("/icons/actions/anchor-off.png", IconProviderImpl::class.java),
-        override val plus: Icon = IconLoader.getIcon("/icons/ui-icons/plus.png", IconProviderImpl::class.java),
-        override val minus: Icon = IconLoader.getIcon("/icons/ui-icons/minus.png", IconProviderImpl::class.java),
+        override val undo: Icon = IconLoader.getIcon("/icons/actions/undo.png", IconProvider::class.java),
+        override val redo: Icon = IconLoader.getIcon("/icons/actions/redo.png", IconProvider::class.java),
+        override val centerImage: Icon = IconLoader.getIcon("/icons/actions/center_image.png", IconProvider::class.java),
+        override val zoomIn: Icon = IconLoader.getIcon("/icons/actions/zoom_in.png", IconProvider::class.java),
+        override val zoomOut: Icon = IconLoader.getIcon("/icons/actions/zoom_out.png", IconProvider::class.java),
+        override val zoomReset: Icon = IconLoader.getIcon("/icons/actions/zoom_reset.png", IconProvider::class.java),
+        override val grid: Icon = IconLoader.getIcon("/icons/actions/small-grid.png", IconProvider::class.java),
+        override val gridDense: Icon = IconLoader.getIcon("/icons/actions/grid.png", IconProvider::class.java),
+        override val noGrid: Icon = IconLoader.getIcon("/icons/actions/no-grid.png", IconProvider::class.java),
+        override val gear: Icon = IconLoader.getIcon("/icons/ui-icons/gear.png", IconProvider::class.java),
+        override val triggered: Icon = IconLoader.getIcon("/icons/ui-icons/triggired.png", IconProvider::class.java),
+        override val external: Icon = IconLoader.getIcon("/icons/ui-icons/external.png", IconProvider::class.java),
+        override val script: Icon = IconLoader.getIcon("/icons/ui-icons/script.png", IconProvider::class.java),
+        override val businessRule: Icon = IconLoader.getIcon("/icons/ui-icons/business-rule.png", IconProvider::class.java),
+        override val receive: Icon = IconLoader.getIcon("/icons/ui-icons/receive.png", IconProvider::class.java),
+        override val manual: Icon = IconLoader.getIcon("/icons/ui-icons/manual.png", IconProvider::class.java),
+        override val user: Icon = IconLoader.getIcon("/icons/ui-icons/user.png", IconProvider::class.java),
+        override val camel: Icon = IconLoader.getIcon("/icons/ui-icons/camel.png", IconProvider::class.java),
+        override val http: Icon = IconLoader.getIcon("/icons/ui-icons/http.png", IconProvider::class.java),
+        override val mail: Icon = IconLoader.getIcon("/icons/ui-icons/mail.png", IconProvider::class.java),
+        override val mule: Icon = IconLoader.getIcon("/icons/ui-icons/mule.png", IconProvider::class.java),
+        override val envelope: Icon = IconLoader.getIcon("/icons/ui-icons/envelope.png", IconProvider::class.java),
+        override val decision: Icon = IconLoader.getIcon("/icons/ui-icons/decision.png", IconProvider::class.java),
+        override val shell: Icon = IconLoader.getIcon("/icons/ui-icons/shell.png", IconProvider::class.java),
+        override val tilde: Icon = IconLoader.getIcon("/icons/ui-icons/tilde.png", IconProvider::class.java),
+        override val dragToResizeTop: Icon = IconLoader.getIcon("/icons/ui-icons/drag-to-resize-top.png", IconProvider::class.java),
+        override val dragToResizeBottom: Icon = IconLoader.getIcon("/icons/ui-icons/drag-to-resize-bottom.png", IconProvider::class.java),
+        override val sequence: Icon = IconLoader.getIcon("/icons/ui-icons/sequence.png", IconProvider::class.java),
+        override val anchorOn: Icon = IconLoader.getIcon("/icons/actions/anchor.png", IconProvider::class.java),
+        override val anchorOff: Icon = IconLoader.getIcon("/icons/actions/anchor-off.png", IconProvider::class.java),
+        override val plus: Icon = IconLoader.getIcon("/icons/ui-icons/plus.png", IconProvider::class.java),
+        override val minus: Icon = IconLoader.getIcon("/icons/ui-icons/minus.png", IconProvider::class.java),
         override val exclusiveGateway: SvgIcon = "/icons/ui-icons/svg/exclusive-gateway.svg".asResource()!!,
         override val parallelGateway: SvgIcon = "/icons/ui-icons/svg/parallel-gateway.svg".asResource()!!,
         override val inclusiveGateway: SvgIcon = "/icons/ui-icons/svg/inclusive-gateway.svg".asResource()!!,
@@ -159,6 +164,7 @@ data class IconProviderImpl(
         override val boundarySignalEvent: SvgIcon = "/icons/ui-icons/svg/signal-boundary-event.svg".asResource()!!,
         override val boundaryTimerEvent: SvgIcon = "/icons/ui-icons/svg/timer-boundary-event.svg".asResource()!!,
         override val recycleBin: SvgIcon = "/icons/ui-icons/svg/recycle-bin.svg".asResource()!!,
+        override val wrench: SvgIcon = "/icons/ui-icons/svg/wrench.svg".asResource()!!,
         override val rightAngle: SvgIcon = "/icons/ui-icons/svg/angle-right.svg".asResource()!!,
         override val selectParentSequence: SvgIcon = "/icons/ui-icons/svg/select-parent-sequence.svg".asResource()!!,
 ): IconProvider

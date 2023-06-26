@@ -21,28 +21,12 @@ import org.junit.jupiter.api.Test
 import java.awt.geom.Point2D
 import java.util.concurrent.atomic.AtomicReference
 
-internal class UiCopyPasteTest: BaseUiTest() {
+internal class UiCopyPasteTest: FlowableBaseUiTest() {
 
     private val delta = Point2D.Float(10.0f, 10.0f)
     private val pasteStart = Point2D.Float(-1000.0f, -1000.0f)
-    private val pastedElemCenter = Point2D.Float(pasteStart.x + serviceTaskSize / 2.0f, pasteStart.y + serviceTaskSize / 2.0f)
+    private val pastedElemCenter = Point2D.Float(pasteStart.x + taskSize / 2.0f, pasteStart.y + taskSize / 2.0f)
     private val end = Point2D.Float(pasteStart.x + delta.x, pasteStart.y + delta.y)
-
-    private val buffer: AtomicReference<String> = AtomicReference()
-
-    @BeforeEach
-    fun init() {
-        registerNewElementsFactory(project, FlowableObjectFactory())
-        val clipboard = mock<SystemClipboard>()
-        doAnswer { buffer.get() }.whenever(clipboard).getData(any())
-        doAnswer { true }.whenever(clipboard).isDataFlavorAvailable(any())
-        doAnswer {
-            buffer.set(
-                    it.getArgument(0, CopyPasteActionHandler.ClipboardFlavor::class.java).getTransferData(DATA_FLAVOR) as String)
-        }.whenever(clipboard).setContents(any(), anyOrNull())
-
-        setCopyPasteActionHandler(project, CopyPasteActionHandler(clipboard))
-    }
 
     @Test
     fun `Flat service task can be cut and pasted`() {
@@ -176,7 +160,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         canvas.click(begin)
         canvas.startSelectionOrDrag(begin)
         canvas.paintComponent(graphics)
-        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize, endElemX + serviceTaskSize))
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + taskSize, endElemX + taskSize))
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
@@ -203,7 +187,7 @@ internal class UiCopyPasteTest: BaseUiTest() {
         canvas.click(begin)
         canvas.startSelectionOrDrag(begin)
         canvas.paintComponent(graphics)
-        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + serviceTaskSize, endElemX + serviceTaskSize))
+        canvas.dragOrSelectWithLeftButton(begin, Point2D.Float(endElemX + taskSize, endElemX + taskSize))
         canvas.paintComponent(graphics)
         canvas.stopDragOrSelect()
         canvas.paintComponent(graphics)
@@ -316,8 +300,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             shapeBpmn.shape.bpmnElement.shouldBeEqualTo(shapeBpmn.bpmnObject.id)
             shapeBpmn.shape.rectBounds().x.shouldBeEqualTo(pasteStart.x)
             shapeBpmn.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y)
-            shapeBpmn.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
-            shapeBpmn.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
+            shapeBpmn.shape.rectBounds().width.shouldBeEqualTo(taskSize)
+            shapeBpmn.shape.rectBounds().height.shouldBeEqualTo(taskSize)
             shapeBpmn.props[PropertyType.IS_FOR_COMPENSATION]!!.value.shouldBeEqualTo(true)
 
             lastRenderedState(project)!!.state.ctx.selectedIds.shouldContainSame(listOf(shapeBpmn.shape.id))
@@ -348,8 +332,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             serviceTaskBpmn.shape.bpmnElement.shouldBeEqualTo(serviceTaskBpmn.bpmnObject.id)
             serviceTaskBpmn.shape.rectBounds().x.shouldBeEqualTo(pasteStart.x)
             serviceTaskBpmn.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y)
-            serviceTaskBpmn.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
-            serviceTaskBpmn.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
+            serviceTaskBpmn.shape.rectBounds().width.shouldBeEqualTo(taskSize)
+            serviceTaskBpmn.shape.rectBounds().height.shouldBeEqualTo(taskSize)
 
             boundaryEventBpmn.bpmnObject.parent.shouldBe(serviceTaskBpmn.bpmnObject.id)
             boundaryEventBpmn.bpmnObject.parentIdForXml.shouldBe(parentProcessBpmnId)
@@ -358,8 +342,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             boundaryEventBpmn.shape.bpmnElement.shouldBeEqualTo(boundaryEventBpmn.bpmnObject.id)
             boundaryEventBpmn.shape.rectBounds().x.shouldBeGreaterThan(pasteStart.x)
             boundaryEventBpmn.shape.rectBounds().y.shouldBeGreaterThan(pasteStart.y)
-            boundaryEventBpmn.shape.rectBounds().x.shouldBeLessThan(pasteStart.x + serviceTaskSize)
-            boundaryEventBpmn.shape.rectBounds().y.shouldBeLessThan(pasteStart.y + serviceTaskSize)
+            boundaryEventBpmn.shape.rectBounds().x.shouldBeLessThan(pasteStart.x + taskSize)
+            boundaryEventBpmn.shape.rectBounds().y.shouldBeLessThan(pasteStart.y + taskSize)
             boundaryEventBpmn.shape.rectBounds().width.shouldBeEqualTo(boundaryEventSize)
             boundaryEventBpmn.shape.rectBounds().height.shouldBeEqualTo(boundaryEventSize)
 
@@ -430,8 +414,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             startTask.shape.bpmnElement.shouldBeEqualTo(startTask.bpmnObject.id)
             startTask.shape.rectBounds().x.shouldBeEqualTo(pasteStart.x)
             startTask.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y)
-            startTask.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
-            startTask.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
+            startTask.shape.rectBounds().width.shouldBeEqualTo(taskSize)
+            startTask.shape.rectBounds().height.shouldBeEqualTo(taskSize)
 
             endTask.bpmnObject.parent.shouldBe(parentProcessBpmnId)
             endTask.bpmnObject.parentIdForXml.shouldBe(parentProcessBpmnId)
@@ -440,8 +424,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             endTask.shape.bpmnElement.shouldBeEqualTo(endTask.bpmnObject.id)
             endTask.shape.rectBounds().x.shouldBeEqualTo(pasteStart.x + endElemX)
             endTask.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y + endElemY)
-            endTask.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
-            endTask.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
+            endTask.shape.rectBounds().width.shouldBeEqualTo(taskSize)
+            endTask.shape.rectBounds().height.shouldBeEqualTo(taskSize)
 
             edge.bpmnObject.parent.shouldBe(parentProcessBpmnId)
             edge.bpmnObject.parentIdForXml.shouldBe(parentProcessBpmnId)
@@ -496,8 +480,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             serviceTaskBpmn.shape.bpmnElement.shouldBeEqualTo(serviceTaskBpmn.bpmnObject.id)
             serviceTaskBpmn.shape.rectBounds().x.shouldBeEqualTo(pasteStart.x)
             serviceTaskBpmn.shape.rectBounds().y.shouldBeEqualTo(pasteStart.y)
-            serviceTaskBpmn.shape.rectBounds().width.shouldBeEqualTo(serviceTaskSize)
-            serviceTaskBpmn.shape.rectBounds().height.shouldBeEqualTo(serviceTaskSize)
+            serviceTaskBpmn.shape.rectBounds().width.shouldBeEqualTo(taskSize)
+            serviceTaskBpmn.shape.rectBounds().height.shouldBeEqualTo(taskSize)
 
             boundaryEventBpmn.bpmnObject.parent.shouldBe(serviceTaskBpmn.bpmnObject.id)
             boundaryEventBpmn.bpmnObject.parentIdForXml.shouldBe(subprocessBpmn.bpmnObject.id)
@@ -506,8 +490,8 @@ internal class UiCopyPasteTest: BaseUiTest() {
             boundaryEventBpmn.shape.bpmnElement.shouldBeEqualTo(boundaryEventBpmn.bpmnObject.id)
             boundaryEventBpmn.shape.rectBounds().x.shouldBeGreaterThan(pasteStart.x)
             boundaryEventBpmn.shape.rectBounds().y.shouldBeGreaterThan(pasteStart.y)
-            boundaryEventBpmn.shape.rectBounds().x.shouldBeLessThan(pasteStart.x + serviceTaskSize)
-            boundaryEventBpmn.shape.rectBounds().y.shouldBeLessThan(pasteStart.y + serviceTaskSize)
+            boundaryEventBpmn.shape.rectBounds().x.shouldBeLessThan(pasteStart.x + taskSize)
+            boundaryEventBpmn.shape.rectBounds().y.shouldBeLessThan(pasteStart.y + taskSize)
             boundaryEventBpmn.shape.rectBounds().width.shouldBeEqualTo(boundaryEventSize)
             boundaryEventBpmn.shape.rectBounds().height.shouldBeEqualTo(boundaryEventSize)
 

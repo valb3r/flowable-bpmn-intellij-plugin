@@ -3,8 +3,10 @@ package com.valb3r.bpmn.intellij.plugin.camunda.parser
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnComplexGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.BpmnShapeObjectAdded
@@ -27,6 +29,10 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     ASYNC_BEFORE(PropertyTypeDetails(PropertyType.ASYNC_BEFORE, "camunda:asyncBefore", XmlType.ATTRIBUTE)),
     ASYNC_AFTER(PropertyTypeDetails(PropertyType.ASYNC_AFTER, "camunda:asyncAfter", XmlType.ATTRIBUTE)),
     ASSIGNEE(PropertyTypeDetails(PropertyType.ASSIGNEE, "camunda:assignee", XmlType.ATTRIBUTE)),
+    CANDIDATE_USERS(PropertyTypeDetails(PropertyType.CANDIDATE_USERS, "camunda:candidateUsers", XmlType.ATTRIBUTE)),
+    CANDIDATE_GROUPS(PropertyTypeDetails(PropertyType.CANDIDATE_GROUPS, "camunda:candidateGroups", XmlType.ATTRIBUTE)),
+    JOB_TOPIC(PropertyTypeDetails(PropertyType.JOB_TOPIC, "camunda:topic", XmlType.ATTRIBUTE)),
+    TASK_PRIORITY(PropertyTypeDetails(PropertyType.TASK_PRIORITY, "camunda:taskPriority", XmlType.ATTRIBUTE)),
     CALLED_ELEM(PropertyTypeDetails(PropertyType.CALLED_ELEM, "calledElement", XmlType.ATTRIBUTE)),
     // Unsupported? CALLED_ELEM_TYPE(PropertyTypeDetails(PropertyType.CALLED_ELEM_TYPE, "camunda:calledElementType", XmlType.ATTRIBUTE)),
     // Unsupported? INHERIT_VARS(PropertyTypeDetails(PropertyType.INHERIT_VARS, "camunda:inheritVariables", XmlType.ATTRIBUTE)),
@@ -54,7 +60,7 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     TARGET_REF(PropertyTypeDetails(PropertyType.TARGET_REF, "targetRef", XmlType.ATTRIBUTE)),
     BPMN_INCOMING(PropertyTypeDetails(PropertyType.BPMN_INCOMING, "incoming?\$=@.text", XmlType.CDATA)),
     BPMN_OUTGOING(PropertyTypeDetails(PropertyType.BPMN_OUTGOING, "outgoing?\$=@.text", XmlType.CDATA)),
-    // Unsupported? ATTACHED_TO_REF(PropertyTypeDetails(PropertyType.ATTACHED_TO_REF, "attachedToRef", XmlType.ATTRIBUTE)),
+    ATTACHED_TO_REF(PropertyTypeDetails(PropertyType.ATTACHED_TO_REF, "attachedToRef", XmlType.ATTRIBUTE)),
     CONDITION_EXPR_VALUE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_VALUE, "conditionExpression.text", XmlType.CDATA)),
     CONDITION_EXPR_TYPE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_TYPE, "conditionExpression.xsi:type", XmlType.ATTRIBUTE)),
     COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA)),
@@ -117,7 +123,11 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     // Unsupported FORM_PROPERTY_EXPRESSION(PropertyTypeDetails(PropertyType.FORM_PROPERTY_EXPRESSION, "extensionElements.camunda:formProperty?id=@.expression", XmlType.ATTRIBUTE)),
     // Unsupported FORM_PROPERTY_DATE_PATTERN(PropertyTypeDetails(PropertyType.FORM_PROPERTY_DATE_PATTERN, "extensionElements.camunda:formProperty?id=@.datePattern", XmlType.ATTRIBUTE)),
     FORM_PROPERTY_VALUE_ID(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_ID, "extensionElements.camunda:formData.camunda:formField?id=@.camunda:properties.camunda:property?id=@.id", XmlType.ATTRIBUTE)),
-    FORM_PROPERTY_VALUE_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_NAME, "extensionElements.camunda:formData.camunda:formField?id=@.camunda:properties.camunda:property?id=@.value", XmlType.ATTRIBUTE))
+    FORM_PROPERTY_VALUE_NAME(PropertyTypeDetails(PropertyType.FORM_PROPERTY_VALUE_NAME, "extensionElements.camunda:formData.camunda:formField?id=@.camunda:properties.camunda:property?id=@.value", XmlType.ATTRIBUTE)),
+    EXECUTION_LISTENER_CLASS(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_CLASS, "extensionElements.camunda:executionListener?class=@.class", XmlType.ATTRIBUTE)),
+    EXECUTION_LISTENER_EVENT(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_EVENT, "extensionElements.camunda:executionListener?class=@.event", XmlType.ATTRIBUTE)),
+    EXECUTION_LISTENER_FIELD_NAME(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_FIELD_NAME, "extensionElements.camunda:executionListener?class=@.camunda:field?name=@.name", XmlType.ATTRIBUTE)),
+    EXECUTION_LISTENER_FIELD_STRING(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_FIELD_STRING, "extensionElements.camunda:executionListener?class=@.camunda:field?name=@.camunda:string.text", XmlType.CDATA)),
 }
 
 class CamundaParser : BaseBpmnParser() {
@@ -178,13 +188,13 @@ class CamundaParser : BaseBpmnParser() {
         return CamundaPropertyTypeDetails.values().map { it.details }
     }
 
-    override fun createBpmnObject(update: BpmnShapeObjectAdded, diagramParent: Element): Element? {
-        return when (update.bpmnObject.element) {
+    override fun createBpmnObject(element: WithBpmnId, diagramParent: Element): Element? {
+        return when (element) {
             is BpmnTask -> diagramParent.addElement(modelNs().named("task"))
             is BpmnSendTask -> diagramParent.addElement(modelNs().named("sendTask"))
             is BpmnComplexGateway -> diagramParent.addElement(modelNs().named("complexGateway"))
             is BpmnIntermediateLinkCatchingEvent -> createIntermediateCatchEventWithType(diagramParent, "linkEventDefinition")
-            else -> super.createBpmnObject(update, diagramParent)
+            else -> super.createBpmnObject(element, diagramParent)
         }
     }
 

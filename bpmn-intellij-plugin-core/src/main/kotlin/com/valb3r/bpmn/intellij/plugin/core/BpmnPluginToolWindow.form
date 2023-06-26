@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainToolWindowForm" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="709" height="415"/>
+      <xy x="20" y="20" width="962" height="6081"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -27,7 +27,19 @@
             </constraints>
             <properties/>
             <border type="etched"/>
-            <children/>
+            <children>
+              <component id="a249" class="javax.swing.JTextArea" default-binding="true">
+                <constraints>
+                  <card name="Card1"/>
+                </constraints>
+                <properties>
+                  <editable value="false"/>
+                  <enabled value="false"/>
+                  <lineWrap value="true"/>
+                  <text value="No file opened. Create new or open existing BPMN file.&#10;To open file - select it in 'Project Tree', &#10;right click on it to open context menu &#10;and click on 'View BPMN...' menu item"/>
+                </properties>
+              </component>
+            </children>
           </grid>
           <grid id="2d138" binding="canvasPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
@@ -44,6 +56,15 @@
                 <constraints border-constraint="South"/>
                 <properties>
                   <orientation value="0"/>
+                </properties>
+              </component>
+              <component id="7f546" class="javax.swing.JTextArea" binding="canvasNoDiagramText">
+                <constraints border-constraint="Center"/>
+                <properties>
+                  <editable value="false"/>
+                  <enabled value="false"/>
+                  <lineWrap value="true"/>
+                  <text value="No file opened. Create new or open existing BPMN file.&#10;To open file - select it in 'Project Tree', &#10;right click on it to open context menu &#10;and click on 'View BPMN...' menu item"/>
                 </properties>
               </component>
             </children>

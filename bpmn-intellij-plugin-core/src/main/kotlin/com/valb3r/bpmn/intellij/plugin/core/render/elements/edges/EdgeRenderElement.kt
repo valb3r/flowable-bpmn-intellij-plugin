@@ -11,10 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.core.events.DiagramElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.core.render.AreaWithZindex
 import com.valb3r.bpmn.intellij.plugin.core.render.ICON_Z_INDEX
-import com.valb3r.bpmn.intellij.plugin.core.render.elements.ACTIONS_ICO_SIZE
-import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
-import com.valb3r.bpmn.intellij.plugin.core.render.elements.computeCascadeChangeOfBpmnIncomingOutgoingIndex
-import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.*
 
 class EdgeRenderElement(
         elementId: DiagramElementId,
@@ -36,6 +33,8 @@ class EdgeRenderElement(
             dest.addElementRemovedEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement(), cascadeEvents)
         }
 
-        return mutableMapOf(delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId))
+        return mutableMapOf(
+            delId to AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
+        )
     }
 }

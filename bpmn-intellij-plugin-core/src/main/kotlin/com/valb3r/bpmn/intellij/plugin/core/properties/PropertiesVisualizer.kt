@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core.properties
 
+import com.intellij.database.util.toFixString
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -8,17 +9,22 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
-import com.valb3r.bpmn.intellij.plugin.core.events.*
+import com.valb3r.bpmn.intellij.plugin.core.events.BooleanValueUpdatedEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.UiOnlyValueAddedEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.newelements.NewElementsProvider
 import com.valb3r.bpmn.intellij.plugin.core.newelements.newElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.FirstLastColumnReadOnlyModel
+import org.jetbrains.annotations.VisibleForTesting
 import java.util.*
 import javax.swing.*
 import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.TableModel
 import javax.swing.table.TableRowSorter
 import kotlin.math.max
+
 
 private const val maxFields = 9999
 
@@ -113,17 +119,20 @@ class PropertiesVisualizer(
         val seenIndexes = mutableSetOf<ElementIndex>()
         val buttonsToClick = mutableSetOf<BasicArrowButton>()
         for (control in controls) {
+            if (control.first.caption.isEmpty()) {
+                continue
+            }
             val groupType = control.first.group?.lastOrNull()
             val isExpandButton = control.first.name == groupType?.actionResult?.propertyType
+            val isAlwaysVisible = control.first.group?.size == 1 && isExpandButton
             val controlGroupIndex = ElementIndex(
-                if (isExpandButton) control.first.group?.getOrNull(control.first.group!!.size - 2) else groupType,
+                if (isExpandButton && control.first.isNestedProperty()) control.first.group?.getOrNull(control.first.group!!.size - 2) else groupType,
                 control.second.index?.take(max(0, control.first.group!!.size - if (isExpandButton) 1 else 0))?.joinToString() ?: ""
             )
-
-            val ifInnerPadd = "".padStart(if (null == groupType || control.first.indexCascades) 0 else 2)
-            val paddGroup = ifInnerPadd + "".padStart((control.second.index?.size ?: 1) * 2 - 2)
-            if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex)) {
-                addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
+            val lengthInnerPad = control.second.index?.let {(it.size - 1) * 2} ?: 0
+            val paddGroup = "".padStart(lengthInnerPad * 2)
+            if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex) && groupType.createExpansionButton) {
+                addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model, isAlwaysVisible)
                 model.addRow(arrayOf(
                     paddGroup + groupType.groupCaption,
                     buildButtonField(newElemsProvider, state, bpmnElementId, groupType, control.second.index?.dropLast(1) ?: listOf())
@@ -134,8 +143,8 @@ class PropertiesVisualizer(
             if (control.first.hideIfNullOrEmpty && (null == control.second.value || (control.second.value is String && (control.second.value as String).isBlank()))) {
                 continue
             }
-
-            val padd = ifInnerPadd + "".padStart((control.second.index?.size ?: 0) * 2)
+            val nestedGroupLength = (2 + (if(!isExpandButton) 2 else 0) - (if (groupType?.createExpansionButton == false) 2 else 0))
+            val padd = paddGroup + "".padStart(if(groupType == null) 0 else nestedGroupLength)
             val caption = padd + control.first.caption
             var row = when (control.first.valueType) {
                 STRING -> arrayOf(caption, buildTextField(state, bpmnElementId, control.first, control.second))
@@ -143,6 +152,7 @@ class PropertiesVisualizer(
                 CLASS -> arrayOf(caption, buildClassField(state, bpmnElementId, control.first, control.second))
                 EXPRESSION -> arrayOf(caption, buildExpressionField(state, bpmnElementId, control.first, control.second))
                 ATTACHED_SEQUENCE_SELECT -> arrayOf(caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, control.first, control.second))
+                LIST_SELECT -> arrayOf(caption, buildDropDownSelect(state, bpmnElementId, control.first, control.second))
             }
 
             if (isExpandButton) {
@@ -158,7 +168,7 @@ class PropertiesVisualizer(
                 filter.setCollapseGroupControl(controlGroupIndex, controlExpandsGroupIndex, button)
             }
 
-            addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model)
+            addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model, isAlwaysVisible)
             model.addRow(row)
         }
 
@@ -168,15 +178,17 @@ class PropertiesVisualizer(
     private fun addCurrentRowToCollapsedSectionIfNeeded(
         controlGroupIndex: ElementIndex,
         filter: RowExpansionFilter,
-        model: FirstLastColumnReadOnlyModel
+        model: FirstLastColumnReadOnlyModel,
+        isAlwaysVisible: Boolean = false
     ) {
-        if (null != controlGroupIndex.type) {
-            filter.addControl(controlGroupIndex, model.rowCount)
-        }
+        if (null == controlGroupIndex.type || isAlwaysVisible) return
+        filter.addControl(controlGroupIndex, model.rowCount)
     }
 
     private fun computePropertyKey(entry: Pair<PropertyType, Property>): String {
-        return entry.first.group?.mapIndexed { index, type -> type.name + entry.second.index?.getOrElse(index) {""} }?.joinToString() ?: ""
+        return entry.first.group?.mapIndexed { index, type ->
+            type.name + entry.second.index?.getOrElse(index) {""} + entry.first.positionInGroup.toFixString(4)
+        }?.joinToString() ?: ""
     }
 
     private fun notifyDeFocusElement() {
@@ -189,15 +201,16 @@ class PropertiesVisualizer(
         val fieldValue = extractString(value)
         val field = if (type.multiline) multiLineExpandableTextFieldFactory.invoke(bpmnElementId, type, fieldValue) else textFieldFactory.invoke(bpmnElementId, type, fieldValue)
         val initialValue = field.text
-
         listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
             if (initialValue != field.text) {
                 emitStringUpdateWithCascadeIfNeeded(
                     state,
-                    stringValueUpdatedTemplate(bpmnElementId, type, field.text, initialValue, value)
+                    stringValueUpdatedTemplate(bpmnElementId, type, field.text, initialValue, value),
+                    project
                 )
             }
         }
+
         return field.component
     }
 
@@ -235,6 +248,13 @@ class PropertiesVisualizer(
         return field.component
     }
 
+    private fun buildDropDownSelect(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
+        val fieldValue = extractString(value)
+        val field = dropDownFactory(bpmnElementId, type, fieldValue, type.setForSelect!!)
+        addEditorTextListener(state, field, bpmnElementId, type, value)
+        return field.component
+    }
+
     private fun buildButtonField(newElemsProvider: NewElementsProvider, state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: FunctionalGroupType, parentIndex: List<String>): JComponent {
         val button = buttonFactory(bpmnElementId, type)
         addButtonListener(newElemsProvider, state, button, bpmnElementId, type, parentIndex)
@@ -243,9 +263,9 @@ class PropertiesVisualizer(
 
     private fun buildArrowExpansionButton(bpmnElementId: BpmnElementId, filter: RowExpansionFilter, identifier: ElementIndex, sorter: TableRowSorter<TableModel>): BasicArrowButton {
         val button = arrowButtonFactory(bpmnElementId)
-        button.addActionListener {
+       button.addActionListener {
             val isExpanded = button.isExpanded()
-            if (isExpanded) {
+           if (isExpanded) {
                 button.direction = arrowButtonDirection(true)
                 filter.collapse(identifier)
                 sorter.sort()
@@ -283,7 +303,8 @@ class PropertiesVisualizer(
             if (initialValue != field.text) {
                 emitStringUpdateWithCascadeIfNeeded(
                     state,
-                    stringValueUpdatedTemplate(bpmnElementId, type,  removeQuotes(field.text), initialValue, value)
+                    stringValueUpdatedTemplate(bpmnElementId, type,  removeQuotes(field.text), initialValue, value),
+                    project
                 )
             }
         }
@@ -304,46 +325,6 @@ class PropertiesVisualizer(
             updateEventsRegistry(project).addEvents(events)
             visualize(newElementsFactory(project), currentStateProvider(project).currentState().elemPropertiesByStaticElementId, bpmnElementId, expandedElems.toSet())
         }
-    }
-
-    private fun emitStringUpdateWithCascadeIfNeeded(state: Map<BpmnElementId, PropertyTable>, event: StringValueUpdatedEvent) {
-        val cascades = mutableListOf<Event>()
-        if (null != event.referencedValue) {
-            state.forEach { (id, props) ->
-                props.filter { k, _ -> k.updatedBy == event.property }.filter { it.second.value == event.referencedValue }.forEach { prop ->
-                    cascades += StringValueUpdatedEvent(id, prop.first, event.newValue, event.referencedValue, null, propertyIndex = prop.second.index)
-                }
-            }
-        }
-
-        if (event.property.indexCascades) {
-            state[event.bpmnElementId]?.view()?.filter { it.key.indexInGroupArrayName == event.property.indexInGroupArrayName }?.forEach { (k, _) ->
-                uiEventCascade(event, cascades, k)
-            }
-        }
-
-        event.property.explicitIndexCascades?.forEach {
-            val type = PropertyType.valueOf(it)
-            state.forEach { (id, props) ->
-                props.getAll(type).filter { it.value == event.referencedValue }.forEach { prop ->
-                    uiEventCascade(event.copy(bpmnElementId = id, propertyIndex = prop.index), cascades, type)
-                }
-            }
-        }
-
-        updateEventsRegistry(project).addEvents(listOf(event) + cascades)
-    }
-
-    private fun uiEventCascade(
-        event: StringValueUpdatedEvent,
-        cascades: MutableList<Event>,
-        cascadePropTo: PropertyType
-    ) {
-        val index = event.propertyIndex ?: listOf()
-        if (event.newValue.isBlank()) {
-            cascades += UiOnlyValueRemovedEvent(event.bpmnElementId, cascadePropTo, index)
-        }
-        cascades += IndexUiOnlyValueUpdatedEvent(event.bpmnElementId, cascadePropTo, index, index.dropLast(1) + event.newValue)
     }
 
     private fun stringValueUpdatedTemplate(
@@ -396,12 +377,17 @@ class PropertiesVisualizer(
     }
 }
 
-private class RowExpansionFilter: RowFilter<TableModel, Any>() {
+public class RowExpansionFilter: RowFilter<TableModel, Any>() {
 
     private val groups: MutableMap<ElementIndex, MutableSet<Int>> = mutableMapOf()
     private val collapsed: MutableSet<Int> = mutableSetOf()
     private val inverseGroups: MutableMap<Int, ElementIndex> = mutableMapOf()
     private val collapseControls: MutableMap<ElementIndex, MutableSet<Pair<BasicArrowButton, ElementIndex>>> = mutableMapOf()
+
+    @VisibleForTesting
+    fun getCollapsed(): MutableSet<Int> {
+        return collapsed
+    }
 
     fun addControl(control: ElementIndex, rowIndex: Int) {
         groups.computeIfAbsent(control) { mutableSetOf() }.add(rowIndex)

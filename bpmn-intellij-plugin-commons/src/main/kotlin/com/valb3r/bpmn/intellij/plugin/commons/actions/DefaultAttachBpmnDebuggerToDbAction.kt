@@ -74,27 +74,11 @@ abstract class IntelliJBpmnDebugger(private val schema: DbElement): BpmnDebugger
     private fun fetchFromDb(project: Project, processId: String): ExecutedElements? {
         try {
             val connProvider = DbImplUtil.getDatabaseConnection(schema, DGDepartment.INTROSPECTION)?.get()
-            // TODO !COMPATIBILITY: Old IntelliJ provides only getJdbcConnection
+            val remoteConn = connProvider?.remoteConnection
             try {
-                val jdbcSupplier = connProvider?.javaClass?.getMethod("getJdbcConnection")
-                if (true != jdbcSupplier?.isAccessible) {
-                    jdbcSupplier?.isAccessible = true
-                }
-                (jdbcSupplier?.invoke(connProvider) as Connection?)?.use {
-                    return readExecutionIds { stmt -> listIds(processId, stmt, it) }
-                }
-            } catch (ex: NoSuchMethodException) {
-                // New IntelliJ provides only getRemoteConnection
-                val connSupplier = connProvider?.javaClass?.getMethod("getRemoteConnection")
-                if (true != connSupplier?.isAccessible) {
-                    connSupplier?.isAccessible = true
-                }
-                val remoteConn = (connSupplier?.invoke(connProvider) as RemoteConnection?)
-                try {
-                    remoteConn?.let {return readExecutionIds { stmt -> listIds(processId, stmt, it) }}
-                } finally {
-                    remoteConn?.close()
-                }
+                remoteConn?.let {return readExecutionIds { stmt -> listIds(processId, stmt, it) }}
+            } finally {
+                remoteConn?.close()
             }
         } catch (ex: RuntimeException) {
             detachDebugger(project)

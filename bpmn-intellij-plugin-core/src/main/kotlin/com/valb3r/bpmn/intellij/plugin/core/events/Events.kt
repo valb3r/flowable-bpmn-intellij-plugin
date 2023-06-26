@@ -2,11 +2,11 @@ package com.valb3r.bpmn.intellij.plugin.core.events
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.properties.uionly.UiOnlyPropertyType
 import java.awt.geom.Point2D
@@ -25,6 +25,8 @@ data class BpmnShapeResizedAndMovedEvent(override val diagramElementId: DiagramE
 }
 
 data class BpmnParentChangedEvent(override val bpmnElementId: BpmnElementId, override val newParentId: BpmnElementId, override val propagateToXml: Boolean = true): BpmnParentChanged
+
+data class BpmnElementTypeChangeEvent(override val elementId: BpmnElementId, override val newBpmnElement: WithBpmnId, override val props: PropertyTable, override val parentIdForXml: BpmnElementId): BpmnElementChange
 
 data class NewWaypointsEvent(override val edgeElementId: DiagramElementId, override val waypoints: List<IdentifiableWaypoint>, override val epoch: Int): NewWaypoints
 

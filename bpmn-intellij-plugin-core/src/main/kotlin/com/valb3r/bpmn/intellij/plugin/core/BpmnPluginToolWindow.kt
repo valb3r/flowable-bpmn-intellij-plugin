@@ -24,10 +24,14 @@ import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.ButtonlessScrollBarUI
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.advertisement.showTryPolyBpmnAdvertisementNotification
+import com.valb3r.bpmn.intellij.plugin.core.events.FileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.events.IntelliJFileCommitter
+import com.valb3r.bpmn.intellij.plugin.core.events.NoOpFileCommitter
+import com.valb3r.bpmn.intellij.plugin.core.events.initializeUpdateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.parser.currentParser
 import com.valb3r.bpmn.intellij.plugin.core.properties.SelectedValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
@@ -63,6 +67,7 @@ open class BpmnPluginToolWindow(
     private lateinit var canvasPanel: JPanel
     private lateinit var canvasVScroll: JScrollBar
     private lateinit var canvasHScroll: JScrollBar
+    private lateinit var canvasNoDiagramText: JTextArea
 
     private val canvasBuilder = CanvasBuilder(DefaultBpmnProcessRenderer(project, currentIconProvider()), onBadContentErrorCallback, onBadContentWarningCallback)
     private val canvas: Canvas = currentCanvas(project)
@@ -70,6 +75,7 @@ open class BpmnPluginToolWindow(
 
     init {
         log.info("BPMN plugin started")
+        initializeUpdateEventsRegistry(project, NoOpFileCommitter())
         // attach event listeners to canvas
         val mouseEventHandler = setCurrentMouseEventHandler(project, this.canvas)
         this.canvas.addMouseListener(mouseEventHandler)
@@ -182,7 +188,7 @@ open class BpmnPluginToolWindow(
 
     private fun createEditor(project: Project, bpmnFile: PsiFile, text: String): TextValueAccessor {
         val factory = JavaCodeFragmentFactory.getInstance(project)
-        val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, PsiType.CHAR, true)
+        val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, psiTypeChar(), true)
         fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
         val document = PsiDocumentManager.getInstance(project).getDocument(fragment)!!
         document.createGuardedBlock(0, 1).isGreedyToLeft = true
@@ -199,6 +205,15 @@ open class BpmnPluginToolWindow(
                 get() = textField.text
             override val component: JComponent
                 get() = textField
+        }
+    }
+
+    // Compatibility with newer (2023.+ and older IJ):
+    private fun psiTypeChar(): PsiPrimitiveType {
+        return try {
+            Class.forName("com.intellij.psi.PsiTypes").getMethod("charType").invoke(null) as PsiPrimitiveType
+        } catch (e: ClassNotFoundException){
+            Class.forName("com.intellij.psi.PsiType").getField("CHAR").get(null) as PsiPrimitiveType
         }
     }
 
@@ -228,6 +243,7 @@ open class BpmnPluginToolWindow(
     }
 
     private fun setupUiBeforeRun() {
+        this.canvasPanel.remove(this.canvasNoDiagramText)
         this.canvasPanel.isEnabled = false
         // clear the canvas panel, ready for new graph
         this.canvas.isVisible = false
@@ -235,6 +251,7 @@ open class BpmnPluginToolWindow(
     }
 
     private fun setupUiAfterRun() {
+        this.canvasPanel.add(this.canvas)
         // show the rendered canvas
         this.canvas.isVisible = true
         this.canvasPanel.updateUI()

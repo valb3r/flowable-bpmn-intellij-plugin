@@ -5,10 +5,15 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.valb3r.bpmn.intellij.activiti.plugin.settings.ActivitiBpmnPluginSettingsState
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
+import java.util.concurrent.atomic.AtomicBoolean
 
-class ActivitiPluginPreloaded: StartupActivity {
+class ActivitiPluginPreloaded: StartupActivity.Background {
+
+    private val isLoaded = AtomicBoolean()
 
     override fun runActivity(project: Project) {
-        currentSettingsStateProvider.set { ServiceManager.getService(ActivitiBpmnPluginSettingsState::class.java) }
+        if (isLoaded.compareAndSet(false, true)) {
+            currentSettingsStateProvider.set { ServiceManager.getService(ActivitiBpmnPluginSettingsState::class.java) }
+        }
     }
 }

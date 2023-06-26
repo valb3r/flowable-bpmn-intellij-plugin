@@ -1,9 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
-import com.nhaarman.mockitokotlin2.times
-import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -45,21 +42,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
-            val draggedTo = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
-            val xmlParentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
-            val parentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
-            val attachedRef = firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
-            firstValue.indexOf(xmlParentChanged).shouldBeLessThan(firstValue.indexOf(parentChanged))
-            firstValue.shouldHaveSize(4)
-
-            draggedTo.diagramElementId.shouldBeEqualTo(optionalBoundaryErrorEventDiagramId)
-            xmlParentChanged.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
-            xmlParentChanged.newParentId.shouldBeEqualTo(parentProcessBpmnId)
-            parentChanged.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
-            parentChanged.newParentId.shouldBeEqualTo(serviceTaskStartBpmnId)
-            attachedRef.property.shouldBeEqualTo(PropertyType.ATTACHED_TO_REF)
-            attachedRef.newValue.shouldBeEqualTo(serviceTaskStartBpmnId.id)
+            verifyBoundaryEventAttachedToServiceTask()
         }
     }
 
@@ -95,6 +78,47 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
             attachedRef.property.shouldBeEqualTo(PropertyType.ATTACHED_TO_REF)
             attachedRef.newValue.shouldBeEqualTo(serviceTaskStartBpmnId.id)
         }
+    }
+
+    @Test
+    fun `Boundary event attaches to service task when cursor is not on service task but service task is highlighted`() {
+        prepareServiceTaskWithBoundaryEventOnRootView()
+        val taskCenter = clickOnId(serviceTaskStartDiagramId)
+        val target = Point2D.Float(taskCenter.x - taskSize / 2, taskCenter.y - taskSize / 2)
+
+        val start = clickOnId(optionalBoundaryErrorEventDiagramId)
+        canvas.paintComponent(graphics)
+        canvas.startSelectionOrDrag(start)
+        canvas.paintComponent(graphics)
+        canvas.dragOrSelectWithLeftButton(start, target)
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+        lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
+
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
+            verifyBoundaryEventAttachedToServiceTask()
+        }
+    }
+
+    private fun KArgumentCaptor<List<EventPropagatableToXml>>.verifyBoundaryEventAttachedToServiceTask() {
+        verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+        val draggedTo = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
+        val xmlParentChanged =
+            firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
+        val parentChanged =
+            firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
+        val attachedRef = firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+        firstValue.indexOf(xmlParentChanged).shouldBeLessThan(firstValue.indexOf(parentChanged))
+        firstValue.shouldHaveSize(4)
+
+        draggedTo.diagramElementId.shouldBeEqualTo(optionalBoundaryErrorEventDiagramId)
+        xmlParentChanged.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
+        xmlParentChanged.newParentId.shouldBeEqualTo(parentProcessBpmnId)
+        parentChanged.bpmnElementId.shouldBeEqualTo(optionalBoundaryErrorEventBpmnId)
+        parentChanged.newParentId.shouldBeEqualTo(serviceTaskStartBpmnId)
+        attachedRef.property.shouldBeEqualTo(PropertyType.ATTACHED_TO_REF)
+        attachedRef.newValue.shouldBeEqualTo(serviceTaskStartBpmnId.id)
     }
 
     @Test

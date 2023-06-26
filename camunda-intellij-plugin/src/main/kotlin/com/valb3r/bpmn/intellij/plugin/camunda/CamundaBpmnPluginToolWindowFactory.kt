@@ -6,20 +6,20 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
-import com.intellij.ui.content.ContentFactory
 import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
-import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
-import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
-import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
-import com.valb3r.bpmn.intellij.plugin.core.parser.registerParser
-import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
-import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
-import com.valb3r.bpmn.intellij.plugin.core.xmlnav.registerXmlNavigator
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaObjectFactory
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaParser
 import com.valb3r.bpmn.intellij.plugin.camunda.settings.CamundaBpmnPluginSettingsState
 import com.valb3r.bpmn.intellij.plugin.camunda.ui.components.popupmenu.CamundaCanvasPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.camunda.xmlnav.CamundaXmlNavigator
+import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
+import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
+import com.valb3r.bpmn.intellij.plugin.core.getContentFactory
+import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
+import com.valb3r.bpmn.intellij.plugin.core.parser.registerParser
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
+import com.valb3r.bpmn.intellij.plugin.core.xmlnav.registerXmlNavigator
 
 class CamundaBpmnPluginToolWindowFactory: ToolWindowFactory {
 
@@ -48,7 +48,7 @@ class CamundaBpmnPluginToolWindowFactory: ToolWindowFactory {
         windowService.bpmnToolWindow = bpmnWindow
 
         // register the tool window content
-        val content = ContentFactory.SERVICE.getInstance().createContent(
+        val content = getContentFactory().createContent(
                 bpmnWindow.getContent(),
                 "",
                 false

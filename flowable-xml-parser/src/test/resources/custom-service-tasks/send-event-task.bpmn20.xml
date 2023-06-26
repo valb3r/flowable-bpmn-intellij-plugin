@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.flowable.org/processdef" exporter="Flowable Open Source Modeler" exporterVersion="6.7.2">
+    <process id="Key2" name="View2" isExecutable="true">
+        <serviceTask id="sendEventId" name="sendEventName" flowable:async="true" flowable:type="send-event" flowable:triggerable="true" flowable:exclusive="false">
+            <documentation>Documentation for script send event task</documentation>
+            <extensionElements>
+                <flowable:eventType><![CDATA[EventKey]]></flowable:eventType>
+                <flowable:triggerEventType><![CDATA[Trigger Event Key]]></flowable:triggerEventType>
+                <flowable:eventName><![CDATA[Event name]]></flowable:eventName>
+                <flowable:channelKey><![CDATA[channel key]]></flowable:channelKey>
+                <flowable:channelName><![CDATA[channel name]]></flowable:channelName>
+                <flowable:channelType><![CDATA[jms]]></flowable:channelType>
+                <flowable:channelDestination><![CDATA[channel destination]]></flowable:channelDestination>
+                <flowable:triggerEventName><![CDATA[trigger event name]]></flowable:triggerEventName>
+                <flowable:triggerChannelKey><![CDATA[trigger channel key]]></flowable:triggerChannelKey>
+                <flowable:triggerChannelName><![CDATA[trigger channel name]]></flowable:triggerChannelName>
+                <flowable:triggerChannelType><![CDATA[jms]]></flowable:triggerChannelType>
+                <flowable:triggerChannelDestination><![CDATA[trigger channel destination]]></flowable:triggerChannelDestination>
+                <flowable:keyDetectionType><![CDATA[fixedValue]]></flowable:keyDetectionType>
+                <flowable:keyDetectionValue><![CDATA[event key fixed value]]></flowable:keyDetectionValue>
+            </extensionElements>
+        </serviceTask>
+    </process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_Key2">
+        <bpmndi:BPMNPlane bpmnElement="Key2" id="BPMNPlane_Key2">
+            <bpmndi:BPMNShape bpmnElement="sendEventId" id="BPMNShape_sendEventId">
+                <omgdc:Bounds height="80.0" width="100.0" x="270.0" y="165.0"/>
+            </bpmndi:BPMNShape>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</definitions>

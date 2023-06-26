@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.google.common.annotations.VisibleForTesting
+import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import com.google.common.collect.EvictingQueue
 import com.google.common.math.Quantiles.percentiles
@@ -30,6 +31,7 @@ import java.awt.image.BufferedImage
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.swing.JPanel
+import kotlin.collections.LinkedHashMap
 import kotlin.math.*
 
 private val currentCanvas = Collections.synchronizedMap(WeakHashMap<Project,  Canvas>())
@@ -50,7 +52,7 @@ fun setCanvas(project: Project, canvas: Canvas): Canvas {
     return canvas
 }
 
-class Canvas(private val project: Project, private val settings: CanvasConstants) : JPanel() {
+open class Canvas(private val project: Project, private val settings: CanvasConstants) : JPanel() {
     private val fpsCircularBuffer = EvictingQueue.create<Int>(30)
     private var cachedTreeState: TreeState? = null
 
@@ -125,7 +127,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
             val result = renderer?.render(
                 RenderContext(
                     project,
-                    CanvasPainter(graphics2D, camera.copy(), cachedIcons),
+                    buildPainter(graphics2D, camera.copy(), cachedIcons),
                     selectedElements.toSet(),
                     shallowCopyOfCtx,
                     stateProvider,
@@ -136,6 +138,9 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
             areaByElement = result?.areas
         }
     }
+
+    open protected fun buildPainter(graphics2D: Graphics2D, camera: Camera, cache: Cache<Long, BufferedImage>)
+            = CanvasPainter(graphics2D, camera, cache)
 
     fun renderToBitmap() : BufferedImage? {
         val doRender = { image: BufferedImage, ctx: ElementInteractionContext, camera: Camera ->
@@ -249,11 +254,7 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
     }
 
     fun attractToAnchors(ctx: ElementInteractionContext): ElementInteractionContext {
-        val cameraPoint = camera.toCameraView(ctx.dragCurrent)
-        val dragged = ctx.draggedIds.minBy {
-            val bounds = areaByElement?.get(it)?.area?.bounds2D ?: Rectangle2D.Float()
-            return@minBy Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat()).distance(cameraPoint)
-        }
+        val dragged = draggedElement(ctx)
 
         val draggedArea = areaByElement?.get(dragged) ?: return ctx
         val draggedType =  draggedArea.areaType
@@ -264,7 +265,8 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         }
 
         if (draggedType == AreaType.SELECTS_DRAG_TARGET) {
-            return selectDragTarget(dragged!!, ctx)
+            val target = selectDragTarget(dragged!!, ctx)
+            return ctx.copy(dragTargetedIds = if (null != target) setOf(target) else emptySet())
         }
 
         val anchorsToSearchIn = areaByElement
@@ -322,6 +324,15 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         )
     }
 
+    private fun draggedElement(ctx: ElementInteractionContext): DiagramElementId? {
+        val cameraPoint = camera.toCameraView(ctx.dragCurrent)
+        val dragged = ctx.draggedIds.minBy {
+            val bounds = areaByElement?.get(it)?.area?.bounds2D ?: Rectangle2D.Float()
+            return@minBy Point2D.Float(bounds.centerX.toFloat(), bounds.centerY.toFloat()).distance(cameraPoint)
+        }
+        return dragged
+    }
+
     fun clearSelection() {
         this.selectedElements.clear()
         interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), mutableMapOf(), null, Point2D.Float(), Point2D.Float())
@@ -332,16 +343,14 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         this.selectedElements.addAll(elements)
     }
 
-    private fun selectDragTarget(dragged: DiagramElementId, ctx: ElementInteractionContext): ElementInteractionContext {
+    private fun selectDragTarget(dragged: DiagramElementId, ctx: ElementInteractionContext): DiagramElementId? {
         val areas = areaByElement!!
         val area = areas[dragged]!!.area
         val point = Point2D.Float(area.bounds2D.centerX.toFloat(), area.bounds2D.centerY.toFloat())
-        val target = dragTargettableElements(cursorRect(point))
+        return dragTargettableElements(cursorRect(point))
             .filter { !ctx.draggedIds.contains(it) }
             .filter { areas[it]?.areaType == AreaType.SHAPE || areas[it]?.areaType == AreaType.SHAPE_THAT_NESTS }
             .maxBy { areas[it]?.index ?: ICON_Z_INDEX }
-
-        return ctx.copy(dragTargetedIds = if (null != target) setOf(target) else emptySet())
     }
 
     fun dragWithWheel(previous: Point2D.Float, current: Point2D.Float) {
@@ -385,6 +394,8 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
                         droppedOn
                 ) ?: emptyList()
             })
+            // Drag End may cause property(s) change, therefore forcing visualizer to rebuild on current state
+            updatePropertyVisualizer(selectedElements)
         }
 
         interactionCtx = interactionCtx.copy(draggedIds = emptySet(), dragTargetedIds = mutableSetOf(), dragCurrent = interactionCtx.dragStart, dragSelectionRect = null)
@@ -476,21 +487,39 @@ class Canvas(private val project: Project, private val settings: CanvasConstants
         val childrenOfDragged = lastRenderedState(project)?.allChildrenOf(interactionCtx.draggedIds + selectedElements) ?: emptySet()
 
         val result = linkedMapOf<BpmnElementId, AreaWithZindex>()
+        val elementByDiagramId = stateProvider.currentState().elementByDiagramId
+        val elementByBpmnId = stateProvider.currentState().elementByBpmnId
+
         for (elem in elems) {
             val elemId = elem.second.bpmnElementId
             if (null == elemId || result.containsKey(elemId) || childrenOfDragged.contains(elem.first)) {
                 continue
             }
 
-            val bpmnId = setOf(stateProvider.currentState().elementByDiagramId[elem.first], elem.second.bpmnElementId).filterNotNull().firstOrNull() ?: continue
-            val bpmnElem = stateProvider.currentState().elementByBpmnId[bpmnId]
+            val bpmnId = setOf(elementByDiagramId[elem.first], elem.second.bpmnElementId).filterNotNull().firstOrNull() ?: continue
+            val bpmnElem = elementByBpmnId[bpmnId]
             if (bpmnElem?.element is BpmnSequenceFlow) {
                 continue
             }
             result[bpmnId] = elem.second
         }
 
+        enforceHighlightedElementPreference(elementByDiagramId, result)
         return result
+    }
+
+    private fun enforceHighlightedElementPreference(
+        elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
+        result: LinkedHashMap<BpmnElementId, AreaWithZindex>
+    ) {
+        val dragged = draggedElement(interactionCtx)
+        val preferredTarget = selectDragTarget(dragged!!, interactionCtx)
+
+        preferredTarget?.let {
+            val area = areaByElement?.get(it) ?: return@let
+            val bpmnId = elementByDiagramId[it] ?: return@let
+            result[bpmnId] = area
+        }
     }
 
     private fun parentableElemUnderCursor(cursorPoint: Point2D.Float): BpmnElementId {
