@@ -296,7 +296,7 @@
 
     <!-- Pre/Post load -->
     <extensions defaultExtensionNs="com.intellij">
-        <preloadingActivity implementation="com.valb3r.bpmn.intellij.plugin.camunda.CamundaPluginPreloaded"/>
+        <postStartupActivity implementation="com.valb3r.bpmn.intellij.plugin.camunda.CamundaPluginPreloaded"/>
     </extensions>
 
     <!-- Notification balloons TODO: Not clear if it may cause any issues with 2018-2020.2 as extension is supported with 2020.3+ -->
