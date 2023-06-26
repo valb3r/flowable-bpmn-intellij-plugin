@@ -66,6 +66,7 @@ open class BpmnPluginToolWindow(
     private lateinit var canvasPanel: JPanel
     private lateinit var canvasVScroll: JScrollBar
     private lateinit var canvasHScroll: JScrollBar
+    private lateinit var canvasNoDiagramText: JTextArea
 
     private val canvasBuilder = CanvasBuilder(DefaultBpmnProcessRenderer(project, currentIconProvider()), onBadContentErrorCallback, onBadContentWarningCallback)
     private val canvas: Canvas = currentCanvas(project)
@@ -240,7 +241,7 @@ open class BpmnPluginToolWindow(
     }
 
     private fun setupUiBeforeRun() {
-        this.canvasPanel.removeAll()
+        this.canvasPanel.remove(this.canvasNoDiagramText)
         this.canvasPanel.isEnabled = false
         // clear the canvas panel, ready for new graph
         this.canvas.isVisible = false
