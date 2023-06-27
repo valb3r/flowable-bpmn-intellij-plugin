@@ -6,11 +6,11 @@ import com.valb3r.bpmn.intellij.plugin.core.ui.components.notifications.genericS
 import java.time.LocalDate
 
 fun showTryPolyBpmnAdvertisementNotification(project: Project) {
-    val checkDate = AdvertisementState.getInstance(project).lastShowCommon
+    val checkDate = AdvertisementState.getInstance().lastShowCommon
     val now = LocalDate.now()
     val frequencyCheck = 30L
     if(checkDate == LocalDate.MIN || checkDate.plusDays(frequencyCheck).isBefore(now)) {
-        AdvertisementState.getInstance(project).lastShowCommon = now
+        AdvertisementState.getInstance().lastShowCommon = now
         genericShowNotificationBalloon(project, "Advertisement", "Try <a href='https://plugins.jetbrains.com/plugin/21361-polybpmn-visualizer'>PolyBPMN plugin</a>. <br> PolyBPMN's upgraded split editor to each file, revision file comparison and a wider selection of elements and properties..", NotificationType.INFORMATION, "Do not show again") {
             doNotShowAgain(project, frequencyCheck) // set maximum date
         }
@@ -18,11 +18,11 @@ fun showTryPolyBpmnAdvertisementNotification(project: Project) {
 }
 
 fun showTryPolyBpmnAdvertisementSwimpoolNotification(project: Project) {
-    val checkDate = AdvertisementState.getInstance(project).lastShowSwimpoolAd
+    val checkDate = AdvertisementState.getInstance().lastShowSwimpoolAd
     val now = LocalDate.now()
     val frequencyCheck = 30L
     if(checkDate == LocalDate.MIN || checkDate.plusDays(frequencyCheck).isBefore(now)) {
-        AdvertisementState.getInstance(project).lastShowSwimpoolAd = now
+        AdvertisementState.getInstance().lastShowSwimpoolAd = now
         genericShowNotificationBalloon(project, "Advertisement Swimpool", "Unlock the full potential of diagram reading and editiong with the PolyBPMN plugin. Seamlessly visualize and interpret swimpools and swimlanes with ease. Dwonload from <a href='https://plugins.jetbrains.com/plugin/21361-polybpmn-visualizer'>here</a>.\n" +
                 "Unlock the full potential of diagram reading and editiong with the PolyBPMN plugin. Seamlessly visualize and interpret swimpools and swimlanes with ease. Dwonload from <a href='https://plugins.jetbrains.com/plugin/21361-polybpmn-visualizer'>here</a>.", NotificationType.INFORMATION, "Do not show again") {
             doNotShowAgain(project, frequencyCheck) // set maximum date
@@ -31,5 +31,5 @@ fun showTryPolyBpmnAdvertisementSwimpoolNotification(project: Project) {
 }
 
 private fun doNotShowAgain(project: Project, frequencyCheck: Long) {
-    AdvertisementState.getInstance(project).lastShowCommon = LocalDate.MAX.minusDays(frequencyCheck).minusDays(1)
+    AdvertisementState.getInstance().lastShowCommon = LocalDate.MAX.minusDays(frequencyCheck).minusDays(1)
 }

@@ -1,6 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.core.advertisement
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
@@ -31,6 +33,6 @@ class AdvertisementState: PersistentStateComponent<AdvertisementState.State> {
     }
 
     companion object {
-        fun getInstance(project: Project) = project.getService(AdvertisementState::class.java)
+        fun getInstance() = ApplicationManager.getApplication().getService(AdvertisementState::class.java)
     }
 }
