@@ -48,11 +48,6 @@ class BpmnFile(
         @JacksonXmlElementWrapper(useWrapping = false)
         var processes: List<ProcessNode>,
 
-        @JacksonXmlProperty(localName = "collaboration")
-        @JsonMerge
-        @JacksonXmlElementWrapper(useWrapping = false)
-        var collaborations: List<Collaboration>? = null,
-
         @JacksonXmlProperty(localName = "BPMNDiagram")
         @JsonMerge
         @JacksonXmlElementWrapper(useWrapping = false)

@@ -62,7 +62,7 @@ class CanvasBuilder(
         initializeUpdateEventsRegistry(project, committerFactory.invoke(parser))
         val data = readFile(bpmnFile)
         val process = parser.parse(data)
-        if(process.isContainSwimpool()) showTryPolyBpmnAdvertisementSwimpoolNotification(project)
+        if(data.contains("collaboration")) showTryPolyBpmnAdvertisementSwimpoolNotification(project)
         newPropertiesVisualizer(project, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, multiLineExpandableTextFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory)
         canvas.reset(data, process.toView(newElementsFactory(project)), bpmnProcessRenderer)
 

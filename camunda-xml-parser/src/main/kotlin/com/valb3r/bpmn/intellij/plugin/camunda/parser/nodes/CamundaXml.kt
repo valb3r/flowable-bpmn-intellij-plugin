@@ -18,10 +18,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEve
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
-import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.collaboration.Collaboration
-import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.*
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.diagram.DiagramElementIdMapper
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.diagram.Plane
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.*
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Mappings
@@ -49,11 +48,6 @@ class BpmnFile(
         @JsonMerge
         @JacksonXmlElementWrapper(useWrapping = false)
         var processes: List<ProcessNode>,
-
-    @JacksonXmlProperty(localName = "collaboration")
-    @JsonMerge
-    @JacksonXmlElementWrapper(useWrapping = false)
-    var collaborations: List<Collaboration>? = null,
 
     @JacksonXmlProperty(localName = "BPMNDiagram")
         @JsonMerge

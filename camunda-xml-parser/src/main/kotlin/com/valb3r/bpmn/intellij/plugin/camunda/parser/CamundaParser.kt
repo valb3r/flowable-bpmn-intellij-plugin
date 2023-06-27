@@ -144,8 +144,7 @@ class CamundaParser : BaseBpmnParser() {
         markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
         val process = dto.processes[0].toElement()
         val diagrams = dto.diagrams!!.map { it.toElement() }
-        val collaboration = dto.collaborations?.get(0)?.toElement()
-        return BpmnProcessObject(process, collaboration, diagrams)
+        return BpmnProcessObject(process, diagrams)
     }
 
     override fun modelNs(): NS {
