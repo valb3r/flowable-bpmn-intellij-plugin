@@ -7,7 +7,7 @@ plugins {
 group = 'com.valb3r.bpmn.intellij.plugin.camunda.parser'
 
 
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 
 repositories {
     mavenCentral()
@@ -36,13 +36,13 @@ dependencies {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
         apiVersion = kotlinApiVersion
     }
 }
 compileTestKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
         apiVersion = kotlinApiVersion
     }
 }

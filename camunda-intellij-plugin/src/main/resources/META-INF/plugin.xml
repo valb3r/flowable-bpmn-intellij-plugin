@@ -39,7 +39,7 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
-      <p>0.5.2:</p>
+       <p>0.5.2:</p>
         <ul>
           <li>
             Sometimes dragged element selected wrong drag target
@@ -306,6 +306,7 @@
     <!-- Notification balloons TODO: Not clear if it may cause any issues with 2018-2020.2 as extension is supported with 2020.3+ -->
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="Camunda BPMN Editor Notification group" displayType="BALLOON" key="com.valb3r.bpmn.intellij.camunda.plugin"/>
+        <applicationService serviceImplementation="com.valb3r.bpmn.intellij.plugin.core.advertisement.AdvertisementState" />
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
