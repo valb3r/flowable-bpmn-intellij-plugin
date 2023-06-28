@@ -27,6 +27,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.core.advertisement.showTryPolyBpmnAdvertisementNotification
 import com.valb3r.bpmn.intellij.plugin.core.events.FileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.events.IntelliJFileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.events.NoOpFileCommitter
@@ -82,7 +83,7 @@ open class BpmnPluginToolWindow(
         this.canvas.addMouseWheelListener(mouseEventHandler)
         this.canvas.isFocusable = true
         this.canvas.addKeyListener(KeyboardEventHandler(project, canvas))
-
+        this.canvasPanel.add(this.canvas)
         canvasAndProperties.dividerLocation = (canvasAndProperties.height * 0.8f).toInt()
 
         hackFixForMacOsScrollbars()
@@ -141,6 +142,7 @@ open class BpmnPluginToolWindow(
         )
 
         invokeAndWaitIfNeeded { setupUiAfterRun() }
+        showTryPolyBpmnAdvertisementNotification(project)
     }
 
     private fun createMultiLineTextField(value: String): TextValueAccessor {
