@@ -48,10 +48,10 @@ test {
 
 
 
-//jacocoTestReport {
-//    // Adjust the output of the test report
-//    reports {
-//        xml.enabled true
-//        csv.enabled false
-//    }
-//}
+jacocoTestReport {
+    // Adjust the output of the test report
+    reports {
+        xml.enabled true
+        csv.enabled false
+    }
+}
