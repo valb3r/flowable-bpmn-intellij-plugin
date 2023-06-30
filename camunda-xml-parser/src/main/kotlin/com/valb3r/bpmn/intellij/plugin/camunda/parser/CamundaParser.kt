@@ -200,8 +200,8 @@ class CamundaParser : BaseBpmnParser() {
 
     // Mark 'collapsed' subprocesses where diagram is different from 1st one
     private fun markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(
-            process: ProcessNode,
-            diagrams: List<DiagramNode>
+        process: ProcessNode,
+        diagrams: List<DiagramNode>
     ) {
         if (diagrams.size <= 1) {
             return
