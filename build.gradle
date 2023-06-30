@@ -6,7 +6,7 @@ plugins {
 }
 
 ext {
-    intellijPlatform = 'IU-2023.1'
+    intellijPlatform = 'IU-2022.1'
     intellijPlatformPlugins = ['java', 'DatabaseTools'] // DatabaseTools is for BPMN process 'debugging'
 
     kotlinStdlib = '1.5.30'
