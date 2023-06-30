@@ -144,6 +144,7 @@ class CamundaParser : BaseBpmnParser() {
         markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
         val process = dto.processes[0].toElement()
         val diagrams = dto.diagrams!!.map { it.toElement() }
+
         return BpmnProcessObject(process, diagrams)
     }
 
@@ -199,8 +200,8 @@ class CamundaParser : BaseBpmnParser() {
 
     // Mark 'collapsed' subprocesses where diagram is different from 1st one
     private fun markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(
-        process: ProcessNode,
-        diagrams: List<DiagramNode>
+            process: ProcessNode,
+            diagrams: List<DiagramNode>
     ) {
         if (diagrams.size <= 1) {
             return
