@@ -18,9 +18,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEve
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
-import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.*
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.diagram.DiagramElementIdMapper
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.diagram.Plane
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.*
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Mappings
@@ -39,17 +39,17 @@ const val EXTENSION_BOOLEAN_EXTRACTOR = ".map(it -> Boolean.valueOf(it.getString
 // https://github.com/FasterXML/jackson-dataformat-xml/issues/363
 // unfortunately this has failed with Kotlin 'data' classes
 class BpmnFile(
-        @JacksonXmlProperty(localName = "message")
+    @JacksonXmlProperty(localName = "message")
         @JsonMerge
         @JacksonXmlElementWrapper(useWrapping = false)
         var messages: List<MessageNode>? = null,
 
-        @JacksonXmlProperty(localName = "process")
+    @JacksonXmlProperty(localName = "process")
         @JsonMerge
         @JacksonXmlElementWrapper(useWrapping = false)
         var processes: List<ProcessNode>,
 
-        @JacksonXmlProperty(localName = "BPMNDiagram")
+    @JacksonXmlProperty(localName = "BPMNDiagram")
         @JsonMerge
         @JacksonXmlElementWrapper(useWrapping = false)
         var diagrams: List<DiagramNode>? = null
@@ -58,7 +58,7 @@ class BpmnFile(
 data class MessageNode(val id: String, var name: String?)
 
 open class ProcessBody {
-
+    
     // Events
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
     var startEvent: List<StartEventNode>? = null
@@ -348,9 +348,9 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     interface CamelMapper: ServiceTaskMapper<BpmnCamelTask> {
 
         @Mappings(
-                Mapping(source = "forCompensation", target = "isForCompensation"),
-                Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"camelContext\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
-                        target = "camelContext")
+            Mapping(source = "forCompensation", target = "isForCompensation"),
+            Mapping(expression = "$EXTENSION_ELEM_STREAM.filter(it -> \"camelContext\".equals(it.getName()))$EXTENSION_STRING_EXTRACTOR",
+                    target = "camelContext")
         )
         override fun convertToDto(input: BpmnServiceTask): BpmnCamelTask
     }
@@ -359,9 +359,9 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
     interface ExternalTaskMapper: ServiceTaskMapper<BpmnExternalTask> {
 
         @Mappings(
-                Mapping(source = "forCompensation", target = "isForCompensation"),
-                Mapping(expression = "$UNMAPPED_ELEM_STREAM.filter(it -> \"jobTopic\".equals(it.getName()))$UNMAPPED_STRING_EXTRACTOR", target = "jobTopic"),
-                Mapping(expression = "$UNMAPPED_ELEM_STREAM.filter(it -> \"taskPriority\".equals(it.getName()))$UNMAPPED_STRING_EXTRACTOR", target = "taskPriority"),
+            Mapping(source = "forCompensation", target = "isForCompensation"),
+            Mapping(expression = "$UNMAPPED_ELEM_STREAM.filter(it -> \"jobTopic\".equals(it.getName()))$UNMAPPED_STRING_EXTRACTOR", target = "jobTopic"),
+            Mapping(expression = "$UNMAPPED_ELEM_STREAM.filter(it -> \"taskPriority\".equals(it.getName()))$UNMAPPED_STRING_EXTRACTOR", target = "taskPriority"),
         )
         override fun convertToDto(input: BpmnServiceTask): BpmnExternalTask
     }
