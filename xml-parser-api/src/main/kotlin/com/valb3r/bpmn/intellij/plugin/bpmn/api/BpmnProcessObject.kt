@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
@@ -21,12 +22,17 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         fillFor(BpmnElementId(""), factory, process, elementByStaticId, propertiesById)
         elementByDiagramId[DiagramElementId(process.id.id)] = process.id
 
+        val fillForElementProps = {id: BpmnElementId, elem: WithBpmnId -> fillFor(id, factory, elem, elementByStaticId, propertiesById)}
+        val fillForExternalElementProps = { _: BpmnElementId, elem: WithBpmnId -> fillForExternal(elem, elementByStaticId, propertiesById)}
         // 1st pass
-        process.body?.let { extractElementsFromBody(process.id, it, factory, elementByStaticId, propertiesById) }
-        process.children?.forEach { (id, body) -> extractElementsFromBody(id, body, factory, elementByStaticId, propertiesById)}
+        process.body?.let { extractElementsFromBody(process.id, it, fillForElementProps) }
+        process.children?.forEach { (id, body) -> extractElementsFromBody(id, body, fillForElementProps)}
         // 2nd pass
         process.body?.let { reassignParentsBasedOnTargetRef(process.id, it, factory, elementByStaticId, propertiesById) }
         process.children?.forEach { (id, body) -> reassignParentsBasedOnTargetRef(id, body, factory, elementByStaticId, propertiesById)}
+        // 3rd pass - Deal with external properties:
+        process.body?.let { extractElementsFromBody(process.id, it, fillForExternalElementProps) }
+        process.children?.forEach { (id, body) -> extractElementsFromBody(id, body, fillForExternalElementProps)}
 
         diagram.flatMap { it.bpmnPlane.bpmnEdge ?: emptyList()}
                 .filter { null != it.bpmnElement }
@@ -45,83 +51,82 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
     }
 
     private fun extractElementsFromBody(
-            parentId: BpmnElementId,
-            body: BpmnProcessBody,
-            factory: BpmnObjectFactory, 
-            elementByStaticId: MutableMap<BpmnElementId, WithParentId>, 
-            propertiesById: MutableMap<BpmnElementId, PropertyTable>) {
+        parentId: BpmnElementId,
+        body: BpmnProcessBody,
+        fillFor: (BpmnElementId, WithBpmnId) -> Unit
+    ) {
         // Events
         // Start
-        body.startEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.conditionalStartEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.errorStartEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.escalationStartEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.messageStartEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.signalStartEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.timerStartEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.startEvent?.forEach { fillFor(parentId, it) }
+        body.conditionalStartEvent?.forEach { fillFor(parentId, it) }
+        body.errorStartEvent?.forEach { fillFor(parentId, it) }
+        body.escalationStartEvent?.forEach { fillFor(parentId, it) }
+        body.messageStartEvent?.forEach { fillFor(parentId, it) }
+        body.signalStartEvent?.forEach { fillFor(parentId, it) }
+        body.timerStartEvent?.forEach { fillFor(parentId, it) }
         // End
-        body.endEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.errorEndEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.escalationEndEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.cancelEndEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.terminateEndEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.endEvent?.forEach { fillFor(parentId, it) }
+        body.errorEndEvent?.forEach { fillFor(parentId, it) }
+        body.escalationEndEvent?.forEach { fillFor(parentId, it) }
+        body.cancelEndEvent?.forEach { fillFor(parentId, it) }
+        body.terminateEndEvent?.forEach { fillFor(parentId, it) }
         // Boundary
-        body.boundaryEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryCancelEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryCompensationEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryConditionalEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryErrorEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryEscalationEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryMessageEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundarySignalEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryTimerEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.boundaryEvent?.forEach { fillFor(parentId, it) }
+        body.boundaryCancelEvent?.forEach { fillFor(parentId, it) }
+        body.boundaryCompensationEvent?.forEach { fillFor(parentId, it) }
+        body.boundaryConditionalEvent?.forEach { fillFor(parentId, it) }
+        body.boundaryErrorEvent?.forEach { fillFor(parentId, it) }
+        body.boundaryEscalationEvent?.forEach { fillFor(parentId, it) }
+        body.boundaryMessageEvent?.forEach { fillFor(parentId, it) }
+        body.boundarySignalEvent?.forEach { fillFor(parentId, it) }
+        body.boundaryTimerEvent?.forEach { fillFor(parentId, it) }
         // Catching
-        body.intermediateTimerCatchingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.intermediateMessageCatchingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.intermediateSignalCatchingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.intermediateConditionalCatchingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.intermediateLinkCatchingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.intermediateTimerCatchingEvent?.forEach { fillFor(parentId, it) }
+        body.intermediateMessageCatchingEvent?.forEach { fillFor(parentId, it) }
+        body.intermediateSignalCatchingEvent?.forEach { fillFor(parentId, it) }
+        body.intermediateConditionalCatchingEvent?.forEach { fillFor(parentId, it) }
+        body.intermediateLinkCatchingEvent?.forEach { fillFor(parentId, it) }
         // Throwing
-        body.intermediateNoneThrowingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.intermediateSignalThrowingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.intermediateEscalationThrowingEvent?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.intermediateNoneThrowingEvent?.forEach { fillFor(parentId, it) }
+        body.intermediateSignalThrowingEvent?.forEach { fillFor(parentId, it) }
+        body.intermediateEscalationThrowingEvent?.forEach { fillFor(parentId, it) }
 
         // Service-task alike
-        body.task?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.userTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.scriptTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.serviceTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.businessRuleTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.manualTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.sendTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.receiveTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.camelTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.sendEventTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.httpTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.externalTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.mailTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.muleTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.decisionTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.shellTask?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.task?.forEach { fillFor(parentId, it) }
+        body.userTask?.forEach { fillFor(parentId, it) }
+        body.scriptTask?.forEach { fillFor(parentId, it) }
+        body.serviceTask?.forEach { fillFor(parentId, it) }
+        body.businessRuleTask?.forEach { fillFor(parentId, it) }
+        body.manualTask?.forEach { fillFor(parentId, it) }
+        body.sendTask?.forEach { fillFor(parentId, it) }
+        body.receiveTask?.forEach { fillFor(parentId, it) }
+        body.camelTask?.forEach { fillFor(parentId, it) }
+        body.sendEventTask?.forEach { fillFor(parentId, it) }
+        body.httpTask?.forEach { fillFor(parentId, it) }
+        body.externalTask?.forEach { fillFor(parentId, it) }
+        body.mailTask?.forEach { fillFor(parentId, it) }
+        body.muleTask?.forEach { fillFor(parentId, it) }
+        body.decisionTask?.forEach { fillFor(parentId, it) }
+        body.shellTask?.forEach { fillFor(parentId, it) }
 
         // Sub-process alike
-        body.callActivity?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.subProcess?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.eventSubProcess?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.transaction?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.adHocSubProcess?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.collapsedTransaction?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.collapsedSubProcess?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.callActivity?.forEach { fillFor(parentId, it) }
+        body.subProcess?.forEach { fillFor(parentId, it) }
+        body.eventSubProcess?.forEach { fillFor(parentId, it) }
+        body.transaction?.forEach { fillFor(parentId, it) }
+        body.adHocSubProcess?.forEach { fillFor(parentId, it) }
+        body.collapsedTransaction?.forEach { fillFor(parentId, it) }
+        body.collapsedSubProcess?.forEach { fillFor(parentId, it) }
 
         // Gateways
-        body.exclusiveGateway?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.parallelGateway?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.inclusiveGateway?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.eventBasedGateway?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.complexGateway?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.exclusiveGateway?.forEach { fillFor(parentId, it) }
+        body.parallelGateway?.forEach { fillFor(parentId, it) }
+        body.inclusiveGateway?.forEach { fillFor(parentId, it) }
+        body.eventBasedGateway?.forEach { fillFor(parentId, it) }
+        body.complexGateway?.forEach { fillFor(parentId, it) }
 
         // Linking elements
-        body.sequenceFlow?.forEach { fillFor(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.sequenceFlow?.forEach { fillFor(parentId, it) }
     }
 
     private fun reassignParentsBasedOnTargetRef(
@@ -143,13 +148,24 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
     }
 
     private fun fillFor(
-            parentId: BpmnElementId,
-            factory: BpmnObjectFactory,
-            activity: WithBpmnId,
-            elementById: MutableMap<BpmnElementId, WithParentId>,
-            propertiesByElemType: MutableMap<BpmnElementId, PropertyTable>) {
-        elementById[activity.id] = WithParentId(parentId, activity)
-        propertiesByElemType[activity.id] = factory.propertiesOf(activity)
+        parentId: BpmnElementId,
+        factory: BpmnObjectFactory,
+        element: WithBpmnId,
+        elementById: MutableMap<BpmnElementId, WithParentId>,
+        propertiesByElemId: MutableMap<BpmnElementId, PropertyTable>) {
+
+        elementById[element.id] = WithParentId(parentId, element)
+        propertiesByElemId[element.id] = factory.propertiesOf(element)
+    }
+
+    private fun fillForExternal(
+        element: WithBpmnId,
+        elementById: MutableMap<BpmnElementId, WithParentId>,
+        propertiesByElemId: MutableMap<BpmnElementId, PropertyTable>) {
+        val externalProperties = PropertyType.values().filter {
+            it.isUsedOnlyBy.contains(element::class) && (it.externalProperty?.isPresent(elementById, propertiesByElemId[element.id]!!) ?: false)
+        }
+        println()
     }
 
     private fun fillForTargetRefParent(
