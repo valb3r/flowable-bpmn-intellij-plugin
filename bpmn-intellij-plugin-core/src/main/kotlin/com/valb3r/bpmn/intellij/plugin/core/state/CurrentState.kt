@@ -192,6 +192,12 @@ class CurrentStateProvider(private val project: Project) {
             return updateId(processId, event.bpmnElementId, event.newIdValue!!, updatedShapes, updatedEdges, updatedElementByDiagramId, updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
         }
 
+        if (null != event.property.externalProperty) {
+            updateExternalProperty(event, updatedElemPropertiesByStaticElementId)
+            updateProperty(event, updatedElemPropertiesByStaticElementId)
+            return processId
+        }
+
         updateProperty(event, updatedElemPropertiesByStaticElementId)
         return processId
     }
@@ -213,6 +219,16 @@ class CurrentStateProvider(private val project: Project) {
             else -> throw IllegalStateException("Unexpected element: ${elem.javaClass.canonicalName}")
 
         }
+    }
+
+    private fun updateExternalProperty(event: PropertyUpdateWithId, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
+        val externalProperty = event.property.externalProperty!!
+        val referencingElementTable = updatedElemPropertiesByStaticElementId[event.bpmnElementId]!!
+        val externalRef = externalProperty.externalValueReference(referencingElementTable)!!
+        val newExternalValue = externalProperty.castToExternalValue(referencingElementTable, event.newValue)
+
+        val updated = updatedElemPropertiesByStaticElementId[externalRef.first] ?: PropertyTable(mutableMapOf())
+        updated[externalRef.second] = Property(newExternalValue)
     }
 
     private fun updateProperty(event: PropertyUpdateWithId, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {

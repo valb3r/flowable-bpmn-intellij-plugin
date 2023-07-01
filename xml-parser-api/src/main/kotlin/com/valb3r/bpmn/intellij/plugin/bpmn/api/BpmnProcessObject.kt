@@ -165,7 +165,14 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         val externalProperties = PropertyType.values().filter {
             it.isUsedOnlyBy.contains(element::class) && (it.externalProperty?.isPresent(elementById, propertiesByElemId, propertiesByElemId[element.id]!!) ?: false)
         }
-        println()
+
+        val elemProps = propertiesByElemId[element.id]!!
+        for (prop in externalProperties) {
+            val externalProp = prop.externalProperty!!
+            val ref = externalProp.externalValueReference(elemProps) ?: continue
+            val externalValue = propertiesByElemId[ref.first]?.get(ref.second)
+            propertiesByElemId[element.id]?.add(prop, Property(externalProp.castFromExternalValue(elemProps, externalValue?.value)))
+        }
     }
 
     private fun fillForTargetRefParent(

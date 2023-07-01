@@ -238,9 +238,9 @@ enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewEl
 
 interface ExternalProperty {
     fun isPresent(allElems: Map<BpmnElementId, WithParentId>, allElemProps: Map<BpmnElementId, PropertyTable>, elemProps: PropertyTable): Boolean
-    fun externalValueReference(): Pair<BpmnElementId, PropertyType>
-    fun castFromExternalValue(value: Any): Any
-    fun castToExternalValue(value: Any): Any
+    fun externalValueReference(elemProps: PropertyTable): Pair<BpmnElementId, PropertyType>?
+    fun castFromExternalValue(elemProps: PropertyTable, value: Any?): Any?
+    fun castToExternalValue(elemProps: PropertyTable, value: Any?): Any?
 }
 
 class DefaultFlowExternalProp: ExternalProperty {
@@ -249,15 +249,20 @@ class DefaultFlowExternalProp: ExternalProperty {
         return allElems[BpmnElementId(elemProps[PropertyType.SOURCE_REF]?.value as String? ?: "")]?.element is BpmnExclusiveGateway
     }
 
-    override fun externalValueReference(): Pair<BpmnElementId, PropertyType> {
-        TODO("Not yet implemented")
+    override fun externalValueReference(elemProps: PropertyTable): Pair<BpmnElementId, PropertyType>? {
+        val gatewayId = elemProps[PropertyType.SOURCE_REF]?.value ?: return null
+        return BpmnElementId(gatewayId as String) to PropertyType.DEFAULT_FLOW
     }
 
-    override fun castFromExternalValue(value: Any): Any {
-        TODO("Not yet implemented")
+    override fun castFromExternalValue(elemProps: PropertyTable, value: Any?): Any {
+        return elemProps[PropertyType.ID]?.value == value
     }
 
-    override fun castToExternalValue(value: Any): Any {
-        TODO("Not yet implemented")
+    override fun castToExternalValue(elemProps: PropertyTable, value: Any?): Any? {
+        if (value == true) {
+            return elemProps[PropertyType.ID]?.value!!
+        }
+
+        return null
     }
 }
