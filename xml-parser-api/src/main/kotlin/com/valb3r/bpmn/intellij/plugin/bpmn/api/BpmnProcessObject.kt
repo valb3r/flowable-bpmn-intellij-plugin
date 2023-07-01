@@ -163,7 +163,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         elementById: MutableMap<BpmnElementId, WithParentId>,
         propertiesByElemId: MutableMap<BpmnElementId, PropertyTable>) {
         val externalProperties = PropertyType.values().filter {
-            it.isUsedOnlyBy.contains(element::class) && (it.externalProperty?.isPresent(elementById, propertiesByElemId[element.id]!!) ?: false)
+            it.isUsedOnlyBy.contains(element::class) && (it.externalProperty?.isPresent(elementById, propertiesByElemId, propertiesByElemId[element.id]!!) ?: false)
         }
         println()
     }

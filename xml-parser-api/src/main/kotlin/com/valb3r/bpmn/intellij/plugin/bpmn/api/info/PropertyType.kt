@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendEventTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import kotlin.reflect.KClass
@@ -236,7 +237,7 @@ enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewEl
 }
 
 interface ExternalProperty {
-    fun isPresent(allElems: Map<BpmnElementId, WithParentId>, elemProps: PropertyTable): Boolean
+    fun isPresent(allElems: Map<BpmnElementId, WithParentId>, allElemProps: Map<BpmnElementId, PropertyTable>, elemProps: PropertyTable): Boolean
     fun externalValueReference(): Pair<BpmnElementId, PropertyType>
     fun castFromExternalValue(value: Any): Any
     fun castToExternalValue(value: Any): Any
@@ -244,8 +245,8 @@ interface ExternalProperty {
 
 class DefaultFlowExternalProp: ExternalProperty {
 
-    override fun isPresent(allElems: Map<BpmnElementId, WithParentId>, elemProps: PropertyTable): Boolean {
-        TODO("Not yet implemented")
+    override fun isPresent(allElems: Map<BpmnElementId, WithParentId>, allElemProps: Map<BpmnElementId, PropertyTable>, elemProps: PropertyTable): Boolean {
+        return allElems[BpmnElementId(elemProps[PropertyType.SOURCE_REF]?.value as String? ?: "")]?.element is BpmnExclusiveGateway
     }
 
     override fun externalValueReference(): Pair<BpmnElementId, PropertyType> {
