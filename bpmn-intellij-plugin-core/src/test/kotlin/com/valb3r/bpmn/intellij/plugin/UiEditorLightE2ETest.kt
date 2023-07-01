@@ -28,6 +28,7 @@ import java.awt.geom.Point2D
 import java.awt.image.BufferedImage
 import java.util.*
 import javax.swing.JButton
+import javax.swing.JCheckBox
 import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableRowSorter
@@ -1669,6 +1670,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
             when (it) {
                 is BasicArrowButton -> "BasicArrowButton"
                 is JButton -> it.text
+                is JCheckBox -> null
                 else -> {
                     it
                 }

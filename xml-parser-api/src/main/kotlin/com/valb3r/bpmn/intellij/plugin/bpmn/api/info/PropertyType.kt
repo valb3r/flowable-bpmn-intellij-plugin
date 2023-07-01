@@ -1,6 +1,11 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.info
 
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendEventTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import kotlin.reflect.KClass
@@ -26,7 +31,8 @@ enum class PropertyType(
     val multiline: Boolean = false,
     val positionInGroup: Int = 65534, // Explicit order indicator - where to place control in UI
     val setForSelect: Set<String>? = null,
-    val isUsedOnlyBy: Set<KClass<out WithBpmnId>> = setOf() // In case of empty list us used by any class
+    val isUsedOnlyBy: Set<KClass<out WithBpmnId>> = setOf(), // In case of empty list us used by any class
+    val externalProperty: ExternalProperty? = null
 ) {
     ID("id", "ID", STRING, "id.id", true, null, 1000, explicitIndexCascades = listOf("BPMN_INCOMING", "BPMN_OUTGOING")), // ID should fire last
     NAME("name", "Name", STRING),
@@ -72,6 +78,7 @@ enum class PropertyType(
     CONDITION_EXPR_TYPE("conditionExpression.type", "Condition expression type", STRING, "conditionExpression.type"),
     COMPLETION_CONDITION("completionCondition.condition", "Completion condition", T_EXPRESSION, "completionCondition.condition"),
     DEFAULT_FLOW("defaultElement", "Default flow element", ATTACHED_SEQUENCE_SELECT, "defaultElement", false, ID),
+    DEFAULT_FLOW_ON_SEQUENCE("defaultElement_onSequence", "Default flow element", BOOLEAN, externalProperty = DefaultFlowExternalProp(), isUsedOnlyBy = setOf(BpmnSequenceFlow::class)),
     IS_TRANSACTIONAL_SUBPROCESS("transactionalSubprocess", "Is transactional subprocess", BOOLEAN, "transactionalSubprocess", elementUpdateChangesClass = true),
     IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE("useLocalScopeForResultVariable", "Use local scope for result varaible", BOOLEAN),
     CAMEL_CONTEXT("camelContext", "Camel context", STRING),
@@ -227,4 +234,35 @@ enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewEl
             NewElem("EXECUTION_LISTENER_FIELD_STRING", ""),
         )
     )
+}
+
+interface ExternalProperty {
+    fun isPresent(allElems: Map<BpmnElementId, WithParentId>, allElemProps: Map<BpmnElementId, PropertyTable>, elemProps: PropertyTable): Boolean
+    fun externalValueReference(elemProps: PropertyTable): Pair<BpmnElementId, PropertyType>?
+    fun castFromExternalValue(elemProps: PropertyTable, value: Any?): Any?
+    fun castToExternalValue(elemProps: PropertyTable, value: Any?): Any?
+}
+
+class DefaultFlowExternalProp: ExternalProperty {
+
+    override fun isPresent(allElems: Map<BpmnElementId, WithParentId>, allElemProps: Map<BpmnElementId, PropertyTable>, elemProps: PropertyTable): Boolean {
+        return allElems[BpmnElementId(elemProps[PropertyType.SOURCE_REF]?.value as String? ?: "")]?.element is BpmnExclusiveGateway
+    }
+
+    override fun externalValueReference(elemProps: PropertyTable): Pair<BpmnElementId, PropertyType>? {
+        val gatewayId = elemProps[PropertyType.SOURCE_REF]?.value ?: return null
+        return BpmnElementId(gatewayId as String) to PropertyType.DEFAULT_FLOW
+    }
+
+    override fun castFromExternalValue(elemProps: PropertyTable, value: Any?): Any {
+        return elemProps[PropertyType.ID]?.value == value
+    }
+
+    override fun castToExternalValue(elemProps: PropertyTable, value: Any?): Any? {
+        if (value == true) {
+            return elemProps[PropertyType.ID]?.value!!
+        }
+
+        return null
+    }
 }

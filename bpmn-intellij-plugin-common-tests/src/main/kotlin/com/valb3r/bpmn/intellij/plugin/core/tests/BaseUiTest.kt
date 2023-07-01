@@ -16,6 +16,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryErrorEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendEventTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
@@ -54,6 +55,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.swing.Icon
 import javax.swing.JButton
+import javax.swing.JCheckBox
 import javax.swing.JTable
 import javax.swing.SwingConstants
 import javax.swing.plaf.basic.BasicArrowButton
@@ -111,6 +113,7 @@ abstract class BaseUiTest {
     protected val sendEventTaskBpmnId = BpmnElementId("sendEventTask")
     protected val sendEventTaskBpmnIdFilled = BpmnElementId("sendEventTaskFilled")
     protected val sequenceFlowBpmnId = BpmnElementId("sequenceFlow")
+    protected val exclusiveGatewayBpmnId = BpmnElementId("exclusiveGateway")
 
     protected val optionalBoundaryErrorEventDiagramId = DiagramElementId("DIAGRAM-boundaryErrorEvent")
     protected val subprocessInSubProcessDiagramId = DiagramElementId("DIAGRAM-nestedSubProcess")
@@ -119,8 +122,9 @@ abstract class BaseUiTest {
     protected val serviceTaskEndDiagramId = DiagramElementId("DIAGRAM-endServiceTask")
     protected val userTaskDiagramId = DiagramElementId("DIAGRAM-userTask")
     protected val sendEventTaskDiagramId = DiagramElementId("DIAGRAM-sendEventTask")
-
     protected val sequenceFlowDiagramId = DiagramElementId("DIAGRAM-sequenceFlow")
+    protected val exclusiveGatewayDiagramId = DiagramElementId("DIAGRAM-exclusiveGateway")
+
     protected var bpmnSendEventTask = BpmnSendEventTask(sendEventTaskBpmnId, eventExtensionElements = listOf())
     protected val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId, "Start service task", "Start service task docs")
     protected val bpmnUserTask = BpmnUserTask(userTaskBpmnId, "Name user task", formPropertiesExtension = listOf(ExtensionFormProperty("Property ID", "Name property", null
@@ -131,6 +135,8 @@ abstract class BaseUiTest {
     protected val bpmnNestedSubProcess = BpmnSubProcess(subprocessInSubProcessBpmnId, triggeredByEvent = false, transactionalSubprocess = false)
     protected val bpmnServiceTaskEnd = BpmnServiceTask(serviceTaskEndBpmnId)
     protected val bpmnSequenceFlow = BpmnSequenceFlow(sequenceFlowBpmnId)
+    protected val bpmnExclusiveGateway = BpmnExclusiveGateway(exclusiveGatewayBpmnId)
+
     protected val diagramServiceTaskStart = ShapeElement(serviceTaskStartDiagramId, bpmnServiceTaskStart.id, BoundsElement(startElemX, startElemY, taskSize, taskSize))
     protected val diagramServiceTaskEnd = ShapeElement(serviceTaskEndDiagramId, bpmnServiceTaskEnd.id, BoundsElement(endElemX, endElemY, taskSize, taskSize))
     protected val diagramUserTask = ShapeElement(userTaskDiagramId, bpmnUserTask.id, BoundsElement(userTaskElemX, userTaskElemY, taskSize, taskSize))
@@ -138,6 +144,8 @@ abstract class BaseUiTest {
     protected val diagramSubProcess = ShapeElement(subprocessDiagramId, subprocessBpmnId, BoundsElement(subProcessElemX, subProcessElemY, subProcessSize, subProcessSize))
     protected val diagramNestedSubProcess = ShapeElement(subprocessInSubProcessDiagramId, subprocessInSubProcessBpmnId, BoundsElement(subProcessElemX, subProcessElemY, nestedSubProcessSize, nestedSubProcessSize))
     protected val diagramSequenceFlow = EdgeElement(sequenceFlowDiagramId, sequenceFlowBpmnId, listOf(WaypointElement(endElemX, endElemY), WaypointElement(endElemX - 20.0f, endElemY - 20.0f), WaypointElement(endElemX - 30.0f, endElemY - 30.0f)))
+    protected val diagramExclusiveGateway = ShapeElement(exclusiveGatewayDiagramId, bpmnExclusiveGateway.id, BoundsElement(startElemX, startElemY, taskSize, taskSize))
+
 
     protected val icons = mock<IconProvider>()
     protected val renderer = spy(DefaultBpmnProcessRenderer(project, icons))
@@ -196,6 +204,7 @@ abstract class BaseUiTest {
     protected val checkboxFieldFactory = { id: BpmnElementId, type: PropertyType, value: Boolean -> boolFieldsConstructed.computeIfAbsent(Pair(id, type)) {
         val res = mock<SelectedValueAccessor>()
         whenever(res.isSelected).thenReturn(value)
+        whenever(res.component).thenReturn(JCheckBox())
         return@computeIfAbsent res
     } }
     protected val buttonFactory = { id: BpmnElementId, type: FunctionalGroupType -> buttonsConstructed.computeIfAbsent(Pair(id, type)) {
@@ -767,6 +776,24 @@ abstract class BaseUiTest {
                                 )
                         )
                 )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
+    protected fun prepareExclusiveGatewayAttachedToServiceTaskWithFlowSequence() {
+        val process = basicProcess.copy(
+            basicProcess.process.copy(
+                body = basicProcessBody.copy(
+                    exclusiveGateway = listOf(bpmnExclusiveGateway),
+                    serviceTask = listOf(bpmnServiceTaskEnd),
+                    sequenceFlow = listOf(bpmnSequenceFlow.copy(sourceRef = exclusiveGatewayBpmnId.id))
+                )
+            ),
+            listOf(DiagramElement(
+                diagramMainElementId,
+                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramExclusiveGateway, diagramServiceTaskEnd), listOf(diagramSequenceFlow)))
+            )
         )
         whenever(parser.parse("")).thenReturn(process)
         initializeCanvas()
