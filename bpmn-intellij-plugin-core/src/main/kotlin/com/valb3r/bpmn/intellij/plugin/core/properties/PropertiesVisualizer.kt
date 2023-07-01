@@ -148,7 +148,7 @@ class PropertiesVisualizer(
             val caption = padd + control.first.caption
             var row = when (control.first.valueType) {
                 STRING -> arrayOf(caption, buildTextField(state, bpmnElementId, control.first, control.second))
-                BOOLEAN -> arrayOf(caption, buildCheckboxField(bpmnElementId, control.first, control.second))
+                BOOLEAN -> arrayOf(caption, buildCheckboxField(state, bpmnElementId, control.first, control.second))
                 CLASS -> arrayOf(caption, buildClassField(state, bpmnElementId, control.first, control.second))
                 EXPRESSION -> arrayOf(caption, buildExpressionField(state, bpmnElementId, control.first, control.second))
                 ATTACHED_SEQUENCE_SELECT -> arrayOf(caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, control.first, control.second))
@@ -214,17 +214,36 @@ class PropertiesVisualizer(
         return field.component
     }
 
-    private fun buildCheckboxField(bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
+    private fun buildCheckboxField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
         val fieldValue = extractBoolean(value)
         val field = checkboxFieldFactory.invoke(bpmnElementId, type, fieldValue)
         val initialValue = field.isSelected
 
         listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
             if (initialValue != field.isSelected) {
-                updateEventsRegistry(project).addPropertyUpdateEvent(BooleanValueUpdatedEvent(bpmnElementId, type, field.isSelected))
+                handleBooleanValueUpdate(state, bpmnElementId, type, field.isSelected)
             }
         }
         return field.component
+    }
+
+    private fun handleBooleanValueUpdate(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Boolean) {
+        val elementValueUpdate = BooleanValueUpdatedEvent(bpmnElementId, type, value)
+        if (null == type.externalProperty) {
+            updateEventsRegistry(project).addPropertyUpdateEvent(elementValueUpdate)
+            return
+        }
+
+        val externalProp = type.externalProperty!!
+        val elemProps = state[bpmnElementId]!!
+        val referencedValue = externalProp.externalValueReference(elemProps)
+        val updatedValue = externalProp.castToExternalValue(elemProps, value)
+        if (null == referencedValue) {
+            updateEventsRegistry(project).addPropertyUpdateEvent(elementValueUpdate)
+            return
+        }
+        // TODO: No type check currently, hardcoded to String
+        updateEventsRegistry(project).addEvents(listOf(elementValueUpdate, StringValueUpdatedEvent(referencedValue.first, referencedValue.second, updatedValue as String? ?: "")))
     }
 
     private fun buildClassField(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
