@@ -329,7 +329,7 @@ abstract class BaseUiTest {
                 bounds = BoundsElement(intermediateX, intermediateY, taskSize, taskSize)
         )
         updateEventsRegistry(project).addObjectEvent(
-                BpmnShapeObjectAddedEvent(WithParentId(basicProcess.process.id, task), shape, PropertyTable(mutableMapOf(PropertyType.ID to mutableListOf(Property(task.id)))))
+                BpmnShapeObjectAddedEvent(WithParentId(basicProcess.process.id, task), shape, PropertyTable(mutableMapOf(PropertyType.ID to mutableListOf(Property(task.id.id)))))
         )
 
         return task.id
