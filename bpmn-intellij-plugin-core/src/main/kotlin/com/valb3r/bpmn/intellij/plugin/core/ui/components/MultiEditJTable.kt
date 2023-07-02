@@ -2,11 +2,13 @@ package com.valb3r.bpmn.intellij.plugin.core.ui.components
 
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.EditorTextField
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.AbstractTableCellEditor
+import com.valb3r.bpmn.intellij.plugin.core.properties.PropertyInputVerifier
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import java.awt.Component
 import java.awt.Font
@@ -132,6 +134,17 @@ class JBTextFieldCellEditor(val field: JBTextField): AbstractTableCellEditor() {
 
     override fun getCellEditorValue(): Any {
         return field
+    }
+
+    override fun stopCellEditing(): Boolean {
+        val verifier = field.inputVerifier ?: return true
+        val result = verifier.verify(field)
+
+        if (verifier is PropertyInputVerifier) {
+            verifier.onStopEditing(field)
+        }
+
+        return result
     }
 }
 
