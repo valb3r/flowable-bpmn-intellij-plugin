@@ -57,6 +57,7 @@ import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JTable
+import javax.swing.JTextField
 import javax.swing.SwingConstants
 import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.TableColumn
@@ -194,6 +195,7 @@ abstract class BaseUiTest {
     protected val editorFactory = { id: BpmnElementId, type: PropertyType, value: String -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
         val res = mock<TextValueAccessor>()
         whenever(res.text).thenReturn(value)
+        whenever(res.component).thenReturn(JTextField())
         return@computeIfAbsent res
     } }
     protected val multiLineEditorFactory = { id: BpmnElementId, type: PropertyType, value: String -> multiLineTextFieldsConstructed.computeIfAbsent(Pair(id, type)) {
