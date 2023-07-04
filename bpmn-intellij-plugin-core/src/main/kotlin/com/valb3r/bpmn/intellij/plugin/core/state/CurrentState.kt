@@ -46,6 +46,12 @@ data class CurrentState(
         return processDiagramId(processId)
     }
 
+    fun allElementIds(): Set<String?> {
+        return elemPropertiesByStaticElementId.values.flatMap {
+            it.getAll(PropertyType.ID).map { it.value as String? }
+        }.toSet()
+    }
+
     companion object {
         fun processDiagramId(processId: BpmnElementId): DiagramElementId {
             return DiagramElementId(processId.id)
