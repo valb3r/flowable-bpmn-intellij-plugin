@@ -1031,7 +1031,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
                 "BasicArrowButton",
                 "    Event",
                 "    Fields",
-                "Add fields listener",
+                "Add fields injection",
                 "      Name",
                 "BasicArrowButton",
                 "        String",

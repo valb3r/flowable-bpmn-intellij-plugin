@@ -229,7 +229,7 @@ enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewEl
             NewElem("EXECUTION_LISTENER_FIELD_STRING", "", uiOnlyaddedIndex = listOf(""))
         )
     ),
-    EXECUTION_LISTENER_FILED("Fields", actionCaption = "Add fields listener", actionResult = NewElem("EXECUTION_LISTENER_FIELD_NAME", "Name %d"),
+    EXECUTION_LISTENER_FILED("Fields", actionCaption = "Add fields injection", actionResult = NewElem("EXECUTION_LISTENER_FIELD_NAME", "Name %d"),
         actionUiOnlyResult = listOf(
             NewElem("EXECUTION_LISTENER_FIELD_STRING", ""),
         )
