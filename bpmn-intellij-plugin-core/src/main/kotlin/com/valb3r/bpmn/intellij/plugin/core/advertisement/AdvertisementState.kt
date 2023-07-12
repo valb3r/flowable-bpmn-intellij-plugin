@@ -14,12 +14,12 @@ class AdvertisementState: PersistentStateComponent<AdvertisementState.State> {
     }
 
     private var myState = State()
-    var lastShowCommon: LocalDate
+    var lastDisplayDateGlobal: LocalDate
         get() = LocalDate.ofEpochDay(myState.advertisementCommonShownAtDay)
         set(lastShow){
             myState.advertisementCommonShownAtDay = lastShow.toEpochDay()
         }
-    var lastShowSwimpoolAd: LocalDate
+    var lastDisplayDateSwimpoolAd: LocalDate
         get() = LocalDate.ofEpochDay(myState.advertisementSwimpoolShownAtDay)
         set(lastShow){
             myState.advertisementSwimpoolShownAtDay = lastShow.toEpochDay()
