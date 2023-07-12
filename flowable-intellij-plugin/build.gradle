@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.valb3r.bpmn.intellij.plugin.flowable'
 
-sourceCompatibility = 11
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
