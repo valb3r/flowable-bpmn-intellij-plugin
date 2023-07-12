@@ -815,4 +815,9 @@ abstract class BaseUiTest {
         val txt = BaseUiTest::class.java.classLoader.getResource(this)?.readText(StandardCharsets.UTF_8)!!
         return SvgIcon(txt, Hashing.goodFastHash(64).hashString(txt, StandardCharsets.UTF_8).asLong())
     }
+
+    protected fun setTextFieldValueInProperties(idField: TextValueAccessor, value: String) {
+        whenever(idField.text).thenReturn(value)
+        (idField.component as JTextField).text = value
+    }
 }
