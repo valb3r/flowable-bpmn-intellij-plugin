@@ -53,13 +53,9 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.nio.charset.StandardCharsets
 import java.util.*
-import javax.swing.Icon
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JTable
-import javax.swing.JTextField
-import javax.swing.SwingConstants
+import javax.swing.*
 import javax.swing.plaf.basic.BasicArrowButton
+import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableColumn
 import javax.swing.table.TableColumnModel
 
@@ -820,4 +816,53 @@ abstract class BaseUiTest {
         whenever(idField.text).thenReturn(value)
         (idField.component as JTextField).text = value
     }
+
+    protected fun currentProperties() =
+        (propertiesTable.model as DefaultTableModel).dataVector.flatMap { it.toList() }.map {
+            when (it) {
+                is BasicArrowButton -> "BasicArrowButton"
+                is JButton -> it.text
+                is JCheckBox -> null
+                is JTextField -> null
+                else -> {
+                    it
+                }
+            }
+        }.filterNotNull()
+
+    protected fun currentVisibleProperties(): List<String?> =
+        (propertiesTable.model as DefaultTableModel).dataVector
+            .filterIndexed { ind, _ ->
+                val entry = object: RowFilter.Entry<String, Int>() {
+
+                    override fun getModel(): String {
+                        TODO("Not yet implemented")
+                    }
+
+                    override fun getValueCount(): Int {
+                        TODO("Not yet implemented")
+                    }
+
+                    override fun getValue(index: Int): String {
+                        TODO("Not yet implemented")
+                    }
+
+                    override fun getIdentifier(): Int {
+                        return ind
+                    }
+                }
+                val sorter = propertiesTable.rowSorter as DefaultRowSorter<String, Int>
+                return@filterIndexed sorter.rowFilter.include(entry)
+            }
+            .flatMap { it.toList() }.mapNotNull {
+                when (it) {
+                    is BasicArrowButton -> "BasicArrowButton"
+                    is JButton -> it.text
+                    is JCheckBox -> null
+                    is JTextField -> null
+                    else -> {
+                        it as String?
+                    }
+                }
+            }
 }
