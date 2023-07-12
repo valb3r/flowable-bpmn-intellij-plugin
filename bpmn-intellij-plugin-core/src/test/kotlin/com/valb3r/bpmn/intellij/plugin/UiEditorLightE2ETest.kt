@@ -1665,21 +1665,6 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         }
         throw IndexOutOfBoundsException("Can't find position by property type")
     }
-
-    private fun currentProperties() =
-        (propertiesTable.model as DefaultTableModel).dataVector.flatMap { it.toList() }.map {
-            when (it) {
-                is BasicArrowButton -> "BasicArrowButton"
-                is JButton -> it.text
-                is JCheckBox -> null
-                is JTextField -> null
-                else -> {
-                    it
-                }
-            }
-        }.filterNotNull()
-
-
 }
 
 class CanvasTestable(private val painter: CanvasPainter, project: Project, settings: CanvasConstants) :
