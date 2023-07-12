@@ -48,13 +48,13 @@ publishPlugin.enabled = false
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "1.8"
         apiVersion = kotlinApiVersion
     }
 }
 compileTestKotlin {
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "1.8"
         apiVersion = kotlinApiVersion
     }
 }
