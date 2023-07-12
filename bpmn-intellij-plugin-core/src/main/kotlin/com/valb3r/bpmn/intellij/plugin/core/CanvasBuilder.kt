@@ -12,6 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.core.advertisement.showTryPolyBpmnAdvertisementSwimpoolNotification
 import com.valb3r.bpmn.intellij.plugin.core.events.FileCommitter
 import com.valb3r.bpmn.intellij.plugin.core.events.initializeUpdateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
@@ -61,6 +62,7 @@ class CanvasBuilder(
         initializeUpdateEventsRegistry(project, committerFactory.invoke(parser))
         val data = readFile(bpmnFile)
         val process = parser.parse(data)
+        if (data.contains("collaboration")) showTryPolyBpmnAdvertisementSwimpoolNotification(project)
         newPropertiesVisualizer(project, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, multiLineExpandableTextFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory)
         canvas.reset(data, process.toView(newElementsFactory(project)), bpmnProcessRenderer)
 
