@@ -30,6 +30,8 @@ dependencies {
     // Tests
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiter"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:$junitJupiter"
+    testImplementation "com.jayway.jsonpath:json-path:${jsonPath}"
     testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformRunner"
     testImplementation "org.amshove.kluent:kluent:$kluent"
 }

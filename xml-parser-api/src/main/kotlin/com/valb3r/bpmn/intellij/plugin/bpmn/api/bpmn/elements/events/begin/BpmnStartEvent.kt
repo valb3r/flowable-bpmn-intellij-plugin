@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.props.BpmnTimerEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.BpmnStartEventAlike
 
 data class BpmnStartEvent(
@@ -13,7 +14,7 @@ data class BpmnStartEvent(
     val documentation: String? = null,
     val asyncBefore: Boolean? = null,
     val asyncAfter: Boolean? = null,
-    val timerEventDefinition: TimerEventDefinition? = null,
+    val timerEventDefinition: BpmnTimerEventDefinition? = null,
     val signalEventDefinition: SignalEventDefinition? = null,
     val messageEventDefinition: MessageEventDefinition? = null,
     val errorEventDefinition: ErrorEventDefinition? = null,
@@ -32,12 +33,6 @@ data class BpmnStartEvent(
         return copy(id = newId)
     }
 
-
-    data class TimerEventDefinition(
-            val timeDate: String?,
-            val timeDuration: String?,
-            val timeCycle: String?,
-    )
 
     data class SignalEventDefinition(
             val signalRef: String? = null

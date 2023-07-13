@@ -1,12 +1,16 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process
 
 import com.fasterxml.jackson.annotation.JsonMerge
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.CDATA_FIELD
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.formprop.ExtensionElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.formprop.FormProperty
@@ -31,8 +35,22 @@ data class StartEventNode(
     }
 
     data class TimerEventDefinition(
-            val timeDate: String? = null
-    )
+        val timeDate: TimeDate? = null,
+        val timeDuration: TimeDuration? = null,
+        val timeCycle: TimeCycle? = null
+    ) {
+        data class TimeDate(
+            @JacksonXmlProperty(isAttribute = true) val type: String? = null,
+            @JsonProperty(CDATA_FIELD) @JacksonXmlText @JacksonXmlCData val timeDate: String? = null
+        )
+        data class TimeDuration(
+            @JacksonXmlProperty(isAttribute = true) val type: String? = null,
+            @JsonProperty(CDATA_FIELD) @JacksonXmlText @JacksonXmlCData val timeDuration: String? = null)
+        data class TimeCycle(
+            @JacksonXmlProperty(isAttribute = true) val type: String? = null,
+            @JsonProperty(CDATA_FIELD) @JacksonXmlText @JacksonXmlCData val timeCycle: String? = null
+        )
+    }
 
     data class SignalEventDefinition(
             val signalRef: String? = null

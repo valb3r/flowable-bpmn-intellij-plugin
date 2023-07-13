@@ -1,13 +1,17 @@
 package com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process
 
 import com.fasterxml.jackson.annotation.JsonMerge
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ListenerField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.CDATA_FIELD
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExecutionListener
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExtensionElement
@@ -38,10 +42,22 @@ data class StartEventNode(
     }
 
     data class TimerEventDefinition(
-            val timeDate: String? = null,
-            val timeDuration: String? = null,
-            val timeCycle: String? = null,
-    )
+        val timeDate: TimeDate? = null,
+        val timeDuration: TimeDuration? = null,
+        val timeCycle: TimeCycle? = null
+    ) {
+        data class TimeDate(
+            @JacksonXmlProperty(isAttribute = true) val type: String? = null,
+            @JsonProperty(CDATA_FIELD) @JacksonXmlText @JacksonXmlCData val timeDate: String? = null
+        )
+        data class TimeDuration(
+            @JacksonXmlProperty(isAttribute = true) val type: String? = null,
+            @JsonProperty(CDATA_FIELD) @JacksonXmlText @JacksonXmlCData val timeDuration: String? = null)
+        data class TimeCycle(
+            @JacksonXmlProperty(isAttribute = true) val type: String? = null,
+            @JsonProperty(CDATA_FIELD) @JacksonXmlText @JacksonXmlCData val timeCycle: String? = null
+        )
+    }
 
     data class SignalEventDefinition(
             val signalRef: String? = null
