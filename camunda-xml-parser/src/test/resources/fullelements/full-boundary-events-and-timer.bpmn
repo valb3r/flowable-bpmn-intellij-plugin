@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0yylcuh" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.1.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0">
+    <bpmn:process id="Process_1gcnrcb" isExecutable="true">
+        <bpmn:task id="Activity_1vuwdmj" />
+        <bpmn:intermediateCatchEvent id="timerIntermediateDateEvent">
+            <bpmn:timerEventDefinition id="TimerEventDefinition_01j4e37">
+                <bpmn:timeDate xsi:type="bpmn:tFormalExpression">2019-10-01T12:00:00Z</bpmn:timeDate>
+            </bpmn:timerEventDefinition>
+        </bpmn:intermediateCatchEvent>
+        <bpmn:startEvent id="timerStartDateEvent">
+            <bpmn:timerEventDefinition id="TimerEventDefinition_1bk60hx">
+                <bpmn:timeDate xsi:type="bpmn:tFormalExpression">2019-10-01T12:00Z</bpmn:timeDate>
+            </bpmn:timerEventDefinition>
+        </bpmn:startEvent>
+        <bpmn:startEvent id="timerStartDurationEvent">
+            <bpmn:timerEventDefinition id="TimerEventDefinition_0i92j5n">
+                <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT15S</bpmn:timeDuration>
+            </bpmn:timerEventDefinition>
+        </bpmn:startEvent>
+        <bpmn:startEvent id="timerStartCycleEvent">
+            <bpmn:timerEventDefinition id="TimerEventDefinition_1ofkzd6">
+                <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">R5/PT10S</bpmn:timeCycle>
+            </bpmn:timerEventDefinition>
+        </bpmn:startEvent>
+        <bpmn:intermediateCatchEvent id="timerIntermediateDurationEvent">
+            <bpmn:timerEventDefinition id="TimerEventDefinition_0oecord">
+                <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT15S</bpmn:timeDuration>
+            </bpmn:timerEventDefinition>
+        </bpmn:intermediateCatchEvent>
+        <bpmn:intermediateCatchEvent id="timerIntermediateCycleEvent">
+            <bpmn:timerEventDefinition id="TimerEventDefinition_0nzhwxv">
+                <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">R5PT10S</bpmn:timeCycle>
+            </bpmn:timerEventDefinition>
+        </bpmn:intermediateCatchEvent>
+        <bpmn:boundaryEvent id="MessageBoundaryEvent" attachedToRef="Activity_1vuwdmj">
+            <bpmn:messageEventDefinition id="MessageEventDefinition_0gbttd6" messageRef="Message_1q041lj" />
+        </bpmn:boundaryEvent>
+        <bpmn:boundaryEvent id="TimerBoundaryDateEvent" attachedToRef="Activity_1rwfdru">
+            <bpmn:timerEventDefinition id="TimerEventDefinition_068fwye">
+                <bpmn:timeDate xsi:type="bpmn:tFormalExpression">2019-10-01T12:00:00Z</bpmn:timeDate>
+            </bpmn:timerEventDefinition>
+        </bpmn:boundaryEvent>
+        <bpmn:boundaryEvent id="EscalationBoundaryEvent" attachedToRef="Activity_1vuwdmj">
+            <bpmn:escalationEventDefinition id="EscalationEventDefinition_1rjl36b" escalationRef="Escalation_1e2ddfb" camunda:escalationCodeVariable="CodeVariableEscalation" />
+        </bpmn:boundaryEvent>
+        <bpmn:boundaryEvent id="ConditionalBoundaryExpressionEvent" attachedToRef="Activity_15jmrgg">
+            <bpmn:conditionalEventDefinition id="ConditionalEventDefinition_0cad5fs" camunda:variableName="Var1" camunda:variableEvents="Evt1">
+                <bpmn:condition xsi:type="bpmn:tFormalExpression">${some.expr}</bpmn:condition>
+            </bpmn:conditionalEventDefinition>
+        </bpmn:boundaryEvent>
+        <bpmn:boundaryEvent id="ErrorBoundaryEvent" attachedToRef="Activity_1vuwdmj">
+            <bpmn:errorEventDefinition id="ErrorEventDefinition_1bb6x2l" errorRef="Error_1moidde" camunda:errorCodeVariable="ErrorVar" camunda:errorMessageVariable="MessageVar" />
+        </bpmn:boundaryEvent>
+        <bpmn:boundaryEvent id="SignalBoundaryEvent" attachedToRef="Activity_1vuwdmj">
+            <bpmn:signalEventDefinition id="SignalEventDefinition_0ms5630" signalRef="Signal_19t1qc0" />
+        </bpmn:boundaryEvent>
+        <bpmn:task id="Activity_1rwfdru" />
+        <bpmn:task id="Activity_15jmrgg" />
+        <bpmn:boundaryEvent id="ConditionalBoundaryScriptEvent" attachedToRef="Activity_15jmrgg">
+            <bpmn:conditionalEventDefinition id="ConditionalEventDefinition_1cu9u5i" camunda:variableName="Var1" camunda:variableEvents="Evt1">
+                <bpmn:condition xsi:type="bpmn:tFormalExpression" language="SomeScript"></bpmn:condition>
+            </bpmn:conditionalEventDefinition>
+        </bpmn:boundaryEvent>
+        <bpmn:boundaryEvent id="TimerBoundaryDurationEvent" attachedToRef="Activity_1rwfdru">
+            <bpmn:timerEventDefinition id="TimerEventDefinition_18ybic8">
+                <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT15S</bpmn:timeDuration>
+            </bpmn:timerEventDefinition>
+        </bpmn:boundaryEvent>
+        <bpmn:boundaryEvent id="TimerBoundaryCycleEvent" attachedToRef="Activity_1rwfdru">
+            <bpmn:timerEventDefinition id="TimerEventDefinition_0sbizx5">
+                <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">R5/PT10S</bpmn:timeCycle>
+            </bpmn:timerEventDefinition>
+        </bpmn:boundaryEvent>
+    </bpmn:process>
+    <bpmn:message id="Message_1q041lj" name="Message" />
+    <bpmn:escalation id="Escalation_1e2ddfb" name="Escalation_1e2ddfb" escalationCode="CodeValue" />
+    <bpmn:error id="Error_1moidde" name="Error_1n1h6fs" errorCode="CODE" camunda:errorMessage="MESSAGE" />
+    <bpmn:signal id="Signal_19t1qc0" name="Signal_19t1qc0" />
+    <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+        <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1gcnrcb">
+            <bpmndi:BPMNShape id="Event_1vd01cp_di" bpmnElement="timerIntermediateDateEvent">
+                <dc:Bounds x="282" y="282" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_03cn1bi_di" bpmnElement="timerStartDateEvent">
+                <dc:Bounds x="162" y="282" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_1niy8k0" bpmnElement="timerStartDurationEvent">
+                <dc:Bounds x="162" y="352" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_0s2xa1b" bpmnElement="timerStartCycleEvent">
+                <dc:Bounds x="162" y="422" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_13h3q56" bpmnElement="timerIntermediateDurationEvent">
+                <dc:Bounds x="282" y="352" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_01k1bre" bpmnElement="timerIntermediateCycleEvent">
+                <dc:Bounds x="282" y="422" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Activity_1vuwdmj_di" bpmnElement="Activity_1vuwdmj">
+                <dc:Bounds x="160" y="100" width="100" height="80" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Activity_1rwfdru_di" bpmnElement="Activity_1rwfdru">
+                <dc:Bounds x="300" y="100" width="100" height="80" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Activity_15jmrgg_di" bpmnElement="Activity_15jmrgg">
+                <dc:Bounds x="460" y="100" width="100" height="80" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0cg4gw7_di" bpmnElement="MessageBoundaryEvent">
+                <dc:Bounds x="142" y="162" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_1kv04tl_di" bpmnElement="EscalationBoundaryEvent">
+                <dc:Bounds x="222" y="162" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_1ezy1dc_di" bpmnElement="ErrorBoundaryEvent">
+                <dc:Bounds x="222" y="82" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0d9s010_di" bpmnElement="SignalBoundaryEvent">
+                <dc:Bounds x="182" y="82" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_1bu3d7c_di" bpmnElement="TimerBoundaryDateEvent">
+                <dc:Bounds x="282" y="162" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0ctd4ay_di" bpmnElement="ConditionalBoundaryExpressionEvent">
+                <dc:Bounds x="492" y="162" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_1yuczu8" bpmnElement="ConditionalBoundaryScriptEvent">
+                <dc:Bounds x="542" y="122" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_0u5gxck" bpmnElement="TimerBoundaryDurationEvent">
+                <dc:Bounds x="332" y="162" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_0voebt1" bpmnElement="TimerBoundaryCycleEvent">
+                <dc:Bounds x="382" y="122" width="36" height="36" />
+            </bpmndi:BPMNShape>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</bpmn:definitions>
