@@ -12,6 +12,9 @@ data class BpmnStartTimerEvent(
         val asyncAfter: Boolean? = null,
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
+        val timeDate: String? = null,
+        val timeDuration: String? = null,
+        val timeCycle: String? = null,
 ) : WithBpmnId, BpmnStartEventAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

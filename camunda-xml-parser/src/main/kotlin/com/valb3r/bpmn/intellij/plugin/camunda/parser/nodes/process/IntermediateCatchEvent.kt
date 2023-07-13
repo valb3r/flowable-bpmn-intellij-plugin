@@ -34,7 +34,7 @@ data class IntermediateCatchEvent(
 
     @Mapper(uses = [BpmnElementIdMapper::class])
     interface LinkEventDefinitionMapping {
-        fun convertToDto(input: LinkEventDefinition) : com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.LinkEventDefinition
+        fun convertToDto(input: LinkEventDefinition) : BpmnIntermediateCatchingEvent.LinkEventDefinition
     }
 
     data class TimerEventDefinition(

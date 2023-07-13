@@ -11,6 +11,9 @@ data class BpmnBoundaryTimerEvent(
         val cancelActivity: Boolean? = null,
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
+        val timeDate: String? = null,
+        val timeDuration: String? = null,
+        val timeCycle: String? = null,
 ): WithBpmnId, BpmnBoundaryEventAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
