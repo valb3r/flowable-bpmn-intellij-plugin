@@ -1,5 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.core
 
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -10,6 +11,7 @@ import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.messages.Topic
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.exceptions.IgnorableParserException
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.advertisement.showTryPolyBpmnAdvertisementSwimpoolNotification
@@ -22,6 +24,7 @@ import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.newPropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.render.BpmnProcessRenderer
 import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.notifications.genericShowNotificationBalloon
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
 import javax.swing.JButton
@@ -64,7 +67,13 @@ class CanvasBuilder(
         val process = parser.parse(data)
         if (data.contains("collaboration")) showTryPolyBpmnAdvertisementSwimpoolNotification(project)
         newPropertiesVisualizer(project, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, multiLineExpandableTextFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory)
-        canvas.reset(data, process.toView(newElementsFactory(project)), bpmnProcessRenderer)
+        val mappedProcess = process.toView(newElementsFactory(project))
+        canvas.reset(data, mappedProcess, bpmnProcessRenderer)
+        if (mappedProcess.suppressedExceptions.isNotEmpty()) {
+            // Do not show too long errors:
+            val aggregatedErrors = mappedProcess.suppressedExceptions.take(3).map { "- ${it.message}\n" }.toSet().joinToString()
+            genericShowNotificationBalloon(project, "XML parsing error", aggregatedErrors, NotificationType.WARNING)
+        }
 
         currentVfsConnection?.let { it.disconnect(); it.dispose() }
         currentPaintConnection?.let { it.disconnect(); it.dispose() }

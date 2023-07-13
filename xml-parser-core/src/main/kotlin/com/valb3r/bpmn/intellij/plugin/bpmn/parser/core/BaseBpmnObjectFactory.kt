@@ -27,6 +27,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.exceptions.IgnorableParserException
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.*
 import java.util.*
 import kotlin.reflect.KClass
@@ -132,7 +133,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
 
             is BpmnStructuralElementAlike -> fillForCallActivity(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
-            else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
+            else -> throw IgnorableParserException("Can't parse properties of element with ID ${obj.id.id} (${obj.javaClass.simpleName})")
         }
         
         return PropertyTable(table)

@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
+import com.valb3r.bpmn.intellij.plugin.camunda.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.plugin.camunda.CamundaBpmnPluginToolWindowProjectService
 import com.valb3r.bpmn.intellij.plugin.camunda.settings.CamundaBpmnPluginSettingsState
 import com.valb3r.bpmn.intellij.plugin.core.BpmnActionContext

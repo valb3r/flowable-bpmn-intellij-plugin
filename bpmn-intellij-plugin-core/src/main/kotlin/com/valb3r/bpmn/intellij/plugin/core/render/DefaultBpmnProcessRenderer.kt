@@ -267,7 +267,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             is BpmnIntermediateNoneThrowingEvent -> IconShape(id, bpmn.id, icons.noneThrowEvent, shape, state)
             is BpmnIntermediateSignalThrowingEvent -> IconShape(id, bpmn.id, icons.signalThrowEvent, shape, state)
             is BpmnIntermediateEscalationThrowingEvent -> IconShape(id, bpmn.id, icons.escalationThrowEvent, shape, state)
-            else -> throw IllegalArgumentException("Unknown shape: ${bpmn.javaClass}")
+            else -> UnknownShape(id, bpmn.id, icons.unknownShape, shape, state)
         }
     }
 
