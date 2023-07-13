@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.props.BpmnTimerEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.BpmnBoundaryEventAlike
 
 data class BpmnBoundaryTimerEvent(
@@ -11,9 +12,7 @@ data class BpmnBoundaryTimerEvent(
         val cancelActivity: Boolean? = null,
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
-        val timeDate: String? = null,
-        val timeDuration: String? = null,
-        val timeCycle: String? = null,
+        val timerEventDefinition: BpmnTimerEventDefinition? = null
 ): WithBpmnId, BpmnBoundaryEventAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

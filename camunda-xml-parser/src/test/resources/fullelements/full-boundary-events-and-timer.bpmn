@@ -4,7 +4,7 @@
         <bpmn:task id="Activity_1vuwdmj" />
         <bpmn:intermediateCatchEvent id="timerIntermediateDateEvent">
             <bpmn:timerEventDefinition id="TimerEventDefinition_01j4e37">
-                <bpmn:timeDate xsi:type="bpmn:tFormalExpression">2019-10-01T12:00:00Z</bpmn:timeDate>
+                <bpmn:timeDate xsi:type="bpmn:tFormalExpression">2019-10-01T12:00Z</bpmn:timeDate>
             </bpmn:timerEventDefinition>
         </bpmn:intermediateCatchEvent>
         <bpmn:startEvent id="timerStartDateEvent">
@@ -37,7 +37,7 @@
         </bpmn:boundaryEvent>
         <bpmn:boundaryEvent id="TimerBoundaryDateEvent" attachedToRef="Activity_1rwfdru">
             <bpmn:timerEventDefinition id="TimerEventDefinition_068fwye">
-                <bpmn:timeDate xsi:type="bpmn:tFormalExpression">2019-10-01T12:00:00Z</bpmn:timeDate>
+                <bpmn:timeDate xsi:type="bpmn:tFormalExpression">2019-10-01T12:00Z</bpmn:timeDate>
             </bpmn:timerEventDefinition>
         </bpmn:boundaryEvent>
         <bpmn:boundaryEvent id="EscalationBoundaryEvent" attachedToRef="Activity_1vuwdmj">

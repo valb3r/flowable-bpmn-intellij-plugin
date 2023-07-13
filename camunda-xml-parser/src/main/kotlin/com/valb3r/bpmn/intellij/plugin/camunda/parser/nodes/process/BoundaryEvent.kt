@@ -7,6 +7,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryEvent
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.TimerEventDefinition
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -36,10 +37,6 @@ data class BoundaryEvent(
     interface Mapping {
         fun convertToDto(input: BoundaryEvent) : BpmnBoundaryEvent
     }
-
-    data class TimerEventDefinition(
-            val timeDate: String? = null
-    )
 
     data class SignalEventDefinition(
             val signalRef: String? = null

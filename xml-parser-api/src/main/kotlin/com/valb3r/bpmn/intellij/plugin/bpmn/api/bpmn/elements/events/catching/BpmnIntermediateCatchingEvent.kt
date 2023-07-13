@@ -2,13 +2,14 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.props.BpmnTimerEventDefinition
 import java.time.LocalDateTime
 
 data class BpmnIntermediateCatchingEvent(
     override val id: BpmnElementId,
     val name: String? = null,
     val documentation: String? = null,
-    val timerEventDefinition: TimerEventDefinition? = null,
+    val timerEventDefinition: BpmnTimerEventDefinition? = null,
     val signalEventDefinition: SignalEventDefinition? = null,
     val messageEventDefinition: MessageEventDefinition? = null,
     val conditionalEventDefinition: ConditionalEventDefinition? = null,
@@ -20,12 +21,6 @@ data class BpmnIntermediateCatchingEvent(
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)
     }
-
-    data class TimerEventDefinition(
-        val timeDate: String?,
-        val timeDuration: String?,
-        val timeCycle: String?,
-    )
 
     data class SignalEventDefinition(
         val signalRef: String? = null

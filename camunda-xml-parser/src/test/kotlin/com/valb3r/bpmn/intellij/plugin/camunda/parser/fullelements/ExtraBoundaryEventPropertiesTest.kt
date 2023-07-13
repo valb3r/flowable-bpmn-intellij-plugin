@@ -27,7 +27,7 @@ internal class ExtraBoundaryEventPropertiesTest {
         "process.body.timerStartEvent[?(@.id.id == 'timerStartDurationEvent')].timerEventDefinition.timeDuration.timeDuration,timerStartDurationEvent,TIME_DURATION,TIME_DURATION_EXPRESSION_TYPE,PT15S",
         "process.body.timerStartEvent[?(@.id.id == 'timerStartCycleEvent')].timerEventDefinition.timeCycle.timeCycle,timerStartCycleEvent,TIME_CYCLE,TIME_CYCLE_EXPRESSION_TYPE,R5/PT10S"
     )
-    fun `timerStartEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, propType: PropertyType, expectedValue: String) {
+    fun `TimerStartEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, propType: PropertyType, expectedValue: String) {
         val processObject = parser.parse(FILE.asResource()!!)
 
         val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
@@ -40,14 +40,42 @@ internal class ExtraBoundaryEventPropertiesTest {
         readAndUpdate(id, propType, "TEST").propsOf(id)[propType]!!.shouldBeEqualTo(Property("TEST"))
     }
 
-    @Test
-    fun `TimerBoundaryEvent extra essential properties`() {
+    @ParameterizedTest
+    @CsvSource(
+        "process.body.boundaryTimerEvent[?(@.id.id == 'TimerBoundaryDateEvent')].timerEventDefinition.timeDate.timeDate,TimerBoundaryDateEvent,TIME_DATE,TIME_DATE_EXPRESSION_TYPE,2019-10-01T12:00Z",
+        "process.body.boundaryTimerEvent[?(@.id.id == 'TimerBoundaryDurationEvent')].timerEventDefinition.timeDuration.timeDuration,TimerBoundaryDurationEvent,TIME_DURATION,TIME_DURATION_EXPRESSION_TYPE,PT15S",
+        "process.body.boundaryTimerEvent[?(@.id.id == 'TimerBoundaryCycleEvent')].timerEventDefinition.timeCycle.timeCycle,TimerBoundaryCycleEvent,TIME_CYCLE,TIME_CYCLE_EXPRESSION_TYPE,R5/PT10S"
+    )
+    fun `TimerBoundaryEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, propType: PropertyType, expectedValue: String) {
+        val processObject = parser.parse(FILE.asResource()!!)
 
+        val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
+        valueFromBpmn.shouldHaveSingleItem().shouldBeEqualTo(expectedValue)
+        val props = processObject.propsOf(id)
+
+        props[prop]!!.shouldBeEqualTo(Property(expectedValue))
+        props[propType]!!.shouldBeEqualTo(Property(formalDefinition))
+        readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
+        readAndUpdate(id, propType, "TEST").propsOf(id)[propType]!!.shouldBeEqualTo(Property("TEST"))
     }
 
-    @Test
-    fun `timerIntermediateEvent extra essential properties`() {
+    @ParameterizedTest
+    @CsvSource(
+        "process.body.intermediateTimerCatchingEvent[?(@.id.id == 'timerIntermediateDateEvent')].timerEventDefinition.timeDate.timeDate,TimerBoundaryDateEvent,TIME_DATE,TIME_DATE_EXPRESSION_TYPE,2019-10-01T12:00Z",
+        "process.body.intermediateTimerCatchingEvent[?(@.id.id == 'timerIntermediateDurationEvent')].timerEventDefinition.timeDuration.timeDuration,timerIntermediateDurationEvent,TIME_DURATION,TIME_DURATION_EXPRESSION_TYPE,PT15S",
+        "process.body.intermediateTimerCatchingEvent[?(@.id.id == 'timerIntermediateCycleEvent')].timerEventDefinition.timeCycle.timeCycle,timerIntermediateCycleEvent,TIME_CYCLE,TIME_CYCLE_EXPRESSION_TYPE,R5/PT10S"
+    )
+    fun `TimerIntermediateEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, propType: PropertyType, expectedValue: String) {
+        val processObject = parser.parse(FILE.asResource()!!)
 
+        val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
+        valueFromBpmn.shouldHaveSingleItem().shouldBeEqualTo(expectedValue)
+        val props = processObject.propsOf(id)
+
+        props[prop]!!.shouldBeEqualTo(Property(expectedValue))
+        props[propType]!!.shouldBeEqualTo(Property(formalDefinition))
+        readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
+        readAndUpdate(id, propType, "TEST").propsOf(id)[propType]!!.shouldBeEqualTo(Property("TEST"))
     }
 
     @Test
