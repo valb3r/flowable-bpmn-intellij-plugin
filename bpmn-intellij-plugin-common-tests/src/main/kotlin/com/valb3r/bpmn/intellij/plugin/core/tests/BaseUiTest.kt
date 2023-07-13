@@ -15,6 +15,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartTimerEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.props.BpmnTimerEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryErrorEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
@@ -111,6 +113,7 @@ abstract class BaseUiTest {
     protected val sendEventTaskBpmnIdFilled = BpmnElementId("sendEventTaskFilled")
     protected val sequenceFlowBpmnId = BpmnElementId("sequenceFlow")
     protected val exclusiveGatewayBpmnId = BpmnElementId("exclusiveGateway")
+    protected val timerStartEventBpmnId = BpmnElementId("timerStartEvent")
 
     protected val optionalBoundaryErrorEventDiagramId = DiagramElementId("DIAGRAM-boundaryErrorEvent")
     protected val subprocessInSubProcessDiagramId = DiagramElementId("DIAGRAM-nestedSubProcess")
@@ -121,6 +124,7 @@ abstract class BaseUiTest {
     protected val sendEventTaskDiagramId = DiagramElementId("DIAGRAM-sendEventTask")
     protected val sequenceFlowDiagramId = DiagramElementId("DIAGRAM-sequenceFlow")
     protected val exclusiveGatewayDiagramId = DiagramElementId("DIAGRAM-exclusiveGateway")
+    protected val timerStartEventDiagramId = DiagramElementId("DIAGRAM-timerStartEvent")
 
     protected var bpmnSendEventTask = BpmnSendEventTask(sendEventTaskBpmnId, eventExtensionElements = listOf())
     protected val bpmnServiceTaskStart = BpmnServiceTask(serviceTaskStartBpmnId, "Start service task", "Start service task docs")
@@ -133,6 +137,7 @@ abstract class BaseUiTest {
     protected val bpmnServiceTaskEnd = BpmnServiceTask(serviceTaskEndBpmnId)
     protected val bpmnSequenceFlow = BpmnSequenceFlow(sequenceFlowBpmnId)
     protected val bpmnExclusiveGateway = BpmnExclusiveGateway(exclusiveGatewayBpmnId)
+    protected val bpmnTimerStartEvent = BpmnStartTimerEvent(timerStartEventBpmnId, timerEventDefinition = BpmnTimerEventDefinition(null, null, null))
 
     protected val diagramServiceTaskStart = ShapeElement(serviceTaskStartDiagramId, bpmnServiceTaskStart.id, BoundsElement(startElemX, startElemY, taskSize, taskSize))
     protected val diagramServiceTaskEnd = ShapeElement(serviceTaskEndDiagramId, bpmnServiceTaskEnd.id, BoundsElement(endElemX, endElemY, taskSize, taskSize))
@@ -142,6 +147,7 @@ abstract class BaseUiTest {
     protected val diagramNestedSubProcess = ShapeElement(subprocessInSubProcessDiagramId, subprocessInSubProcessBpmnId, BoundsElement(subProcessElemX, subProcessElemY, nestedSubProcessSize, nestedSubProcessSize))
     protected val diagramSequenceFlow = EdgeElement(sequenceFlowDiagramId, sequenceFlowBpmnId, listOf(WaypointElement(endElemX, endElemY), WaypointElement(endElemX - 20.0f, endElemY - 20.0f), WaypointElement(endElemX - 30.0f, endElemY - 30.0f)))
     protected val diagramExclusiveGateway = ShapeElement(exclusiveGatewayDiagramId, bpmnExclusiveGateway.id, BoundsElement(startElemX, startElemY, taskSize, taskSize))
+    protected val diagramTimerStartEvent = ShapeElement(timerStartEventDiagramId, timerStartEventBpmnId, BoundsElement(startElemX, startElemY, boundaryEventSize, boundaryEventSize))
 
 
     protected val icons = mock<IconProvider>()
@@ -245,6 +251,7 @@ abstract class BaseUiTest {
         whenever(icons.recycleBin).thenReturn(icon)
         whenever(icons.exclusiveGateway).thenReturn(icon)
         whenever(icons.boundaryErrorEvent).thenReturn(icon)
+        whenever(icons.timerStartEvent).thenReturn(icon)
         whenever(icons.rightAngle).thenReturn(icon)
         whenever(icons.selectParentSequence).thenReturn(icon)
         whenever(icons.wrench).thenReturn(icon)
@@ -576,6 +583,20 @@ abstract class BaseUiTest {
         initializeCanvas()
     }
 
+    protected fun prepareTimerStartEventTask(){
+        val process = basicProcess.copy(
+            basicProcess.process.copy(
+                body = basicProcessBody.copy(timerStartEvent = listOf(bpmnTimerStartEvent))
+            ),
+            listOf(DiagramElement(
+                diagramMainElementId,
+                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramTimerStartEvent), listOf()))
+            )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
     protected fun fillGroupsSendEventTask(){
         val extensionElementsMappingPayloadToEvent: List<ExtensionEventPayload> = listOf(
             ExtensionEventPayload("source", "target", "string")
@@ -790,7 +811,7 @@ abstract class BaseUiTest {
             ),
             listOf(DiagramElement(
                 diagramMainElementId,
-                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramExclusiveGateway, diagramServiceTaskEnd), listOf(diagramSequenceFlow)))
+                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramTimerStartEvent, diagramServiceTaskEnd), listOf(diagramSequenceFlow)))
             )
         )
         whenever(parser.parse("")).thenReturn(process)

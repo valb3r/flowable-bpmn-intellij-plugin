@@ -67,4 +67,22 @@ internal class PropertyTest : BaseUiTest() {
 
         currentVisibleProperties().filterNotNull().filter { it.contains(FORM_PROPERTY_ID) }.shouldBeEmpty()
     }
+
+    @Test
+    fun `TimerStartEvents' adding time,duration,cycle parameters adds proper events and type`() {
+        prepareTimerStartEventTask()
+        clickOnId(timerStartEventDiagramId)
+
+        setTextFieldValueInProperties(textFieldsConstructed[Pair(timerStartEventBpmnId, PropertyType.TIME_DATE)]!!, "2023")
+        propertiesVisualizer(project).clear()
+
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(2) // For value and its type
+            lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2)
+            ///
+        }
+
+        currentVisibleProperties().filterNotNull().filter { it.contains(FORM_PROPERTY_ID) }.shouldBeEmpty()
+    }
 }
