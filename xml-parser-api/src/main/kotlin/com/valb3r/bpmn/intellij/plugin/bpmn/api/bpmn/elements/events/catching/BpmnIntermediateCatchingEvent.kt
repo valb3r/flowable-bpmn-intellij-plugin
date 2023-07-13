@@ -23,7 +23,9 @@ data class BpmnIntermediateCatchingEvent(
 }
 
 data class TimerEventDefinition(
-        val timeDate: LocalDateTime? = null
+        val timeDate: String?,
+        val timeDuration: String?,
+        val timeCycle: String?,
 )
 
 data class SignalEventDefinition(

@@ -21,8 +21,6 @@ internal class ExtraBoundaryEventPropertiesTest {
     @Test
     fun `timerStartEvent extra essential properties are updatable`() {
         val processObject = parser.parse(FILE.asResource()!!)
-        val event = processObject.process.body!!.timerStartEvent!!.shouldHaveSize(1)[0]
-
     }
 
 

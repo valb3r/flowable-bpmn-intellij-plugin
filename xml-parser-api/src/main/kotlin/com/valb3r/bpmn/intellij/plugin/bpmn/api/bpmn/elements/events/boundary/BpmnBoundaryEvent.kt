@@ -26,7 +26,9 @@ data class BpmnBoundaryEvent(
     }
 
     data class TimerEventDefinition(
-            val timeDate: String? = null
+        val timeDate: String?,
+        val timeDuration: String?,
+        val timeCycle: String?,
     )
 
     data class SignalEventDefinition(

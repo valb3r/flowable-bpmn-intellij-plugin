@@ -31,9 +31,12 @@ data class BpmnStartEvent(
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)
     }
-    
+
+
     data class TimerEventDefinition(
-            val timeDate: String? = null
+            val timeDate: String?,
+            val timeDuration: String?,
+            val timeCycle: String?,
     )
 
     data class SignalEventDefinition(
