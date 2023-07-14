@@ -29,7 +29,7 @@
         </bpmn:intermediateCatchEvent>
         <bpmn:intermediateCatchEvent id="timerIntermediateCycleEvent">
             <bpmn:timerEventDefinition id="TimerEventDefinition_0nzhwxv">
-                <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">R5PT10S</bpmn:timeCycle>
+                <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">R5/PT10S</bpmn:timeCycle>
             </bpmn:timerEventDefinition>
         </bpmn:intermediateCatchEvent>
         <bpmn:boundaryEvent id="MessageBoundaryEvent" attachedToRef="Activity_1vuwdmj">
