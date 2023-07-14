@@ -8,6 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaObjectFactory
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.properties.propertiesVisualizer
@@ -16,6 +17,8 @@ import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import org.amshove.kluent.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 
 private val FORM_PROPERTY_ID = PropertyType.FORM_PROPERTY_ID.caption
 
@@ -68,21 +71,45 @@ internal class PropertyTest : BaseUiTest() {
         currentVisibleProperties().filterNotNull().filter { it.contains(FORM_PROPERTY_ID) }.shouldBeEmpty()
     }
 
-    @Test
-    fun `TimerStartEvents' adding time,duration,cycle parameters adds proper events and type`() {
+    @ParameterizedTest
+    @EnumSource(PropertyType::class, names = ["TIME_DATE", "TIME_DURATION", "TIME_CYCLE"])
+    fun `TimerStartEvents'(Flowable) adding time,duration,cycle parameters adds proper events and type`(type: PropertyType) {
         prepareTimerStartEventTask()
         clickOnId(timerStartEventDiagramId)
 
-        setTextFieldValueInProperties(textFieldsConstructed[Pair(timerStartEventBpmnId, PropertyType.TIME_DATE)]!!, "2023")
+        setTextFieldValueInProperties(textFieldsConstructed[Pair(timerStartEventBpmnId, type)]!!, "2023")
+        propertiesVisualizer(project).clear()
+
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(1) // For value and its type
+            val txtUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            txtUpdate.property.shouldBeEqualTo(type)
+            txtUpdate.newValue.shouldBeEqualTo("2023")
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(PropertyType::class, names = ["TIME_DATE", "TIME_DURATION", "TIME_CYCLE"])
+    fun `TimerStartEvents'(Camunda) adding time,duration,cycle parameters adds proper events and type`(type: PropertyType) {
+        registerNewElementsFactory(project, CamundaObjectFactory())
+
+        prepareTimerStartEventTask()
+        clickOnId(timerStartEventDiagramId)
+
+        setTextFieldValueInProperties(textFieldsConstructed[Pair(timerStartEventBpmnId, type)]!!, "2023")
         propertiesVisualizer(project).clear()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
             lastValue.shouldHaveSize(2) // For value and its type
-            lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2)
-            ///
+            val updates = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2)
+            val typeUpdate = updates[0]
+            val valueUpdate = updates[1]
+            typeUpdate.property.shouldBeEqualTo(PropertyType.values().first { it.updatedByWithinSameElement == type })
+            typeUpdate.newValue.shouldBeEqualTo("bpmn:tFormalExpression")
+            valueUpdate.property.shouldBeEqualTo(type)
+            valueUpdate.newValue.shouldBeEqualTo("2023")
         }
-
-        currentVisibleProperties().filterNotNull().filter { it.contains(FORM_PROPERTY_ID) }.shouldBeEmpty()
     }
 }
