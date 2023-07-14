@@ -226,7 +226,7 @@ class PropertiesVisualizer(
         val fieldValue = extractString(value)
         val field = if (type.multiline) multiLineExpandableTextFieldFactory.invoke(bpmnElementId, type, fieldValue) else textFieldFactory.invoke(bpmnElementId, type, fieldValue)
         val initialValue = field.text
-        listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
+        listenersForCurrentView.computeIfAbsent(type.listenerOrder) { mutableListOf()}.add {
             if (initialValue != field.text) {
                 emitStringUpdateWithCascadeIfNeeded(
                     state,
@@ -244,7 +244,7 @@ class PropertiesVisualizer(
         val field = checkboxFieldFactory.invoke(bpmnElementId, type, fieldValue)
         val initialValue = field.isSelected
 
-        listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
+        listenersForCurrentView.computeIfAbsent(type.listenerOrder) { mutableListOf()}.add {
             if (initialValue != field.isSelected) {
                 handleBooleanValueUpdate(state, bpmnElementId, type, field.isSelected)
             }
@@ -343,7 +343,7 @@ class PropertiesVisualizer(
 
     private fun addEditorTextListener(state: Map<BpmnElementId, PropertyTable>, field: TextValueAccessor, bpmnElementId: BpmnElementId, type: PropertyType, value: Property) {
         val initialValue = field.text
-        listenersForCurrentView.computeIfAbsent(type.updateOrder) { mutableListOf()}.add {
+        listenersForCurrentView.computeIfAbsent(type.listenerOrder) { mutableListOf()}.add {
             if (initialValue != field.text) {
                 emitStringUpdateWithCascadeIfNeeded(
                     state,

@@ -12,6 +12,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ConditionExpressio
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.props.BpmnTimerEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
@@ -43,7 +44,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             BpmnStartErrorEvent::class -> BpmnStartErrorEvent(generateBpmnId())
             BpmnStartMessageEvent::class -> BpmnStartMessageEvent(generateBpmnId())
             BpmnStartSignalEvent::class -> BpmnStartSignalEvent(generateBpmnId())
-            BpmnStartTimerEvent::class -> BpmnStartTimerEvent(generateBpmnId())
+            BpmnStartTimerEvent::class -> BpmnStartTimerEvent(generateBpmnId(), timerEventDefinition = BpmnTimerEventDefinition(null, null, null))
             BpmnBoundaryCancelEvent::class -> BpmnBoundaryCancelEvent(generateBpmnId())
             BpmnBoundaryCompensationEvent::class -> BpmnBoundaryCompensationEvent(generateBpmnId())
             BpmnBoundaryConditionalEvent::class -> BpmnBoundaryConditionalEvent(generateBpmnId())

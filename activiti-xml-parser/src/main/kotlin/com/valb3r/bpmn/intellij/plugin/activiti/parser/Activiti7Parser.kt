@@ -35,13 +35,13 @@ enum class Activiti7PropertyTypeDetails(val details: PropertyTypeDetails) {
     ATTACHED_TO_REF(PropertyTypeDetails(PropertyType.ATTACHED_TO_REF, "attachedToRef", XmlType.ATTRIBUTE)),
     CONDITION_EXPR_VALUE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_VALUE, "bpmn2:conditionExpression.text", XmlType.CDATA)),
     CONDITION_EXPR_TYPE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_TYPE, "bpmn2:conditionExpression.xsi:type", XmlType.ATTRIBUTE)),
-    TIME_DATE(PropertyTypeDetails(PropertyType.TIME_DATE, "timerEventDefinition.timeDate.timeDate", XmlType.CDATA)),
     // TODO: Validate:
-    TIME_DATE_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_DATE_EXPRESSION_TYPE, "timerEventDefinition.timeDate.type", XmlType.ATTRIBUTE)),
+    TIME_DATE(PropertyTypeDetails(PropertyType.TIME_DATE, "timerEventDefinition.timeDate.timeDate", XmlType.CDATA)),
+    // TIME_DATE_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_DATE_EXPRESSION_TYPE, "timerEventDefinition.timeDate.type", XmlType.ATTRIBUTE)), // Camunda-only specific
     TIME_DURATION(PropertyTypeDetails(PropertyType.TIME_DURATION, "timerEventDefinition.timeDuration.timeDuration", XmlType.CDATA)),
-    TIME_DURATION_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_DURATION_EXPRESSION_TYPE, "timerEventDefinition.timeDuration.type", XmlType.ATTRIBUTE)),
+    // TIME_DURATION_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_DURATION_EXPRESSION_TYPE, "timerEventDefinition.timeDuration.type", XmlType.ATTRIBUTE)), // Camunda-only specific
     TIME_CYCLE(PropertyTypeDetails(PropertyType.TIME_CYCLE, "timerEventDefinition.timeCycle.timeCycle", XmlType.CDATA)),
-    TIME_CYCLE_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_CYCLE_EXPRESSION_TYPE, "timerEventDefinition.timeCycle.type", XmlType.ATTRIBUTE)),
+    // TIME_CYCLE_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_CYCLE_EXPRESSION_TYPE, "timerEventDefinition.timeCycle.type", XmlType.ATTRIBUTE)), // Camunda-only specific
     // END TODO
     COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "bpmn2:completionCondition.text", XmlType.CDATA)),
     DEFAULT_FLOW(PropertyTypeDetails(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE))
