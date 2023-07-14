@@ -58,7 +58,7 @@
         <bpmn:task id="Activity_15jmrgg" />
         <bpmn:boundaryEvent id="ConditionalBoundaryScriptEvent" attachedToRef="Activity_15jmrgg">
             <bpmn:conditionalEventDefinition id="ConditionalEventDefinition_1cu9u5i" camunda:variableName="Var1" camunda:variableEvents="Evt1">
-                <bpmn:condition xsi:type="bpmn:tFormalExpression" language="SomeScript"></bpmn:condition>
+                <bpmn:condition xsi:type="bpmn:tFormalExpression" language="SomeScript" />
             </bpmn:conditionalEventDefinition>
         </bpmn:boundaryEvent>
         <bpmn:boundaryEvent id="TimerBoundaryDurationEvent" attachedToRef="Activity_1rwfdru">
@@ -71,6 +71,56 @@
                 <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">R5/PT10S</bpmn:timeCycle>
             </bpmn:timerEventDefinition>
         </bpmn:boundaryEvent>
+        <bpmn:startEvent id="MessageStartEvent">
+            <bpmn:messageEventDefinition id="MessageEventDefinition_0ub4nr7" messageRef="Message_1q041lj" />
+        </bpmn:startEvent>
+        <bpmn:intermediateCatchEvent id="MessageIntermediateCatchEvent">
+            <bpmn:messageEventDefinition id="MessageEventDefinition_07zoiyn" messageRef="Message_1q041lj" />
+        </bpmn:intermediateCatchEvent>
+        <bpmn:intermediateThrowEvent id="MessageIntermediateThrowEvent">
+            <bpmn:messageEventDefinition id="MessageEventDefinition_1w7webb" messageRef="Message_1q041lj" />
+        </bpmn:intermediateThrowEvent>
+        <bpmn:startEvent id="ConditionalStartEvent">
+            <bpmn:conditionalEventDefinition id="ConditionalEventDefinition_0np7xfy" camunda:variableName="condVar">
+                <bpmn:condition xsi:type="bpmn:tFormalExpression">condExpr</bpmn:condition>
+            </bpmn:conditionalEventDefinition>
+        </bpmn:startEvent>
+        <bpmn:startEvent id="SignalStartEvent">
+            <bpmn:signalEventDefinition id="SignalEventDefinition_1xoiare" signalRef="Signal_19t1qc0" />
+        </bpmn:startEvent>
+        <bpmn:startEvent id="ConditionalStartEventScript">
+            <bpmn:conditionalEventDefinition id="ConditionalEventDefinition_135bunl" camunda:variableName="condVar">
+                <bpmn:condition xsi:type="bpmn:tFormalExpression" language="js">SomeScript</bpmn:condition>
+            </bpmn:conditionalEventDefinition>
+        </bpmn:startEvent>
+        <bpmn:intermediateCatchEvent id="ConditionalIntermediateCatchEvent">
+            <bpmn:conditionalEventDefinition id="ConditionalEventDefinition_0qxf033" camunda:variableName="condVar" camunda:variableEvents="condEvt">
+                <bpmn:condition xsi:type="bpmn:tFormalExpression">condExpr</bpmn:condition>
+            </bpmn:conditionalEventDefinition>
+        </bpmn:intermediateCatchEvent>
+        <bpmn:intermediateCatchEvent id="Event_014ckuu">
+            <bpmn:conditionalEventDefinition id="ConditionalEventDefinition_1ai58jb" camunda:variableName="condVar" camunda:variableEvents="condEvts">
+                <bpmn:condition xsi:type="bpmn:tFormalExpression" language="js">SomeScript</bpmn:condition>
+            </bpmn:conditionalEventDefinition>
+        </bpmn:intermediateCatchEvent>
+        <bpmn:endEvent id="MessageEndEvent">
+            <bpmn:messageEventDefinition id="MessageEventDefinition_0lsw30a" messageRef="Message_1q041lj" />
+        </bpmn:endEvent>
+        <bpmn:intermediateCatchEvent id="SignalIntermediateCatchEvent">
+            <bpmn:signalEventDefinition id="SignalEventDefinition_1d6mvbk" signalRef="Signal_19t1qc0" />
+        </bpmn:intermediateCatchEvent>
+        <bpmn:endEvent id="SignalEndEvent">
+            <bpmn:signalEventDefinition id="SignalEventDefinition_0v2j2xf" signalRef="Signal_19t1qc0" />
+        </bpmn:endEvent>
+        <bpmn:intermediateThrowEvent id="EscalationIntermediateThrowEvent">
+            <bpmn:escalationEventDefinition id="EscalationEventDefinition_1yamhag" escalationRef="Escalation_1e2ddfb" />
+        </bpmn:intermediateThrowEvent>
+        <bpmn:intermediateThrowEvent id="LinkIntermediateThrowEvent">
+            <bpmn:linkEventDefinition id="LinkEventDefinition_0ozszpo" name="Link1" />
+        </bpmn:intermediateThrowEvent>
+        <bpmn:intermediateCatchEvent id="LinkIntermediateCatchEvent">
+            <bpmn:linkEventDefinition id="LinkEventDefinition_167um4f" name="Link1" />
+        </bpmn:intermediateCatchEvent>
     </bpmn:process>
     <bpmn:message id="Message_1q041lj" name="Message" />
     <bpmn:escalation id="Escalation_1e2ddfb" name="Escalation_1e2ddfb" escalationCode="CodeValue" />
@@ -78,59 +128,107 @@
     <bpmn:signal id="Signal_19t1qc0" name="Signal_19t1qc0" />
     <bpmndi:BPMNDiagram id="BPMNDiagram_1">
         <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1gcnrcb">
-            <bpmndi:BPMNShape id="Event_1vd01cp_di" bpmnElement="timerIntermediateDateEvent">
-                <dc:Bounds x="282" y="282" width="36" height="36" />
-            </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape id="Event_03cn1bi_di" bpmnElement="timerStartDateEvent">
-                <dc:Bounds x="162" y="282" width="36" height="36" />
-            </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape id="BPMNShape_1niy8k0" bpmnElement="timerStartDurationEvent">
-                <dc:Bounds x="162" y="352" width="36" height="36" />
-            </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape id="BPMNShape_0s2xa1b" bpmnElement="timerStartCycleEvent">
-                <dc:Bounds x="162" y="422" width="36" height="36" />
-            </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape id="BPMNShape_13h3q56" bpmnElement="timerIntermediateDurationEvent">
-                <dc:Bounds x="282" y="352" width="36" height="36" />
-            </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape id="BPMNShape_01k1bre" bpmnElement="timerIntermediateCycleEvent">
-                <dc:Bounds x="282" y="422" width="36" height="36" />
-            </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="Activity_1vuwdmj_di" bpmnElement="Activity_1vuwdmj">
                 <dc:Bounds x="160" y="100" width="100" height="80" />
             </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_1q4dozq_di" bpmnElement="MessageStartEvent">
+                <dc:Bounds x="132" y="232" width="36" height="36" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="145" y="275" width="10" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_17z2z6h_di" bpmnElement="MessageIntermediateCatchEvent">
+                <dc:Bounds x="132" y="292" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0be1m19_di" bpmnElement="MessageIntermediateThrowEvent">
+                <dc:Bounds x="132" y="352" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0v196v0_di" bpmnElement="ConditionalStartEvent">
+                <dc:Bounds x="192" y="232" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0ll2gx2_di" bpmnElement="SignalStartEvent">
+                <dc:Bounds x="302" y="232" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_0uj6i85" bpmnElement="ConditionalStartEventScript">
+                <dc:Bounds x="242" y="232" width="36" height="36" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="222" y="275" width="79" height="14" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_1fepbl9_di" bpmnElement="ConditionalIntermediateCatchEvent">
+                <dc:Bounds x="192" y="292" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0x24b4p_di" bpmnElement="Event_014ckuu">
+                <dc:Bounds x="242" y="292" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0djnk25_di" bpmnElement="MessageEndEvent">
+                <dc:Bounds x="132" y="412" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0utmjo3_di" bpmnElement="SignalIntermediateCatchEvent">
+                <dc:Bounds x="302" y="292" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0mc8wrz_di" bpmnElement="SignalEndEvent">
+                <dc:Bounds x="302" y="352" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_04gizy3_di" bpmnElement="EscalationIntermediateThrowEvent">
+                <dc:Bounds x="362" y="232" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_1vd01cp_di" bpmnElement="timerIntermediateDateEvent">
+                <dc:Bounds x="642" y="222" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_03cn1bi_di" bpmnElement="timerStartDateEvent">
+                <dc:Bounds x="582" y="222" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_1niy8k0" bpmnElement="timerStartDurationEvent">
+                <dc:Bounds x="582" y="292" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_0s2xa1b" bpmnElement="timerStartCycleEvent">
+                <dc:Bounds x="582" y="362" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_13h3q56" bpmnElement="timerIntermediateDurationEvent">
+                <dc:Bounds x="642" y="292" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_01k1bre" bpmnElement="timerIntermediateCycleEvent">
+                <dc:Bounds x="642" y="362" width="36" height="36" />
+            </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="Activity_1rwfdru_di" bpmnElement="Activity_1rwfdru">
-                <dc:Bounds x="300" y="100" width="100" height="80" />
+                <dc:Bounds x="570" y="100" width="100" height="80" />
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="Activity_15jmrgg_di" bpmnElement="Activity_15jmrgg">
-                <dc:Bounds x="460" y="100" width="100" height="80" />
+                <dc:Bounds x="730" y="100" width="100" height="80" />
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape id="Event_0cg4gw7_di" bpmnElement="MessageBoundaryEvent">
-                <dc:Bounds x="142" y="162" width="36" height="36" />
+            <bpmndi:BPMNShape id="Event_1nht52n_di" bpmnElement="LinkIntermediateCatchEvent">
+                <dc:Bounds x="422" y="232" width="36" height="36" />
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape id="Event_1kv04tl_di" bpmnElement="EscalationBoundaryEvent">
-                <dc:Bounds x="222" y="162" width="36" height="36" />
-            </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape id="Event_1ezy1dc_di" bpmnElement="ErrorBoundaryEvent">
-                <dc:Bounds x="222" y="82" width="36" height="36" />
+            <bpmndi:BPMNShape id="Event_14ws6sv_di" bpmnElement="LinkIntermediateThrowEvent">
+                <dc:Bounds x="422" y="292" width="36" height="36" />
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="Event_0d9s010_di" bpmnElement="SignalBoundaryEvent">
                 <dc:Bounds x="182" y="82" width="36" height="36" />
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape id="Event_1bu3d7c_di" bpmnElement="TimerBoundaryDateEvent">
-                <dc:Bounds x="282" y="162" width="36" height="36" />
+            <bpmndi:BPMNShape id="Event_1ezy1dc_di" bpmnElement="ErrorBoundaryEvent">
+                <dc:Bounds x="222" y="82" width="36" height="36" />
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape id="Event_0ctd4ay_di" bpmnElement="ConditionalBoundaryExpressionEvent">
-                <dc:Bounds x="492" y="162" width="36" height="36" />
+            <bpmndi:BPMNShape id="Event_1kv04tl_di" bpmnElement="EscalationBoundaryEvent">
+                <dc:Bounds x="222" y="162" width="36" height="36" />
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape id="BPMNShape_1yuczu8" bpmnElement="ConditionalBoundaryScriptEvent">
-                <dc:Bounds x="542" y="122" width="36" height="36" />
-            </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape id="BPMNShape_0u5gxck" bpmnElement="TimerBoundaryDurationEvent">
-                <dc:Bounds x="332" y="162" width="36" height="36" />
+            <bpmndi:BPMNShape id="Event_0cg4gw7_di" bpmnElement="MessageBoundaryEvent">
+                <dc:Bounds x="142" y="162" width="36" height="36" />
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="BPMNShape_0voebt1" bpmnElement="TimerBoundaryCycleEvent">
-                <dc:Bounds x="382" y="122" width="36" height="36" />
+                <dc:Bounds x="652" y="122" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_0u5gxck" bpmnElement="TimerBoundaryDurationEvent">
+                <dc:Bounds x="602" y="162" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_1yuczu8" bpmnElement="ConditionalBoundaryScriptEvent">
+                <dc:Bounds x="812" y="122" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0ctd4ay_di" bpmnElement="ConditionalBoundaryExpressionEvent">
+                <dc:Bounds x="762" y="162" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_1bu3d7c_di" bpmnElement="TimerBoundaryDateEvent">
+                <dc:Bounds x="552" y="162" width="36" height="36" />
             </bpmndi:BPMNShape>
         </bpmndi:BPMNPlane>
     </bpmndi:BPMNDiagram>
