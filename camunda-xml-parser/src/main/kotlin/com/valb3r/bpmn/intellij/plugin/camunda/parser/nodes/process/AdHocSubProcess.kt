@@ -10,6 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdH
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.CDATA_FIELD
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.ProcessBody
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExtensionElement
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -24,6 +25,7 @@ class AdHocSubProcess: BpmnMappable<BpmnAdHocSubProcess>, ProcessBody() {
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>? = null
     var completionCondition: CompletionCondition? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 
     override fun toElement(): BpmnAdHocSubProcess {
         return Mappers.getMapper(Mapping::class.java).convertToDto(this)

@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnErrorEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnEscalationEventDefinition
@@ -17,7 +18,8 @@ data class BpmnEndEvent(
     val errorEventDefinition: BpmnErrorEventDefinition? = null,
     val escalationEventDefinition: BpmnEscalationEventDefinition? = null,
     val cancelEventDefinition: CancelEventDefinition? = null,
-    val terminateEventDefinition: TerminateEventDefinition? = null
+    val terminateEventDefinition: TerminateEventDefinition? = null,
+    val executionListener: List<ExeсutionListener>? = null
 ): WithBpmnId, EndEventAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEnd
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.ErrorEventDefinition
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.EscalationEventDefinition
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExtensionElement
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -23,7 +24,8 @@ data class EndEventNode(
     @JsonSetter(nulls = Nulls.AS_EMPTY) val errorEventDefinition: ErrorEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val escalationEventDefinition: EscalationEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val cancelEventDefinition: CancelEventDefinition?,
-    @JsonSetter(nulls = Nulls.AS_EMPTY) val terminateEventDefinition: TerminateEventDefinition?
+    @JsonSetter(nulls = Nulls.AS_EMPTY) val terminateEventDefinition: TerminateEventDefinition?,
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 ): BpmnMappable<BpmnEndEvent> {
 
     override fun toElement(): BpmnEndEvent {

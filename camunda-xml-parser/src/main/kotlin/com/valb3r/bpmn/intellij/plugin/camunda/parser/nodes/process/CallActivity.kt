@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExtensionElement
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -20,7 +21,7 @@ data class CallActivity(
     @JacksonXmlProperty(isAttribute = true) val fallbackToDefaultTenant: Boolean?,
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>?,
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>?,
-    val extensionElements: ExtensionElements?
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 ): BpmnMappable<BpmnCallActivity> {
 
     override fun toElement(): BpmnCallActivity {

@@ -8,7 +8,8 @@ data class BpmnSequenceFlow(
         val documentation: String? = null,
         val sourceRef: String? = null, // can't be null in reality, but malformed XMLs should be editable too
         val targetRef: String? = null, // can't be null in reality, but malformed XMLs should be editable too
-        val conditionExpression: ConditionExpression? = null
+        val conditionExpression: ConditionExpression? = null,
+        val executionListener: List<ExeсutionListener>? = null
 ): WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

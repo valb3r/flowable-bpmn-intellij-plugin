@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnEscalationEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnLinkEventDefinition
@@ -14,7 +15,8 @@ data class BpmnIntermediateThrowingEvent(
         val outgoing: List<String>? = null,
         val signalEventDefinition: BpmnSignalEventDefinition? = null,
         val escalationEventDefinition: BpmnEscalationEventDefinition? = null,
-        val linkEventDefinition: BpmnLinkEventDefinition? = null
+        val linkEventDefinition: BpmnLinkEventDefinition? = null,
+        val executionListener: List<ExeсutionListener>? = null
 ) : WithBpmnId {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

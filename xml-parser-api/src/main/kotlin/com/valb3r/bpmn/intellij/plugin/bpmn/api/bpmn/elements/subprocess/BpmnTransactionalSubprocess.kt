@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.BpmnStructuralElementAlike
 
@@ -14,6 +15,7 @@ data class BpmnTransactionalSubProcess(
         val exclusive: Boolean? = null,
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
+        val executionListener: List<ExeсutionListener>? = null,
         val transactionalSubprocess: Boolean // can't set default for @KotlinBuilder
 ): WithBpmnId, BpmnStructuralElementAlike {
 
