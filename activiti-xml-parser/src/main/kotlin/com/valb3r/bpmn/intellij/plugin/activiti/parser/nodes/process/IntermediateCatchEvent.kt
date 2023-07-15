@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process.nested.definitions.ConditionalEventDefinition
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process.nested.definitions.TimerEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateCatchingEvent
 import org.mapstruct.Mapper
@@ -31,13 +32,5 @@ data class IntermediateCatchEvent(
 
     data class SignalEventDefinition(
             @JacksonXmlProperty(isAttribute = true) val signalRef: String? = null
-    )
-
-    data class MessageEventDefinition(
-            @JacksonXmlProperty(isAttribute = true) val messageRef: String? = null
-    )
-
-    data class ConditionalEventDefinition(
-            val condition: String? = null
     )
 }

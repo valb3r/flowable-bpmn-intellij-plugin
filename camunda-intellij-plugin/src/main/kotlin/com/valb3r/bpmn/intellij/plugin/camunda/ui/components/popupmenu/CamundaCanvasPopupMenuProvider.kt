@@ -75,29 +75,29 @@ class CamundaCanvasPopupMenuProvider(project: Project) : BaseCanvasPopupMenuProv
 
     override fun intermediateCatchingEvents(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu {
         val menu = JMenu("Intermediate catching events")
-        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_TIMER_CATCHING)
-        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_MESSAGE_CATCHING)
-        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_SIGNAL_CATCHING)
-        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_CONDITIONAL_CATCHING)
-        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_LINK_CATCHING)
+        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_TIMER_CATCHING_EVENT)
+        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_MESSAGE_CATCHING_EVENT)
+        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_SIGNAL_CATCHING_EVENT)
+        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_CONDITIONAL_CATCHING_EVENT)
+        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_LINK_CATCHING_EVENT)
         return menu
     }
 
     override fun intermediateThrowingEvents(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu {
         val menu = JMenu("Intermediate throwing events")
-        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_NONE_THROWING)
-        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_SIGNAL_THROWING)
-        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_ESCALATION_THROWING)
+        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_NONE_THROWING_EVENT)
+        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_SIGNAL_THROWING_EVENT)
+        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_ESCALATION_THROWING_EVENT)
         return menu
     }
 
     override fun endEvents(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu {
         val menu = JMenu("End events")
         menu.addNewElementItem(sceneLocation, focus,  END_EVENT)
-        menu.addNewElementItem(sceneLocation, focus,  ERROR_END_EVENT)
-        menu.addNewElementItem(sceneLocation, focus,  ESCALATION_END_EVENT)
+        menu.addNewElementItem(sceneLocation, focus,  END_ERROR_EVENT)
+        menu.addNewElementItem(sceneLocation, focus,  END_ESCALATION_EVENT)
         // Unsupported? addItem(menu, "End cancel event", CANCEL_END_EVENT, ShapeCreator(project, BpmnEndCancelEvent::class, sceneLocation, focus))
-        menu.addNewElementItem(sceneLocation, focus,  TERMINATE_END_EVENT)
+        menu.addNewElementItem(sceneLocation, focus,  END_TERMINATE_EVENT)
         return menu
     }
 
@@ -121,23 +121,23 @@ class CamundaCanvasPopupMenuProvider(project: Project) : BaseCanvasPopupMenuProv
 
     override fun mutateEndEvent(popup: JPopupMenu, focus: BpmnElementId) {
         popup.addMutateElementItem(focus,  END_EVENT)
-        popup.addMutateElementItem(focus,  ERROR_END_EVENT)
-        popup.addMutateElementItem(focus,  ESCALATION_END_EVENT)
-        popup.addMutateElementItem(focus,  TERMINATE_END_EVENT)
+        popup.addMutateElementItem(focus,  END_ERROR_EVENT)
+        popup.addMutateElementItem(focus,  END_ESCALATION_EVENT)
+        popup.addMutateElementItem(focus,  END_TERMINATE_EVENT)
     }
 
     override fun mutateIntermediateThrowingEvent(popup: JPopupMenu, focus: BpmnElementId) {
-        popup.addMutateElementItem(focus,  INTERMEDIATE_NONE_THROWING)
-        popup.addMutateElementItem(focus,  INTERMEDIATE_SIGNAL_THROWING)
-        popup.addMutateElementItem(focus,  INTERMEDIATE_ESCALATION_THROWING)
+        popup.addMutateElementItem(focus,  INTERMEDIATE_NONE_THROWING_EVENT)
+        popup.addMutateElementItem(focus,  INTERMEDIATE_SIGNAL_THROWING_EVENT)
+        popup.addMutateElementItem(focus,  INTERMEDIATE_ESCALATION_THROWING_EVENT)
     }
 
     override fun mutateIntermediateCatchingEvent(popup: JPopupMenu, focus: BpmnElementId) {
-        popup.addMutateElementItem(focus,  INTERMEDIATE_TIMER_CATCHING)
-        popup.addMutateElementItem(focus,  INTERMEDIATE_MESSAGE_CATCHING)
-        popup.addMutateElementItem(focus,  INTERMEDIATE_SIGNAL_CATCHING)
-        popup.addMutateElementItem(focus,  INTERMEDIATE_CONDITIONAL_CATCHING)
-        popup.addMutateElementItem(focus,  INTERMEDIATE_LINK_CATCHING)
+        popup.addMutateElementItem(focus,  INTERMEDIATE_TIMER_CATCHING_EVENT)
+        popup.addMutateElementItem(focus,  INTERMEDIATE_MESSAGE_CATCHING_EVENT)
+        popup.addMutateElementItem(focus,  INTERMEDIATE_SIGNAL_CATCHING_EVENT)
+        popup.addMutateElementItem(focus,  INTERMEDIATE_CONDITIONAL_CATCHING_EVENT)
+        popup.addMutateElementItem(focus,  INTERMEDIATE_LINK_CATCHING_EVENT)
     }
 
     override fun mutateStructuralElement(popup: JPopupMenu, focus: BpmnElementId) {

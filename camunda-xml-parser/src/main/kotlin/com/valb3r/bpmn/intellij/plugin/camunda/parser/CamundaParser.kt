@@ -73,6 +73,7 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     EVENT_CONDITION(PropertyTypeDetails(PropertyType.EVENT_CONDITION, "bpmn:conditionalEventDefinition.bpmn:condition.script", XmlType.CDATA)),
     EVENT_CONDITION_TYPE(PropertyTypeDetails(PropertyType.EVENT_CONDITION_TYPE, "bpmn:conditionalEventDefinition.bpmn:condition.xsi:type", XmlType.ATTRIBUTE)),
     EVENT_CONDITION_LANGUAGE(PropertyTypeDetails(PropertyType.EVENT_CONDITION_LANGUAGE, "bpmn:conditionalEventDefinition.bpmn:condition.language", XmlType.ATTRIBUTE)),
+    MESSAGE_REF(PropertyTypeDetails(PropertyType.MESSAGE_REF, "bpmn:messageEventDefinition.messageRef", XmlType.ATTRIBUTE)),
     COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA)),
     DEFAULT_FLOW(PropertyTypeDetails(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE)),
     // Unsupported? IS_TRANSACTIONAL_SUBPROCESS(PropertyTypeDetails(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT)),

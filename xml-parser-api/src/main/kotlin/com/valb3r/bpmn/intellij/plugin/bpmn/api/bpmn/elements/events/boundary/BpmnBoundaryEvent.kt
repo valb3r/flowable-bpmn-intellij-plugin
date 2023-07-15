@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnConditionalEventDefinition
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnMessageEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnTimerEventDefinition
 
 data class BpmnBoundaryEvent(
@@ -13,7 +14,7 @@ data class BpmnBoundaryEvent(
     val documentation: String? = null,
     val timerEventDefinition: BpmnTimerEventDefinition? = null,
     val signalEventDefinition: SignalEventDefinition? = null,
-    val messageEventDefinition: MessageEventDefinition? = null,
+    val messageEventDefinition: BpmnMessageEventDefinition? = null,
     val errorEventDefinition: ErrorEventDefinition? = null,
     val cancelEventDefinition: CancelEventDefinition? = null,
     val escalationEventDefinition: EscalationEventDefinition? = null,
@@ -29,10 +30,6 @@ data class BpmnBoundaryEvent(
 
     data class SignalEventDefinition(
             val signalRef: String? = null
-    )
-
-    data class MessageEventDefinition(
-            val messageRef: String? = null
     )
 
     data class ErrorEventDefinition(

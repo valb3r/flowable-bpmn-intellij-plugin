@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.Nulls
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.ConditionalEventDefinition
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.MessageEventDefinition
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.TimerEventDefinition
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
@@ -38,10 +40,6 @@ data class BoundaryEvent(
             val signalRef: String? = null
     )
 
-    data class MessageEventDefinition(
-            val messageRef: String? = null
-    )
-
     data class ErrorEventDefinition(
             val errorRef: String? = null
     )
@@ -52,10 +50,6 @@ data class BoundaryEvent(
 
     data class CompensateEventDefinition(
             val activityRef: String? = null
-    )
-
-    data class ConditionalEventDefinition(
-            val condition: String? = null
     )
 
     data class EscalationEventDefinition(

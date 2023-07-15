@@ -132,9 +132,21 @@ internal class ExtraBoundaryEventPropertiesTest {
         readAndUpdate(id, propType, "TEST").propsOf(id)[propType]!!.shouldBeEqualTo(Property("TEST"))
     }
 
-    @Test
-    fun `MessageBoundaryEvent extra essential properties`() {
+    @ParameterizedTest
+    @CsvSource(
+        "process.body.messageStartEvent[?(@.id.id == 'MessageStartEvent')].messageEventDefinition.messageRef,MessageStartEvent,MESSAGE_REF,Message_1q041lj",
+        "process.body.boundaryMessageEvent[?(@.id.id == 'MessageBoundaryEvent')].messageEventDefinition.messageRef,MessageBoundaryEvent,MESSAGE_REF,Message_1q041lj",
+        "process.body.intermediateMessageCatchingEvent[?(@.id.id == 'MessageIntermediateCatchEvent')].messageEventDefinition.messageRef,MessageIntermediateCatchEvent,MESSAGE_REF,Message_1q041lj",
+    )
+    fun `MessageStartEvent,MessageBoundaryEvent,MessageIntermediateCatchingEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, expectedValue: String) {
+        val processObject = parser.parse(FILE.asResource()!!)
 
+        val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
+        valueFromBpmn.shouldHaveSingleItem().shouldBeEqualTo(expectedValue)
+        val props = processObject.propsOf(id)
+
+        props[prop]!!.shouldBeEqualTo(Property(expectedValue))
+        readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
     }
 
     @Test

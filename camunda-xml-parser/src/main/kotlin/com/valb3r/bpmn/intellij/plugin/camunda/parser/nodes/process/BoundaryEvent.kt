@@ -8,6 +8,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryEvent
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.ConditionalEventDefinition
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.MessageEventDefinition
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.TimerEventDefinition
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
@@ -41,10 +42,6 @@ data class BoundaryEvent(
 
     data class SignalEventDefinition(
             val signalRef: String? = null
-    )
-
-    data class MessageEventDefinition(
-            val messageRef: String? = null
     )
 
     data class ErrorEventDefinition(

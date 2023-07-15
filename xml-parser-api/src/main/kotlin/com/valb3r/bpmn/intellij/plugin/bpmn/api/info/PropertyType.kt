@@ -88,6 +88,7 @@ enum class PropertyType(
     EVENT_CONDITION("conditionalEventDefinition.condition.script", "Condition expression", T_EXPRESSION, removeEnclosingNodeIfNullOrEmpty = true),
     EVENT_CONDITION_TYPE("conditionalEventDefinition.condition.type", "", STRING, visible = false, updatedByWithinSameElement = EVENT_CONDITION, onUpdatedByUseHardcodedValue = "bpmn:tFormalExpression", inCascadeOrder = 0),
     EVENT_CONDITION_LANGUAGE("conditionalEventDefinition.condition.language", "Language", STRING),
+    MESSAGE_REF("messageEventDefinition.messageRef", "Message reference", STRING),
     COMPLETION_CONDITION("completionCondition.condition", "Completion condition", T_EXPRESSION, "completionCondition.condition"),
     DEFAULT_FLOW("defaultElement", "Default flow element", ATTACHED_SEQUENCE_SELECT, "defaultElement", false, ID),
     DEFAULT_FLOW_ON_SEQUENCE("defaultElement_onSequence", "Default flow element", BOOLEAN, externalProperty = DefaultFlowExternalProp(), isUsedOnlyBy = setOf(BpmnSequenceFlow::class)),

@@ -10,6 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ListenerField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.ConditionalEventDefinition
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.MessageEventDefinition
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.TimerEventDefinition
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExecutionListener
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExtensionElement
@@ -41,10 +42,6 @@ data class StartEventNode(
 
     data class SignalEventDefinition(
             val signalRef: String? = null
-    )
-
-    data class MessageEventDefinition(
-            val messageRef: String? = null
     )
 
     data class ErrorEventDefinition(
