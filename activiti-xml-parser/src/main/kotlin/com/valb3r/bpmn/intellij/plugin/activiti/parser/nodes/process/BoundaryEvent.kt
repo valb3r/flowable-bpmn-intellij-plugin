@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.Nulls
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process.nested.definitions.ConditionalEventDefinition
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process.nested.definitions.MessageEventDefinition
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process.nested.definitions.TimerEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryEvent
 import org.mapstruct.Mapper
