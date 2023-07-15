@@ -8,6 +8,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.EscalationEventDefinition
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.SignalEventDefinition
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -30,9 +31,5 @@ data class IntermediateThrowEvent(
     interface Mapping {
         fun convertToDto(input: IntermediateThrowEvent) : BpmnIntermediateThrowingEvent
     }
-
-    data class SignalEventDefinition(
-            val signalRef: String? = null
-    )
 }
 

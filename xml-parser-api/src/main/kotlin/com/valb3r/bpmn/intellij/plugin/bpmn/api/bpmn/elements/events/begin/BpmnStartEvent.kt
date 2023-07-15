@@ -15,7 +15,7 @@ data class BpmnStartEvent(
     val asyncBefore: Boolean? = null,
     val asyncAfter: Boolean? = null,
     val timerEventDefinition: BpmnTimerEventDefinition? = null,
-    val signalEventDefinition: SignalEventDefinition? = null,
+    val signalEventDefinition: BpmnSignalEventDefinition? = null,
     val messageEventDefinition: BpmnMessageEventDefinition? = null,
     val errorEventDefinition: BpmnErrorEventDefinition? = null,
     val escalationEventDefinition: BpmnEscalationEventDefinition? = null,
@@ -32,9 +32,4 @@ data class BpmnStartEvent(
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)
     }
-
-
-    data class SignalEventDefinition(
-            val signalRef: String? = null
-    )
 }

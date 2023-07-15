@@ -127,6 +127,9 @@
         <bpmn:endEvent id="ErrorEndEvent">
             <bpmn:errorEventDefinition id="ErrorEventDefinition_0ipi6yo" errorRef="Error_1moidde" />
         </bpmn:endEvent>
+        <bpmn:intermediateThrowEvent id="SignalIntermediateThrowEvent">
+            <bpmn:signalEventDefinition id="SignalEventDefinition_105lphj" signalRef="Signal_19t1qc0" />
+        </bpmn:intermediateThrowEvent>
     </bpmn:process>
     <bpmn:message id="Message_1q041lj" name="Message" />
     <bpmn:escalation id="Escalation_1e2ddfb" name="Escalation_1e2ddfb" escalationCode="CodeValue" />
@@ -197,9 +200,6 @@
             <bpmndi:BPMNShape id="Event_0utmjo3_di" bpmnElement="SignalIntermediateCatchEvent">
                 <dc:Bounds x="302" y="362" width="36" height="36" />
             </bpmndi:BPMNShape>
-            <bpmndi:BPMNShape id="Event_0mc8wrz_di" bpmnElement="SignalEndEvent">
-                <dc:Bounds x="302" y="422" width="36" height="36" />
-            </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="Event_04gizy3_di" bpmnElement="EscalationIntermediateThrowEvent">
                 <dc:Bounds x="362" y="302" width="36" height="36" />
             </bpmndi:BPMNShape>
@@ -217,6 +217,12 @@
                 <bpmndi:BPMNLabel>
                     <dc:Bounds x="236" y="55" width="8" height="14" />
                 </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0mc8wrz_di" bpmnElement="SignalEndEvent">
+                <dc:Bounds x="302" y="492" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0palebj_di" bpmnElement="SignalIntermediateThrowEvent">
+                <dc:Bounds x="302" y="432" width="36" height="36" />
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="BPMNShape_0voebt1" bpmnElement="TimerBoundaryCycleEvent">
                 <dc:Bounds x="652" y="192" width="36" height="36" />

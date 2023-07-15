@@ -11,7 +11,7 @@ data class BpmnBoundaryEvent(
     val cancelActivity: Boolean? = null,
     val documentation: String? = null,
     val timerEventDefinition: BpmnTimerEventDefinition? = null,
-    val signalEventDefinition: SignalEventDefinition? = null,
+    val signalEventDefinition: BpmnSignalEventDefinition? = null,
     val messageEventDefinition: BpmnMessageEventDefinition? = null,
     val errorEventDefinition: BpmnErrorEventDefinition? = null,
     val cancelEventDefinition: CancelEventDefinition? = null,
@@ -25,10 +25,6 @@ data class BpmnBoundaryEvent(
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)
     }
-
-    data class SignalEventDefinition(
-            val signalRef: String? = null
-    )
 
     data class CancelEventDefinition(
             val cancelRef: String? = null // TODO - what it cancels? = null

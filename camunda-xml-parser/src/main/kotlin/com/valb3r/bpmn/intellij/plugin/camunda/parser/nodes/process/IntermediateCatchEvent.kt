@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.Bp
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.ConditionalEventDefinition
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.MessageEventDefinition
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.SignalEventDefinition
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.TimerEventDefinition
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
@@ -39,10 +40,6 @@ data class IntermediateCatchEvent(
     interface LinkEventDefinitionMapping {
         fun convertToDto(input: LinkEventDefinition) : BpmnIntermediateCatchingEvent.LinkEventDefinition
     }
-
-    data class SignalEventDefinition(
-            @JacksonXmlProperty(isAttribute = true) val signalRef: String? = null
-    )
 
     data class LinkEventDefinition(
         @JacksonXmlProperty(isAttribute = true) val id: String? = null,

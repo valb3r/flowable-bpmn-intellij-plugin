@@ -38,10 +38,6 @@ data class BoundaryEvent(
         fun convertToDto(input: BoundaryEvent) : BpmnBoundaryEvent
     }
 
-    data class SignalEventDefinition(
-            val signalRef: String? = null
-    )
-
     data class CancelEventDefinition(
             val cancelRef: String? = null // TODO - what it cancels?
     )

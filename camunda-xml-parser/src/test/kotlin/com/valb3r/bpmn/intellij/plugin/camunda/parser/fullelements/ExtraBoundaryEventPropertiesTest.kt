@@ -182,9 +182,22 @@ internal class ExtraBoundaryEventPropertiesTest {
         readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
     }
 
-    @Test
-    fun `SignalBoundaryEvent extra essential properties`() {
+    @ParameterizedTest
+    @CsvSource(
+        "process.body.signalStartEvent[?(@.id.id == 'SignalStartEvent')].signalEventDefinition.signalRef,SignalStartEvent,SIGNAL_REF,Signal_19t1qc0",
+        "process.body.boundarySignalEvent[?(@.id.id == 'SignalBoundaryEvent')].signalEventDefinition.signalRef,SignalBoundaryEvent,SIGNAL_REF,Signal_19t1qc0",
+        "process.body.intermediateSignalCatchingEvent[?(@.id.id == 'SignalIntermediateCatchEvent')].signalEventDefinition.signalRef,SignalIntermediateCatchEvent,SIGNAL_REF,Signal_19t1qc0",
+        "process.body.intermediateSignalThrowingEvent[?(@.id.id == 'SignalIntermediateThrowEvent')].signalEventDefinition.signalRef,SignalIntermediateThrowEvent,SIGNAL_REF,Signal_19t1qc0",
+    )
+    fun `SignalStartEvent,SignalBoundaryEvent,SignalIntermediateThrowEvent,SignalIntermediateCatchingEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, expectedValue: String) {
+        val processObject = parser.parse(FILE.asResource()!!)
 
+        val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
+        valueFromBpmn.shouldHaveSingleItem().shouldBeEqualTo(expectedValue)
+        val props = processObject.propsOf(id)
+
+        props[prop]!!.shouldBeEqualTo(Property(expectedValue))
+        readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
     }
 
     private fun readAndUpdate(elemId: String, property: PropertyType, newValue: String): BpmnProcessObject {

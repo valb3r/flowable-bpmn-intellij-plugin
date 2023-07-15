@@ -31,10 +31,6 @@ data class StartEventNode(
         return Mappers.getMapper(StartEventNodeMapping::class.java).convertToDto(this)
     }
 
-    data class SignalEventDefinition(
-            val signalRef: String? = null
-    )
-
     @Mapper(uses = [BpmnElementIdMapper::class])
     abstract class StartEventNodeMapping {
 

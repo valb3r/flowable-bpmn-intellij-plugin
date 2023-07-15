@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.Bp
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.ConditionalEventDefinition
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.MessageEventDefinition
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.SignalEventDefinition
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.TimerEventDefinition
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
@@ -30,8 +31,4 @@ data class IntermediateCatchEvent(
     interface Mapping {
         fun convertToDto(input: IntermediateCatchEvent) : BpmnIntermediateCatchingEvent
     }
-
-    data class SignalEventDefinition(
-            @JacksonXmlProperty(isAttribute = true) val signalRef: String? = null
-    )
 }
