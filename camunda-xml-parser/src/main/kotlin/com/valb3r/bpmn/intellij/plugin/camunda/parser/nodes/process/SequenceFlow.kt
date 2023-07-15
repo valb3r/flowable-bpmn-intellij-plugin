@@ -9,6 +9,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.CDATA_FIELD
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExtensionElement
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -21,6 +22,7 @@ data class SequenceFlow(
     val conditionExpression: ConditionExpression?,
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>?,
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>?,
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 ): BpmnMappable<BpmnSequenceFlow> {
 
     override fun toElement(): BpmnSequenceFlow {

@@ -8,6 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTra
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.ProcessBody
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExtensionElement
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.factory.Mappers
@@ -23,6 +24,7 @@ class Transaction: BpmnMappable<BpmnTransactionalSubProcess>, ProcessBody() {
     @JsonIgnore var hasExternalDiagram: Boolean = false
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 
     override fun toElement(): BpmnTransactionalSubProcess {
         return Mappers.getMapper(TransactionMapping::class.java).convertToDto(this)
