@@ -149,9 +149,21 @@ internal class ExtraBoundaryEventPropertiesTest {
         readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
     }
 
-    @Test
-    fun `EscalationBoundaryEvent extra essential properties`() {
+    @ParameterizedTest
+    @CsvSource(
+        "process.body.boundaryEscalationEvent[?(@.id.id == 'EscalationBoundaryEvent')].escalationEventDefinition.escalationRef,EscalationBoundaryEvent,ESCALATION_REF,Escalation_1e2ddfb",
+        "process.body.intermediateEscalationThrowingEvent[?(@.id.id == 'EscalationIntermediateThrowEvent')].escalationEventDefinition.escalationRef,EscalationIntermediateThrowEvent,ESCALATION_REF,Escalation_1e2ddfb",
+        "process.body.escalationEndEvent[?(@.id.id == 'EscalationEndEvent')].escalationEventDefinition.escalationRef,EscalationEndEvent,ESCALATION_REF,Escalation_1e2ddfb",
+    )
+    fun `EscalationStartEvent,EscalationBoundaryEvent,EscalationIntermediateCatchingEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, expectedValue: String) {
+        val processObject = parser.parse(FILE.asResource()!!)
 
+        val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
+        valueFromBpmn.shouldHaveSingleItem().shouldBeEqualTo(expectedValue)
+        val props = processObject.propsOf(id)
+
+        props[prop]!!.shouldBeEqualTo(Property(expectedValue))
+        readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
     }
 
     @Test

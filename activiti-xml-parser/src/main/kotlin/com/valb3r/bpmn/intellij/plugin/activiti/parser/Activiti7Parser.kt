@@ -46,6 +46,7 @@ enum class Activiti7PropertyTypeDetails(val details: PropertyTypeDetails) {
     // EVENT_CONDITION_TYPE(PropertyTypeDetails(PropertyType.EVENT_CONDITION_TYPE, "bpmn:conditionalEventDefinition.condition.xsi:type", XmlType.ATTRIBUTE)), // Camunda-only specific
     // EVENT_CONDITION_LANGUAGE(PropertyTypeDetails(PropertyType.EVENT_CONDITION_LANGUAGE, "bpmn:conditionalEventDefinition.condition.language", XmlType.ATTRIBUTE)),  // Camunda-only specific
     MESSAGE_REF(PropertyTypeDetails(PropertyType.MESSAGE_REF, "messageEventDefinition.messageRef", XmlType.ATTRIBUTE)),
+    ESCALATION_REF(PropertyTypeDetails(PropertyType.ESCALATION_REF, "escalationEventDefinition.escalationRef", XmlType.ATTRIBUTE)),
     // END TODO
     COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "bpmn2:completionCondition.text", XmlType.CDATA)),
     DEFAULT_FLOW(PropertyTypeDetails(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE))

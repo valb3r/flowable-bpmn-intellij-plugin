@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormPrope
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.ConditionalEventDefinition
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.EscalationEventDefinition
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.MessageEventDefinition
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.TimerEventDefinition
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.formprop.ExtensionElement
@@ -39,10 +40,6 @@ data class StartEventNode(
 
     data class ErrorEventDefinition(
             val errorRef: String? = null
-    )
-
-    data class EscalationEventDefinition(
-            val escalationRef: String? = null
     )
 
     @Mapper(uses = [BpmnElementIdMapper::class])

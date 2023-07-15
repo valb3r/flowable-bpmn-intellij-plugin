@@ -17,6 +17,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnConditionalEventDefinition
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnEscalationEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnMessageEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
@@ -42,7 +43,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         val result: WithBpmnId = when(clazz) {
             BpmnStartEvent::class -> BpmnStartEvent(generateBpmnId())
             BpmnStartConditionalEvent::class -> BpmnStartConditionalEvent(generateBpmnId(), conditionalEventDefinition = BpmnConditionalEventDefinition(null))
-            BpmnStartEscalationEvent::class -> BpmnStartEscalationEvent(generateBpmnId())
+            BpmnStartEscalationEvent::class -> BpmnStartEscalationEvent(generateBpmnId(), escalationEventDefinition = BpmnEscalationEventDefinition(null))
             BpmnStartErrorEvent::class -> BpmnStartErrorEvent(generateBpmnId())
             BpmnStartMessageEvent::class -> BpmnStartMessageEvent(generateBpmnId(), messageEventDefinition = BpmnMessageEventDefinition(null))
             BpmnStartSignalEvent::class -> BpmnStartSignalEvent(generateBpmnId())

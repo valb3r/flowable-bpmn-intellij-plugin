@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnEscalationEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.EndEventAlike
 
 data class BpmnEndEvent(
@@ -13,7 +14,7 @@ data class BpmnEndEvent(
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
         val errorEventDefinition: ErrorEventDefinition? = null,
-        val escalationEventDefinition: EscalationEventDefinition? = null,
+        val escalationEventDefinition: BpmnEscalationEventDefinition? = null,
         val cancelEventDefinition: CancelEventDefinition? = null,
         val terminateEventDefinition: TerminateEventDefinition? = null
 ): WithBpmnId, EndEventAlike {
@@ -24,10 +25,6 @@ data class BpmnEndEvent(
 
     data class ErrorEventDefinition(
             val errorRef: String? = null
-    )
-
-    data class EscalationEventDefinition(
-            val escalationRef: String? = null
     )
 
     data class CancelEventDefinition(

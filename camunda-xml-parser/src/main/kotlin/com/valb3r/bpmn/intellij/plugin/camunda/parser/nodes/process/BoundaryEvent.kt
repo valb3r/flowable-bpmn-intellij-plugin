@@ -8,6 +8,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryEvent
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.ConditionalEventDefinition
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.EscalationEventDefinition
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.MessageEventDefinition
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.TimerEventDefinition
 import org.mapstruct.Mapper
@@ -54,9 +55,5 @@ data class BoundaryEvent(
 
     data class CompensateEventDefinition(
             val activityRef: String? = null
-    )
-
-    data class EscalationEventDefinition(
-            val escalationRef: String? = null
     )
 }

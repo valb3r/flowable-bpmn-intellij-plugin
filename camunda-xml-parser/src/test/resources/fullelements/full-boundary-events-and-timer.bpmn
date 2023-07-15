@@ -121,6 +121,9 @@
         <bpmn:intermediateCatchEvent id="LinkIntermediateCatchEvent">
             <bpmn:linkEventDefinition id="LinkEventDefinition_167um4f" name="Link1" />
         </bpmn:intermediateCatchEvent>
+        <bpmn:endEvent id="EscalationEndEvent">
+            <bpmn:escalationEventDefinition id="EscalationEventDefinition_1r5i994" escalationRef="Escalation_1e2ddfb" />
+        </bpmn:endEvent>
     </bpmn:process>
     <bpmn:message id="Message_1q041lj" name="Message" />
     <bpmn:escalation id="Escalation_1e2ddfb" name="Escalation_1e2ddfb" escalationCode="CodeValue" />
@@ -202,6 +205,9 @@
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="Event_1nht52n_di" bpmnElement="LinkIntermediateCatchEvent">
                 <dc:Bounds x="422" y="232" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Event_0jakyag_di" bpmnElement="EscalationEndEvent">
+                <dc:Bounds x="362" y="292" width="36" height="36" />
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="BPMNShape_0voebt1" bpmnElement="TimerBoundaryCycleEvent">
                 <dc:Bounds x="652" y="122" width="36" height="36" />

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process.nested.definitions.EscalationEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateThrowingEvent
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
@@ -28,10 +29,6 @@ data class IntermediateThrowEvent(
 
     data class SignalEventDefinition(
             val signalRef: String? = null
-    )
-
-    data class EscalationEventDefinition(
-            val escalationRef: String? = null
     )
 }
 
