@@ -7,10 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
@@ -54,6 +51,7 @@ data class BpmnProcessBody(
         val intermediateNoneThrowingEvent: List<BpmnIntermediateNoneThrowingEvent>?,
         val intermediateSignalThrowingEvent: List<BpmnIntermediateSignalThrowingEvent>?,
         val intermediateEscalationThrowingEvent: List<BpmnIntermediateEscalationThrowingEvent>?,
+        val intermediateLinkThrowingEvent: List<BpmnIntermediateLinkThrowingEvent>?,
 
         // Service-task alike
         val task: List<BpmnTask>?,

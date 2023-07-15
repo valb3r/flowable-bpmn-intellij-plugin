@@ -2,6 +2,8 @@ package com.valb3r.bpmn.intellij.plugin.camunda.parser
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnLinkEventDefinition
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateLinkThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnComplexGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
@@ -16,7 +18,8 @@ class CamundaObjectFactory: BaseBpmnObjectFactory() {
             BpmnTask::class -> BpmnTask(generateBpmnId())
             BpmnSendTask::class -> BpmnSendTask(generateBpmnId())
             BpmnComplexGateway::class -> BpmnComplexGateway(generateBpmnId())
-            BpmnIntermediateLinkCatchingEvent::class -> BpmnIntermediateLinkCatchingEvent(generateBpmnId())
+            BpmnIntermediateLinkCatchingEvent::class -> BpmnIntermediateLinkCatchingEvent(generateBpmnId(), linkEventDefinition = BpmnLinkEventDefinition(null, null))
+            BpmnIntermediateLinkThrowingEvent::class -> BpmnIntermediateLinkThrowingEvent(generateBpmnId(), linkEventDefinition = BpmnLinkEventDefinition(null, null))
             else -> super.newBpmnObject(clazz)
         } as T
     }

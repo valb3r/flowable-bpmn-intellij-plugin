@@ -2,11 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnConditionalEventDefinition
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnMessageEventDefinition
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnSignalEventDefinition
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnTimerEventDefinition
-import java.time.LocalDateTime
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.*
 
 data class BpmnIntermediateCatchingEvent(
     override val id: BpmnElementId,
@@ -16,7 +12,7 @@ data class BpmnIntermediateCatchingEvent(
     val signalEventDefinition: BpmnSignalEventDefinition? = null,
     val messageEventDefinition: BpmnMessageEventDefinition? = null,
     val conditionalEventDefinition: BpmnConditionalEventDefinition? = null,
-    val linkEventDefinition: LinkEventDefinition? = null,
+    val linkEventDefinition: BpmnLinkEventDefinition? = null,
     val incoming: List<String>? = null,
     val outgoing: List<String>? = null,
 ) : WithBpmnId {
@@ -24,9 +20,4 @@ data class BpmnIntermediateCatchingEvent(
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
         return copy(id = newId)
     }
-
-    data class LinkEventDefinition(
-        val id: String? = null,
-        val condition: String? = null
-    )
 }

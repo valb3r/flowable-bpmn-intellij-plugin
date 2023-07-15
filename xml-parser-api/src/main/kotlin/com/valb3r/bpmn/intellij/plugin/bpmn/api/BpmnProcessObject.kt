@@ -93,6 +93,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         body.intermediateNoneThrowingEvent?.forEach { fillFor(parentId, it) }
         body.intermediateSignalThrowingEvent?.forEach { fillFor(parentId, it) }
         body.intermediateEscalationThrowingEvent?.forEach { fillFor(parentId, it) }
+        body.intermediateLinkThrowingEvent?.forEach { fillFor(parentId, it) }
 
         // Service-task alike
         body.task?.forEach { fillFor(parentId, it) }

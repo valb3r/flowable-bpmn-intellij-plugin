@@ -426,7 +426,7 @@ abstract class BaseBpmnParser: BpmnParser {
         return newElem
     }
 
-    private fun createIntermediateThrowEventWithType(elem: Element, type: String?): Element {
+    protected fun createIntermediateThrowEventWithType(elem: Element, type: String?): Element {
         val newElem = elem.addElement(modelNs().named("intermediateThrowEvent"))
         type?.let { newElem.addElement(modelNs().named(it)) }
         return newElem

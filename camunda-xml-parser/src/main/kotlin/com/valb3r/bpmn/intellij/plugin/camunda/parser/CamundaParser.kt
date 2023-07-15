@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateLinkThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnComplexGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendTask
@@ -77,6 +78,7 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     ESCALATION_REF(PropertyTypeDetails(PropertyType.ESCALATION_REF, "bpmn:escalationEventDefinition.escalationRef", XmlType.ATTRIBUTE)),
     ERROR_REF(PropertyTypeDetails(PropertyType.ERROR_REF, "bpmn:errorEventDefinition.errorRef", XmlType.ATTRIBUTE)),
     SIGNAL_REF(PropertyTypeDetails(PropertyType.SIGNAL_REF, "bpmn:signalEventDefinition.signalRef", XmlType.ATTRIBUTE)),
+    LINK_REF(PropertyTypeDetails(PropertyType.LINK_REF, "bpmn:linkEventDefinition.name", XmlType.ATTRIBUTE)),
     COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA)),
     DEFAULT_FLOW(PropertyTypeDetails(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE)),
     // Unsupported? IS_TRANSACTIONAL_SUBPROCESS(PropertyTypeDetails(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT)),
@@ -208,6 +210,7 @@ class CamundaParser : BaseBpmnParser() {
             is BpmnSendTask -> diagramParent.addElement(modelNs().named("sendTask"))
             is BpmnComplexGateway -> diagramParent.addElement(modelNs().named("complexGateway"))
             is BpmnIntermediateLinkCatchingEvent -> createIntermediateCatchEventWithType(diagramParent, "linkEventDefinition")
+            is BpmnIntermediateLinkThrowingEvent -> createIntermediateThrowEventWithType(diagramParent, "linkEventDefinition")
             else -> super.createBpmnObject(element, diagramParent)
         }
     }

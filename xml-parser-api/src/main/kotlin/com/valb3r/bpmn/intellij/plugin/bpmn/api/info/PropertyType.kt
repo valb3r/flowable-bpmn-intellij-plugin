@@ -92,6 +92,7 @@ enum class PropertyType(
     ESCALATION_REF("escalationEventDefinition.escalationRef", "Escalation reference", STRING),
     ERROR_REF("errorEventDefinition.errorRef", "Error reference", STRING),
     SIGNAL_REF("signalEventDefinition.signalRef", "Signal reference", STRING),
+    LINK_REF("linkEventDefinition.name", "Link reference", STRING),
     COMPLETION_CONDITION("completionCondition.condition", "Completion condition", T_EXPRESSION, "completionCondition.condition"),
     DEFAULT_FLOW("defaultElement", "Default flow element", ATTACHED_SEQUENCE_SELECT, "defaultElement", false, ID),
     DEFAULT_FLOW_ON_SEQUENCE("defaultElement_onSequence", "Default flow element", BOOLEAN, externalProperty = DefaultFlowExternalProp(), isUsedOnlyBy = setOf(BpmnSequenceFlow::class)),

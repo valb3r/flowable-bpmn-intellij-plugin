@@ -13,6 +13,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateLinkThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.*
@@ -80,6 +81,7 @@ private val INTERMEDIATE_LINK_CATCHING_ICON = IconLoader.getIcon("/icons/popupme
 private val INTERMEDIATE_NONE_THROWING_ICON = IconLoader.getIcon("/icons/popupmenu/none-throw-event.png", BaseCanvasPopupMenuProvider::class.java)
 private val INTERMEDIATE_SIGNAL_THROWING_ICON = IconLoader.getIcon("/icons/popupmenu/signal-throw-event.png", BaseCanvasPopupMenuProvider::class.java)
 private val INTERMEDIATE_ESCALATION_THROWING_ICON = IconLoader.getIcon("/icons/popupmenu/escalation-throw-event.png", BaseCanvasPopupMenuProvider::class.java)
+private val INTERMEDIATE_LINK_THROWING_ICON = IconLoader.getIcon("/icons/popupmenu/intermediate-link-throw-event.png", BaseCanvasPopupMenuProvider::class.java)
 
 // Service-task alike
 private val TASK_ICON = IconLoader.getIcon("/icons/popupmenu/call-activity.png", BaseCanvasPopupMenuProvider::class.java)
@@ -149,6 +151,7 @@ abstract class BaseCanvasPopupMenuProvider(private val project: Project) : Canva
     protected val INTERMEDIATE_NONE_THROWING_EVENT = MenuItemDef("Intermediate none throwing event",  INTERMEDIATE_NONE_THROWING_ICON, { project, sceneLocation, focus -> ShapeCreator(project, BpmnIntermediateNoneThrowingEvent::class, sceneLocation, focus)}, { project, focus ->  ShapeTypeChange(project, BpmnIntermediateNoneThrowingEvent::class, focus)})
     protected val INTERMEDIATE_SIGNAL_THROWING_EVENT = MenuItemDef("Intermediate signal throwing event",  INTERMEDIATE_SIGNAL_THROWING_ICON, { project, sceneLocation, focus -> ShapeCreator(project, BpmnIntermediateSignalThrowingEvent::class, sceneLocation, focus)}, { project, focus ->  ShapeTypeChange(project, BpmnIntermediateSignalThrowingEvent::class, focus)})
     protected val INTERMEDIATE_ESCALATION_THROWING_EVENT = MenuItemDef("Intermediate escalation throwing event",  INTERMEDIATE_ESCALATION_THROWING_ICON, { project, sceneLocation, focus -> ShapeCreator(project, BpmnIntermediateEscalationThrowingEvent::class, sceneLocation, focus)}, { project, focus ->  ShapeTypeChange(project, BpmnIntermediateEscalationThrowingEvent::class, focus)})
+    protected val INTERMEDIATE_LINK_THROWING_EVENT = MenuItemDef("Intermediate link throwing event",  INTERMEDIATE_LINK_THROWING_ICON, { project, sceneLocation, focus -> ShapeCreator(project, BpmnIntermediateLinkThrowingEvent::class, sceneLocation, focus)}, { project, focus ->  ShapeTypeChange(project, BpmnIntermediateLinkThrowingEvent::class, focus)})
     protected val INTERMEDIATE_TIMER_CATCHING_EVENT = MenuItemDef("Intermediate timer catching event",  INTERMEDIATE_TIMER_CATCHING_ICON, { project, sceneLocation, focus -> ShapeCreator(project, BpmnIntermediateTimerCatchingEvent::class, sceneLocation, focus)}, { project, focus ->  ShapeTypeChange(project, BpmnIntermediateTimerCatchingEvent::class, focus)})
     protected val INTERMEDIATE_MESSAGE_CATCHING_EVENT = MenuItemDef("Intermediate message catching event",  INTERMEDIATE_MESSAGE_CATCHING_ICON, { project, sceneLocation, focus -> ShapeCreator(project, BpmnIntermediateMessageCatchingEvent::class, sceneLocation, focus)}, { project, focus ->  ShapeTypeChange(project, BpmnIntermediateMessageCatchingEvent::class, focus)})
     protected val INTERMEDIATE_SIGNAL_CATCHING_EVENT = MenuItemDef("Intermediate signal catching event",  INTERMEDIATE_SIGNAL_CATCHING_ICON, { project, sceneLocation, focus -> ShapeCreator(project, BpmnIntermediateSignalCatchingEvent::class, sceneLocation, focus)}, { project, focus ->  ShapeTypeChange(project, BpmnIntermediateSignalCatchingEvent::class, focus)})

@@ -88,6 +88,7 @@ class CamundaCanvasPopupMenuProvider(project: Project) : BaseCanvasPopupMenuProv
         menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_NONE_THROWING_EVENT)
         menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_SIGNAL_THROWING_EVENT)
         menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_ESCALATION_THROWING_EVENT)
+        menu.addNewElementItem(sceneLocation, focus,  INTERMEDIATE_LINK_THROWING_EVENT)
         return menu
     }
 

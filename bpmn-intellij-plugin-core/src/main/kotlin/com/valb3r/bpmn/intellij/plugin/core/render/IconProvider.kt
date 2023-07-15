@@ -52,6 +52,7 @@ interface IconProvider {
     val noneThrowEvent: SvgIcon
     val signalThrowEvent: SvgIcon
     val escalationThrowEvent: SvgIcon
+    val intermediateLinkThrowEvent: SvgIcon
     val endEvent: SvgIcon
     val errorEndEvent: SvgIcon
     val cancelEndEvent: SvgIcon
@@ -149,6 +150,7 @@ data class IconProviderImpl(
         override val escalationEndEvent: SvgIcon = "/icons/ui-icons/svg/escalation-end-event.svg".asResource()!!,
         override val terminateEndEvent: SvgIcon = "/icons/ui-icons/svg/terminate-end-event.svg".asResource()!!,
         override val escalationThrowEvent: SvgIcon = "/icons/ui-icons/svg/escalation-throw-event.svg".asResource()!!,
+        override val intermediateLinkThrowEvent: SvgIcon = "/icons/ui-icons/svg/intermediate-link-throw-event.svg".asResource()!!,
         override val startEvent: SvgIcon = "/icons/ui-icons/svg/start-event.svg".asResource()!!,
         override val conditionalStartEvent: SvgIcon = "/icons/ui-icons/svg/conditional-start-event.svg".asResource()!!,
         override val messageStartEvent: SvgIcon = "/icons/ui-icons/svg/message-start-event.svg".asResource()!!,

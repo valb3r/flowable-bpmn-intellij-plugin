@@ -139,14 +139,7 @@ internal class ExtraBoundaryEventPropertiesTest {
         "process.body.intermediateMessageCatchingEvent[?(@.id.id == 'MessageIntermediateCatchEvent')].messageEventDefinition.messageRef,MessageIntermediateCatchEvent,MESSAGE_REF,Message_1q041lj",
     )
     fun `MessageStartEvent,MessageBoundaryEvent,MessageIntermediateCatchingEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, expectedValue: String) {
-        val processObject = parser.parse(FILE.asResource()!!)
-
-        val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
-        valueFromBpmn.shouldHaveSingleItem().shouldBeEqualTo(expectedValue)
-        val props = processObject.propsOf(id)
-
-        props[prop]!!.shouldBeEqualTo(Property(expectedValue))
-        readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
+        verifyObject(jsonPath, expectedValue, id, prop)
     }
 
     @ParameterizedTest
@@ -156,14 +149,7 @@ internal class ExtraBoundaryEventPropertiesTest {
         "process.body.escalationEndEvent[?(@.id.id == 'EscalationEndEvent')].escalationEventDefinition.escalationRef,EscalationEndEvent,ESCALATION_REF,Escalation_1e2ddfb",
     )
     fun `EscalationStartEvent,EscalationBoundaryEvent,EscalationIntermediateCatchingEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, expectedValue: String) {
-        val processObject = parser.parse(FILE.asResource()!!)
-
-        val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
-        valueFromBpmn.shouldHaveSingleItem().shouldBeEqualTo(expectedValue)
-        val props = processObject.propsOf(id)
-
-        props[prop]!!.shouldBeEqualTo(Property(expectedValue))
-        readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
+        verifyObject(jsonPath, expectedValue, id, prop)
     }
 
     @ParameterizedTest
@@ -172,14 +158,7 @@ internal class ExtraBoundaryEventPropertiesTest {
         "process.body.errorEndEvent[?(@.id.id == 'ErrorEndEvent')].errorEventDefinition.errorRef,ErrorEndEvent,ERROR_REF,Error_1moidde",
     )
     fun `ErrorStartEvent,ErrorBoundaryEvent,ErrorIntermediateCatchingEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, expectedValue: String) {
-        val processObject = parser.parse(FILE.asResource()!!)
-
-        val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
-        valueFromBpmn.shouldHaveSingleItem().shouldBeEqualTo(expectedValue)
-        val props = processObject.propsOf(id)
-
-        props[prop]!!.shouldBeEqualTo(Property(expectedValue))
-        readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
+        verifyObject(jsonPath, expectedValue, id, prop)
     }
 
     @ParameterizedTest
@@ -190,6 +169,19 @@ internal class ExtraBoundaryEventPropertiesTest {
         "process.body.intermediateSignalThrowingEvent[?(@.id.id == 'SignalIntermediateThrowEvent')].signalEventDefinition.signalRef,SignalIntermediateThrowEvent,SIGNAL_REF,Signal_19t1qc0",
     )
     fun `SignalStartEvent,SignalBoundaryEvent,SignalIntermediateThrowEvent,SignalIntermediateCatchingEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, expectedValue: String) {
+        verifyObject(jsonPath, expectedValue, id, prop)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "process.body.intermediateLinkCatchingEvent[?(@.id.id == 'LinkIntermediateCatchEvent')].linkEventDefinition.name,LinkIntermediateCatchEvent,LINK_REF,Link1",
+        "process.body.intermediateLinkThrowingEvent[?(@.id.id == 'LinkIntermediateThrowEvent')].linkEventDefinition.name,LinkIntermediateThrowEvent,LINK_REF,Link1",
+    )
+    fun `BpmnIntermediateLinkCatchingEvent,BpmnIntermediateLinkThrowingEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, expectedValue: String) {
+        verifyObject(jsonPath, expectedValue, id, prop)
+    }
+
+    private fun verifyObject(jsonPath: String, expectedValue: String, id: String, prop: PropertyType) {
         val processObject = parser.parse(FILE.asResource()!!)
 
         val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
