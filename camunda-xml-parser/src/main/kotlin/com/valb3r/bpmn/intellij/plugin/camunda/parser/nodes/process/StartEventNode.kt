@@ -9,7 +9,11 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ListenerField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
-import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.*
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.*
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExecutionListener
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExtensionElement
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.FormDataExtensionElement
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.FormFieldMapper
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -33,30 +37,6 @@ data class StartEventNode(
     override fun toElement(): BpmnStartEvent {
         return Mappers.getMapper(StartEventNodeMapping::class.java).convertToDto(this)
     }
-
-    data class TimerEventDefinition(
-            val timeDate: String? = null
-    )
-
-    data class SignalEventDefinition(
-            val signalRef: String? = null
-    )
-
-    data class MessageEventDefinition(
-            val messageRef: String? = null
-    )
-
-    data class ErrorEventDefinition(
-            val errorRef: String? = null
-    )
-
-    data class EscalationEventDefinition(
-            val escalationRef: String? = null
-    )
-
-    data class ConditionalEventDefinition(
-            val condition: String? = null
-    )
 
     @Mapper(uses = [BpmnElementIdMapper::class])
     abstract class StartEventNodeMapping {

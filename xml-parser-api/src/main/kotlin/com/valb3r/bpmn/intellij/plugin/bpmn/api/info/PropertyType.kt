@@ -18,7 +18,7 @@ enum class PropertyType(
     val path: String = id,
     val cascades: Boolean = false,
     val updatedBy: PropertyType? = null,
-    val updateOrder: Int = 0,
+    val listenerOrder: Int = 0,
     val elementUpdateChangesClass: Boolean = false,
     val defaultValueIfNull: Any? = null,
     val group: List<FunctionalGroupType>? = null,
@@ -32,7 +32,10 @@ enum class PropertyType(
     val positionInGroup: Int = 65534, // Explicit order indicator - where to place control in UI
     val setForSelect: Set<String>? = null,
     val isUsedOnlyBy: Set<KClass<out WithBpmnId>> = setOf(), // In case of empty list us used by any class
-    val externalProperty: ExternalProperty? = null
+    val externalProperty: ExternalProperty? = null,
+    val onUpdatedByUseHardcodedValue: Any? = null,
+    val updatedByWithinSameElement: PropertyType? = null,
+    val inCascadeOrder: Int = Int.MAX_VALUE
 ) {
     ID("id", "ID", STRING, "id.id", true, null, 1000, explicitIndexCascades = listOf("BPMN_INCOMING", "BPMN_OUTGOING")), // ID should fire last
     NAME("name", "Name", STRING),
@@ -76,6 +79,20 @@ enum class PropertyType(
     ATTACHED_TO_REF("attachedToRef", "Attached to", STRING, "attachedToRef.id", false, ID),
     CONDITION_EXPR_VALUE("conditionExpression.text", "Condition expression", T_EXPRESSION, "conditionExpression.text"),
     CONDITION_EXPR_TYPE("conditionExpression.type", "Condition expression type", STRING, "conditionExpression.type"),
+    TIME_DATE("timerEventDefinition.timeDate.timeDate", "Time date in ISO-8601", T_EXPRESSION, removeEnclosingNodeIfNullOrEmpty = true),
+    TIME_DATE_EXPRESSION_TYPE("timerEventDefinition.timeDate.type", "", STRING, "timerEventDefinition.timeDate.type", visible = false, updatedByWithinSameElement = TIME_DATE, onUpdatedByUseHardcodedValue = "bpmn:tFormalExpression", inCascadeOrder = 0),
+    TIME_DURATION("timerEventDefinition.timeDuration.timeDuration", "Time duration (e.g. PT5M)", T_EXPRESSION, removeEnclosingNodeIfNullOrEmpty = true),
+    TIME_DURATION_EXPRESSION_TYPE("timerEventDefinition.timeDuration.type", "", STRING, visible = false, updatedByWithinSameElement = TIME_DURATION, onUpdatedByUseHardcodedValue = "bpmn:tFormalExpression", inCascadeOrder = 0),
+    TIME_CYCLE("timerEventDefinition.timeCycle.timeCycle", "Time cycle (e.g. R3/PT10H)", T_EXPRESSION, removeEnclosingNodeIfNullOrEmpty = true),
+    TIME_CYCLE_EXPRESSION_TYPE("timerEventDefinition.timeCycle.type", "", STRING, visible = false, updatedByWithinSameElement = TIME_CYCLE, onUpdatedByUseHardcodedValue = "bpmn:tFormalExpression", inCascadeOrder = 0),
+    EVENT_CONDITION("conditionalEventDefinition.condition.script", "Condition expression", T_EXPRESSION, removeEnclosingNodeIfNullOrEmpty = true),
+    EVENT_CONDITION_TYPE("conditionalEventDefinition.condition.type", "", STRING, visible = false, updatedByWithinSameElement = EVENT_CONDITION, onUpdatedByUseHardcodedValue = "bpmn:tFormalExpression", inCascadeOrder = 0),
+    EVENT_CONDITION_LANGUAGE("conditionalEventDefinition.condition.language", "Language", STRING),
+    MESSAGE_REF("messageEventDefinition.messageRef", "Message reference", STRING),
+    ESCALATION_REF("escalationEventDefinition.escalationRef", "Escalation reference", STRING),
+    ERROR_REF("errorEventDefinition.errorRef", "Error reference", STRING),
+    SIGNAL_REF("signalEventDefinition.signalRef", "Signal reference", STRING),
+    LINK_REF("linkEventDefinition.name", "Link reference", STRING),
     COMPLETION_CONDITION("completionCondition.condition", "Completion condition", T_EXPRESSION, "completionCondition.condition"),
     DEFAULT_FLOW("defaultElement", "Default flow element", ATTACHED_SEQUENCE_SELECT, "defaultElement", false, ID),
     DEFAULT_FLOW_ON_SEQUENCE("defaultElement_onSequence", "Default flow element", BOOLEAN, externalProperty = DefaultFlowExternalProp(), isUsedOnlyBy = setOf(BpmnSequenceFlow::class)),
@@ -126,19 +143,19 @@ enum class PropertyType(
     OUTPUT_VARIABLE("outputVariable", "Output variable", STRING),
     DIRECTORY("directory", "Working directory", STRING),
     FAILED_JOB_RETRY_CYCLE("failedJobRetryTimeCycle", "Failed job retry cycle", STRING),
-    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, group = listOf(FunctionalGroupType.ADD_FIELD), indexInGroupArrayName = "name", updateOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true), // Is sub-id
+    FIELD_NAME("fieldsExtension.@name", "Field name", STRING, group = listOf(FunctionalGroupType.ADD_FIELD), indexInGroupArrayName = "name", listenerOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true), // Is sub-id
     FIELD_EXPRESSION("fieldsExtension.@expression", "Expression", T_EXPRESSION, group = listOf(FunctionalGroupType.ADD_FIELD), indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
     FIELD_STRING("fieldsExtension.@string", "String value", STRING, group = listOf(FunctionalGroupType.ADD_FIELD), indexInGroupArrayName = "name", removeEnclosingNodeIfNullOrEmpty = true),
-    FORM_PROPERTY_ID("formPropertiesExtension.@id", "Form property ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id", updateOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true), // Is sub-id
+    FORM_PROPERTY_ID("formPropertiesExtension.@id", "Form property ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id", listenerOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true), // Is sub-id
     FORM_PROPERTY_NAME("formPropertiesExtension.@name", "Property name", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_TYPE("formPropertiesExtension.@type", "Type", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_VARIABLE("formPropertiesExtension.@variable", "Variable", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_DEFAULT("formPropertiesExtension.@default", "Default value", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_EXPRESSION("formPropertiesExtension.@expression", "Expression", T_EXPRESSION, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
     FORM_PROPERTY_DATE_PATTERN("formPropertiesExtension.@datePattern", "Date pattern", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY), indexInGroupArrayName = "id"),
-    FORM_PROPERTY_VALUE_ID("formPropertiesExtension.@value.@id", "Value ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id", updateOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),  // Is sub-id
+    FORM_PROPERTY_VALUE_ID("formPropertiesExtension.@value.@id", "Value ID", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id", listenerOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),  // Is sub-id
     FORM_PROPERTY_VALUE_NAME("formPropertiesExtension.@value.@name", "Value name", STRING, group = listOf(FunctionalGroupType.ADD_FORM_PROPERTY, FunctionalGroupType.ADD_FORM_PROPERTY_VALUE), indexInGroupArrayName = "id.id"),
-    EVENT_TYPE("eventExtensionElements.@eventType", "Event type", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), updateOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false, indexInGroupArrayName = "eventType", indexCascades = CascadeGroup.FLAT, positionInGroup = 1),
+    EVENT_TYPE("eventExtensionElements.@eventType", "Event type", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), listenerOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false, indexInGroupArrayName = "eventType", indexCascades = CascadeGroup.FLAT, positionInGroup = 1),
     EVENT_NAME("eventExtensionElements.@eventName", "Event name", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
     TRIGGER_EVENT_TYPE("eventExtensionElements.@triggerEventType", "Trigger event key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
     CHANNEL_KEY("eventExtensionElements.@channelKey" , "Channel key", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
@@ -152,16 +169,16 @@ enum class PropertyType(
     TRIGGER_CHANNEL_TYPE("eventExtensionElements.@triggerChannelType" ,"Trigger channel type", LIST_SELECT, setForSelect = setOf("", "jms", "kafka", "rabbitmq"), group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
     EVENT_KEY_FIXED_VALUE("eventExtensionElements.@keyDetectionValue" , "Event key fixed value", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
     FIXED_VALUE("eventExtensionElements.@keyDetectionType" ,"", STRING, group = listOf(FunctionalGroupType.ADD_EVENT), indexInGroupArrayName = "eventType", removeEnclosingNodeIfNullOrEmpty = true),
-    MAPPING_PAYLOAD_TO_EVENT_VARIABLE_NAME("extensionElementsMappingPayloadToEvent.@source", "Variable name", STRING, isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_TO), indexInGroupArrayName = "source",  updateOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true, indexCascades = CascadeGroup.PARENTS_CASCADE, positionInGroup = 1),
+    MAPPING_PAYLOAD_TO_EVENT_VARIABLE_NAME("extensionElementsMappingPayloadToEvent.@source", "Variable name", STRING, isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_TO), indexInGroupArrayName = "source",  listenerOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true, indexCascades = CascadeGroup.PARENTS_CASCADE, positionInGroup = 1),
     MAPPING_PAYLOAD_TO_EVENT_PROPERTY_NAME("extensionElementsMappingPayloadToEvent.@target", "Event property name", STRING, isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_TO), indexInGroupArrayName = "source"),
     MAPPING_PAYLOAD_TO_EVENT_TYPE("extensionElementsMappingPayloadToEvent.@type", "Type", LIST_SELECT, setForSelect = setOf("","string", "integer", "double", "boolean"), isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_TO), indexInGroupArrayName = "source"),
-    MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME("extensionElementsMappingPayloadFromEvent.@source", "Variable name", STRING, group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), isUsedOnlyBy = setOf(BpmnSendEventTask::class), indexInGroupArrayName = "source",  updateOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true, positionInGroup = 1),
+    MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME("extensionElementsMappingPayloadFromEvent.@source", "Variable name", STRING, group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), isUsedOnlyBy = setOf(BpmnSendEventTask::class), indexInGroupArrayName = "source",  listenerOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true, positionInGroup = 1),
     MAPPING_PAYLOAD_FROM_EVENT_PROPERTY_NAME("extensionElementsMappingPayloadFromEvent.@target", "Event property name", STRING, group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), isUsedOnlyBy = setOf(BpmnSendEventTask::class), indexInGroupArrayName = "source"),
     MAPPING_PAYLOAD_FROM_EVENT_TYPE("extensionElementsMappingPayloadFromEvent.@type", "Type", LIST_SELECT, setForSelect = setOf("","string", "integer", "double", "boolean"), isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), indexInGroupArrayName = "source"),
-    EXECUTION_LISTENER_CLASS("executionListener.@clazz", "Class", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER), indexInGroupArrayName = "clazz", updateOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),
+    EXECUTION_LISTENER_CLASS("executionListener.@clazz", "Class", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER), indexInGroupArrayName = "clazz", listenerOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),
     EXECUTION_LISTENER_EVENT("executionListener.@event", "Event", LIST_SELECT, setForSelect = setOf("","start", "end", "take"), group = listOf(FunctionalGroupType.EXECUTION_LISTENER), indexInGroupArrayName = "clazz"),
-    EXECUTION_LISTENER_FIELD_NAME("executionListener.@fields.@name", "Name", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, updateOrder = 95),
-    EXECUTION_LISTENER_FIELD_STRING("executionListener.@fields.@string", "String", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", updateOrder = 90);
+    EXECUTION_LISTENER_FIELD_NAME("executionListener.@fields.@name", "Name", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, listenerOrder = 95),
+    EXECUTION_LISTENER_FIELD_STRING("executionListener.@fields.@string", "String", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", listenerOrder = 90);
 
     fun isNestedProperty(): Boolean {
         return (group?.size ?: 0) > 1

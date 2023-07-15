@@ -52,6 +52,7 @@ interface IconProvider {
     val noneThrowEvent: SvgIcon
     val signalThrowEvent: SvgIcon
     val escalationThrowEvent: SvgIcon
+    val intermediateLinkThrowEvent: SvgIcon
     val endEvent: SvgIcon
     val errorEndEvent: SvgIcon
     val cancelEndEvent: SvgIcon
@@ -72,6 +73,7 @@ interface IconProvider {
     val boundaryMessageEvent: SvgIcon
     val boundarySignalEvent: SvgIcon
     val boundaryTimerEvent: SvgIcon
+    val unknownShape: SvgIcon
     val recycleBin: SvgIcon
     val wrench: SvgIcon
     val rightAngle: SvgIcon
@@ -148,6 +150,7 @@ data class IconProviderImpl(
         override val escalationEndEvent: SvgIcon = "/icons/ui-icons/svg/escalation-end-event.svg".asResource()!!,
         override val terminateEndEvent: SvgIcon = "/icons/ui-icons/svg/terminate-end-event.svg".asResource()!!,
         override val escalationThrowEvent: SvgIcon = "/icons/ui-icons/svg/escalation-throw-event.svg".asResource()!!,
+        override val intermediateLinkThrowEvent: SvgIcon = "/icons/ui-icons/svg/intermediate-link-throw-event.svg".asResource()!!,
         override val startEvent: SvgIcon = "/icons/ui-icons/svg/start-event.svg".asResource()!!,
         override val conditionalStartEvent: SvgIcon = "/icons/ui-icons/svg/conditional-start-event.svg".asResource()!!,
         override val messageStartEvent: SvgIcon = "/icons/ui-icons/svg/message-start-event.svg".asResource()!!,
@@ -163,6 +166,7 @@ data class IconProviderImpl(
         override val boundaryMessageEvent: SvgIcon = "/icons/ui-icons/svg/message-boundary-event.svg".asResource()!!,
         override val boundarySignalEvent: SvgIcon = "/icons/ui-icons/svg/signal-boundary-event.svg".asResource()!!,
         override val boundaryTimerEvent: SvgIcon = "/icons/ui-icons/svg/timer-boundary-event.svg".asResource()!!,
+        override val unknownShape: SvgIcon = "/icons/ui-icons/svg/unknown-shape.svg".asResource()!!,
         override val recycleBin: SvgIcon = "/icons/ui-icons/svg/recycle-bin.svg".asResource()!!,
         override val wrench: SvgIcon = "/icons/ui-icons/svg/wrench.svg".asResource()!!,
         override val rightAngle: SvgIcon = "/icons/ui-icons/svg/angle-right.svg".asResource()!!,

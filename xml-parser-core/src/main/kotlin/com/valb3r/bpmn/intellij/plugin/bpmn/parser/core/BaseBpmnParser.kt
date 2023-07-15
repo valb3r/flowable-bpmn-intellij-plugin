@@ -404,31 +404,31 @@ abstract class BaseBpmnParser: BpmnParser {
 
     private fun createBoundaryEventWithType(elem: Element, type: String): Element {
         val newElem = elem.addElement(modelNs().named("boundaryEvent"))
-        newElem.addElement(type)
+        newElem.addElement(modelNs().named(type))
         return newElem
     }
 
     private fun createStartEventWithType(elem: Element, type: String?): Element {
         val newElem = elem.addElement(modelNs().named("startEvent"))
-        type?.let { newElem.addElement(it) }
+        type?.let { newElem.addElement(modelNs().named(it)) }
         return newElem
     }
 
     private fun createEndEventWithType(elem: Element, type: String?): Element {
         val newElem = elem.addElement(modelNs().named("endEvent"))
-        type?.let { newElem.addElement(it) }
+        type?.let { newElem.addElement(modelNs().named(it)) }
         return newElem
     }
 
     protected fun createIntermediateCatchEventWithType(elem: Element, type: String): Element {
         val newElem = elem.addElement(modelNs().named("intermediateCatchEvent"))
-        newElem.addElement(type)
+        newElem.addElement(modelNs().named(type))
         return newElem
     }
 
-    private fun createIntermediateThrowEventWithType(elem: Element, type: String?): Element {
+    protected fun createIntermediateThrowEventWithType(elem: Element, type: String?): Element {
         val newElem = elem.addElement(modelNs().named("intermediateThrowEvent"))
-        type?.let { newElem.addElement(it) }
+        type?.let { newElem.addElement(modelNs().named(it)) }
         return newElem
     }
 

@@ -5,12 +5,14 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateLinkCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateLinkThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnComplexGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.BpmnShapeObjectAdded
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.NS
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.PropertyTypeDetails
@@ -63,6 +65,20 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     ATTACHED_TO_REF(PropertyTypeDetails(PropertyType.ATTACHED_TO_REF, "attachedToRef", XmlType.ATTRIBUTE)),
     CONDITION_EXPR_VALUE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_VALUE, "conditionExpression.text", XmlType.CDATA)),
     CONDITION_EXPR_TYPE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_TYPE, "conditionExpression.xsi:type", XmlType.ATTRIBUTE)),
+    TIME_DATE(PropertyTypeDetails(PropertyType.TIME_DATE, "bpmn:timerEventDefinition.timeDate.timeDate", XmlType.CDATA)),
+    TIME_DATE_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_DATE_EXPRESSION_TYPE, "bpmn:timerEventDefinition.timeDate.xsi:type", XmlType.ATTRIBUTE)),
+    TIME_DURATION(PropertyTypeDetails(PropertyType.TIME_DURATION, "bpmn:timerEventDefinition.timeDuration.timeDuration", XmlType.CDATA)),
+    TIME_DURATION_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_DURATION_EXPRESSION_TYPE, "bpmn:timerEventDefinition.timeDuration.xsi:type", XmlType.ATTRIBUTE)),
+    TIME_CYCLE(PropertyTypeDetails(PropertyType.TIME_CYCLE, "bpmn:timerEventDefinition.timeCycle.timeCycle", XmlType.CDATA)),
+    TIME_CYCLE_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_CYCLE_EXPRESSION_TYPE, "bpmn:timerEventDefinition.timeCycle.xsi:type", XmlType.ATTRIBUTE)),
+    EVENT_CONDITION(PropertyTypeDetails(PropertyType.EVENT_CONDITION, "bpmn:conditionalEventDefinition.bpmn:condition.script", XmlType.CDATA)),
+    EVENT_CONDITION_TYPE(PropertyTypeDetails(PropertyType.EVENT_CONDITION_TYPE, "bpmn:conditionalEventDefinition.bpmn:condition.xsi:type", XmlType.ATTRIBUTE)),
+    EVENT_CONDITION_LANGUAGE(PropertyTypeDetails(PropertyType.EVENT_CONDITION_LANGUAGE, "bpmn:conditionalEventDefinition.bpmn:condition.language", XmlType.ATTRIBUTE)),
+    MESSAGE_REF(PropertyTypeDetails(PropertyType.MESSAGE_REF, "bpmn:messageEventDefinition.messageRef", XmlType.ATTRIBUTE)),
+    ESCALATION_REF(PropertyTypeDetails(PropertyType.ESCALATION_REF, "bpmn:escalationEventDefinition.escalationRef", XmlType.ATTRIBUTE)),
+    ERROR_REF(PropertyTypeDetails(PropertyType.ERROR_REF, "bpmn:errorEventDefinition.errorRef", XmlType.ATTRIBUTE)),
+    SIGNAL_REF(PropertyTypeDetails(PropertyType.SIGNAL_REF, "bpmn:signalEventDefinition.signalRef", XmlType.ATTRIBUTE)),
+    LINK_REF(PropertyTypeDetails(PropertyType.LINK_REF, "bpmn:linkEventDefinition.name", XmlType.ATTRIBUTE)),
     COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA)),
     DEFAULT_FLOW(PropertyTypeDetails(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE)),
     // Unsupported? IS_TRANSACTIONAL_SUBPROCESS(PropertyTypeDetails(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT)),
@@ -194,6 +210,7 @@ class CamundaParser : BaseBpmnParser() {
             is BpmnSendTask -> diagramParent.addElement(modelNs().named("sendTask"))
             is BpmnComplexGateway -> diagramParent.addElement(modelNs().named("complexGateway"))
             is BpmnIntermediateLinkCatchingEvent -> createIntermediateCatchEventWithType(diagramParent, "linkEventDefinition")
+            is BpmnIntermediateLinkThrowingEvent -> createIntermediateThrowEventWithType(diagramParent, "linkEventDefinition")
             else -> super.createBpmnObject(element, diagramParent)
         }
     }

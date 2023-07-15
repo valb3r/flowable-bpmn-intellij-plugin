@@ -5,31 +5,33 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcessBody
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.exceptions.IgnorableParserException
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 
 // TODO - move to some implementation module
 data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<DiagramElement>) {
 
+
     fun toView(factory: BpmnObjectFactory) : BpmnProcessObjectView {
         val elementByDiagramId = mutableMapOf<DiagramElementId, BpmnElementId>()
         val elementByStaticId = mutableMapOf<BpmnElementId, WithParentId>()
         val propertiesById = mutableMapOf<BpmnElementId, PropertyTable>()
+        val suppressedExceptions: MutableList<IgnorableParserException> = mutableListOf()
 
-        fillFor(BpmnElementId(""), factory, process, elementByStaticId, propertiesById)
+        fillFor(BpmnElementId(""), factory, process, elementByStaticId, propertiesById, suppressedExceptions)
         elementByDiagramId[DiagramElementId(process.id.id)] = process.id
 
-        val fillForElementProps = {id: BpmnElementId, elem: WithBpmnId -> fillFor(id, factory, elem, elementByStaticId, propertiesById)}
+        val fillForElementProps = {id: BpmnElementId, elem: WithBpmnId -> fillFor(id, factory, elem, elementByStaticId, propertiesById, suppressedExceptions) }
         val fillForExternalElementProps = { _: BpmnElementId, elem: WithBpmnId -> fillForExternal(elem, elementByStaticId, propertiesById)}
         // 1st pass
         process.body?.let { extractElementsFromBody(process.id, it, fillForElementProps) }
         process.children?.forEach { (id, body) -> extractElementsFromBody(id, body, fillForElementProps)}
         // 2nd pass
-        process.body?.let { reassignParentsBasedOnTargetRef(process.id, it, factory, elementByStaticId, propertiesById) }
-        process.children?.forEach { (id, body) -> reassignParentsBasedOnTargetRef(id, body, factory, elementByStaticId, propertiesById)}
+        process.body?.let { reassignParentsBasedOnTargetRef(process.id, it, factory, elementByStaticId, propertiesById, suppressedExceptions) }
+        process.children?.forEach { (id, body) -> reassignParentsBasedOnTargetRef(id, body, factory, elementByStaticId, propertiesById, suppressedExceptions)}
         // 3rd pass - Deal with external properties:
         process.body?.let { extractElementsFromBody(process.id, it, fillForExternalElementProps) }
         process.children?.forEach { (id, body) -> extractElementsFromBody(id, body, fillForExternalElementProps)}
@@ -46,7 +48,8 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
                 elementByDiagramId,
                 elementByStaticId,
                 propertiesById,
-                diagram
+                diagram,
+                suppressedExceptions
         )
     }
 
@@ -90,6 +93,7 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         body.intermediateNoneThrowingEvent?.forEach { fillFor(parentId, it) }
         body.intermediateSignalThrowingEvent?.forEach { fillFor(parentId, it) }
         body.intermediateEscalationThrowingEvent?.forEach { fillFor(parentId, it) }
+        body.intermediateLinkThrowingEvent?.forEach { fillFor(parentId, it) }
 
         // Service-task alike
         body.task?.forEach { fillFor(parentId, it) }
@@ -134,17 +138,18 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
             body: BpmnProcessBody,
             factory: BpmnObjectFactory,
             elementByStaticId: MutableMap<BpmnElementId, WithParentId>,
-            propertiesById: MutableMap<BpmnElementId, PropertyTable>) {
+            propertiesById: MutableMap<BpmnElementId, PropertyTable>,
+            suppressedExceptions: MutableList<IgnorableParserException>) {
         // Boundary
-        body.boundaryEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryCancelEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryCompensationEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryConditionalEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryErrorEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryEscalationEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryMessageEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundarySignalEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
-        body.boundaryTimerEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById) }
+        body.boundaryEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById, suppressedExceptions) }
+        body.boundaryCancelEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById, suppressedExceptions) }
+        body.boundaryCompensationEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById, suppressedExceptions) }
+        body.boundaryConditionalEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById, suppressedExceptions) }
+        body.boundaryErrorEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById, suppressedExceptions) }
+        body.boundaryEscalationEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById, suppressedExceptions) }
+        body.boundaryMessageEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById, suppressedExceptions) }
+        body.boundarySignalEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById, suppressedExceptions) }
+        body.boundaryTimerEvent?.forEach { fillForTargetRefParent(parentId, factory, it, elementByStaticId, propertiesById, suppressedExceptions) }
     }
 
     private fun fillFor(
@@ -152,12 +157,13 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
         factory: BpmnObjectFactory,
         element: WithBpmnId,
         elementById: MutableMap<BpmnElementId, WithParentId>,
-        propertiesByElemId: MutableMap<BpmnElementId, PropertyTable>) {
+        propertiesByElemId: MutableMap<BpmnElementId, PropertyTable>,
+        suppressedExceptions: MutableList<IgnorableParserException>) {
 
         elementById[element.id] = WithParentId(parentId, element)
-        propertiesByElemId[element.id] = factory.propertiesOf(element)
+        tryParseProperties(propertiesByElemId, element, factory, suppressedExceptions)
     }
-
+    
     private fun fillForExternal(
         element: WithBpmnId,
         elementById: MutableMap<BpmnElementId, WithParentId>,
@@ -176,20 +182,39 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
     }
 
     private fun fillForTargetRefParent(
-            defaultParentId: BpmnElementId,
-            factory: BpmnObjectFactory,
-            activity: WithBpmnId,
-            elementById: MutableMap<BpmnElementId, WithParentId>,
-            propertiesByElemType: MutableMap<BpmnElementId, PropertyTable>) {
-        propertiesByElemType[activity.id] = factory.propertiesOf(activity)
+        defaultParentId: BpmnElementId,
+        factory: BpmnObjectFactory,
+        activity: WithBpmnId,
+        elementById: MutableMap<BpmnElementId, WithParentId>,
+        propertiesByElemId: MutableMap<BpmnElementId, PropertyTable>,
+        suppressedExceptions: MutableList<IgnorableParserException>) {
+        
+        tryParseProperties(propertiesByElemId, activity, factory, suppressedExceptions)
         var parentId = defaultParentId
-        val referencedId = propertiesByElemType[activity.id]?.get(PropertyType.ATTACHED_TO_REF)?.value
+        val referencedId = propertiesByElemId[activity.id]?.get(PropertyType.ATTACHED_TO_REF)?.value
         referencedId?.let {referenced ->
             val computedParent = elementById[BpmnElementId(referenced as String)]
             computedParent?.let { parentId = it.id }
         }
 
         elementById[activity.id] = WithParentId(parentId, activity, defaultParentId)
+    }
+
+    private fun tryParseProperties(
+        propertiesByElemId: MutableMap<BpmnElementId, PropertyTable>,
+        element: WithBpmnId,
+        factory: BpmnObjectFactory,
+        suppressedExceptions: MutableList<IgnorableParserException>
+    ) {
+        try {
+            propertiesByElemId[element.id] = factory.propertiesOf(element)
+        } catch (ex: IgnorableParserException) {
+            propertiesByElemId[element.id] = PropertyTable(mutableMapOf(
+                PropertyType.ID to mutableListOf(Property(element.id.id)),
+                PropertyType.NAME to mutableListOf(Property("Unparseable element"))
+            ))
+            suppressedExceptions += ex
+        }
     }
 }
 
@@ -198,7 +223,8 @@ data class BpmnProcessObjectView(
         val elementByDiagramId: Map<DiagramElementId, BpmnElementId>,
         val elementByStaticId: Map<BpmnElementId, WithParentId>,
         val elemPropertiesByElementId: Map<BpmnElementId, PropertyTable>,
-        val diagram: List<DiagramElement>
+        val diagram: List<DiagramElement>,
+        val suppressedExceptions: List<IgnorableParserException>
 )
 
 data class PropertyTable(private val properties: MutableMap<PropertyType, MutableList<Property>>) {

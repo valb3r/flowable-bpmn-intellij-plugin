@@ -15,6 +15,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
@@ -27,6 +28,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.exceptions.IgnorableParserException
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.*
 import java.util.*
 import kotlin.reflect.KClass
@@ -37,20 +39,20 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
     override fun <T : WithBpmnId> newBpmnObject(clazz: KClass<T>): T {
         val result: WithBpmnId = when(clazz) {
             BpmnStartEvent::class -> BpmnStartEvent(generateBpmnId())
-            BpmnStartConditionalEvent::class -> BpmnStartConditionalEvent(generateBpmnId())
-            BpmnStartEscalationEvent::class -> BpmnStartEscalationEvent(generateBpmnId())
-            BpmnStartErrorEvent::class -> BpmnStartErrorEvent(generateBpmnId())
-            BpmnStartMessageEvent::class -> BpmnStartMessageEvent(generateBpmnId())
-            BpmnStartSignalEvent::class -> BpmnStartSignalEvent(generateBpmnId())
-            BpmnStartTimerEvent::class -> BpmnStartTimerEvent(generateBpmnId())
+            BpmnStartConditionalEvent::class -> BpmnStartConditionalEvent(generateBpmnId(), conditionalEventDefinition = BpmnConditionalEventDefinition(null))
+            BpmnStartEscalationEvent::class -> BpmnStartEscalationEvent(generateBpmnId(), escalationEventDefinition = BpmnEscalationEventDefinition(null))
+            BpmnStartErrorEvent::class -> BpmnStartErrorEvent(generateBpmnId(), errorEventDefinition = BpmnErrorEventDefinition(null))
+            BpmnStartMessageEvent::class -> BpmnStartMessageEvent(generateBpmnId(), messageEventDefinition = BpmnMessageEventDefinition(null))
+            BpmnStartSignalEvent::class -> BpmnStartSignalEvent(generateBpmnId(), signalEventDefinition = BpmnSignalEventDefinition(null))
+            BpmnStartTimerEvent::class -> BpmnStartTimerEvent(generateBpmnId(), timerEventDefinition = BpmnTimerEventDefinition(null, null, null))
             BpmnBoundaryCancelEvent::class -> BpmnBoundaryCancelEvent(generateBpmnId())
             BpmnBoundaryCompensationEvent::class -> BpmnBoundaryCompensationEvent(generateBpmnId())
-            BpmnBoundaryConditionalEvent::class -> BpmnBoundaryConditionalEvent(generateBpmnId())
-            BpmnBoundaryErrorEvent::class -> BpmnBoundaryErrorEvent(generateBpmnId())
+            BpmnBoundaryConditionalEvent::class -> BpmnBoundaryConditionalEvent(generateBpmnId(), conditionalEventDefinition = BpmnConditionalEventDefinition(null))
+            BpmnBoundaryErrorEvent::class -> BpmnBoundaryErrorEvent(generateBpmnId(), errorEventDefinition = BpmnErrorEventDefinition(null))
             BpmnBoundaryEscalationEvent::class -> BpmnBoundaryEscalationEvent(generateBpmnId())
-            BpmnBoundaryMessageEvent::class -> BpmnBoundaryMessageEvent(generateBpmnId())
-            BpmnBoundarySignalEvent::class -> BpmnBoundarySignalEvent(generateBpmnId())
-            BpmnBoundaryTimerEvent::class -> BpmnBoundaryTimerEvent(generateBpmnId())
+            BpmnBoundaryMessageEvent::class -> BpmnBoundaryMessageEvent(generateBpmnId(), messageEventDefinition = BpmnMessageEventDefinition(null))
+            BpmnBoundarySignalEvent::class -> BpmnBoundarySignalEvent(generateBpmnId(), signalEventDefinition = BpmnSignalEventDefinition(null))
+            BpmnBoundaryTimerEvent::class -> BpmnBoundaryTimerEvent(generateBpmnId(), timerEventDefinition = BpmnTimerEventDefinition(null, null, null))
             BpmnUserTask::class -> BpmnUserTask(generateBpmnId())
             BpmnScriptTask::class -> BpmnScriptTask(generateBpmnId())
             BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId())
@@ -76,15 +78,15 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             BpmnEventGateway::class -> BpmnEventGateway(generateBpmnId())
             BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId())
             BpmnEndCancelEvent::class -> BpmnEndCancelEvent(generateBpmnId())
-            BpmnEndErrorEvent::class -> BpmnEndErrorEvent(generateBpmnId())
+            BpmnEndErrorEvent::class -> BpmnEndErrorEvent(generateBpmnId(), errorEventDefinition = BpmnErrorEventDefinition(null))
             BpmnEndEscalationEvent::class -> BpmnEndEscalationEvent(generateBpmnId())
             BpmnEndTerminateEvent::class -> BpmnEndTerminateEvent(generateBpmnId())
-            BpmnIntermediateTimerCatchingEvent::class -> BpmnIntermediateTimerCatchingEvent(generateBpmnId())
-            BpmnIntermediateMessageCatchingEvent::class -> BpmnIntermediateMessageCatchingEvent(generateBpmnId())
-            BpmnIntermediateSignalCatchingEvent::class -> BpmnIntermediateSignalCatchingEvent(generateBpmnId())
-            BpmnIntermediateConditionalCatchingEvent::class -> BpmnIntermediateConditionalCatchingEvent(generateBpmnId())
+            BpmnIntermediateTimerCatchingEvent::class -> BpmnIntermediateTimerCatchingEvent(generateBpmnId(), timerEventDefinition = BpmnTimerEventDefinition(null, null, null))
+            BpmnIntermediateMessageCatchingEvent::class -> BpmnIntermediateMessageCatchingEvent(generateBpmnId(), messageEventDefinition = BpmnMessageEventDefinition(null))
+            BpmnIntermediateSignalCatchingEvent::class -> BpmnIntermediateSignalCatchingEvent(generateBpmnId(), signalEventDefinition = BpmnSignalEventDefinition(null))
+            BpmnIntermediateConditionalCatchingEvent::class -> BpmnIntermediateConditionalCatchingEvent(generateBpmnId(), conditionalEventDefinition = BpmnConditionalEventDefinition(null))
             BpmnIntermediateNoneThrowingEvent::class -> BpmnIntermediateNoneThrowingEvent(generateBpmnId())
-            BpmnIntermediateSignalThrowingEvent::class -> BpmnIntermediateSignalThrowingEvent(generateBpmnId())
+            BpmnIntermediateSignalThrowingEvent::class -> BpmnIntermediateSignalThrowingEvent(generateBpmnId(), signalEventDefinition = BpmnSignalEventDefinition(null))
             BpmnIntermediateEscalationThrowingEvent::class -> BpmnIntermediateEscalationThrowingEvent(generateBpmnId())
             else -> throw IllegalArgumentException("Can't create class: " + clazz.qualifiedName)
         }
@@ -132,7 +134,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
 
             is BpmnStructuralElementAlike -> fillForCallActivity(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
-            else -> throw IllegalArgumentException("Can't parse properties of: ${obj.javaClass}")
+            else -> throw IgnorableParserException("Can't parse properties of element with ID ${obj.id.id} (${obj.javaClass.simpleName})")
         }
         
         return PropertyTable(table)

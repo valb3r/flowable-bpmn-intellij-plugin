@@ -1,4 +1,4 @@
-package com.valb3r.bpmn.intellij.activiti.plugin.notifications
+package com.valb3r.bpmn.intellij.plugin.camunda.notifications
 
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.flowable.org/processdef">
+    <signal id="Signal1" name="Signal1" flowable:scope="global"></signal>
+    <message id="Message1" name="Message1"></message>
+    <escalation id="Escalation1" name="Escalation1" escalationCode="Escalation1"></escalation>
+    <process id="events-test" name="events-test" isExecutable="true">
+        <startEvent id="timerStartDurationEvent" isInterrupting="false">
+            <timerEventDefinition>
+                <timeDuration>PT5M</timeDuration>
+            </timerEventDefinition>
+        </startEvent>
+        <startEvent id="SignalStartEvent" isInterrupting="true">
+            <signalEventDefinition signalRef="Signal1"></signalEventDefinition>
+        </startEvent>
+        <startEvent id="MessageStartEvent" isInterrupting="true">
+            <messageEventDefinition messageRef="Message1"></messageEventDefinition>
+        </startEvent>
+        <startEvent id="ErrorStartEvent" isInterrupting="true">
+            <errorEventDefinition errorRef="Error1"></errorEventDefinition>
+        </startEvent>
+        <startEvent id="sid-51C86B02-F7EE-4545-8FD1-037FBB20FD45"></startEvent>
+        <startEvent id="StartEscalationEvent" isInterrupting="true">
+            <escalationEventDefinition escalationRef="Escalation1"></escalationEventDefinition>
+        </startEvent>
+        <startEvent id="ConditionalStartEvent" isInterrupting="true">
+            <conditionalEventDefinition>
+                <condition>Condition1</condition>
+            </conditionalEventDefinition>
+        </startEvent>
+        <intermediateCatchEvent id="timerIntermediateDurationEvent">
+            <timerEventDefinition>
+                <timeDuration>PT5M</timeDuration>
+            </timerEventDefinition>
+        </intermediateCatchEvent>
+        <intermediateCatchEvent id="SignalIntermediateCatchEvent">
+            <signalEventDefinition signalRef="Signal1"></signalEventDefinition>
+        </intermediateCatchEvent>
+        <intermediateCatchEvent id="MessageIntermediateCatchEvent">
+            <messageEventDefinition messageRef="Message1"></messageEventDefinition>
+        </intermediateCatchEvent>
+        <intermediateCatchEvent id="ConditionalIntermediateCatchEvent">
+            <conditionalEventDefinition>
+                <condition>Condition1</condition>
+            </conditionalEventDefinition>
+        </intermediateCatchEvent>
+        <intermediateThrowEvent id="SignalIntermediateThrowEvent">
+            <signalEventDefinition signalRef="Signal1"></signalEventDefinition>
+        </intermediateThrowEvent>
+        <intermediateThrowEvent id="EscalationIntermediateThrowEvent">
+            <escalationEventDefinition escalationRef="Escalation1"></escalationEventDefinition>
+        </intermediateThrowEvent>
+        <endEvent id="ErrorEndEvent">
+            <errorEventDefinition errorRef="Error1"></errorEventDefinition>
+        </endEvent>
+        <serviceTask id="sid-4477F048-28E9-4785-827D-C65EA4A0CF2B"></serviceTask>
+        <boundaryEvent id="EscalationBoundaryEvent" cancelActivity="false">
+            <escalationEventDefinition escalationRef="Escalation1"></escalationEventDefinition>
+        </boundaryEvent>
+        <boundaryEvent id="TimerBoundaryDurationEvent" attachedToRef="sid-4477F048-28E9-4785-827D-C65EA4A0CF2B" cancelActivity="true">
+            <timerEventDefinition>
+                <timeDuration>PT5M</timeDuration>
+            </timerEventDefinition>
+        </boundaryEvent>
+        <boundaryEvent id="MessageBoundaryEvent" cancelActivity="true">
+            <messageEventDefinition messageRef="Message1"></messageEventDefinition>
+        </boundaryEvent>
+        <boundaryEvent id="sid-914307E7-0D11-49AE-8195-A73A0F883478" attachedToRef="sid-4477F048-28E9-4785-827D-C65EA4A0CF2B" cancelActivity="false">
+            <compensateEventDefinition></compensateEventDefinition>
+        </boundaryEvent>
+        <boundaryEvent id="SignalBoundaryEvent" attachedToRef="sid-4477F048-28E9-4785-827D-C65EA4A0CF2B" cancelActivity="true">
+            <signalEventDefinition signalRef="Signal1"></signalEventDefinition>
+        </boundaryEvent>
+        <boundaryEvent id="ErrorBoundaryEvent" attachedToRef="sid-4477F048-28E9-4785-827D-C65EA4A0CF2B">
+            <errorEventDefinition errorRef="Error1"></errorEventDefinition>
+        </boundaryEvent>
+        <boundaryEvent id="sid-A1AF18A0-9E1E-48DD-A429-ABA80CB2E689" attachedToRef="sid-4477F048-28E9-4785-827D-C65EA4A0CF2B" cancelActivity="false">
+            <cancelEventDefinition></cancelEventDefinition>
+        </boundaryEvent>
+        <boundaryEvent id="ConditionalBoundaryExpressionEvent" attachedToRef="sid-4477F048-28E9-4785-827D-C65EA4A0CF2B" cancelActivity="true">
+            <conditionalEventDefinition>
+                <condition>Condition1</condition>
+            </conditionalEventDefinition>
+        </boundaryEvent>
+        <endEvent id="EscalationEndEvent">
+            <escalationEventDefinition escalationRef="Escalation1"></escalationEventDefinition>
+        </endEvent>
+    </process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_events-test">
+        <bpmndi:BPMNPlane bpmnElement="events-test" id="BPMNPlane_events-test">
+            <bpmndi:BPMNShape bpmnElement="timerStartDurationEvent" id="BPMNShape_timerStartDurationEvent">
+                <omgdc:Bounds height="31.0" width="31.0" x="179.75" y="120.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="SignalStartEvent" id="BPMNShape_SignalStartEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="180.0" y="210.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="MessageStartEvent" id="BPMNShape_MessageStartEvent">
+                <omgdc:Bounds height="30.0" width="30.5" x="180.0" y="570.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="ErrorStartEvent" id="BPMNShape_ErrorStartEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="180.0" y="375.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-51C86B02-F7EE-4545-8FD1-037FBB20FD45" id="BPMNShape_sid-51C86B02-F7EE-4545-8FD1-037FBB20FD45">
+                <omgdc:Bounds height="30.0" width="30.5" x="180.0" y="675.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="StartEscalationEvent" id="BPMNShape_StartEscalationEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="180.0" y="285.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="ConditionalStartEvent" id="BPMNShape_ConditionalStartEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="180.0" y="465.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="timerIntermediateDurationEvent" id="BPMNShape_timerIntermediateDurationEvent">
+                <omgdc:Bounds height="31.0" width="31.0" x="344.5" y="120.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="SignalIntermediateCatchEvent" id="BPMNShape_SignalIntermediateCatchEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="345.0" y="210.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="MessageIntermediateCatchEvent" id="BPMNShape_MessageIntermediateCatchEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="360.0" y="570.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="ConditionalIntermediateCatchEvent" id="BPMNShape_ConditionalIntermediateCatchEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="360.0" y="465.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="SignalIntermediateThrowEvent" id="BPMNShape_SignalIntermediateThrowEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="525.0" y="210.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="EscalationIntermediateThrowEvent" id="BPMNShape_EscalationIntermediateThrowEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="345.0" y="290.0448918222479"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="ErrorEndEvent" id="BPMNShape_ErrorEndEvent">
+                <omgdc:Bounds height="28.0" width="28.0" x="526.0" y="376.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-4477F048-28E9-4785-827D-C65EA4A0CF2B" id="BPMNShape_sid-4477F048-28E9-4785-827D-C65EA4A0CF2B">
+                <omgdc:Bounds height="127.0" width="307.0" x="690.0" y="240.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="EscalationBoundaryEvent" id="BPMNShape_EscalationBoundaryEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="674.1909041233461" y="330.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="TimerBoundaryDurationEvent" id="BPMNShape_TimerBoundaryDurationEvent">
+                <omgdc:Bounds height="31.0" width="31.0" x="674.1152871566579" y="253.97268725906298"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="MessageBoundaryEvent" id="BPMNShape_MessageBoundaryEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="780.0" y="224.86547184684252"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-914307E7-0D11-49AE-8195-A73A0F883478" id="BPMNShape_sid-914307E7-0D11-49AE-8195-A73A0F883478">
+                <omgdc:Bounds height="30.0" width="30.0" x="982.840833860952" y="315.4483995630234"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="SignalBoundaryEvent" id="BPMNShape_SignalBoundaryEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="713.014952739039" y="224.80196944799013"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="ErrorBoundaryEvent" id="BPMNShape_ErrorBoundaryEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="674.5257817159616" y="290.0448918222479"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="sid-A1AF18A0-9E1E-48DD-A429-ABA80CB2E689" id="BPMNShape_sid-A1AF18A0-9E1E-48DD-A429-ABA80CB2E689">
+                <omgdc:Bounds height="30.0" width="30.0" x="982.7622408582112" y="239.53621706548245"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="ConditionalBoundaryExpressionEvent" id="BPMNShape_ConditionalBoundaryExpressionEvent">
+                <omgdc:Bounds height="30.0" width="30.0" x="872.7537161838262" y="224.462269522228"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape bpmnElement="EscalationEndEvent" id="BPMNShape_EscalationEndEvent">
+                <omgdc:Bounds height="28.0" width="28.0" x="526.0" y="286.0"></omgdc:Bounds>
+            </bpmndi:BPMNShape>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</definitions>

@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnLinkEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.IntermediateCatchingEventAlike
 
 data class BpmnIntermediateLinkCatchingEvent(
@@ -10,6 +11,7 @@ data class BpmnIntermediateLinkCatchingEvent(
     val documentation: String? = null,
     val incoming: List<String>? = null,
     val outgoing: List<String>? = null,
+    val linkEventDefinition: BpmnLinkEventDefinition? = null,
 ) : WithBpmnId, IntermediateCatchingEventAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

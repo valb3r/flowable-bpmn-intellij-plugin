@@ -35,6 +35,21 @@ enum class Activiti7PropertyTypeDetails(val details: PropertyTypeDetails) {
     ATTACHED_TO_REF(PropertyTypeDetails(PropertyType.ATTACHED_TO_REF, "attachedToRef", XmlType.ATTRIBUTE)),
     CONDITION_EXPR_VALUE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_VALUE, "bpmn2:conditionExpression.text", XmlType.CDATA)),
     CONDITION_EXPR_TYPE(PropertyTypeDetails(PropertyType.CONDITION_EXPR_TYPE, "bpmn2:conditionExpression.xsi:type", XmlType.ATTRIBUTE)),
+    // TODO: Validate:
+    TIME_DATE(PropertyTypeDetails(PropertyType.TIME_DATE, "timerEventDefinition.timeDate.timeDate", XmlType.CDATA)),
+    // TIME_DATE_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_DATE_EXPRESSION_TYPE, "timerEventDefinition.timeDate.type", XmlType.ATTRIBUTE)), // Camunda-only specific
+    TIME_DURATION(PropertyTypeDetails(PropertyType.TIME_DURATION, "timerEventDefinition.timeDuration.timeDuration", XmlType.CDATA)),
+    // TIME_DURATION_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_DURATION_EXPRESSION_TYPE, "timerEventDefinition.timeDuration.type", XmlType.ATTRIBUTE)), // Camunda-only specific
+    TIME_CYCLE(PropertyTypeDetails(PropertyType.TIME_CYCLE, "timerEventDefinition.timeCycle.timeCycle", XmlType.CDATA)),
+    // TIME_CYCLE_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_CYCLE_EXPRESSION_TYPE, "timerEventDefinition.timeCycle.type", XmlType.ATTRIBUTE)), // Camunda-only specific
+    EVENT_CONDITION(PropertyTypeDetails(PropertyType.EVENT_CONDITION, "conditionalEventDefinition.condition.script", XmlType.CDATA)),
+    // EVENT_CONDITION_TYPE(PropertyTypeDetails(PropertyType.EVENT_CONDITION_TYPE, "bpmn:conditionalEventDefinition.condition.xsi:type", XmlType.ATTRIBUTE)), // Camunda-only specific
+    // EVENT_CONDITION_LANGUAGE(PropertyTypeDetails(PropertyType.EVENT_CONDITION_LANGUAGE, "bpmn:conditionalEventDefinition.condition.language", XmlType.ATTRIBUTE)),  // Camunda-only specific
+    MESSAGE_REF(PropertyTypeDetails(PropertyType.MESSAGE_REF, "messageEventDefinition.messageRef", XmlType.ATTRIBUTE)),
+    ESCALATION_REF(PropertyTypeDetails(PropertyType.ESCALATION_REF, "escalationEventDefinition.escalationRef", XmlType.ATTRIBUTE)),
+    ERROR_REF(PropertyTypeDetails(PropertyType.ERROR_REF, "errorEventDefinition.errorRef", XmlType.ATTRIBUTE)),
+    SIGNAL_REF(PropertyTypeDetails(PropertyType.SIGNAL_REF, "signalEventDefinition.signalRef", XmlType.ATTRIBUTE)),
+    // END TODO
     COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "bpmn2:completionCondition.text", XmlType.CDATA)),
     DEFAULT_FLOW(PropertyTypeDetails(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE))
 }

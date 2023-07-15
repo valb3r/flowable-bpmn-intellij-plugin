@@ -10,10 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
@@ -207,9 +204,10 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
     private fun applyIntermediateThrowingEventCustomizationByType(process: BpmnProcessBody): BpmnProcessBody {
         var result = process
-        result = extractIntermediateThrowingEventsBasedOnType(result, { null == it.escalationEventDefinition && null == it.signalEventDefinition },  cachedMapper(NoneThrowMapper::class.java)) { updates, target -> target.copy(intermediateNoneThrowingEvent = updates) }
+        result = extractIntermediateThrowingEventsBasedOnType(result, { null == it.escalationEventDefinition && null == it.signalEventDefinition && null == it.linkEventDefinition },  cachedMapper(NoneThrowMapper::class.java)) { updates, target -> target.copy(intermediateNoneThrowingEvent = updates) }
         result = extractIntermediateThrowingEventsBasedOnType(result, { null != it.signalEventDefinition },  cachedMapper(SignalThrowMapper::class.java)) { updates, target -> target.copy(intermediateSignalThrowingEvent = updates) }
         result = extractIntermediateThrowingEventsBasedOnType(result, { null != it.escalationEventDefinition },  cachedMapper(EscalationThrowMapper::class.java)) { updates, target -> target.copy(intermediateEscalationThrowingEvent = updates) }
+        result = extractIntermediateThrowingEventsBasedOnType(result, { null != it.linkEventDefinition },  cachedMapper(LinkIntermediateThrowMapper::class.java)) { updates, target -> target.copy(intermediateLinkThrowingEvent = updates) }
         return result
     }
 
@@ -528,6 +526,9 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
 
     @Mapper
     interface EscalationThrowMapper: IntermediateThrowEventMapper<BpmnIntermediateEscalationThrowingEvent>
+
+    @Mapper
+    interface LinkIntermediateThrowMapper: IntermediateThrowEventMapper<BpmnIntermediateLinkThrowingEvent>
 
     interface IntermediateThrowEventMapper<T> {
         fun convertToDto(input: BpmnIntermediateThrowingEvent): T

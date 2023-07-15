@@ -64,25 +64,25 @@ class ActivitiCanvasPopupMenuProvider(project: Project) : BaseCanvasPopupMenuPro
 
     override fun intermediateCatchingEvents(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu {
         val menu = JMenu("Intermediate catching events")
-        menu.addNewElementItem(sceneLocation, focus, INTERMEDIATE_TIMER_CATCHING)
-        menu.addNewElementItem(sceneLocation, focus, INTERMEDIATE_MESSAGE_CATCHING)
-        menu.addNewElementItem(sceneLocation, focus, INTERMEDIATE_SIGNAL_CATCHING)
+        menu.addNewElementItem(sceneLocation, focus, INTERMEDIATE_TIMER_CATCHING_EVENT)
+        menu.addNewElementItem(sceneLocation, focus, INTERMEDIATE_MESSAGE_CATCHING_EVENT)
+        menu.addNewElementItem(sceneLocation, focus, INTERMEDIATE_SIGNAL_CATCHING_EVENT)
         return menu
     }
 
     override fun intermediateThrowingEvents(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu {
         val menu = JMenu("Intermediate throwing events")
-        menu.addNewElementItem(sceneLocation, focus, INTERMEDIATE_NONE_THROWING)
-        menu.addNewElementItem(sceneLocation, focus, INTERMEDIATE_SIGNAL_THROWING)
+        menu.addNewElementItem(sceneLocation, focus, INTERMEDIATE_NONE_THROWING_EVENT)
+        menu.addNewElementItem(sceneLocation, focus, INTERMEDIATE_SIGNAL_THROWING_EVENT)
         return menu
     }
 
     override fun endEvents(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu {
         val menu = JMenu("End events")
         menu.addNewElementItem(sceneLocation, focus, END_EVENT)
-        menu.addNewElementItem(sceneLocation, focus, ERROR_END_EVENT)
-        menu.addNewElementItem(sceneLocation, focus, CANCEL_END_EVENT)
-        menu.addNewElementItem(sceneLocation, focus, TERMINATE_END_EVENT)
+        menu.addNewElementItem(sceneLocation, focus, END_ERROR_EVENT)
+        menu.addNewElementItem(sceneLocation, focus, END_CANCEL_EVENT)
+        menu.addNewElementItem(sceneLocation, focus, END_TERMINATE_EVENT)
         return menu
     }
 
@@ -129,20 +129,20 @@ class ActivitiCanvasPopupMenuProvider(project: Project) : BaseCanvasPopupMenuPro
     }
 
     override fun mutateIntermediateThrowingEvent(popup: JPopupMenu, focus: BpmnElementId) {
-        popup.addMutateElementItem(focus, INTERMEDIATE_NONE_THROWING)
-        popup.addMutateElementItem(focus, INTERMEDIATE_SIGNAL_THROWING)
+        popup.addMutateElementItem(focus, INTERMEDIATE_NONE_THROWING_EVENT)
+        popup.addMutateElementItem(focus, INTERMEDIATE_SIGNAL_THROWING_EVENT)
     }
 
     override fun mutateIntermediateCatchingEvent(popup: JPopupMenu, focus: BpmnElementId) {
-        popup.addMutateElementItem(focus, INTERMEDIATE_TIMER_CATCHING)
-        popup.addMutateElementItem(focus, INTERMEDIATE_MESSAGE_CATCHING)
-        popup.addMutateElementItem(focus, INTERMEDIATE_SIGNAL_CATCHING)
+        popup.addMutateElementItem(focus, INTERMEDIATE_TIMER_CATCHING_EVENT)
+        popup.addMutateElementItem(focus, INTERMEDIATE_MESSAGE_CATCHING_EVENT)
+        popup.addMutateElementItem(focus, INTERMEDIATE_SIGNAL_CATCHING_EVENT)
     }
 
     override fun mutateEndEvent(popup: JPopupMenu, focus: BpmnElementId){
         popup.addMutateElementItem(focus, END_EVENT)
-        popup.addMutateElementItem(focus, ERROR_END_EVENT)
-        popup.addMutateElementItem(focus, CANCEL_END_EVENT)
-        popup.addMutateElementItem(focus, TERMINATE_END_EVENT)
+        popup.addMutateElementItem(focus, END_ERROR_EVENT)
+        popup.addMutateElementItem(focus, END_CANCEL_EVENT)
+        popup.addMutateElementItem(focus, END_TERMINATE_EVENT)
     }
 }

@@ -6,7 +6,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
-import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
+import com.valb3r.bpmn.intellij.plugin.camunda.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaObjectFactory
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaParser
 import com.valb3r.bpmn.intellij.plugin.camunda.settings.CamundaBpmnPluginSettingsState

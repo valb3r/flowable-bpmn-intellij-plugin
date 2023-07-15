@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateLinkThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.*
@@ -267,7 +268,8 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             is BpmnIntermediateNoneThrowingEvent -> IconShape(id, bpmn.id, icons.noneThrowEvent, shape, state)
             is BpmnIntermediateSignalThrowingEvent -> IconShape(id, bpmn.id, icons.signalThrowEvent, shape, state)
             is BpmnIntermediateEscalationThrowingEvent -> IconShape(id, bpmn.id, icons.escalationThrowEvent, shape, state)
-            else -> throw IllegalArgumentException("Unknown shape: ${bpmn.javaClass}")
+            is BpmnIntermediateLinkThrowingEvent -> IconShape(id, bpmn.id, icons.intermediateLinkThrowEvent, shape, state)
+            else -> UnknownShape(id, bpmn.id, icons.unknownShape, shape, state)
         }
     }
 

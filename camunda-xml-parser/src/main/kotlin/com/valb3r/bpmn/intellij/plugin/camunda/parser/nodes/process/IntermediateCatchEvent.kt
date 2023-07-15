@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.Nulls
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.BpmnIntermediateCatchingEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnLinkEventDefinition
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.definitions.*
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -27,34 +29,8 @@ data class IntermediateCatchEvent(
         return Mappers.getMapper(Mapping::class.java).convertToDto(this)
     }
 
-    @Mapper(uses = [BpmnElementIdMapper::class, LinkEventDefinitionMapping::class])
+    @Mapper(uses = [BpmnElementIdMapper::class])
     interface Mapping {
         fun convertToDto(input: IntermediateCatchEvent) : BpmnIntermediateCatchingEvent
     }
-
-    @Mapper(uses = [BpmnElementIdMapper::class])
-    interface LinkEventDefinitionMapping {
-        fun convertToDto(input: LinkEventDefinition) : com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.LinkEventDefinition
-    }
-
-    data class TimerEventDefinition(
-            val timeDate: String? = null
-    )
-
-    data class SignalEventDefinition(
-            @JacksonXmlProperty(isAttribute = true) val signalRef: String? = null
-    )
-
-    data class MessageEventDefinition(
-            @JacksonXmlProperty(isAttribute = true) val messageRef: String? = null
-    )
-
-    data class ConditionalEventDefinition(
-            val condition: String? = null
-    )
-
-    data class LinkEventDefinition(
-        @JacksonXmlProperty(isAttribute = true) val id: String? = null,
-        @JacksonXmlProperty(isAttribute = true) val name: String? = null
-    )
 }
