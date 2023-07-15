@@ -60,6 +60,9 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     // TIME_DURATION_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_DURATION_EXPRESSION_TYPE, "timerEventDefinition.timeDuration.type", XmlType.ATTRIBUTE)), // Camunda-only specific
     TIME_CYCLE(PropertyTypeDetails(PropertyType.TIME_CYCLE, "timerEventDefinition.timeCycle.timeCycle", XmlType.CDATA)),
     // TIME_CYCLE_EXPRESSION_TYPE(PropertyTypeDetails(PropertyType.TIME_CYCLE_EXPRESSION_TYPE, "timerEventDefinition.timeCycle.type", XmlType.ATTRIBUTE)), // Camunda-only specific
+    EVENT_CONDITION(PropertyTypeDetails(PropertyType.EVENT_CONDITION, "conditionalEventDefinition.condition.script", XmlType.CDATA)),
+    // EVENT_CONDITION_TYPE(PropertyTypeDetails(PropertyType.EVENT_CONDITION_TYPE, "bpmn:conditionalEventDefinition.condition.xsi:type", XmlType.ATTRIBUTE)), // Camunda-only specific
+    // EVENT_CONDITION_LANGUAGE(PropertyTypeDetails(PropertyType.EVENT_CONDITION_LANGUAGE, "bpmn:conditionalEventDefinition.condition.language", XmlType.ATTRIBUTE)),  // Camunda-only specific
     COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA)),
     DEFAULT_FLOW(PropertyTypeDetails(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE)),
     IS_TRANSACTIONAL_SUBPROCESS(PropertyTypeDetails(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT)),

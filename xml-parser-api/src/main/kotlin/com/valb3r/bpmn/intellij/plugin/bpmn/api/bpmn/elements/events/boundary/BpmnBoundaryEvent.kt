@@ -2,7 +2,8 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.props.BpmnTimerEventDefinition
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnConditionalEventDefinition
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnTimerEventDefinition
 
 data class BpmnBoundaryEvent(
     override val id: BpmnElementId,
@@ -16,7 +17,7 @@ data class BpmnBoundaryEvent(
     val errorEventDefinition: ErrorEventDefinition? = null,
     val cancelEventDefinition: CancelEventDefinition? = null,
     val escalationEventDefinition: EscalationEventDefinition? = null,
-    val conditionalEventDefinition: ConditionalEventDefinition? = null,
+    val conditionalEventDefinition: BpmnConditionalEventDefinition? = null,
     val compensateEventDefinition: CompensateEventDefinition? = null,
     val incoming: List<String>? = null,
     val outgoing: List<String>? = null,
@@ -44,10 +45,6 @@ data class BpmnBoundaryEvent(
 
     data class CompensateEventDefinition(
             val activityRef: String? = null
-    )
-
-    data class ConditionalEventDefinition(
-            val condition: String? = null
     )
 
     data class EscalationEventDefinition(

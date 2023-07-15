@@ -2,7 +2,8 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.props.BpmnTimerEventDefinition
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnConditionalEventDefinition
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnTimerEventDefinition
 import java.time.LocalDateTime
 
 data class BpmnIntermediateCatchingEvent(
@@ -12,7 +13,7 @@ data class BpmnIntermediateCatchingEvent(
     val timerEventDefinition: BpmnTimerEventDefinition? = null,
     val signalEventDefinition: SignalEventDefinition? = null,
     val messageEventDefinition: MessageEventDefinition? = null,
-    val conditionalEventDefinition: ConditionalEventDefinition? = null,
+    val conditionalEventDefinition: BpmnConditionalEventDefinition? = null,
     val linkEventDefinition: LinkEventDefinition? = null,
     val incoming: List<String>? = null,
     val outgoing: List<String>? = null,
@@ -28,10 +29,6 @@ data class BpmnIntermediateCatchingEvent(
 
     data class MessageEventDefinition(
         val messageRef: String? = null
-    )
-
-    data class ConditionalEventDefinition(
-        val condition: String? = null
     )
 
     data class LinkEventDefinition(

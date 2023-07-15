@@ -78,6 +78,60 @@ internal class ExtraBoundaryEventPropertiesTest {
         readAndUpdate(id, propType, "TEST").propsOf(id)[propType]!!.shouldBeEqualTo(Property("TEST"))
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        "process.body.conditionalStartEvent[?(@.id.id == 'ConditionalStartEvent')].conditionalEventDefinition.condition.script,ConditionalStartEvent,EVENT_CONDITION,EVENT_CONDITION_TYPE,anExpr",
+        "process.body.conditionalStartEvent[?(@.id.id == 'ConditionalStartEventScript')].conditionalEventDefinition.condition.script,ConditionalStartEventScript,EVENT_CONDITION,EVENT_CONDITION_TYPE,aScript",
+    )
+    fun `ConditionalStartEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, propType: PropertyType, expectedValue: String) {
+        val processObject = parser.parse(FILE.asResource()!!)
+
+        val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
+        valueFromBpmn.shouldHaveSingleItem().shouldBeEqualTo(expectedValue)
+        val props = processObject.propsOf(id)
+
+        props[prop]!!.shouldBeEqualTo(Property(expectedValue))
+        props[propType]!!.shouldBeEqualTo(Property(formalDefinition))
+        readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
+        readAndUpdate(id, propType, "TEST").propsOf(id)[propType]!!.shouldBeEqualTo(Property("TEST"))
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "process.body.boundaryConditionalEvent[?(@.id.id == 'ConditionalBoundaryExpressionEvent')].conditionalEventDefinition.condition.script,ConditionalBoundaryExpressionEvent,EVENT_CONDITION,EVENT_CONDITION_TYPE,anExpr",
+        "process.body.boundaryConditionalEvent[?(@.id.id == 'ConditionalBoundaryScriptEvent')].conditionalEventDefinition.condition.script,ConditionalBoundaryScriptEvent,EVENT_CONDITION,EVENT_CONDITION_TYPE,aScript",
+    )
+    fun `ConditionalBoundaryEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, propType: PropertyType, expectedValue: String) {
+        val processObject = parser.parse(FILE.asResource()!!)
+
+        val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
+        valueFromBpmn.shouldHaveSingleItem().shouldBeEqualTo(expectedValue)
+        val props = processObject.propsOf(id)
+
+        props[prop]!!.shouldBeEqualTo(Property(expectedValue))
+        props[propType]!!.shouldBeEqualTo(Property(formalDefinition))
+        readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
+        readAndUpdate(id, propType, "TEST").propsOf(id)[propType]!!.shouldBeEqualTo(Property("TEST"))
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "process.body.intermediateConditionalCatchingEvent[?(@.id.id == 'ConditionalIntermediateCatchEvent')].conditionalEventDefinition.condition.script,ConditionalIntermediateCatchEvent,EVENT_CONDITION,EVENT_CONDITION_TYPE,anExpr",
+        "process.body.intermediateConditionalCatchingEvent[?(@.id.id == 'ConditionalIntermediateCatchEventScript')].conditionalEventDefinition.condition.script,ConditionalIntermediateCatchEventScript,EVENT_CONDITION,EVENT_CONDITION_TYPE,aScript",
+    )
+    fun `ConditionalIntermediateEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, propType: PropertyType, expectedValue: String) {
+        val processObject = parser.parse(FILE.asResource()!!)
+
+        val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
+        valueFromBpmn.shouldHaveSingleItem().shouldBeEqualTo(expectedValue)
+        val props = processObject.propsOf(id)
+
+        props[prop]!!.shouldBeEqualTo(Property(expectedValue))
+        props[propType]!!.shouldBeEqualTo(Property(formalDefinition))
+        readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
+        readAndUpdate(id, propType, "TEST").propsOf(id)[propType]!!.shouldBeEqualTo(Property("TEST"))
+    }
+
     @Test
     fun `MessageBoundaryEvent extra essential properties`() {
 
@@ -95,11 +149,6 @@ internal class ExtraBoundaryEventPropertiesTest {
 
     @Test
     fun `SignalBoundaryEvent extra essential properties`() {
-
-    }
-
-    @Test
-    fun `ConditionalBoundaryEvent extra essential properties`() {
 
     }
 

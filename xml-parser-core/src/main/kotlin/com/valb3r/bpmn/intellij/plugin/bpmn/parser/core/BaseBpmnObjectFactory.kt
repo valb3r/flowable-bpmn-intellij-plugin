@@ -12,10 +12,11 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ConditionExpressio
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.props.BpmnTimerEventDefinition
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnTimerEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnConditionalEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
@@ -39,7 +40,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
     override fun <T : WithBpmnId> newBpmnObject(clazz: KClass<T>): T {
         val result: WithBpmnId = when(clazz) {
             BpmnStartEvent::class -> BpmnStartEvent(generateBpmnId())
-            BpmnStartConditionalEvent::class -> BpmnStartConditionalEvent(generateBpmnId())
+            BpmnStartConditionalEvent::class -> BpmnStartConditionalEvent(generateBpmnId(), conditionalEventDefinition = BpmnConditionalEventDefinition(null))
             BpmnStartEscalationEvent::class -> BpmnStartEscalationEvent(generateBpmnId())
             BpmnStartErrorEvent::class -> BpmnStartErrorEvent(generateBpmnId())
             BpmnStartMessageEvent::class -> BpmnStartMessageEvent(generateBpmnId())
@@ -47,7 +48,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             BpmnStartTimerEvent::class -> BpmnStartTimerEvent(generateBpmnId(), timerEventDefinition = BpmnTimerEventDefinition(null, null, null))
             BpmnBoundaryCancelEvent::class -> BpmnBoundaryCancelEvent(generateBpmnId())
             BpmnBoundaryCompensationEvent::class -> BpmnBoundaryCompensationEvent(generateBpmnId())
-            BpmnBoundaryConditionalEvent::class -> BpmnBoundaryConditionalEvent(generateBpmnId())
+            BpmnBoundaryConditionalEvent::class -> BpmnBoundaryConditionalEvent(generateBpmnId(), conditionalEventDefinition = BpmnConditionalEventDefinition(null))
             BpmnBoundaryErrorEvent::class -> BpmnBoundaryErrorEvent(generateBpmnId())
             BpmnBoundaryEscalationEvent::class -> BpmnBoundaryEscalationEvent(generateBpmnId())
             BpmnBoundaryMessageEvent::class -> BpmnBoundaryMessageEvent(generateBpmnId())
@@ -84,7 +85,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             BpmnIntermediateTimerCatchingEvent::class -> BpmnIntermediateTimerCatchingEvent(generateBpmnId(), timerEventDefinition = BpmnTimerEventDefinition(null, null, null))
             BpmnIntermediateMessageCatchingEvent::class -> BpmnIntermediateMessageCatchingEvent(generateBpmnId())
             BpmnIntermediateSignalCatchingEvent::class -> BpmnIntermediateSignalCatchingEvent(generateBpmnId())
-            BpmnIntermediateConditionalCatchingEvent::class -> BpmnIntermediateConditionalCatchingEvent(generateBpmnId())
+            BpmnIntermediateConditionalCatchingEvent::class -> BpmnIntermediateConditionalCatchingEvent(generateBpmnId(), conditionalEventDefinition = BpmnConditionalEventDefinition(null))
             BpmnIntermediateNoneThrowingEvent::class -> BpmnIntermediateNoneThrowingEvent(generateBpmnId())
             BpmnIntermediateSignalThrowingEvent::class -> BpmnIntermediateSignalThrowingEvent(generateBpmnId())
             BpmnIntermediateEscalationThrowingEvent::class -> BpmnIntermediateEscalationThrowingEvent(generateBpmnId())
