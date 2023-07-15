@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process.nested.definitions.ErrorEventDefinition
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process.nested.definitions.EscalationEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import org.mapstruct.Mapper
@@ -27,10 +28,6 @@ data class EndEventNode(
     interface Mapping {
         fun convertToDto(input: EndEventNode) : BpmnEndEvent
     }
-
-    data class ErrorEventDefinition(
-            val errorRef: String? = null
-    )
 
     data class CancelEventDefinition(
             val cancelRef: String? = null

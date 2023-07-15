@@ -12,13 +12,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ConditionExpressio
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnTimerEventDefinition
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.*
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnConditionalEventDefinition
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnEscalationEventDefinition
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnMessageEventDefinition
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateEscalationThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateNoneThrowingEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.throwing.BpmnIntermediateSignalThrowingEvent
@@ -44,14 +41,14 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             BpmnStartEvent::class -> BpmnStartEvent(generateBpmnId())
             BpmnStartConditionalEvent::class -> BpmnStartConditionalEvent(generateBpmnId(), conditionalEventDefinition = BpmnConditionalEventDefinition(null))
             BpmnStartEscalationEvent::class -> BpmnStartEscalationEvent(generateBpmnId(), escalationEventDefinition = BpmnEscalationEventDefinition(null))
-            BpmnStartErrorEvent::class -> BpmnStartErrorEvent(generateBpmnId())
+            BpmnStartErrorEvent::class -> BpmnStartErrorEvent(generateBpmnId(), errorEventDefinition = BpmnErrorEventDefinition(null))
             BpmnStartMessageEvent::class -> BpmnStartMessageEvent(generateBpmnId(), messageEventDefinition = BpmnMessageEventDefinition(null))
             BpmnStartSignalEvent::class -> BpmnStartSignalEvent(generateBpmnId())
             BpmnStartTimerEvent::class -> BpmnStartTimerEvent(generateBpmnId(), timerEventDefinition = BpmnTimerEventDefinition(null, null, null))
             BpmnBoundaryCancelEvent::class -> BpmnBoundaryCancelEvent(generateBpmnId())
             BpmnBoundaryCompensationEvent::class -> BpmnBoundaryCompensationEvent(generateBpmnId())
             BpmnBoundaryConditionalEvent::class -> BpmnBoundaryConditionalEvent(generateBpmnId(), conditionalEventDefinition = BpmnConditionalEventDefinition(null))
-            BpmnBoundaryErrorEvent::class -> BpmnBoundaryErrorEvent(generateBpmnId())
+            BpmnBoundaryErrorEvent::class -> BpmnBoundaryErrorEvent(generateBpmnId(), errorEventDefinition = BpmnErrorEventDefinition(null))
             BpmnBoundaryEscalationEvent::class -> BpmnBoundaryEscalationEvent(generateBpmnId())
             BpmnBoundaryMessageEvent::class -> BpmnBoundaryMessageEvent(generateBpmnId(), messageEventDefinition = BpmnMessageEventDefinition(null))
             BpmnBoundarySignalEvent::class -> BpmnBoundarySignalEvent(generateBpmnId())
@@ -81,7 +78,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             BpmnEventGateway::class -> BpmnEventGateway(generateBpmnId())
             BpmnEndEvent::class -> BpmnEndEvent(generateBpmnId())
             BpmnEndCancelEvent::class -> BpmnEndCancelEvent(generateBpmnId())
-            BpmnEndErrorEvent::class -> BpmnEndErrorEvent(generateBpmnId())
+            BpmnEndErrorEvent::class -> BpmnEndErrorEvent(generateBpmnId(), errorEventDefinition = BpmnErrorEventDefinition(null))
             BpmnEndEscalationEvent::class -> BpmnEndEscalationEvent(generateBpmnId())
             BpmnEndTerminateEvent::class -> BpmnEndTerminateEvent(generateBpmnId())
             BpmnIntermediateTimerCatchingEvent::class -> BpmnIntermediateTimerCatchingEvent(generateBpmnId(), timerEventDefinition = BpmnTimerEventDefinition(null, null, null))

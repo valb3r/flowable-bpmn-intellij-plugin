@@ -5,10 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnConditionalEventDefinition
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnEscalationEventDefinition
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnMessageEventDefinition
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.BpmnTimerEventDefinition
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.props.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.BpmnStartEventAlike
 
 data class BpmnStartEvent(
@@ -20,7 +17,7 @@ data class BpmnStartEvent(
     val timerEventDefinition: BpmnTimerEventDefinition? = null,
     val signalEventDefinition: SignalEventDefinition? = null,
     val messageEventDefinition: BpmnMessageEventDefinition? = null,
-    val errorEventDefinition: ErrorEventDefinition? = null,
+    val errorEventDefinition: BpmnErrorEventDefinition? = null,
     val escalationEventDefinition: BpmnEscalationEventDefinition? = null,
     val conditionalEventDefinition: BpmnConditionalEventDefinition? = null,
     val incoming: List<String>? = null,
@@ -39,9 +36,5 @@ data class BpmnStartEvent(
 
     data class SignalEventDefinition(
             val signalRef: String? = null
-    )
-
-    data class ErrorEventDefinition(
-            val errorRef: String? = null
     )
 }

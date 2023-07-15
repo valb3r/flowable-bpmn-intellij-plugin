@@ -65,6 +65,7 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     // EVENT_CONDITION_LANGUAGE(PropertyTypeDetails(PropertyType.EVENT_CONDITION_LANGUAGE, "bpmn:conditionalEventDefinition.condition.language", XmlType.ATTRIBUTE)),  // Camunda-only specific
     MESSAGE_REF(PropertyTypeDetails(PropertyType.MESSAGE_REF, "messageEventDefinition.messageRef", XmlType.ATTRIBUTE)),
     ESCALATION_REF(PropertyTypeDetails(PropertyType.ESCALATION_REF, "escalationEventDefinition.escalationRef", XmlType.ATTRIBUTE)),
+    ERROR_REF(PropertyTypeDetails(PropertyType.ERROR_REF, "errorEventDefinition.errorRef", XmlType.ATTRIBUTE)),
     COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA)),
     DEFAULT_FLOW(PropertyTypeDetails(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE)),
     IS_TRANSACTIONAL_SUBPROCESS(PropertyTypeDetails(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT)),

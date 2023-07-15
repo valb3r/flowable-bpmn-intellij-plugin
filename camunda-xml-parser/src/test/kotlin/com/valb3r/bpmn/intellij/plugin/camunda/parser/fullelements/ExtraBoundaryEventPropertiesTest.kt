@@ -166,9 +166,20 @@ internal class ExtraBoundaryEventPropertiesTest {
         readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
     }
 
-    @Test
-    fun `ErrorBoundaryEvent extra essential properties`() {
+    @ParameterizedTest
+    @CsvSource(
+        "process.body.boundaryErrorEvent[?(@.id.id == 'ErrorBoundaryEvent')].errorEventDefinition.errorRef,ErrorBoundaryEvent,ERROR_REF,Error_1moidde",
+        "process.body.errorEndEvent[?(@.id.id == 'ErrorEndEvent')].errorEventDefinition.errorRef,ErrorEndEvent,ERROR_REF,Error_1moidde",
+    )
+    fun `ErrorStartEvent,ErrorBoundaryEvent,ErrorIntermediateCatchingEvent with date extra essential properties are parseable and updatable`(jsonPath: String, id: String, prop: PropertyType, expectedValue: String) {
+        val processObject = parser.parse(FILE.asResource()!!)
 
+        val valueFromBpmn: List<String> = JsonPath.read(jacksonObjectMapper().writeValueAsString(processObject), jsonPath)
+        valueFromBpmn.shouldHaveSingleItem().shouldBeEqualTo(expectedValue)
+        val props = processObject.propsOf(id)
+
+        props[prop]!!.shouldBeEqualTo(Property(expectedValue))
+        readAndUpdate(id, prop, "TEST").propsOf(id)[prop]!!.shouldBeEqualTo(Property("TEST"))
     }
 
     @Test

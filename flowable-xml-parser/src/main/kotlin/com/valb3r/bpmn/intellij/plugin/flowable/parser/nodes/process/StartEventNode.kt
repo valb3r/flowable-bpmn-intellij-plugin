@@ -8,10 +8,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.BpmnMappable
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.ConditionalEventDefinition
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.EscalationEventDefinition
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.MessageEventDefinition
-import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.TimerEventDefinition
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.definitions.*
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.formprop.ExtensionElement
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.nodes.process.nested.formprop.FormProperty
 import org.mapstruct.Mapper
@@ -36,10 +33,6 @@ data class StartEventNode(
 
     data class SignalEventDefinition(
             val signalRef: String? = null
-    )
-
-    data class ErrorEventDefinition(
-            val errorRef: String? = null
     )
 
     @Mapper(uses = [BpmnElementIdMapper::class])
