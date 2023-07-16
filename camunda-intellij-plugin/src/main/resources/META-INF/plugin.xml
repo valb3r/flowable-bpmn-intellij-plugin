@@ -4,7 +4,7 @@
     <name>Camunda BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.5.2</version>
+    <version>0.5.3</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -39,6 +39,24 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+      <p>0.5.3:</p>
+        <ul>
+          <li>
+            Add boundary/start/end event properties support
+          </li>
+          <li>
+            Improve default gateway sequence selection
+          </li>
+          <li>
+            Improved listeners support for different elements
+          </li>
+          <li>
+            Validation of element ID uniqueness
+          </li>
+          <li>
+            Added advertisement of PolyBPMN - improved version of current plugin
+          </li>
+        </ul>
       <p>0.5.2:</p>
         <ul>
           <li>
@@ -59,18 +77,6 @@
         <ul>
           <li>
             Fix for changing settings in IntelliJ 2023.1+
-          </li>
-        </ul>
-      <p>0.5.0:</p>
-        <ul>
-          <li>
-            Support for inplace element type change
-          </li>
-          <li>
-            Support for element listeners (basic)
-          </li>
-          <li>
-            Support for send event task
           </li>
         </ul>
     ]]></change-notes>
