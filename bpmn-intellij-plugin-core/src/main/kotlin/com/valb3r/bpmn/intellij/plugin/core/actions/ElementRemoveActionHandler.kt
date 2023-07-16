@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import java.util.*
 
@@ -21,17 +22,7 @@ class ElementRemoveActionHandler(private val project: Project) {
     fun deleteSelectedElements() {
         val state = lastRenderedState(project)?.state ?: return
 
-        val toDelete = mutableListOf<Event>()
-        toDelete += state.ctx.selectedIds.mapNotNull { state.elemMap[it] }.flatMap {
-            val elemRemoval = it.getEventsToElementWithItsDiagram()
-            return@flatMap elemRemoval.diagram + elemRemoval.bpmn + elemRemoval.other
-        }
-        val inOrder = toDelete.sortedBy {
-            when (it) {
-                is PropertyUpdateWithId -> return@sortedBy 0
-                else -> return@sortedBy 100
-            }
-        }
+        val inOrder = removeElements(state, state.ctx.selectedIds.toList())
 
         updateEventsRegistry(project).addEvents(inOrder)
 
