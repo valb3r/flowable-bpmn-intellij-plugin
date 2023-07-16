@@ -1072,10 +1072,10 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         model().dataVector.size.shouldBeEqualTo(0)
         canvas.click(Point2D.Float(5F, 5F))
         clickOnId(sendEventTaskDiagramId)
-        model().dataVector.size.shouldBeEqualTo(27)
+        model().dataVector.size.shouldBeEqualTo(28)
         val addMappingPayloadFrom = findAddButtonByGroupType(FunctionalGroupType.MAPPING_PAYLOAD_FROM, model())
         addMappingPayloadFrom.doClick()
-        (propertiesTable.model as DefaultTableModel).dataVector.size.shouldBeEqualTo(28)
+        (propertiesTable.model as DefaultTableModel).dataVector.size.shouldBeEqualTo(29)
         argumentCaptor<List<EventPropagatableToXml>>().apply {
             verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())     //FIXME double invoke doClick button
             firstValue.shouldContainSame(
@@ -1651,7 +1651,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
     }
 
     private fun findFirsBasicArrowButtonByType(propertyType: PropertyType, model: DefaultTableModel): BasicArrowButton {
-        return model.dataVector.filter { it[0].toString().contains(propertyType.caption) }
+        return model.dataVector.filter { (it[0] ?: "").toString().contains(propertyType.caption) }
             .map { it[2] as BasicArrowButton }.first()
     }
 

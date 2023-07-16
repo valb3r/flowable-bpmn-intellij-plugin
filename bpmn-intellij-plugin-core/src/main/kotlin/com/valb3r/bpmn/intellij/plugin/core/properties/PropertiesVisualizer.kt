@@ -175,6 +175,9 @@ class PropertiesVisualizer(
             model.addRow(row)
         }
 
+        // Add empty row so that scrollbar interferes less
+        model.addRow(arrayOf())
+
         return buttonsToClick
     }
 

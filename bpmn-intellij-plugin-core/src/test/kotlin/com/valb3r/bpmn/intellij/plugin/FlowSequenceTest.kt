@@ -29,7 +29,7 @@ internal class FlowSequenceTest: BaseUiTest() {
     fun `No Default flow selection on flow sequence element without gateway`() {
         prepareOneSubProcessWithServiceTaskAndAttachedBoundaryEventOneNestedSubprocessAndServiceTaskWithSequence()
         clickOnId(sequenceFlowDiagramId)
-        val propertiesVisible = (0 until propertiesTable.model.rowCount).map { propertiesTable.model.getValueAt(it, 0) as String }
+        val propertiesVisible = (0 until propertiesTable.model.rowCount).map { propertiesTable.model.getValueAt(it, 0) as String? }
         propertiesVisible.shouldNotContain(PropertyType.DEFAULT_FLOW_ON_SEQUENCE.caption)
     }
 
@@ -38,7 +38,7 @@ internal class FlowSequenceTest: BaseUiTest() {
         prepareExclusiveGatewayAttachedToServiceTaskWithFlowSequence()
         clickOnId(sequenceFlowDiagramId)
 
-        val propertiesVisible = (0 until propertiesTable.model.rowCount).map { propertiesTable.model.getValueAt(it, 0) as String }
+        val propertiesVisible = (0 until propertiesTable.model.rowCount).map { propertiesTable.model.getValueAt(it, 0) as String? }
         propertiesVisible.shouldContain(PropertyType.DEFAULT_FLOW_ON_SEQUENCE.caption)
 
         whenever(boolFieldsConstructed[Pair(sequenceFlowBpmnId, PropertyType.DEFAULT_FLOW_ON_SEQUENCE)]!!.isSelected).thenReturn(true)
