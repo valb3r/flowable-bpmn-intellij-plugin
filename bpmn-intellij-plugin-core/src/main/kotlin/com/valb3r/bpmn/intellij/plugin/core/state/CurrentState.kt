@@ -318,7 +318,7 @@ class CurrentStateProvider(private val project: Project) {
     ){
         val updateWithParentId = updatedElementByStaticId[elementId]!!.copy(element = updateElement)
         updatedElementByStaticId[elementId] = updateWithParentId
-        updatedElemPropertiesByStaticElementId[elementId] = propertyTable
+        updatedElemPropertiesByStaticElementId[elementId] = propertyTable.copy()
     }
 
     private fun updateId(
