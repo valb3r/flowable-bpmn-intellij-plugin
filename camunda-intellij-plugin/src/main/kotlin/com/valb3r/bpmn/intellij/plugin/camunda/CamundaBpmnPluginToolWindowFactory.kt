@@ -6,6 +6,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.valb3r.bpmn.intellij.plugin.camunda.advertisement.CamundaAdvertisementState
 import com.valb3r.bpmn.intellij.plugin.camunda.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaObjectFactory
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaParser
@@ -14,6 +15,7 @@ import com.valb3r.bpmn.intellij.plugin.camunda.ui.components.popupmenu.CamundaCa
 import com.valb3r.bpmn.intellij.plugin.camunda.xmlnav.CamundaXmlNavigator
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
 import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
+import com.valb3r.bpmn.intellij.plugin.core.advertisement.currentAdvertisementStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.getContentFactory
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.parser.registerParser
@@ -28,6 +30,7 @@ class CamundaBpmnPluginToolWindowFactory: ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         log.info("Creating tool window content")
         currentSettingsStateProvider.set { ServiceManager.getService(CamundaBpmnPluginSettingsState::class.java) }
+        currentAdvertisementStateProvider.set { ServiceManager.getService(CamundaAdvertisementState::class.java) }
 
         val bpmnWindow = BpmnPluginToolWindow(
             project,

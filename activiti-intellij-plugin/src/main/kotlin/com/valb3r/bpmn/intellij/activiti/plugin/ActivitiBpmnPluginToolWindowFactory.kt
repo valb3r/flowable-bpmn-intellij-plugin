@@ -7,8 +7,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.valb3r.bpmn.intellij.activiti.plugin.advertisement.ActivitiAdvertisementState
 import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.activiti.plugin.popupmenu.ActivitiCanvasPopupMenuProvider
+import com.valb3r.bpmn.intellij.activiti.plugin.settings.ActivitiBpmnPluginSettingsState
 import com.valb3r.bpmn.intellij.activiti.plugin.xmlnav.ActivitiXmlNavigator
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.Activiti7ObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.Activiti7Parser
@@ -16,9 +18,11 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
 import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
+import com.valb3r.bpmn.intellij.plugin.core.advertisement.currentAdvertisementStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.getContentFactory
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.parser.registerParser
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.core.xmlnav.registerXmlNavigator
 import java.nio.charset.StandardCharsets
@@ -29,6 +33,8 @@ class ActivitiBpmnPluginToolWindowFactory: ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         log.info("Creating tool window content")
+        currentSettingsStateProvider.set { ServiceManager.getService(ActivitiBpmnPluginSettingsState::class.java) }
+        currentAdvertisementStateProvider.set { ServiceManager.getService(ActivitiAdvertisementState::class.java) }
 
         val bpmnWindow = BpmnPluginToolWindow(
             project,

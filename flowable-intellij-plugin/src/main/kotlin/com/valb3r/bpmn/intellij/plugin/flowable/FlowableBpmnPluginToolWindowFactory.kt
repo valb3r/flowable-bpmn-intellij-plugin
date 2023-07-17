@@ -9,12 +9,14 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
 import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
+import com.valb3r.bpmn.intellij.plugin.core.advertisement.currentAdvertisementStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.getContentFactory
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.parser.registerParser
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.core.xmlnav.registerXmlNavigator
+import com.valb3r.bpmn.intellij.plugin.flowable.advertisement.FlowableAdvertisementState
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
 import com.valb3r.bpmn.intellij.plugin.flowable.settings.FlowableBpmnPluginSettingsState
@@ -28,6 +30,7 @@ class FlowableBpmnPluginToolWindowFactory: ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         log.info("Creating tool window content")
         currentSettingsStateProvider.set { ServiceManager.getService(FlowableBpmnPluginSettingsState::class.java) }
+        currentAdvertisementStateProvider.set { ServiceManager.getService(FlowableAdvertisementState::class.java) }
 
         val bpmnWindow = BpmnPluginToolWindow(
             project,

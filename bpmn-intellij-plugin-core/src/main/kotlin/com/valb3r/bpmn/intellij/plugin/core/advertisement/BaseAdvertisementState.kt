@@ -1,13 +1,14 @@
 package com.valb3r.bpmn.intellij.plugin.core.advertisement
 
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.State
-import com.intellij.openapi.components.Storage
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
 import java.time.LocalDate
+import java.util.concurrent.atomic.AtomicReference
 
-@State(name = "AdvertisementState", storages = [(Storage("opensource-polybpmn-advertisement.xml"))], defaultStateAsResource = true)
-class AdvertisementState: PersistentStateComponent<AdvertisementState.State> {
+val currentAdvertisementStateProvider = AtomicReference<() -> BaseAdvertisementState>() // Not map as is global
+
+// Due to class name collision each plugin implementation should reference its own class
+open class BaseAdvertisementState: PersistentStateComponent<BaseAdvertisementState.State> {
     class State {
         var advertisementCommonShownAtDay: Long = LocalDate.MIN.toEpochDay()
         var advertisementSwimpoolShownAtDay: Long = LocalDate.MIN.toEpochDay()
@@ -29,8 +30,12 @@ class AdvertisementState: PersistentStateComponent<AdvertisementState.State> {
     override fun loadState(state: State) {
         myState = state
     }
+}
 
-    companion object {
-        fun getInstance() = ApplicationManager.getApplication().getService(AdvertisementState::class.java)
-    }
+fun currentAdvertisementState(): BaseAdvertisementState {
+    // This is required to access state this way, because ServiceManagerImpl.getComponentInstance -> ComponentStoreImpl.initComponent are
+    // responsible for loading from XML
+    // TODO this null-replacing dummy is is a hack for 'Searchable options index builder failed' java.lang.NullPointerException of build
+    val current = currentAdvertisementStateProvider.get() ?: return object : BaseAdvertisementState() {}
+    return current()
 }
