@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.camunda.parser
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
@@ -29,6 +30,9 @@ fun updateEvt(elemId: String, prop: PropertyType, newValue: String): StringValue
     return StringValueUpdatedEvent(BpmnElementId(elemId), prop, newValue)
 }
 
+fun BpmnProcessObject.propsOf(elemId: String): PropertyTable {
+    return this.toView(CamundaObjectFactory()).elemPropertiesByElementId[BpmnElementId(elemId)]!!
+}
 fun updateBpmnFile(parser: CamundaParser, processName: String, events: List<EventPropagatableToXml>): String {
     val updated = parser.update(
         processName.asResource()!!,

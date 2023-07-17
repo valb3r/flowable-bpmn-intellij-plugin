@@ -8,8 +8,12 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.CDATA_FIELD
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnMappable
+import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process.nested.formprop.ExecutionListener
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process.nested.formprop.ExtensionElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.DoIgnore
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ListenerField
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -28,8 +32,17 @@ data class SequenceFlow(
     }
 
     @Mapper(uses = [BpmnElementIdMapper::class])
-    interface Mapping {
-        fun convertToDto(input: SequenceFlow) : BpmnSequenceFlow
+    abstract class Mapping {
+
+        @DoIgnore
+        abstract fun doConvertToDto(input: SequenceFlow) : BpmnSequenceFlow
+
+        fun convertToDto(input: SequenceFlow) : BpmnSequenceFlow {
+            val sequenceFlow = doConvertToDto(input)
+            return sequenceFlow.copy(
+                executionListener = input.extensionElements?.filterIsInstance<ExecutionListener>()?.map { ExeсutionListener(it.clazz, it.event, it.fields?.map { ListenerField(it.name, it.string) }) },
+            )
+        }
     }
 }
 

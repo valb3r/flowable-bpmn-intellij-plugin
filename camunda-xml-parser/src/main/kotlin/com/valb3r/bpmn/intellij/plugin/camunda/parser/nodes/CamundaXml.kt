@@ -326,7 +326,8 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         ScriptTask.ScriptTaskMapping::class,
         UserTask.UserTaskMapping::class,
         StartEventNode.StartEventNodeMapping::class,
-        IntermediateCatchEvent.Mapping::class
+        IntermediateCatchEvent.Mapping::class,
+        SequenceFlow.Mapping::class
     ])
     interface BodyMapping {
 
