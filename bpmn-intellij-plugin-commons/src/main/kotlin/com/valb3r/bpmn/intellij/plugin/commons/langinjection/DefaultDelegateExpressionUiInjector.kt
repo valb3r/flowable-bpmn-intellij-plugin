@@ -50,7 +50,9 @@ abstract class DefaultDelegateExpressionUiInjector: MultiHostInjector {
         val text = context.text
         val language = Language.getRegisteredLanguages().firstOrNull { it.id == "SpEL" } ?: return
         registrar.startInjecting(language)
-        if (context.text.contains(spelStart) && context.text.endsWith(spelEnd)) {
+        if (context.text.contains(spelStart)) {
+            registrar.addPlace("", "", context, TextRange(3, text.length - 1))
+        } else if (context.text.contains(spelStart) && context.text.endsWith(spelEnd)) {
             registrar.addPlace("", "", context, TextRange(3, text.length - 2))
         } else {
             registrar.addPlace("", "", context, TextRange(1, text.length - 1))
