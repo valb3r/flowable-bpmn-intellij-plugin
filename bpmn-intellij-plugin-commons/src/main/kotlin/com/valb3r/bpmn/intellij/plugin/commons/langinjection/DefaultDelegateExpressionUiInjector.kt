@@ -48,8 +48,7 @@ abstract class DefaultDelegateExpressionUiInjector: MultiHostInjector {
 
     private fun injectSpel(context: PsiLanguageInjectionHost, registrar: MultiHostRegistrar) {
         val text = context.text
-        val language = Language.getRegisteredLanguages().firstOrNull { it.id == "SpEL" } ?:
-            Language.getRegisteredLanguages().firstOrNull { it.id == "JAVA" } ?: return
+        val language = Language.getRegisteredLanguages().firstOrNull { it.id == "SpEL" } ?: return
         registrar.startInjecting(language)
         if (context.text.contains(spelStart) && context.text.endsWith(spelEnd)) {
             registrar.addPlace("", "", context, TextRange(3, text.length - 2))
