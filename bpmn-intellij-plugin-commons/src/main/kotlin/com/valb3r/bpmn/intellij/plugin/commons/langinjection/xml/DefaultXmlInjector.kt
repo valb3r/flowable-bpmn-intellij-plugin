@@ -10,6 +10,7 @@ import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
 import com.intellij.psi.xml.XmlText
+import com.valb3r.bpmn.intellij.plugin.commons.langinjection.InjectionUtil.injectSpel
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 
 abstract class DefaultXmlInjector: MultiHostInjector {
@@ -58,11 +59,7 @@ abstract class DefaultXmlInjector: MultiHostInjector {
         }
 
         if (parent.localName == "conditionExpression") {
-            if (!asHost.text.contains("[$#]\\{".toRegex()) || !asHost.text.contains("}")) {
-                return false
-            }
-
-            injectSpel(asHost, registrar, asHost.text.indexOf("{") + 1, asHost.text.length - asHost.text.indexOf("}") - 1)
+            injectSpel(asHost, registrar)
             return true
         }
 
@@ -102,10 +99,6 @@ abstract class DefaultXmlInjector: MultiHostInjector {
         }
 
         if (parent.localName == "delegateExpression" || parent.localName == "expression") {
-            if (!asHost.text.contains("[$#]\\{".toRegex()) || !asHost.text.contains("}")) {
-                return false
-            }
-
             injectSpel(asHost, registrar)
             return true
         }
@@ -116,14 +109,6 @@ abstract class DefaultXmlInjector: MultiHostInjector {
         }
 
         return false
-    }
-
-    private fun injectSpel(context: PsiLanguageInjectionHost, registrar: MultiHostRegistrar, rangeBegin: Int = 3, rangeEndOffset: Int = 1) {
-        val text = context.text
-        val spelLang = Language.getRegisteredLanguages().firstOrNull { it.id == "SpEL" } ?: return
-        registrar.startInjecting(spelLang)
-        registrar.addPlace("", "", context, TextRange(rangeBegin, text.length - rangeEndOffset - 1))
-        registrar.doneInjecting()
     }
 
     private fun injectClassName(context: PsiLanguageInjectionHost, registrar: MultiHostRegistrar) {
