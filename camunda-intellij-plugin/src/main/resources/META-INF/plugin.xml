@@ -230,7 +230,6 @@
 
     <!-- Inject SpEL for highlighting -->
     <extensions defaultExtensionNs="com.intellij">
-        <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.camunda.langinjection.CamundaDelegateExpressionUiInjector"/>
         <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.camunda.langinjection.xml.CamundaXmlCamundaInjector"/>
     </extensions>
 

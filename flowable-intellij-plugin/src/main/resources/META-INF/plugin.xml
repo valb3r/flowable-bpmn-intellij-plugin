@@ -230,7 +230,6 @@
 
     <!-- Inject SpEL for highlighting -->
     <extensions defaultExtensionNs="com.intellij">
-        <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.flowable.langinjection.FlowableDelegateExpressionUiInjector"/>
         <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.flowable.langinjection.xml.FlowableXmlFlowableInjector"/>
     </extensions>
 

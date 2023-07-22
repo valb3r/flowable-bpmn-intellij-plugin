@@ -1,2 +1,6 @@
 <idea-plugin>
+    <!-- Inject SpEL for highlighting -->
+    <extensions defaultExtensionNs="com.intellij">
+        <multiHostInjector implementation="com.valb3r.bpmn.intellij.plugin.flowable.langinjection.FlowableDelegateExpressionUiInjector"/>
+    </extensions>
 </idea-plugin>

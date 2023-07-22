@@ -10,6 +10,7 @@ import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
 import com.intellij.psi.xml.XmlText
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 
 abstract class DefaultXmlInjector: MultiHostInjector {
 
@@ -37,7 +38,13 @@ abstract class DefaultXmlInjector: MultiHostInjector {
     }
 
     protected open fun invalidXmlFileExtension(context: PsiLanguageInjectionHost): Boolean {
-        return !context.containingFile.name.endsWith("bpmn20.xml") && context.containingFile?.context?.containingFile?.name?.endsWith("bpmn20.xml") != true
+        return isValidFileName(context.containingFile.name)
+    }
+
+    private fun isValidFileName(fileName: String?): Boolean {
+        val name = fileName ?: return false
+        val allowedExt = currentSettings().openExtensions
+        return allowedExt.any { name.endsWith(it) }
     }
 
     private fun tryToInjectSkipExpression(context: XmlAttributeValue, asHost: PsiLanguageInjectionHost, registrar: MultiHostRegistrar): Boolean {
