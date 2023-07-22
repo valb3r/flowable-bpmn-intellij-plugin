@@ -52,6 +52,9 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
         var enableFps = false
         var disableXsdSchema = false
 
+        // Internal state
+        var noJavaOrSpelSupportShown: Boolean? = false
+
         fun stateEquals(other: PluginStateData): Boolean {
             if (zoomMin != other.zoomMin) return false
             if (zoomMax != other.zoomMax) return false
@@ -66,6 +69,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             if (openExtensions != other.openExtensions) return false
             if (enableFps != other.enableFps) return false
             if (disableXsdSchema != other.disableXsdSchema) return false
+            if (noJavaOrSpelSupportShown != other.noJavaOrSpelSupportShown) return false
 
             return true
         }
@@ -85,6 +89,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             data.openExtensions = openExtensions
             data.enableFps = enableFps
             data.disableXsdSchema = disableXsdSchema
+            data.noJavaOrSpelSupportShown = noJavaOrSpelSupportShown
             return data
         }
     }

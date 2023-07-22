@@ -1,5 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core
 
+import com.intellij.lang.Language
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
@@ -39,7 +41,9 @@ import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.currentIconProvider
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ViewRectangleChangeEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.notifications.genericShowNotificationBalloon
 import java.awt.event.*
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -102,6 +106,7 @@ open class BpmnPluginToolWindow(
     fun getContent() = this.mainToolWindowForm
 
     fun openFileAndRender(bpmnFile: PsiFile, context: BpmnActionContext) {
+        checkIfJavaAndSpelIsPresentAndNotifyOnceIfNot()
         onBeforeFileOpen(bpmnFile)
         val bpmnParser = currentParser(project)
         if (this.canvasBuilder.assertFileContentAndShowErrorOrWarning(bpmnParser, bpmnFile.virtualFile, onBadContentErrorCallback, onBadContentWarningCallback)) return
@@ -141,6 +146,35 @@ open class BpmnPluginToolWindow(
 
         invokeAndWaitIfNeeded { setupUiAfterRun() }
         showTryPolyBpmnAdvertisementNotification(project)
+    }
+
+    private fun checkIfJavaAndSpelIsPresentAndNotifyOnceIfNot() {
+        if (true == currentSettingsState().pluginState.noJavaOrSpelSupportShown) {
+            return
+        }
+
+        try {
+            JavaCodeFragmentFactory.getInstance(project)
+        } catch (ex: NoClassDefFoundError) {
+            genericShowNotificationBalloon(
+                project,
+                "BPMN plugin issues",
+                "BPMN: No Java language support found, language injection and code navigation support is OFF",
+                NotificationType.WARNING
+            )
+            currentSettingsState().pluginState.noJavaOrSpelSupportShown = true
+            return
+        }
+
+        if (null == Language.getRegisteredLanguages().firstOrNull { it.id == "SpEL" }) {
+            genericShowNotificationBalloon(
+                project,
+                "BPMN plugin issues",
+                "BPMN: No SpEL language support found, language injection and code navigation support is LIMITED",
+                NotificationType.WARNING
+            )
+            currentSettingsState().pluginState.noJavaOrSpelSupportShown = true
+        }
     }
 
     private fun createMultiLineTextField(value: String): TextValueAccessor {
@@ -185,7 +219,13 @@ open class BpmnPluginToolWindow(
     }
 
     private fun createEditor(project: Project, bpmnFile: PsiFile, text: String): TextValueAccessor {
-        val factory = JavaCodeFragmentFactory.getInstance(project)
+        val factory = try {
+            JavaCodeFragmentFactory.getInstance(project)
+        } catch (ex: NoClassDefFoundError) {
+            // Non-Java IJ IDE
+            return nonJavaEditorTextField(text)
+        }
+
         val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, psiTypeChar(), true)
         fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
         val document = PsiDocumentManager.getInstance(project).getDocument(fragment)!!
@@ -228,7 +268,13 @@ open class BpmnPluginToolWindow(
 
     // JavaCodeFragmentFactory - important
     private fun createEditorForClass(project: Project, bpmnFile: PsiFile, text: String?): TextValueAccessor {
-        val document = JavaReferenceEditorUtil.createDocument(text, project, true)!!
+        val document = try {
+            JavaReferenceEditorUtil.createDocument(text, project, true)!!
+        } catch (ex: NoClassDefFoundError) {
+            // Non-Java IJ IDE
+            return nonJavaEditorTextField(text)
+        }
+
         val textField: EditorTextField = JavaClassEditorTextField(document, project)
         textField.setOneLineMode(true)
 
@@ -238,6 +284,10 @@ open class BpmnPluginToolWindow(
             override val component: JComponent
                 get() = textField
         }
+    }
+
+    private fun nonJavaEditorTextField(text: String?): TextValueAccessor {
+        return createTextField(text?.trim('"') ?: "")
     }
 
     private fun setupUiBeforeRun() {
