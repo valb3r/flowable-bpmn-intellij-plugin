@@ -42,7 +42,7 @@
       <p>0.5.4:</p>
         <ul>
           <li>
-            Support for IJ Community Edition and other IDEs
+            Initial support for IJ Community Edition and other JB IDEs (limited language injection support compared to IU)
           </li>
         </ul>
       <p>0.5.3.1:</p>
