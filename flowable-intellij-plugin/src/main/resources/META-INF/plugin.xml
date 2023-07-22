@@ -257,7 +257,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Flowable BPMN 2.0 Engine XML process" implementationClass="com.valb3r.bpmn.intellij.plugin.flowable.meta.FlowableFileType"
-                  fieldName="INSTANCE" language="XML" patterns="*.bpmn20.xml"/>
+                  fieldName="INSTANCE" language="XML" patterns="*.bpmn20.xml;*.bpmn"/> <!-- Note: Currently it is impossible to register fileType without using Deprecated methods -->
         <xml.schemaProvider implementation="com.valb3r.bpmn.intellij.plugin.flowable.schemas.FlowableBpmnFileSchemasProvider"/>
     </extensions>
     <!-- File templates registration -->
