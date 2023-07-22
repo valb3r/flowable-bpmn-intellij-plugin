@@ -44,6 +44,9 @@
           <li>
             Initial support for IJ Community Edition and other JB IDEs (limited language injection support compared to IU)
           </li>
+          <li>
+            Fixed: Language injection into XML was using hardcoded extension list
+          </li>
         </ul>
       <p>0.5.3.1:</p>
         <ul>
