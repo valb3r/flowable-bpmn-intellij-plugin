@@ -36,10 +36,10 @@ sourceSets {
 }
 
 intellij {
-    version = intellijPlatform
+    version = "IC-2021.3"
     pluginName = 'activiti-bpmn-plugin'
     updateSinceUntilBuild = false
-    plugins = intellijPlatformPlugins
+    plugins = ["java"]
 }
 
 runPluginVerifier {

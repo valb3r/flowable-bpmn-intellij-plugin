@@ -28,6 +28,10 @@ abstract class DefaultDelegateExpressionUiInjector: MultiHostInjector {
         return mutableListOf(PsiLiteralExpression::class.java)
     }
 
+    private val spelStart = "^\"[$#]\\{".toRegex()
+
+    private val spelEnd = "}\""
+
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, context: PsiElement) {
         if (context !is PsiLanguageInjectionHost) {
             return
@@ -39,10 +43,6 @@ abstract class DefaultDelegateExpressionUiInjector: MultiHostInjector {
             return
         }
 
-        if (!context.text.contains("[$#]\\{".toRegex()) || !context.text.contains("}")) {
-            return
-        }
-
         injectSpel(context, registrar)
     }
 
@@ -51,7 +51,11 @@ abstract class DefaultDelegateExpressionUiInjector: MultiHostInjector {
         val language = Language.getRegisteredLanguages().firstOrNull { it.id == "SpEL" } ?:
             Language.getRegisteredLanguages().firstOrNull { it.id == "JAVA" } ?: return
         registrar.startInjecting(language)
-        registrar.addPlace("", "", context, TextRange(3, text.length - 2))
+        if (context.text.contains(spelStart) && context.text.endsWith(spelEnd)) {
+            registrar.addPlace("", "", context, TextRange(3, text.length - 2))
+        } else {
+            registrar.addPlace("", "", context, TextRange(1, text.length - 1))
+        }
         registrar.doneInjecting()
     }
 }
