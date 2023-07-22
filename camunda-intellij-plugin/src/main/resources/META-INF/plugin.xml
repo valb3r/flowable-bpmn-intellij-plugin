@@ -93,8 +93,8 @@
 
     <!-- The unique identifiers of the plugins on which this plugin depends. -->
     <depends>com.intellij.modules.lang</depends>
-    <depends>com.intellij.modules.java</depends>
-    <depends>com.intellij.database</depends>
+    <depends optional="true" config-file="camunda-bpmn-visualizer-with-java.xml">com.intellij.modules.java</depends>
+    <depends optional="true" config-file="camunda-bpmn-visualizer-with-db.xml">com.intellij.database</depends>
 
     <!-- Optional dependency on another plugin. If the plugin with the "com.MySecondPlugin" ID is installed,
          the contents of mysecondplugin.xml (the format of this file conforms to the format of plugin.xml)

@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.intellij.psi.PsiLiteralExpression
+import org.jetbrains.uast.UastFacade.language
 import java.util.*
 
 private val currentFile = Collections.synchronizedMap(WeakHashMap<Project,  PsiFile>())
@@ -47,8 +48,9 @@ abstract class DefaultDelegateExpressionUiInjector: MultiHostInjector {
 
     private fun injectSpel(context: PsiLanguageInjectionHost, registrar: MultiHostRegistrar) {
         val text = context.text
-        val beanName = Language.getRegisteredLanguages().first { it.id == "SpEL" }!!
-        registrar.startInjecting(beanName)
+        val language = Language.getRegisteredLanguages().firstOrNull { it.id == "SpEL" } ?:
+            Language.getRegisteredLanguages().firstOrNull { it.id == "JAVA" } ?: return
+        registrar.startInjecting(language)
         registrar.addPlace("", "", context, TextRange(3, text.length - 2))
         registrar.doneInjecting()
     }
