@@ -160,7 +160,7 @@ open class BpmnPluginToolWindow(
                 project,
                 "BPMN plugin issues",
                 "BPMN: No Java language support found, language injection and code navigation support is OFF." +
-                        "<br/>For full feature support use IntelliJ Ultimate",
+                        "<br/>For full feature support, use IntelliJ Ultimate",
                 NotificationType.WARNING
             )
             currentSettingsState().pluginState.noJavaOrSpelSupportShown = true
@@ -172,7 +172,7 @@ open class BpmnPluginToolWindow(
                 project,
                 "BPMN plugin issues",
                 "BPMN: No SpEL language support found, language injection and code navigation support is LIMITED." +
-                        "<br/>For full feature support use IntelliJ Ultimate",
+                        "<br/>For full feature support, use IntelliJ Ultimate",
                 NotificationType.WARNING
             )
             currentSettingsState().pluginState.noJavaOrSpelSupportShown = true
