@@ -38,7 +38,7 @@ abstract class DefaultXmlInjector: MultiHostInjector {
     }
 
     protected open fun invalidXmlFileExtension(context: PsiLanguageInjectionHost): Boolean {
-        return isValidFileName(context.containingFile.name)
+        return !isValidFileName(context.containingFile.name)
     }
 
     private fun isValidFileName(fileName: String?): Boolean {
