@@ -44,6 +44,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.notifications.genericShowNotificationBalloon
+import com.valb3r.bpmn.intellij.plugin.core.util.IJFeatures
 import java.awt.event.*
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -153,9 +154,7 @@ open class BpmnPluginToolWindow(
             return
         }
 
-        try {
-            JavaCodeFragmentFactory.getInstance(project)
-        } catch (ex: NoClassDefFoundError) {
+        if (!IJFeatures.hasJava(project)) {
             genericShowNotificationBalloon(
                 project,
                 "BPMN plugin issues",
@@ -167,7 +166,7 @@ open class BpmnPluginToolWindow(
             return
         }
 
-        if (null == Language.getRegisteredLanguages().firstOrNull { it.id == "SpEL" }) {
+        if (!IJFeatures.hasSpel()) {
             genericShowNotificationBalloon(
                 project,
                 "BPMN plugin issues",
