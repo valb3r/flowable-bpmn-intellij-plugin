@@ -21,7 +21,7 @@
         <li>BPMN editing/viewing</li>
         <li>Jumping from delegate expression or class directly to code (IntelliJ Ultimate, only classes for IntelliJ Community)</li>
         <li>Language injections to underlying XML file, so that class usage and refactoring is available (IntelliJ Ultimate, only classes for IntelliJ Community)</li>
-        <li>BPMN process debugging</li>
+        <li>BPMN process debugging (IntelliJ Ultimate)</li>
       </ul>
       <br/>
       <p><a href="https://github.com/valb3r/flowable-bpmn-intellij-plugin">Github</a> stars are welcome!</p>
