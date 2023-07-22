@@ -1,6 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.core.properties
 
-import com.intellij.database.util.toFixString
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
@@ -204,7 +203,7 @@ class PropertiesVisualizer(
 
     private fun computePropertyKey(entry: Pair<PropertyType, Property>): String {
         return entry.first.group?.mapIndexed { index, type ->
-            type.name + entry.second.index?.getOrElse(index) {""} + entry.first.positionInGroup.toFixString(4)
+            type.name + entry.second.index?.getOrElse(index) {""} + entry.first.positionInGroup.toString().padStart(4, '0')
         }?.joinToString() ?: ""
     }
 
