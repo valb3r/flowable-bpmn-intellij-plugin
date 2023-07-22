@@ -19,8 +19,8 @@
       <p><strong>Key features</strong></p>
       <ul>
         <li>BPMN editing/viewing</li>
-        <li>Jumping from delegate expression or class directly to code</li>
-        <li>Language injections to underlying XML file, so that class usage and refactoring is available</li>
+        <li>Jumping from delegate expression or class directly to code (IntelliJ Ultimate, only classes for IntelliJ Community)</li>
+        <li>Language injections to underlying XML file, so that class usage and refactoring is available (IntelliJ Ultimate, only classes for IntelliJ Community)</li>
         <li>BPMN process debugging</li>
       </ul>
       <br/>
