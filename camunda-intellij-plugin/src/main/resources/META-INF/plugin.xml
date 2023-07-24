@@ -260,7 +260,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Camunda BPMN 2.0 Engine XML process" implementationClass="com.valb3r.bpmn.intellij.plugin.camunda.meta.CamundaFileType"
-                  fieldName="INSTANCE" language="XML" extensions="*.bpmn20.xml;*.bpmn"/> <!-- Note: Currently it is impossible to register fileType without using Deprecated methods -->
+                  fieldName="INSTANCE" language="XML" patterns="*.bpmn20.xml;*.bpmn"/> <!-- Note: Currently it is impossible to register fileType without using Deprecated methods -->
         <xml.schemaProvider implementation="com.valb3r.bpmn.intellij.plugin.camunda.schemas.CamundaBpmnFileSchemasProvider"/>
     </extensions>
     <!-- File templates registration -->
