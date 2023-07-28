@@ -28,9 +28,10 @@
       <br/>
       <p><strong>Keyboard shortcuts</strong></p>
       <ul>
+        <li>Shift+Drag with mouse to move pane</li>
         <li>Undo/Redo Ctrl-Z/Ctrl-Y</li>
         <li>Zoom in/out Ctrl +/-</li>
-        <li>Arrow pane navigation, (Ctrl for larger step)</li>
+        <li>Arrows for pane navigation, (Ctrl for larger step)</li>
         <li>Copy/Paste Ctrl-C/Ctrl-V/Ctrl-X</li>
       </ul>
       <p><strong>Plugin status: Work in progress. Please use issue tracker to report any problems found</strong></p>
