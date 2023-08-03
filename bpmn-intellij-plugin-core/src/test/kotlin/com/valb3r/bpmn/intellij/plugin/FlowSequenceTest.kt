@@ -29,16 +29,16 @@ internal class FlowSequenceTest: BaseUiTest() {
     fun `No Default flow selection on flow sequence element without gateway`() {
         prepareOneSubProcessWithServiceTaskAndAttachedBoundaryEventOneNestedSubprocessAndServiceTaskWithSequence()
         clickOnId(sequenceFlowDiagramId)
-        val propertiesVisible = (0 until propertiesTable.model.rowCount).map { propertiesTable.model.getValueAt(it, 0) as String? }
+        val propertiesVisible = currentVisibleProperties()
         propertiesVisible.shouldNotContain(PropertyType.DEFAULT_FLOW_ON_SEQUENCE.caption)
     }
 
     @Test
-    fun `Default flow selection present on flow sequence element with gateway`() {
+    fun `Default flow selection present on flow sequence element with gateway and is updateable`() {
         prepareExclusiveGatewayAttachedToServiceTaskWithFlowSequence()
         clickOnId(sequenceFlowDiagramId)
 
-        val propertiesVisible = (0 until propertiesTable.model.rowCount).map { propertiesTable.model.getValueAt(it, 0) as String? }
+        val propertiesVisible = currentVisibleProperties()
         propertiesVisible.shouldContain(PropertyType.DEFAULT_FLOW_ON_SEQUENCE.caption)
 
         whenever(boolFieldsConstructed[Pair(sequenceFlowBpmnId, PropertyType.DEFAULT_FLOW_ON_SEQUENCE)]!!.isSelected).thenReturn(true)
@@ -54,6 +54,29 @@ internal class FlowSequenceTest: BaseUiTest() {
             uiOnlyUpdate.bpmnElementId.shouldBeEqualTo(sequenceFlowBpmnId)
             uiOnlyUpdate.property.shouldBeEqualTo(PropertyType.DEFAULT_FLOW_ON_SEQUENCE)
         }
+    }
 
+    @Test
+    fun `Default flow selection present on flow sequence element with gateway when sequence was created in UI and is updateable`() {
+        prepareExclusiveGatewayAndServiceTaskDetached()
+        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce(exclusiveGatewayDiagramId)
+        clickOnId(addedEdge.edge.id)
+
+        val propertiesVisible = currentVisibleProperties()
+        propertiesVisible.shouldContain(PropertyType.DEFAULT_FLOW_ON_SEQUENCE.caption)
+
+        whenever(boolFieldsConstructed[Pair(sequenceFlowBpmnId, PropertyType.DEFAULT_FLOW_ON_SEQUENCE)]!!.isSelected).thenReturn(true)
+        propertiesVisualizer(project).clear()
+
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            firstValue.shouldHaveSize(2)
+            val xmlOnlyUpdate = firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            val uiOnlyUpdate = firstValue.filterIsInstance<BooleanValueUpdatedEvent>().shouldHaveSingleItem()
+            xmlOnlyUpdate.bpmnElementId.shouldBeEqualTo(exclusiveGatewayBpmnId)
+            xmlOnlyUpdate.property.shouldBeEqualTo(PropertyType.DEFAULT_FLOW)
+            uiOnlyUpdate.bpmnElementId.shouldBeEqualTo(sequenceFlowBpmnId)
+            uiOnlyUpdate.property.shouldBeEqualTo(PropertyType.DEFAULT_FLOW_ON_SEQUENCE)
+        }
     }
 }
