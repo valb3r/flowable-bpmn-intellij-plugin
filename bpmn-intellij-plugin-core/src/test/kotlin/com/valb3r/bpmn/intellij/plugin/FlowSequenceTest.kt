@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin
 
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
@@ -65,18 +66,16 @@ internal class FlowSequenceTest: BaseUiTest() {
         val propertiesVisible = currentVisibleProperties()
         propertiesVisible.shouldContain(PropertyType.DEFAULT_FLOW_ON_SEQUENCE.caption)
 
-        whenever(boolFieldsConstructed[Pair(sequenceFlowBpmnId, PropertyType.DEFAULT_FLOW_ON_SEQUENCE)]!!.isSelected).thenReturn(true)
+        whenever(boolFieldsConstructed[Pair(addedEdge.edge.bpmnElement, PropertyType.DEFAULT_FLOW_ON_SEQUENCE)]!!.isSelected).thenReturn(true)
         propertiesVisualizer(project).clear()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
-            firstValue.shouldHaveSize(2)
-            val xmlOnlyUpdate = firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
-            val uiOnlyUpdate = firstValue.filterIsInstance<BooleanValueUpdatedEvent>().shouldHaveSingleItem()
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(5)
+            val xmlOnlyUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().filter { it.property == PropertyType.DEFAULT_FLOW }.shouldHaveSingleItem()
+            val uiOnlyUpdate = lastValue.filterIsInstance<BooleanValueUpdatedEvent>().filter { it.property == PropertyType.DEFAULT_FLOW_ON_SEQUENCE }.shouldHaveSingleItem()
             xmlOnlyUpdate.bpmnElementId.shouldBeEqualTo(exclusiveGatewayBpmnId)
-            xmlOnlyUpdate.property.shouldBeEqualTo(PropertyType.DEFAULT_FLOW)
-            uiOnlyUpdate.bpmnElementId.shouldBeEqualTo(sequenceFlowBpmnId)
-            uiOnlyUpdate.property.shouldBeEqualTo(PropertyType.DEFAULT_FLOW_ON_SEQUENCE)
+            uiOnlyUpdate.bpmnElementId.shouldBeEqualTo(addedEdge.edge.bpmnElement)
         }
     }
 }
