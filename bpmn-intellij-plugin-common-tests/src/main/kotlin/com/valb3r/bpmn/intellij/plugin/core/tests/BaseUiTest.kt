@@ -354,6 +354,17 @@ abstract class BaseUiTest {
         canvas.paintComponent(graphics)
     }
 
+    protected fun addSequenceElementOnFirstTaskAndValidateCommittedExactOnce(target: DiagramElementId): BpmnEdgeObjectAddedEvent {
+        addSequenceElementOnFirstTaskTo(target)
+
+        argumentCaptor<List<EventPropagatableToXml>>().let {
+            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any())
+            it.firstValue.shouldHaveSize(3)
+            it.firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).map { value -> value.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
+            return it.firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+        }
+    }
+
     protected fun addSequenceElementOnFirstTaskAndValidateCommittedExactOnce(): BpmnEdgeObjectAddedEvent {
         addSequenceElementOnFirstTaskToSecondTask()
 
@@ -379,6 +390,16 @@ abstract class BaseUiTest {
             verify(fileCommitter, atLeastOnce()).executeCommitAndGetHash(any(), it.capture(), any(), any())
             return it.lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().last().shouldNotBeNull()
         }
+    }
+
+    protected fun addSequenceElementOnFirstTaskTo(endTarget: DiagramElementId) {
+        clickOnId(serviceTaskStartDiagramId)
+        val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
+        val newLinkLocation = clickOnId(newLink)
+        dragToButDontStop(newLinkLocation, elementCenter(endTarget))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
     }
 
     protected fun addSequenceElementOnFirstTaskToSecondTask() {
@@ -813,7 +834,24 @@ abstract class BaseUiTest {
             ),
             listOf(DiagramElement(
                 diagramMainElementId,
-                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramTimerStartEvent, diagramServiceTaskEnd), listOf(diagramSequenceFlow)))
+                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramExclusiveGateway, diagramServiceTaskEnd), listOf(diagramSequenceFlow)))
+            )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
+    protected fun prepareExclusiveGatewayAndServiceTaskDetached() {
+        val process = basicProcess.copy(
+            basicProcess.process.copy(
+                body = basicProcessBody.copy(
+                    exclusiveGateway = listOf(bpmnExclusiveGateway),
+                    serviceTask = listOf(bpmnServiceTaskStart)
+                )
+            ),
+            listOf(DiagramElement(
+                diagramMainElementId,
+                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramExclusiveGateway, diagramServiceTaskStart), listOf()))
             )
         )
         whenever(parser.parse("")).thenReturn(process)
