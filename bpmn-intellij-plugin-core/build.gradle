@@ -16,6 +16,9 @@ dependencies {
     implementation project(":xml-parser-api")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation("org.apache.xmlgraphics:batik-transcoder:1.16") { // JB has removed batik from IC 2023.2
+        exclude group: 'xml-apis', module: 'xml-apis'
+    }
 
     implementation "com.fasterxml.jackson.core:jackson-databind:$jackson"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson"
