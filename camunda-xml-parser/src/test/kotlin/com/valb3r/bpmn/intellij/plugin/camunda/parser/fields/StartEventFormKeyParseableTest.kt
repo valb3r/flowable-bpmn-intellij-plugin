@@ -6,6 +6,7 @@ import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaParser
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.propsOf
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldHaveSingleItem
 import org.junit.jupiter.api.Test
 
@@ -21,5 +22,6 @@ internal class StartEventFormKeyParseableTest {
         startEvent.id.id.shouldBeEqualTo("startEvent1")
         startEvent.formKey.shouldBeEqualTo("formKey")
         processObject.propsOf("startEvent1")[PropertyType.FORM_KEY]!!.value.shouldBeEqualTo("formKey")
+        processObject.propsOf("startEvent1")[PropertyType.FORM_FIELD_VALIDATION].shouldBeNull()
     }
 }

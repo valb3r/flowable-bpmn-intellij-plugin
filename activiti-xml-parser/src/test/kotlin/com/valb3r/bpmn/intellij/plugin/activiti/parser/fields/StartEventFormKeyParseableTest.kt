@@ -6,6 +6,7 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.propsOf
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldHaveSingleItem
 import org.junit.jupiter.api.Test
 
@@ -20,8 +21,7 @@ internal class StartEventFormKeyParseableTest {
         val startEvent = processObject.process.body!!.startEvent!!.shouldHaveSingleItem()
         startEvent.id.id.shouldBeEqualTo("startEvent1")
         startEvent.formKey.shouldBeEqualTo("formKey")
-        startEvent.formFieldValidation.shouldBeEqualTo(true)
         processObject.propsOf("startEvent1")[PropertyType.FORM_KEY]!!.value.shouldBeEqualTo("formKey")
-        processObject.propsOf("startEvent1")[PropertyType.FORM_FIELD_VALIDATION]!!.value.shouldBeEqualTo(true)
+        processObject.propsOf("startEvent1")[PropertyType.FORM_FIELD_VALIDATION].shouldBeNull()
     }
 }
