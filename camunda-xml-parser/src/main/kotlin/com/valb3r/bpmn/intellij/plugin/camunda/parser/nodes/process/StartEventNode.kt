@@ -21,6 +21,7 @@ data class StartEventNode(
     @JacksonXmlProperty(isAttribute = true) val id: String,
     @JacksonXmlProperty(isAttribute = true) val name: String?,
     val documentation: String?,
+    @JacksonXmlProperty(isAttribute = true) val formKey: String?,
     @JacksonXmlProperty(isAttribute = true) val asyncBefore: Boolean?,
     @JacksonXmlProperty(isAttribute = true) val asyncAfter: Boolean?,
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>?,

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
+  <process id="FBP-327-formKey-on-start-evt" name="FBP-327-formKey-on-start-evt" isExecutable="true">
+    <startEvent id="startEvent1" activiti:formKey="formKey"/>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_FBP-327-formKey-on-start-evt">
+    <bpmndi:BPMNPlane bpmnElement="FBP-327-formKey-on-start-evt" id="BPMNPlane_FBP-327-formKey-on-start-evt">
+      <bpmndi:BPMNShape id="shape-2a86eff8-29e0-4b24-a7ae-6eb3b689ede9" bpmnElement="startEvent1">
+        <omgdc:Bounds x="85.0" y="175.0" width="30.0" height="30.0"/>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
