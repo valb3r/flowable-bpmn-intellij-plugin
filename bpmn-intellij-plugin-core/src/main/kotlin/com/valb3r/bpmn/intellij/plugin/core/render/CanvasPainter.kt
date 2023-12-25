@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.google.common.cache.Cache
 import com.google.common.hash.Hashing
+import com.intellij.ui.JBColor
 import com.intellij.util.ui.UIUtil
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
@@ -10,21 +11,34 @@ import org.apache.batik.transcoder.TranscoderInput
 import org.apache.batik.transcoder.TranscoderOutput
 import org.apache.batik.transcoder.image.ImageTranscoder
 import org.apache.batik.transcoder.image.PNGTranscoder
-import java.awt.*
+import java.awt.Color
+import java.awt.Font
+import java.awt.Graphics2D
+import java.awt.Polygon
+import java.awt.Shape
+import java.awt.Stroke
 import java.awt.font.FontRenderContext
 import java.awt.font.LineBreakMeasurer
 import java.awt.font.TextAttribute
-import java.awt.geom.*
+import java.awt.geom.AffineTransform
 import java.awt.geom.AffineTransform.getTranslateInstance
+import java.awt.geom.Area
+import java.awt.geom.Ellipse2D
+import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
+import java.awt.geom.RoundRectangle2D
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
-import java.nio.charset.StandardCharsets
 import java.nio.charset.StandardCharsets.UTF_8
 import java.text.AttributedCharacterIterator
 import java.text.AttributedString
 import java.text.BreakIterator
 import javax.swing.Icon
 
+
+fun isUnderDarcula(): Boolean {
+    return !JBColor.isBright()
+}
 
 class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCachedIcons: Cache<Long, BufferedImage>) {
 
@@ -335,7 +349,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
                 height.toFloat()
         )
 
-        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), isUnderDarcula())
         graphics2D.drawImage(resizedImg, bounds.x.toInt(), bounds.y.toInt(), width, height, null)
 
         return Area(highlightedShape)
@@ -358,7 +372,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
                 height.toFloat()
         )
 
-        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), isUnderDarcula())
         graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
 
         return Area(highlightedShape)
@@ -375,7 +389,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
             return Area()
         }
 
-        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), isUnderDarcula())
         val iconRect = Rectangle2D.Float(
                 leftTop.x.toInt().toFloat(),
                 leftTop.y.toInt().toFloat(),
@@ -419,7 +433,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
             graphics2D.fill(highlightedShape)
         }
 
-        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), isUnderDarcula())
         graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
 
         return Area(highlightedShape)
