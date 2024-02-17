@@ -31,10 +31,14 @@ abstract class DefaultXmlInjector: MultiHostInjector {
                 listOf(
                         { tryToInjectCalledElement(context, context, registrar) },
                         { tryToInjectSkipExpression(context, context, registrar) },
-                        { tryToInjectInServiceTask(context, context, registrar) }
+                        { tryToInjectInTaskOfType("serviceTask", context, context, registrar) },
+                        { tryToInjectInTaskOfType("sendTask", context, context, registrar) }
                 ).map { it() }.firstOrNull { it }
             }
-            is XmlText -> { tryToInjectConditionExpression(context, context, registrar) }
+            is XmlText -> listOf(
+                { tryToInjectConditionExpression(context, context, registrar)},
+                { tryToInjectFieldExpression(context, context, registrar) }
+            ).map { it() }.firstOrNull { it }
         }
     }
 
@@ -66,6 +70,25 @@ abstract class DefaultXmlInjector: MultiHostInjector {
         return false
     }
 
+    private fun tryToInjectFieldExpression(context: XmlText, asHost: PsiLanguageInjectionHost, registrar: MultiHostRegistrar): Boolean {
+        val parent = context.parent
+        if (parent !is XmlTag) {
+            return false
+        }
+
+        val enclosingParent = parent.parent
+        if (enclosingParent !is XmlTag) {
+            return false
+        }
+
+        if (enclosingParent.localName == "field" && parent.localName == "expression") {
+            injectSpel(asHost, registrar)
+            return true
+        }
+
+        return false
+    }
+
     private fun tryToInjectCalledElement(context: XmlAttributeValue, asHost: PsiLanguageInjectionHost, registrar: MultiHostRegistrar): Boolean {
         return injectByAttrName("calledElement", context, asHost, registrar)
     }
@@ -88,13 +111,13 @@ abstract class DefaultXmlInjector: MultiHostInjector {
         return false
     }
 
-    private fun tryToInjectInServiceTask(context: XmlAttributeValue, asHost: PsiLanguageInjectionHost, registrar: MultiHostRegistrar): Boolean {
+    private fun tryToInjectInTaskOfType(taskType: String, context: XmlAttributeValue, asHost: PsiLanguageInjectionHost, registrar: MultiHostRegistrar): Boolean {
         val parent = context.parent
         if (parent !is XmlAttribute) {
             return false
         }
 
-        if (parent.parent.localName != "serviceTask") {
+        if (parent.parent.localName != taskType) {
             return false
         }
 
