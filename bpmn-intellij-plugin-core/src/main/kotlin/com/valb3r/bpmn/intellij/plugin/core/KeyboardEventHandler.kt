@@ -81,7 +81,7 @@ class KeyboardEventHandler(private val project: Project, private val canvas: Can
             KeyEvent.VK_DOWN -> canvas.dragCanvas(start, Point2D.Float(0.0f, -step))
             KeyEvent.VK_LEFT -> canvas.dragCanvas(start, Point2D.Float(step, 0.0f))
             KeyEvent.VK_RIGHT -> canvas.dragCanvas(start, Point2D.Float(-step, 0.0f))
-            KeyEvent.VK_DELETE -> currentRemoveActionHandler(project).deleteElem()
+            KeyEvent.VK_DELETE -> currentRemoveActionHandler(project).deleteSelectedElements()
         }
     }
 }

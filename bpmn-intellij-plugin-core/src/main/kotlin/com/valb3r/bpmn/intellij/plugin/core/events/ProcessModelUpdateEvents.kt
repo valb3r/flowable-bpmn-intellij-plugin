@@ -170,6 +170,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
                 is BpmnEdgeObjectAddedEvent -> addObjectEdgeEvent(toStore as Order<BpmnEdgeObjectAddedEvent>)
                 is BpmnElementRemovedEvent -> removeBpmnElement(event.bpmnElementId , toStore as Order<BpmnElementRemovedEvent> )
                 is BpmnElementTypeChangeEvent -> changeBpmnElement(event.elementId , toStore as Order<BpmnElementRemovedEvent>, toStore as Order<BpmnEdgeObjectAddedEvent>)
+                is DiagramElementRemovedEvent -> removeDiagramElement(event, toStore as Order<DiagramElementRemovedEvent>)
                 else -> throw IllegalArgumentException("Can't bulk add: " + event::class.qualifiedName)
             }
         }
@@ -196,7 +197,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
         diagram.forEachIndexed {index, event ->
             val toStore = Order(current + index, event, EventBlock(blockSize))
             updates.add(toStore)
-            deletionsByStaticId.computeIfAbsent(event.elementId) { CopyOnWriteArrayList() } += toStore
+            removeDiagramElement(event, toStore)
         }
 
         bpmn.forEachIndexed {index, event ->
@@ -212,6 +213,13 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
         }
 
         commitToFile()
+    }
+
+    private fun removeDiagramElement(
+        event: DiagramElementRemovedEvent,
+        toStore: Order<DiagramElementRemovedEvent>
+    ) {
+        deletionsByStaticId.computeIfAbsent(event.elementId) { CopyOnWriteArrayList() } += toStore
     }
 
     private fun removeBpmnElement(
