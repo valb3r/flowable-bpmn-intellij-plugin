@@ -20,7 +20,7 @@ ext {
     jsonPath = '2.8.0'
     junitPlatformRunner = '1.6.2'
     kluent = '1.68'
-    mockitoInline = '3.3.3'
+    mockitoInline = '5.2.0'
     mockitoKotlin = '2.2.0'
 }
 

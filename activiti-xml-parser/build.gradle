@@ -50,6 +50,8 @@ compileTestKotlin {
 }
 
 test {
+    jvmArgs "--add-opens=java.base/java.nio.charset=ALL-UNNAMED"
+
     jacoco {
         destinationFile = file("${buildDir}/jacoco/test.exec")
     }
