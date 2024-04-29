@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.actions
 
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
@@ -22,5 +23,9 @@ class ViewFlowableBpmnDiagramAction : BaseViewBpmnDiagramAction() {
 
     override fun notificationBalloon(project: Project, message: String, type: NotificationType) {
         showNotificationBalloon(project, message, type)
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
     }
 }

@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.valb3r.bpmn.intellij.plugin.camunda'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 17
 
 repositories {
     mavenCentral()
@@ -43,7 +43,7 @@ intellij {
 }
 
 runPluginVerifier {
-    ideVersions = ["IU-2021.3", "IC-2021.3"]
+    ideVersions = ["IU-2022.3", "IC-2022.3"]
 }
 
 verifyPlugin {
@@ -56,13 +56,13 @@ publishPlugin {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
         apiVersion = kotlinApiVersion
     }
 }
 compileTestKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
         apiVersion = kotlinApiVersion
     }
 }
@@ -87,7 +87,7 @@ test {
 jacocoTestReport {
     // Adjust the output of the test report
     reports {
-        xml.enabled true
-        csv.enabled false
+        xml.required = true
+        csv.required = true
     }
 }

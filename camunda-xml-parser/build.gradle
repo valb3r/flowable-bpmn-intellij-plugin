@@ -7,7 +7,7 @@ plugins {
 group = 'com.valb3r.bpmn.intellij.plugin.camunda.parser'
 
 
-sourceCompatibility = 1.8
+sourceCompatibility = 17
 
 repositories {
     mavenCentral()
@@ -38,18 +38,20 @@ dependencies {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
         apiVersion = kotlinApiVersion
     }
 }
 compileTestKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
         apiVersion = kotlinApiVersion
     }
 }
 
 test {
+    jvmArgs "--add-opens=java.base/java.nio.charset=ALL-UNNAMED"
+
     jacoco {
         destinationFile = file("${buildDir}/jacoco/test.exec")
     }
@@ -65,7 +67,7 @@ test {
 jacocoTestReport {
     // Adjust the output of the test report
     reports {
-        xml.enabled true
-        csv.enabled false
+        xml.required = true
+        csv.required = true
     }
 }

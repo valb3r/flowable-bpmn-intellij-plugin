@@ -1,12 +1,12 @@
 plugins {
     id 'java'
     id 'org.jetbrains.intellij' version '1.11.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.5.30'
-    id 'org.jetbrains.kotlin.kapt' version '1.5.30'
+    id 'org.jetbrains.kotlin.jvm' version '1.6.0'
+    id 'org.jetbrains.kotlin.kapt' version '1.6.0'
 }
 
 ext {
-    intellijPlatform = 'IU-2021.3'
+    intellijPlatform = 'IU-2022.3'
     intellijPlatformPlugins = ['java', 'DatabaseTools'] // DatabaseTools is for BPMN process 'debugging'
 
     kotlinStdlib = '1.5.30'
@@ -20,13 +20,13 @@ ext {
     jsonPath = '2.8.0'
     junitPlatformRunner = '1.6.2'
     kluent = '1.68'
-    mockitoInline = '3.3.3'
+    mockitoInline = '5.2.0'
     mockitoKotlin = '2.2.0'
 }
 
 group = 'com.valb3r'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 17
 
 repositories {
     mavenCentral()
