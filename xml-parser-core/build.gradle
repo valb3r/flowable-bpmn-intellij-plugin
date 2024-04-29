@@ -38,6 +38,8 @@ compileTestKotlin {
 test {
     jacoco {
         destinationFile = file("${buildDir}/jacoco/test.exec")
+        includeNoLocationClasses = true
+        excludes = ["jdk.internal.*"]
     }
 
     testLogging {
