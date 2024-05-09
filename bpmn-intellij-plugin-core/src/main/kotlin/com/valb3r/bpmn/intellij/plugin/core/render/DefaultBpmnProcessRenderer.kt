@@ -311,7 +311,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
                 BoundsElement(maxX, minY, actionsIcoSize, actionsIcoSize),
                 icons.recycleBin
             )
-            state.ctx.interactionContext.clickCallbacks[delId] = { currentRemoveActionHandler(project).deleteElem() }
+            state.ctx.interactionContext.clickCallbacks[delId] = { currentRemoveActionHandler(project).deleteSelectedElements() }
             renderedArea[delId] =
                 AreaWithZindex(deleteIconArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ANCHOR_Z_INDEX, null)
         }

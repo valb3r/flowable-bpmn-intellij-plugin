@@ -1,11 +1,11 @@
 package com.valb3r.bpmn.intellij.plugin.core.actions
 
 import com.intellij.openapi.project.Project
-import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementRemovedEvent
-import com.valb3r.bpmn.intellij.plugin.core.events.DiagramElementRemovedEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
-import com.valb3r.bpmn.intellij.plugin.core.render.AreaType
 import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
+import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import java.util.*
 
@@ -19,17 +19,12 @@ fun currentRemoveActionHandler(project: Project): ElementRemoveActionHandler {
 
 class ElementRemoveActionHandler(private val project: Project) {
 
-    fun deleteElem() {
+    fun deleteSelectedElements() {
         val state = lastRenderedState(project)?.state ?: return
-        val targetIds = state.ctx.selectedIds.filter {
-            val area = state.elemMap[it]?.areaType
-            area == AreaType.SHAPE_THAT_NESTS || area == AreaType.SHAPE || area == AreaType.EDGE
-        }
 
-        updateEventsRegistry(project).addElementRemovedEvent(
-            targetIds.map { DiagramElementRemovedEvent(it) },
-            targetIds.mapNotNull { state.currentState.elementByDiagramId[it] }.map { BpmnElementRemovedEvent(it) }
-        )
+        val inOrder = removeElements(state, state.ctx.selectedIds.toList())
+
+        updateEventsRegistry(project).addEvents(inOrder)
 
         currentCanvas(project).repaint()
     }
