@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.commons.actions
 
 import com.intellij.database.model.DasNamespace
 import com.intellij.database.psi.DbElement
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
@@ -11,6 +12,10 @@ import com.valb3r.bpmn.intellij.plugin.core.debugger.currentDebugger
 import com.valb3r.bpmn.intellij.plugin.core.debugger.detachDebugger
 
 abstract class DefaultDetachBpmnDebuggerFromDbAction : AnAction() {
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project ?: return

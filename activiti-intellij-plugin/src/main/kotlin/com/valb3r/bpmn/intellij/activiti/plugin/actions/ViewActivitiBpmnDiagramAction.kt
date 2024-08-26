@@ -24,8 +24,4 @@ class ViewActivitiBpmnDiagramAction : BaseViewBpmnDiagramAction() {
     override fun notificationBalloon(project: Project, message: String, type: NotificationType) {
         showNotificationBalloon(project, message, type)
     }
-
-    override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.BGT
-    }
 }

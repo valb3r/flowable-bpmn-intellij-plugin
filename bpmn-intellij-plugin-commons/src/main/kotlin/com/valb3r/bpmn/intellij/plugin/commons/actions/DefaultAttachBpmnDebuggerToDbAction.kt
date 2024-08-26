@@ -5,6 +5,7 @@ import com.intellij.database.model.DasNamespace
 import com.intellij.database.psi.DbElement
 import com.intellij.database.remote.jdbc.RemoteConnection
 import com.intellij.database.util.DbImplUtil
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
@@ -23,6 +24,10 @@ import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.atomic.AtomicReference
 
 abstract class DefaultAttachBpmnDebuggerToDbAction(private val debugger: (schema: DbElement) -> BpmnDebugger) : AnAction() {
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project ?: return

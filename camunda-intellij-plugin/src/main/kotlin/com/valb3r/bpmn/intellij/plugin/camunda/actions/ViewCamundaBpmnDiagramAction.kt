@@ -35,8 +35,4 @@ class ViewCamundaBpmnDiagramAction : BaseViewBpmnDiagramAction() {
         val psiElement = psiElement(anActionEvent)
         anActionEvent.presentation.isEnabledAndVisible = project != null && isValidFileName(psiElement?.containingFile?.name)
     }
-
-    override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.BGT
-    }
 }
