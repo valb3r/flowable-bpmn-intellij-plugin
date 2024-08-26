@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.actions
 
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -17,6 +18,10 @@ import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 abstract class BaseViewBpmnDiagramAction : AnAction() {
 
     abstract val toolWindowName: String
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
+    }
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project ?: return
