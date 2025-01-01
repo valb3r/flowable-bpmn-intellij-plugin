@@ -717,7 +717,7 @@ abstract class BaseBpmnParser: BpmnParser {
         // Sorting data in CustomizedXmlWriter is expensive performance-wise
         val existingElems = target.elements().map { it.name }.toMutableList()
         existingElems.add(addedSimpleName)
-        existingElems.sortedWith(Comparator.comparingInt { elementOrder(target.name, it) ?: Int.MAX_VALUE })
+        existingElems.sortWith(Comparator.comparingInt { elementOrder(target.name, it) ?: Int.MAX_VALUE })
         val addToIndex = existingElems.indexOf(addedSimpleName)
 
         val newElem = addElem()
