@@ -19,7 +19,7 @@ import org.dom4j.Element
 enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     ID(PropertyTypeDetails(PropertyType.ID, "id", XmlType.ATTRIBUTE)),
     NAME(PropertyTypeDetails(PropertyType.NAME,"name", XmlType.ATTRIBUTE)),
-    DOCUMENTATION(PropertyTypeDetails(PropertyType.DOCUMENTATION, "documentation.text", XmlType.CDATA, forceFirst = true)),
+    DOCUMENTATION(PropertyTypeDetails(PropertyType.DOCUMENTATION, "documentation.text", XmlType.CDATA)),
     IS_FOR_COMPENSATION(PropertyTypeDetails(PropertyType.IS_FOR_COMPENSATION, "isForCompensation", XmlType.ATTRIBUTE)),
     ASYNC(PropertyTypeDetails(PropertyType.ASYNC, "flowable:async", XmlType.ATTRIBUTE)),
     ASSIGNEE(PropertyTypeDetails(PropertyType.ASSIGNEE, "flowable:assignee", XmlType.ATTRIBUTE)),

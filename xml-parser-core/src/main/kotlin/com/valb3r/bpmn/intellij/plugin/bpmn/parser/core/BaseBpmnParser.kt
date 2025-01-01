@@ -44,14 +44,14 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.charset.StandardCharsets
+import java.util.Comparator
 
 const val CDATA_FIELD = "CDATA"
 
 data class PropertyTypeDetails(
     val propertyType: PropertyType,
     val xmlPath: String,
-    val type: XmlType,
-    val forceFirst: Boolean = false
+    val type: XmlType
 )
 
 abstract class BaseBpmnParser: BpmnParser {
@@ -136,6 +136,22 @@ abstract class BaseBpmnParser: BpmnParser {
 
     protected abstract fun propertyTypeDetails(): List<PropertyTypeDetails>
     protected abstract fun changeElementType(node: Element, name: String, details: PropertyTypeDetails, value: String?)
+
+    protected fun elementOrder(parentElem: String, targetElem: String): Int? {
+        // TODO - use 'parentElem'
+        val index = arrayListOf(
+            "message",
+            "process",
+            "documentation",
+            "extensionElements"
+        ).indexOf(targetElem)
+
+        if (index < 0) {
+            return null
+        }
+
+        return index
+    }
 
     protected fun mapper(): XmlMapper {
         val mapper: ObjectMapper = XmlMapper(
@@ -247,7 +263,7 @@ abstract class BaseBpmnParser: BpmnParser {
     }
 
     private fun newWaypoint(it: IdentifiableWaypoint, parentEdgeElem: Element) {
-        val elem = parentEdgeElem.addElement(omgdiNs().named("waypoint"))
+        val elem = parentEdgeElem.addElementInternal(omgdiNs().named("waypoint"))
         elem.addAttribute("x", it.x.toString())
         elem.addAttribute("y", it.y.toString())
     }
@@ -300,10 +316,10 @@ abstract class BaseBpmnParser: BpmnParser {
         val shapeParent = doc.selectSingleNode(
             "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]"
         ) as Element
-        val newShape = shapeParent.addElement(bpmndiNs().named("BPMNShape"))
+        val newShape = shapeParent.addElementInternal(bpmndiNs().named("BPMNShape"))
         newShape.addAttribute("id", update.shape.id.id)
         newShape.addAttribute("bpmnElement", update.bpmnObject.id.id)
-        val newBounds = newShape.addElement(omgdcNs().named("Bounds"))
+        val newBounds = newShape.addElementInternal(omgdcNs().named("Bounds"))
         val bounds = update.shape.rectBounds()
         newBounds.addAttribute("x", bounds.x.toString())
         newBounds.addAttribute("y", bounds.y.toString())
@@ -367,12 +383,12 @@ abstract class BaseBpmnParser: BpmnParser {
         )
 
         // Service tasks
-        is BpmnUserTask -> diagramParent.addElement(modelNs().named("userTask"))
-        is BpmnScriptTask -> diagramParent.addElement(modelNs().named("scriptTask"))
+        is BpmnUserTask -> diagramParent.addElementInternal(modelNs().named("userTask"))
+        is BpmnScriptTask -> diagramParent.addElementInternal(modelNs().named("scriptTask"))
         is BpmnServiceTask -> createServiceTask(diagramParent)
-        is BpmnBusinessRuleTask -> diagramParent.addElement(modelNs().named("businessRuleTask"))
-        is BpmnReceiveTask -> diagramParent.addElement(modelNs().named("receiveTask"))
-        is BpmnManualTask -> diagramParent.addElement(modelNs().named("manualTask"))
+        is BpmnBusinessRuleTask -> diagramParent.addElementInternal(modelNs().named("businessRuleTask"))
+        is BpmnReceiveTask -> diagramParent.addElementInternal(modelNs().named("receiveTask"))
+        is BpmnManualTask -> diagramParent.addElementInternal(modelNs().named("manualTask"))
         is BpmnCamelTask -> createServiceTaskWithType(diagramParent, "camel")
         is BpmnSendEventTask -> createServiceTaskWithType(diagramParent, "send-event")
         is BpmnHttpTask -> createServiceTaskWithType(diagramParent, "http")
@@ -383,17 +399,17 @@ abstract class BaseBpmnParser: BpmnParser {
         is BpmnShellTask -> createServiceTaskWithType(diagramParent, "shell")
 
         // Sub processes
-        is BpmnCallActivity -> diagramParent.addElement(modelNs().named("callActivity"))
-        is BpmnSubProcess -> diagramParent.addElement(modelNs().named("subProcess"))
+        is BpmnCallActivity -> diagramParent.addElementInternal(modelNs().named("callActivity"))
+        is BpmnSubProcess -> diagramParent.addElementInternal(modelNs().named("subProcess"))
         is BpmnEventSubprocess -> createEventSubprocess(diagramParent)
-        is BpmnAdHocSubProcess -> diagramParent.addElement(modelNs().named("adHocSubProcess"))
-        is BpmnTransactionalSubProcess -> diagramParent.addElement(modelNs().named("transaction"))
+        is BpmnAdHocSubProcess -> diagramParent.addElementInternal(modelNs().named("adHocSubProcess"))
+        is BpmnTransactionalSubProcess -> diagramParent.addElementInternal(modelNs().named("transaction"))
 
         // Gateways
-        is BpmnExclusiveGateway -> diagramParent.addElement(modelNs().named("exclusiveGateway"))
-        is BpmnParallelGateway -> diagramParent.addElement(modelNs().named("parallelGateway"))
-        is BpmnInclusiveGateway -> diagramParent.addElement(modelNs().named("inclusiveGateway"))
-        is BpmnEventGateway -> diagramParent.addElement(modelNs().named("eventBasedGateway"))
+        is BpmnExclusiveGateway -> diagramParent.addElementInternal(modelNs().named("exclusiveGateway"))
+        is BpmnParallelGateway -> diagramParent.addElementInternal(modelNs().named("parallelGateway"))
+        is BpmnInclusiveGateway -> diagramParent.addElementInternal(modelNs().named("inclusiveGateway"))
+        is BpmnEventGateway -> diagramParent.addElementInternal(modelNs().named("eventBasedGateway"))
 
         else -> null
     }
@@ -403,43 +419,43 @@ abstract class BaseBpmnParser: BpmnParser {
     }
 
     private fun createBoundaryEventWithType(elem: Element, type: String): Element {
-        val newElem = elem.addElement(modelNs().named("boundaryEvent"))
-        newElem.addElement(modelNs().named(type))
+        val newElem = elem.addElementInternal(modelNs().named("boundaryEvent"))
+        newElem.addElementInternal(modelNs().named(type))
         return newElem
     }
 
     private fun createStartEventWithType(elem: Element, type: String?): Element {
-        val newElem = elem.addElement(modelNs().named("startEvent"))
-        type?.let { newElem.addElement(modelNs().named(it)) }
+        val newElem = elem.addElementInternal(modelNs().named("startEvent"))
+        type?.let { newElem.addElementInternal(modelNs().named(it)) }
         return newElem
     }
 
     private fun createEndEventWithType(elem: Element, type: String?): Element {
-        val newElem = elem.addElement(modelNs().named("endEvent"))
-        type?.let { newElem.addElement(modelNs().named(it)) }
+        val newElem = elem.addElementInternal(modelNs().named("endEvent"))
+        type?.let { newElem.addElementInternal(modelNs().named(it)) }
         return newElem
     }
 
     protected fun createIntermediateCatchEventWithType(elem: Element, type: String): Element {
-        val newElem = elem.addElement(modelNs().named("intermediateCatchEvent"))
-        newElem.addElement(modelNs().named(type))
+        val newElem = elem.addElementInternal(modelNs().named("intermediateCatchEvent"))
+        newElem.addElementInternal(modelNs().named(type))
         return newElem
     }
 
     protected fun createIntermediateThrowEventWithType(elem: Element, type: String?): Element {
-        val newElem = elem.addElement(modelNs().named("intermediateThrowEvent"))
-        type?.let { newElem.addElement(modelNs().named(it)) }
+        val newElem = elem.addElementInternal(modelNs().named("intermediateThrowEvent"))
+        type?.let { newElem.addElementInternal(modelNs().named(it)) }
         return newElem
     }
 
     protected fun createServiceTaskWithType(elem: Element, type: String? = null): Element {
-        val newElem = elem.addElement(modelNs().named("serviceTask"))
+        val newElem = elem.addElementInternal(modelNs().named("serviceTask"))
         type?.let { newElem.addAttribute(engineNs().named("type"), it) }
         return newElem
     }
 
     private fun createEventSubprocess(elem: Element): Element {
-        val newElem = elem.addElement(modelNs().named("subProcess"))
+        val newElem = elem.addElementInternal(modelNs().named("subProcess"))
         newElem.addAttribute("triggeredByEvent", "true")
         return newElem
     }
@@ -451,7 +467,7 @@ abstract class BaseBpmnParser: BpmnParser {
                 )!!
 
         val newNode = when (update.bpmnObject.element) {
-            is BpmnSequenceFlow -> diagramParent.addElement(modelNs().named("sequenceFlow"))
+            is BpmnSequenceFlow -> diagramParent.addElementInternal(modelNs().named("sequenceFlow"))
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 
@@ -461,7 +477,7 @@ abstract class BaseBpmnParser: BpmnParser {
         val shapeParent = doc.selectSingleNode(
             "//*[local-name()='BPMNDiagram']/*[local-name()='BPMNPlane'][1]"
         ) as Element
-        val newShape = shapeParent.addElement(bpmndiNs().named("BPMNEdge"))
+        val newShape = shapeParent.addElementInternal(bpmndiNs().named("BPMNEdge"))
         newShape.addAttribute("id", update.edge.id.id)
         newShape.addAttribute("bpmnElement", update.bpmnObject.id.id)
         update.edge.waypoint.filter { it.physical }.forEach { newWaypoint(it, newShape) }
@@ -548,16 +564,7 @@ abstract class BaseBpmnParser: BpmnParser {
                     return
                 }
 
-                // Sorting data in CustomizedXmlWriter is expensive performance-wise
-                val newElem = if (details.forceFirst) {
-                    val newElem = currentNode.addElement(name)
-                    currentNode.remove(newElem)
-                    currentNode.content().add(0, newElem)
-                    newElem
-                } else {
-                    currentNode.addElement(name)
-                }
-
+                val newElem = currentNode.addElementInternal(name)
                 currentNode = newElem
                 // TODO Handle this with setAttributeOrValueOrCdataOrRemoveIfNull ?
                 if (attrName != "\$") {
@@ -694,6 +701,29 @@ abstract class BaseBpmnParser: BpmnParser {
 
     private fun byPrefix(prefix: String): NS {
         return listOf(modelNs(), bpmndiNs(), omgdcNs(), omgdiNs(), xsiNs(), engineNs()).firstOrNull { it.namePrefix == prefix }!!
+    }
+
+    private fun Element.addElementInternal(name: QName): Element {
+        return addOrderedElement(this, name.name) { this.addElement(name) }
+    }
+
+    private fun Element.addElementInternal(name: String): Element {
+        return addOrderedElement(this, name) { this.addElement(name) }
+    }
+
+    private fun addOrderedElement(target: Element, name: String, addElem: () -> Element): Element {
+        val addedSimpleName = name
+        elementOrder(name, addedSimpleName) ?: return addElem()
+        // Sorting data in CustomizedXmlWriter is expensive performance-wise
+        val existingElems = target.elements().map { it.name }.toMutableList()
+        existingElems.add(addedSimpleName)
+        existingElems.sortedWith(Comparator.comparingInt { elementOrder(target.name, it) ?: Int.MAX_VALUE })
+        val addToIndex = existingElems.indexOf(addedSimpleName)
+
+        val newElem = addElem()
+        target.remove(newElem)
+        target.content().add(addToIndex, newElem)
+        return newElem
     }
 }
 
