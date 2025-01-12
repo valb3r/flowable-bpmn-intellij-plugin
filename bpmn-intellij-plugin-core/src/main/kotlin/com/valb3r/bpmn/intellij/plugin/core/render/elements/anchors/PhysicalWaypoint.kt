@@ -164,8 +164,8 @@ class PhysicalWaypoint(
         val prev = edge.waypoint[pos - 2]
         val next = edge.waypoint[pos + 2]
         val selectedCandidates = listOf(Point2D.Float(prev.x, next.y), Point2D.Float(next.x, prev.y))
-        if (selectedCandidates.map { it.distanceSq(prev.x.toDouble(), prev.y.toDouble()) }.min()!! < DefaultCanvasConstants().epsilon
-            || selectedCandidates.map { it.distanceSq(next.x.toDouble(), next.y.toDouble()) }.min()!! < DefaultCanvasConstants().epsilon) {
+        if (selectedCandidates.map { it.distanceSq(prev.x.toDouble(), prev.y.toDouble()) }.minOrNull()!! < DefaultCanvasConstants().epsilon
+            || selectedCandidates.map { it.distanceSq(next.x.toDouble(), next.y.toDouble()) }.minOrNull()!! < DefaultCanvasConstants().epsilon) {
             return deleteBounds
         }
         val displacements = selectedCandidates.map { Point2D.Float(it.x - location.x, it.y - location.y) }
@@ -176,7 +176,7 @@ class PhysicalWaypoint(
         val rightAngleIcon = state().ctx.canvas.drawIcon(bounds, state().icons.rightAngle)
         val orthoIconId = DiagramElementId(orthoIconIdPrefix + elementId.id)
         state().ctx.interactionContext.clickCallbacks[orthoIconId] = { dest ->
-            val selectedOrtho = displacements.minBy { it.distanceSq(0.0, 0.0) }!!
+            val selectedOrtho = displacements.minByOrNull { it.distanceSq(0.0, 0.0) }!!
             dest.addEvents(listOf(DraggedToEvent(elementId, selectedOrtho.x, selectedOrtho.y, parentElementId, physicalPos)))
         }
 

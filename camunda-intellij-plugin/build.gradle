@@ -43,7 +43,7 @@ intellij {
 }
 
 runPluginVerifier {
-    ideVersions = ["IU-2022.3", "IC-2022.3"]
+    ideVersions = ["IU-2023.3", "IC-2023.3"]
 }
 
 verifyPlugin {
@@ -52,19 +52,6 @@ verifyPlugin {
 
 publishPlugin {
     token = System.getenv("INTELLIJ_PLUGIN_PUBLISH_TOKEN")
-}
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "17"
-        apiVersion = kotlinApiVersion
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "17"
-        apiVersion = kotlinApiVersion
-    }
 }
 
 clean {

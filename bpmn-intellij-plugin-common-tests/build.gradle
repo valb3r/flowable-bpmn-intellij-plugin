@@ -38,19 +38,6 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "17"
-        apiVersion = kotlinApiVersion
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "17"
-        apiVersion = kotlinApiVersion
-    }
-}
-
 clean {
     delete 'out'
 }
