@@ -1,8 +1,8 @@
 plugins {
     id 'java'
     id 'org.jetbrains.intellij' version '1.11.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.6.0'
-    id 'org.jetbrains.kotlin.kapt' version '1.6.0'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.23'
+    id 'org.jetbrains.kotlin.kapt' version '1.9.23'
 }
 
 ext {
@@ -10,7 +10,7 @@ ext {
     intellijPlatformPlugins = ['java'] // DatabaseTools is for BPMN process 'debugging'
 
     kotlinStdlib = '1.5.30'
-    kotlinApiVersion = '1.3' // It must be same as JB supplied Kotlin STDLIB i.e. for 2018 = 1.3. See https://youtrack.jetbrains.com/issue/KT-37435
+    kotlinApiVersion = '1.4' // It must be same as JB supplied Kotlin STDLIB i.e. for 2018 = 1.3. See https://youtrack.jetbrains.com/issue/KT-37435
 
     mapstruct = '1.4.2.Final'
     jackson = '2.15.2'
