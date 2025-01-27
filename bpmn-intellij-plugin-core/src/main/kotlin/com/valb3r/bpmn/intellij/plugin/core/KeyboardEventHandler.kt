@@ -51,6 +51,9 @@ class KeyboardEventHandler(private val project: Project, private val canvas: Can
 
     private fun handleKeyWithControl(e: KeyEvent) {
         when (e.keyCode) {
+            KeyEvent.VK_A -> {
+                currentCanvas(project).selectAllElements()
+            }
             KeyEvent.VK_Y -> if (updateEventsRegistry(project).undoRedoStatus().contains(ProcessModelUpdateEvents.UndoRedo.REDO)) {
                 updateEventsRegistry(project).redo()
                 currentCanvas(project).repaint()

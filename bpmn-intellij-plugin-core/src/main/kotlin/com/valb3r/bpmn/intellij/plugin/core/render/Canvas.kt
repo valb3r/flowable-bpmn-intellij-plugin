@@ -343,6 +343,17 @@ open class Canvas(private val project: Project, private val settings: CanvasCons
         this.selectedElements.addAll(elements)
     }
 
+   fun selectAllElements() {
+        clearSelection()
+        this.selectedElements.addAll(
+            elemsUnderRect(
+                null,
+                excludeAreas = setOf(AreaType.PARENT_PROCESS_SHAPE, AreaType.SELECTS_DRAG_TARGET)
+            )
+        )
+        repaint()
+    }
+
     private fun selectDragTarget(dragged: DiagramElementId, ctx: ElementInteractionContext): DiagramElementId? {
         val areas = areaByElement!!
         val area = areas[dragged]!!.area
@@ -556,8 +567,8 @@ open class Canvas(private val project: Project, private val settings: CanvasCons
         return result
     }
 
-    private fun elemsUnderRect(withinRect: Rectangle2D, excludeAreas: Set<AreaType> = setOf(AreaType.PARENT_PROCESS_SHAPE)): List<DiagramElementId> {
-        val intersection = areaByElement?.filter { withinRect.contains(it.value.area.bounds2D) }
+    private fun elemsUnderRect(withinRect: Rectangle2D?, excludeAreas: Set<AreaType> = setOf(AreaType.PARENT_PROCESS_SHAPE)): List<DiagramElementId> {
+        val intersection = if (null == withinRect) areaByElement else areaByElement?.filter { withinRect.contains(it.value.area.bounds2D) }
 
         val result = mutableListOf<DiagramElementId>()
         intersection

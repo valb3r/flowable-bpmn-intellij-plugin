@@ -6,6 +6,7 @@ import com.intellij.ide.fileTemplates.FileTemplate
 import com.intellij.ide.fileTemplates.FileTemplateManager
 import com.intellij.ide.fileTemplates.actions.AttributesDefaults
 import com.intellij.ide.fileTemplates.ui.CreateFromTemplateDialog
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtilRt
@@ -27,6 +28,10 @@ class NewCamundaBpmnAction:
             properties += "PROCESS_NAME" to processName
             return properties
         }
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
     }
 
     override fun getActionName(directory: PsiDirectory?, newName: String, templateName: String?) = NEW_FILE
