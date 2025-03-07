@@ -5,6 +5,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartErrorEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryErrorEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendEventTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
@@ -91,6 +93,9 @@ enum class PropertyType(
     MESSAGE_REF("messageEventDefinition.messageRef", "Message reference", STRING),
     ESCALATION_REF("escalationEventDefinition.escalationRef", "Escalation reference", STRING),
     ERROR_REF("errorEventDefinition.errorRef", "Error reference", STRING),
+    ERROR_VARIABLE_NAME("errorEventDefinition.errorVariableName", "Error variable name", STRING, isUsedOnlyBy = setOf(BpmnStartErrorEvent::class, BpmnBoundaryErrorEvent::class)),
+    ERROR_VARIABLE_LOCAL_SCOPE("errorEventDefinition.errorVariableLocalScope", "Error variable local scope", BOOLEAN, isUsedOnlyBy = setOf(BpmnStartErrorEvent::class, BpmnBoundaryErrorEvent::class)),
+    ERROR_VARIABLE_TRANSIENT("errorEventDefinition.errorVariableTransient", "Error variable transient", BOOLEAN, isUsedOnlyBy = setOf(BpmnStartErrorEvent::class, BpmnBoundaryErrorEvent::class)),
     SIGNAL_REF("signalEventDefinition.signalRef", "Signal reference", STRING),
     LINK_REF("linkEventDefinition.name", "Link reference", STRING),
     COMPLETION_CONDITION("completionCondition.condition", "Completion condition", T_EXPRESSION, "completionCondition.condition"),
