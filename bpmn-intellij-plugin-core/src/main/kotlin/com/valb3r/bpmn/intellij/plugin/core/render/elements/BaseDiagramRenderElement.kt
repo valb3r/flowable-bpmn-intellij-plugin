@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.core.render.elements
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.Event
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.PropertyUpdateWithId
 import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DiagramElementRemovedEvent
@@ -113,6 +114,10 @@ abstract class BaseDiagramRenderElement(
 
     open fun getEventsToDeleteElement(): List<BpmnElementRemovedEvent> {
         return listOf()
+    }
+
+    open fun getEventsToElementWithItsDiagram(): ElementRemovalEvents {
+        return ElementRemovalEvents(getEventsToDeleteDiagram(), getEventsToDeleteElement(), emptyList())
     }
 
     open fun zIndex(): Int {
@@ -288,3 +293,9 @@ abstract class BaseDiagramRenderElement(
         children.forEach {it.currentOnScreenRect(state().ctx.canvas.camera)}
     }
 }
+
+data class ElementRemovalEvents(
+    val diagram: List<DiagramElementRemovedEvent>,
+    val bpmn: List<BpmnElementRemovedEvent>,
+    val other: List<PropertyUpdateWithId>
+)

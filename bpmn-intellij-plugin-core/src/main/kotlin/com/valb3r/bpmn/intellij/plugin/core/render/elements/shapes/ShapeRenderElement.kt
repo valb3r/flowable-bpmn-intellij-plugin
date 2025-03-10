@@ -89,7 +89,8 @@ abstract class ShapeRenderElement(
         val delId = elementId.elemIdToRemove()
         val deleteIconArea = state().ctx.canvas.drawIcon(BoundsElement(x, currY, ACTIONS_ICO_SIZE, ACTIONS_ICO_SIZE), state().icons.recycleBin)
         state().ctx.interactionContext.clickCallbacks[delId] = { dest ->
-            dest.addElementRemovedEvent(getEventsToDeleteDiagram(), getEventsToDeleteElement())
+            val removalEvents = getEventsToElementWithItsDiagram()
+            dest.addElementRemovedEvent(removalEvents.diagram, removalEvents.bpmn, removalEvents.other)
         }
 
         if (ACTIONS_ICO_SIZE * actionCount >= (right.y - left.y)) {
@@ -118,7 +119,6 @@ abstract class ShapeRenderElement(
             toXmlId to AreaWithZindex(toXmlArea, AreaType.POINT, mutableSetOf(), mutableSetOf(), ICON_Z_INDEX, elementId)
         )
     }
-
 
     abstract fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex>
 
