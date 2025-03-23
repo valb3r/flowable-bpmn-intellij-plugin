@@ -52,7 +52,7 @@ class FlowableBpmnPluginToolWindowFactory: ToolWindowFactory {
 
         // register the tool window content
         val content = getContentFactory().createContent(
-                bpmnWindow.getContent(),
+                bpmnWindow.createMainToolWindowPanel(),
                 "",
                 false
         )

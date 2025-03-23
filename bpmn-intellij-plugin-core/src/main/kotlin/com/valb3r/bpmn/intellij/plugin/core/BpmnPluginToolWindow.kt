@@ -1,6 +1,5 @@
 package com.valb3r.bpmn.intellij.plugin.core
 
-import com.intellij.lang.Language
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.diagnostic.Logger
@@ -24,6 +23,7 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.*
 import com.intellij.util.ui.ButtonlessScrollBarUI
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
@@ -45,10 +45,15 @@ import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.notifications.genericShowNotificationBalloon
 import com.valb3r.bpmn.intellij.plugin.core.util.IJFeatures
+import java.awt.Adjustable
+import java.awt.BorderLayout
+import java.awt.CardLayout
+import java.awt.Color
 import java.awt.event.*
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.*
+import javax.swing.border.EtchedBorder
 import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.DefaultTableModel
 import kotlin.math.abs
@@ -76,7 +81,43 @@ open class BpmnPluginToolWindow(
     private val canvas: Canvas = currentCanvas(project)
     private lateinit var scrollHandler: ScrollBarInteractionHandler
 
-    init {
+    fun createMainToolWindowPanel(): JComponent {
+        this.canvasNoDiagramText = JTextArea("No file opened.").apply {
+            isEditable = false
+            isEnabled = false
+            lineWrap = true
+        }
+        this.canvasVScroll = JScrollBar(Adjustable.VERTICAL)
+        this.canvasHScroll = JScrollBar(Adjustable.HORIZONTAL)
+
+        this.canvasPanel = JPanel(BorderLayout()).apply {
+            border = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED)
+            add(canvasNoDiagramText, BorderLayout.CENTER)
+            add(canvasVScroll, BorderLayout.EAST)
+            add(canvasHScroll, BorderLayout.SOUTH)
+        }
+
+
+        val propertiesTextArea = JTextArea("No file opened.").apply {
+            isEditable = false
+            isEnabled = false
+            lineWrap = true
+        }
+
+        this.propertiesPanel = JPanel(CardLayout()).apply {
+            border = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED)
+            add(propertiesTextArea, "Card1")
+        }
+
+        this.canvasAndProperties = JSplitPane(JSplitPane.VERTICAL_SPLIT, this.canvasPanel, this.propertiesPanel)
+        canvasAndProperties.dividerSize = 2
+        canvasAndProperties.isOneTouchExpandable = false
+        canvasAndProperties.setDividerLocation(0.5)
+        onAfterCreate()
+        return canvasAndProperties
+    }
+
+    private fun onAfterCreate() {
         log.info("BPMN plugin started")
         initializeUpdateEventsRegistry(project, NoOpFileCommitter())
         // attach event listeners to canvas
