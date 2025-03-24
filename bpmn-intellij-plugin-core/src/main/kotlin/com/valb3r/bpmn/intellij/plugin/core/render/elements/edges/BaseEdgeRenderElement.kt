@@ -90,10 +90,10 @@ abstract class BaseEdgeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        val minX = edge.waypoint.minBy { it.x }?.x ?: 0.0f
-        val minY = edge.waypoint.minBy { it.y }?.y ?: 0.0f
-        val maxX = edge.waypoint.maxBy { it.x }?.x ?: 0.0f
-        val maxY = edge.waypoint.maxBy { it.y }?.y ?: 0.0f
+        val minX = edge.waypoint.minByOrNull { it.x }?.x ?: 0.0f
+        val minY = edge.waypoint.minByOrNull { it.y }?.y ?: 0.0f
+        val maxX = edge.waypoint.maxByOrNull { it.x }?.x ?: 0.0f
+        val maxY = edge.waypoint.maxByOrNull { it.y }?.y ?: 0.0f
 
         // Edge itself can't be translated, so no viewTransform
         return Rectangle2D.Float(
@@ -112,7 +112,7 @@ abstract class BaseEdgeRenderElement(
         val name = state().currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.NAME)?.value as String? ?: return
         val longestSegment = waypoints
                 .mapIndexedNotNull {pos, it -> if (0 == pos) null else Pair(waypoints[pos - 1], it)}
-            .maxBy { it.first.distance(it.second) } ?: return
+            .maxByOrNull { it.first.distance(it.second) } ?: return
         state().ctx.canvas.drawWrappedSingleLine(longestSegment.first, longestSegment.second, name, color)
     }
 

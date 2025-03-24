@@ -22,19 +22,6 @@ dependencies {
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jackson"
 }
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "17"
-        apiVersion = kotlinApiVersion
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "17"
-        apiVersion = kotlinApiVersion
-    }
-}
-
 test {
     jacoco {
         destinationFile = file("${buildDir}/jacoco/test.exec")

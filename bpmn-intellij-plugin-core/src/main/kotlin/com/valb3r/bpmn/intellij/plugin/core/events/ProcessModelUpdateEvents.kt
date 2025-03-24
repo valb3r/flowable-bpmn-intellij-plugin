@@ -270,7 +270,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
     private fun lastDeletion(elementId: BpmnElementId): Order<out Event> {
         val cursorValue = allBeforeThis
         return deletionsByStaticBpmnId[elementId]?.filter { it.order < cursorValue }
-            ?.maxBy { it: Order<out Event> -> it.order }
+            ?.maxByOrNull { it: Order<out Event> -> it.order }
             ?: Order(-1, NullEvent(elementId.id))
     }
 

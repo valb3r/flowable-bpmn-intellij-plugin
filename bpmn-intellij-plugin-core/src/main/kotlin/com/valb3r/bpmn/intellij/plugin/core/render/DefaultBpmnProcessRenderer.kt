@@ -291,10 +291,10 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
         val areas = state.ctx.selectedIds.mapNotNull { renderedArea[it] }
 
-        val minX = areas.map { it.area.bounds2D.minX }.min()?.toFloat()
-        val minY = areas.map { it.area.bounds2D.minY }.min()?.toFloat()
-        val maxX = areas.map { it.area.bounds2D.maxX }.max()?.toFloat()
-        val maxY = areas.map { it.area.bounds2D.maxY }.max()?.toFloat()
+        val minX = areas.map { it.area.bounds2D.minX }.minOrNull()?.toFloat()
+        val minY = areas.map { it.area.bounds2D.minY }.minOrNull()?.toFloat()
+        val maxX = areas.map { it.area.bounds2D.maxX }.maxOrNull()?.toFloat()
+        val maxY = areas.map { it.area.bounds2D.maxY }.maxOrNull()?.toFloat()
 
         // TODO: This currently does not support event cascading, so only plain elements can be removed
         if (null != minX && null != minY && null != maxX && null != maxY) {
@@ -392,10 +392,10 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     private fun computeModelRect(allRendered: Collection<AreaWithZindex>): Rectangle2D.Float {
         val filter = { it: AreaWithZindex -> it.areaType != AreaType.PARENT_PROCESS_SHAPE }
         val areaBounds = allRendered.filter(filter).map { it.area.bounds2D }
-        val minX = areaBounds.map { it.bounds2D.x }.min() ?: 0.0
-        val minY = areaBounds.map { it.bounds2D.y }.min() ?: 0.0
-        val maxX = areaBounds.map { it.bounds2D.x + it.bounds2D.width }.max() ?: 0.0
-        val maxY = areaBounds.map { it.bounds2D.y + it.bounds2D.height }.max() ?: 0.0
+        val minX = areaBounds.map { it.bounds2D.x }.minOrNull() ?: 0.0
+        val minY = areaBounds.map { it.bounds2D.y }.minOrNull() ?: 0.0
+        val maxX = areaBounds.map { it.bounds2D.x + it.bounds2D.width }.maxOrNull() ?: 0.0
+        val maxY = areaBounds.map { it.bounds2D.y + it.bounds2D.height }.maxOrNull() ?: 0.0
 
         val cx = (maxX + minX).toFloat() / 2.0f
         val cy = (maxY + minY).toFloat() / 2.0f

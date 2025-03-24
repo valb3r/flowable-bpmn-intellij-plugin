@@ -45,19 +45,6 @@ patchPluginXml.enabled = false
 verifyPlugin.enabled = false
 publishPlugin.enabled = false
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "17"
-        apiVersion = kotlinApiVersion
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "17"
-        apiVersion = kotlinApiVersion
-    }
-}
-
 clean {
     delete 'out'
 }
