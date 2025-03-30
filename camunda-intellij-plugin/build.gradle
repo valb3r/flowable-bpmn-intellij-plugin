@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij'
     id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.intellij.platform'
 }
 
 group = 'com.valb3r.bpmn.intellij.plugin.camunda'
@@ -10,9 +10,17 @@ sourceCompatibility = 17
 
 repositories {
     mavenCentral()
+
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
 dependencies {
+    intellijPlatform {
+        intellijIdeaUltimate(intellijPlatformVersion)
+    }
+
     implementation project(":xml-parser-core")
     implementation project(":camunda-xml-parser")
     implementation project(":bpmn-intellij-plugin-core")
@@ -27,7 +35,7 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiter"
     testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformRunner"
     testImplementation "org.amshove.kluent:kluent:$kluent"
-    testImplementation "org.mockito:mockito-inline:$mockitoInline"
+    testImplementation "org.mockito:mockito-core:$mockitoCore"
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlin"
 }
 
@@ -35,23 +43,26 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
-intellij {
+intellijPlatform {
     version = intellijPlatform
-    pluginName = 'camunda-bpmn-plugin'
-    updateSinceUntilBuild = false
-    plugins = intellijPlatformPlugins
-}
+    pluginConfiguration {
+        name = 'camunda-bpmn-plugin'
+    }
 
-runPluginVerifier {
-    ideVersions = ["IU-2023.3", "IC-2023.3"]
-}
+    publishing {
+        token = System.getenv("INTELLIJ_PLUGIN_PUBLISH_TOKEN")
+    }
 
-verifyPlugin {
-    ignoreWarnings = true
-}
+    patchPluginXml {
+        sinceBuild = "233"
+    }
 
-publishPlugin {
-    token = System.getenv("INTELLIJ_PLUGIN_PUBLISH_TOKEN")
+    pluginVerification {
+        freeArgs = ["-mute", "TemplateWordInPluginName"]
+        ides {
+            ide(intellijPlatformVersion)
+        }
+    }
 }
 
 clean {

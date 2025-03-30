@@ -17,9 +17,10 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: |
-        ./gradlew clean build buildPlugin runPluginVerifier jacocoTestReport \
-          -x :bpmn-intellij-plugin-commons:runPluginVerifier \
-          -x :bpmn-intellij-plugin-core:runPluginVerifier
+        ./gradlew clean build \
+            :flowable-intellij-plugin:buildPlugin :flowable-intellij-plugin:verifyPlugin \
+            :camunda-intellij-plugin:buildPlugin :camunda-intellij-plugin:verifyPlugin \
+            :activiti-intellij-plugin:buildPlugin :activiti-intellij-plugin:verifyPlugin
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
