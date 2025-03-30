@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij'
     id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.intellij.platform.module'
 }
 
 group 'com.valb3r.bpmn.intellij.plugin.commons'
@@ -10,12 +10,21 @@ sourceCompatibility = 17
 
 repositories {
     mavenCentral()
+
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
 
 dependencies {
     implementation project(":xml-parser-api")
     implementation project(":bpmn-intellij-plugin-core")
+
+    intellijPlatform {
+        intellijIdeaUltimate(intellijPlatformVersion)
+        bundledPlugins(intellijPlatformPlugins)
+    }
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson"
@@ -33,17 +42,6 @@ dependencies {
 sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
-
-intellij {
-    version = intellijPlatform
-    pluginName = 'flowable-bpmn-plugin'
-    updateSinceUntilBuild = false
-    plugins = intellijPlatformPlugins
-}
-
-patchPluginXml.enabled = false
-verifyPlugin.enabled = false
-publishPlugin.enabled = false
 
 clean {
     delete 'out'

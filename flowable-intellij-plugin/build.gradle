@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij'
     id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.intellij.platform'
 }
 
 group = 'com.valb3r.bpmn.intellij.plugin.flowable'
@@ -10,9 +10,17 @@ sourceCompatibility = 17
 
 repositories {
     mavenCentral()
+
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
 dependencies {
+    intellijPlatform {
+        intellijIdeaUltimate(intellijPlatformVersion)
+    }
+
     implementation project(":xml-parser-core")
     implementation project(":flowable-xml-parser")
     implementation project(":bpmn-intellij-plugin-core")
@@ -35,24 +43,16 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
-intellij {
-    version = intellijPlatform
-    pluginName = 'flowable-bpmn-plugin'
-    updateSinceUntilBuild = false
-    plugins = intellijPlatformPlugins
+intellijPlatform {
+    pluginConfiguration {
+        name = 'flowable-bpmn-plugin'
+    }
+
+    publishing {
+        token = System.getenv("INTELLIJ_PLUGIN_PUBLISH_TOKEN")
+    }
 }
 
-runPluginVerifier {
-    ideVersions = ["IU-2023.3", "IC-2023.3"]
-}
-
-verifyPlugin {
-    ignoreWarnings = true
-}
-
-publishPlugin {
-    token = System.getenv("INTELLIJ_PLUGIN_PUBLISH_TOKEN")
-}
 
 clean {
     delete 'out'

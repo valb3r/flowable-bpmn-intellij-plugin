@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij'
     id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.intellij.platform.module'
 }
 
 group 'com.valb3r.bpmn.intellij.plugin.core'
@@ -10,10 +10,19 @@ sourceCompatibility = 17
 
 repositories {
     mavenCentral()
+
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
 dependencies {
     implementation project(":xml-parser-api")
+
+    intellijPlatform {
+        intellijIdeaUltimate(intellijPlatformVersion)
+        bundledPlugins(intellijPlatformPlugins)
+    }
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation("org.apache.xmlgraphics:batik-transcoder:1.16") { // JB has removed batik from IC 2023.2
@@ -40,16 +49,6 @@ dependencies {
 sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
-
-intellij {
-    version = intellijPlatform
-    updateSinceUntilBuild = false
-    plugins = intellijPlatformPlugins
-}
-
-patchPluginXml.enabled = false
-verifyPlugin.enabled = false
-publishPlugin.enabled = false
 
 clean {
     delete 'out'

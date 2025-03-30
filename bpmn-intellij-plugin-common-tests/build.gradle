@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij'
     id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.intellij.platform.module'
 }
 
 group = 'com.valb3r.bpmn.intellij.plugin.core.tests'
@@ -26,13 +26,9 @@ dependencies {
     implementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlin"
 }
 
-intellij {
+intellijPlatform {
     version = intellijPlatform
 }
-
-patchPluginXml.enabled = false
-verifyPlugin.enabled = false
-publishPlugin.enabled = false
 
 sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
