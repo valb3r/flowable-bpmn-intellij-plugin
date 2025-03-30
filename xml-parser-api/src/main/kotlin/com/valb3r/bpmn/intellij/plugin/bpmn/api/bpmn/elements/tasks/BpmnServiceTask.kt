@@ -34,6 +34,7 @@ data class BpmnServiceTask(
         val extensionElementsMappingPayloadToEvent: List<ExtensionEventPayload>? = null,
         val extensionElementsMappingPayloadFromEvent: List<ExtensionEventPayload>? = null,
         val executionListener: List<ExeсutionListener>? = null,
+        val multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null,
 ): WithBpmnId, BpmnTaskAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {

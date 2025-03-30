@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.MultiInstanceLoopCharacteristics
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.BpmnTaskAlike
 
@@ -18,7 +19,8 @@ data class BpmnScriptTask(
         val autoStoreVariables: Boolean? = null,
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
-        val executionListener: List<ExeсutionListener>? = null
+        val executionListener: List<ExeсutionListener>? = null,
+        val multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null,
 ): WithBpmnId, BpmnTaskAlike {
 
     override fun updateBpmnElemId(newId: BpmnElementId): WithBpmnId {
