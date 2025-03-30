@@ -10,6 +10,10 @@ sourceCompatibility = 17
 
 repositories {
     mavenCentral()
+
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
 dependencies {
@@ -47,6 +51,10 @@ intellijPlatform {
 
     publishing {
         token = System.getenv("INTELLIJ_PLUGIN_PUBLISH_TOKEN")
+    }
+
+    patchPluginXml {
+        sinceBuild = "233"
     }
 
     pluginVerification {
