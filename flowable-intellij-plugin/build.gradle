@@ -51,6 +51,13 @@ intellijPlatform {
     publishing {
         token = System.getenv("INTELLIJ_PLUGIN_PUBLISH_TOKEN")
     }
+
+    pluginVerification {
+        freeArgs = ["-mute", "TemplateWordInPluginName"]
+        ides {
+            ide(intellijPlatformVersion)
+        }
+    }
 }
 
 
