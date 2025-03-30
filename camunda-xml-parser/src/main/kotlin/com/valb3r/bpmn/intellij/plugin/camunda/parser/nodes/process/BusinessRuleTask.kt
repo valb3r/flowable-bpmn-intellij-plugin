@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnBusiness
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExecutionListener
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExtensionElement
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.multi_instance.MultiInstanceLoopCharacteristics
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.factory.Mappers
@@ -26,7 +27,8 @@ data class BusinessRuleTask(
     @JacksonXmlProperty(isAttribute = true) val exclude: Boolean?,
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>?,
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>?,
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null,
+    var multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null
 ): BpmnMappable<BpmnBusinessRuleTask> {
 
     override fun toElement(): BpmnBusinessRuleTask {

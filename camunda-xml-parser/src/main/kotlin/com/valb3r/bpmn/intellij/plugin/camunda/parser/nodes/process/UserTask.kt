@@ -8,6 +8,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ListenerField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.*
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.multi_instance.MultiInstanceLoopCharacteristics
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -29,7 +30,8 @@ data class UserTask(
         @JacksonXmlProperty(isAttribute = true) val skipExpression: String?,
         @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>?,
         @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>?,
-        @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
+        @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null,
+        var multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null
 ): BpmnMappable<BpmnUserTask> {
 
     override fun toElement(): BpmnUserTask {

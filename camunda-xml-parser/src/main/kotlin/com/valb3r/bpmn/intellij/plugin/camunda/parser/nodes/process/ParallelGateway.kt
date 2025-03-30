@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExtensionElement
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.multi_instance.MultiInstanceLoopCharacteristics
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -16,7 +17,8 @@ data class ParallelGateway(
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val incoming: List<String>?,
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false) val outgoing: List<String>?,
     val documentation: String?,
-    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null,
+    var multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null
 ): BpmnMappable<BpmnParallelGateway> {
 
     override fun toElement(): BpmnParallelGateway {
