@@ -10,9 +10,17 @@ sourceCompatibility = 17
 
 repositories {
     mavenCentral()
+
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
 dependencies {
+    intellijPlatform {
+        intellijIdeaUltimate(intellijPlatformVersion)
+    }
+
     implementation project(":xml-parser-api")
     implementation project(":bpmn-intellij-plugin-core")
 
@@ -22,12 +30,8 @@ dependencies {
 
     implementation "org.junit.jupiter:junit-jupiter-api:$junitJupiter"
     implementation "org.amshove.kluent:kluent:$kluent"
-    implementation "org.mockito:mockito-inline:$mockitoInline"
+    implementation "org.mockito:mockito-core:$mockitoCore"
     implementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlin"
-}
-
-intellijPlatform {
-    version = intellijPlatform
 }
 
 sourceSets {

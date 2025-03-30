@@ -22,7 +22,7 @@ ext {
     jsonPath = '2.8.0'
     junitPlatformRunner = '1.6.2'
     kluent = '1.68'
-    mockitoInline = '5.2.0'
+    mockitoCore = '5.16.1'
     mockitoKotlin = '2.2.0'
 }
 
@@ -37,14 +37,6 @@ repositories {
         defaultRepositories()
     }
 }
-
-intellijPlatform {
-    version = intellijPlatform
-}
-
-patchPluginXml.enabled = false
-verifyPlugin.enabled = false
-publishPlugin.enabled = false
 
 dependencies {
     intellijPlatform {
