@@ -10,7 +10,7 @@ import org.mapstruct.Mapping
 import org.mapstruct.Mappings
 
 class MultiInstanceLoopCharacteristics(
-    @JacksonXmlProperty(isAttribute = true, localName = "isSequential") val isSequential: Boolean?,
+    @JacksonXmlProperty(isAttribute = true, localName = "isSequential") val isSequential: Boolean? = false,
     @JacksonXmlProperty(isAttribute = true, localName = "collection") val collection: String?,
     @JacksonXmlProperty(isAttribute = true, localName = "elementVariable") val elementVariable: String?,
     val loopCardinality: LoopCardinality?,

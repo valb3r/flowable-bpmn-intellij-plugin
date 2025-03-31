@@ -20,26 +20,31 @@
         <bpmn:callActivity id="sequentialCallActivity" name="sequentialCallActivity">
             <bpmn:multiInstanceLoopCharacteristics isSequential="true" />
         </bpmn:callActivity>
+        <bpmn:serviceTask id="plainServiceTask" name="plainServiceTask" />
     </bpmn:process>
     <bpmndi:BPMNDiagram id="BPMNDiagram_1">
         <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0m6u8ni">
             <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
-                <dc:Bounds x="179" y="99" width="36" height="36" />
+                <dc:Bounds x="179" y="229" width="36" height="36" />
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="Activity_0vkh2zk_di" bpmnElement="parallelTask">
-                <dc:Bounds x="320" y="77" width="100" height="80" />
+                <dc:Bounds x="320" y="207" width="100" height="80" />
                 <bpmndi:BPMNLabel />
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="BPMNShape_1foo33i" bpmnElement="sequentialTask">
-                <dc:Bounds x="320" y="190" width="100" height="80" />
+                <dc:Bounds x="320" y="320" width="100" height="80" />
                 <bpmndi:BPMNLabel />
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="Activity_1vne3vc_di" bpmnElement="sequentialUserTask">
-                <dc:Bounds x="320" y="310" width="100" height="80" />
+                <dc:Bounds x="320" y="440" width="100" height="80" />
                 <bpmndi:BPMNLabel />
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="Activity_01rrg3c_di" bpmnElement="sequentialCallActivity">
-                <dc:Bounds x="320" y="440" width="100" height="80" />
+                <dc:Bounds x="320" y="570" width="100" height="80" />
+                <bpmndi:BPMNLabel />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="BPMNShape_0yk8hgf" bpmnElement="plainServiceTask">
+                <dc:Bounds x="320" y="80" width="100" height="80" />
                 <bpmndi:BPMNLabel />
             </bpmndi:BPMNShape>
         </bpmndi:BPMNPlane>
