@@ -513,7 +513,7 @@ abstract class BaseBpmnParser: BpmnParser {
                 node,
                 path,
                 details,
-                asString(type.valueType, value)
+                asString(type, value)
             )
         }
     }
@@ -574,7 +574,7 @@ abstract class BaseBpmnParser: BpmnParser {
             currentNode,
             segments[segments.size - 1],
             details,
-            asString(type.valueType, value)
+            asString(type, value)
         )
     }
 
@@ -681,14 +681,14 @@ abstract class BaseBpmnParser: BpmnParser {
         return value.startsWith(" ") || value.endsWith(" ") || value.contains("\n")
     }
 
-    private fun asString(type: PropertyValueType, value: Any?): String? {
+    private fun asString(type: PropertyType, value: Any?): String? {
         if (null == value || "" == value) {
             return null
         }
 
-        return when (type) {
-            STRING, CLASS, EXPRESSION, ATTACHED_SEQUENCE_SELECT, LIST_SELECT -> value as String
-            BOOLEAN -> (value as Boolean).toString()
+        return when (type.valueType) {
+            STRING, CLASS, EXPRESSION, ATTACHED_SEQUENCE_SELECT, LIST_SELECT -> type.mapToXmlValue(value)?.toString()
+            BOOLEAN -> (type.mapToXmlValue(value) as Boolean).toString()
         }
     }
 

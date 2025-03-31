@@ -37,7 +37,8 @@ enum class PropertyType(
     val externalProperty: ExternalProperty? = null,
     val onUpdatedByUseHardcodedValue: Any? = null,
     val updatedByWithinSameElement: PropertyType? = null,
-    val inCascadeOrder: Int = Int.MAX_VALUE
+    val inCascadeOrder: Int = Int.MAX_VALUE,
+    val mapValuesTo: Map<Any, Any>? = null
 ) {
     ID("id", "ID", STRING, "id.id", true, null, 1000, explicitIndexCascades = listOf("BPMN_INCOMING", "BPMN_OUTGOING")), // ID should fire last
     NAME("name", "Name", STRING),
@@ -180,7 +181,7 @@ enum class PropertyType(
     MAPPING_PAYLOAD_FROM_EVENT_VARIABLE_NAME("extensionElementsMappingPayloadFromEvent.@source", "Variable name", STRING, group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), isUsedOnlyBy = setOf(BpmnSendEventTask::class), indexInGroupArrayName = "source",  listenerOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true, positionInGroup = 1),
     MAPPING_PAYLOAD_FROM_EVENT_PROPERTY_NAME("extensionElementsMappingPayloadFromEvent.@target", "Event property name", STRING, group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), isUsedOnlyBy = setOf(BpmnSendEventTask::class), indexInGroupArrayName = "source"),
     MAPPING_PAYLOAD_FROM_EVENT_TYPE("extensionElementsMappingPayloadFromEvent.@type", "Type", LIST_SELECT, setForSelect = setOf("","string", "integer", "double", "boolean"), isUsedOnlyBy = setOf(BpmnSendEventTask::class), group = listOf(FunctionalGroupType.MAPPING_PAYLOAD_FROM), indexInGroupArrayName = "source"),
-    MULTI_INSTANCE_LOOP_IS_SEQUENTIAL("multiInstanceLoopCharacteristics.sequential", "Multi-instance loop type", LIST_SELECT, setForSelect = setOf("","sequential", "parallel"), group = listOf(FunctionalGroupType.MULTI_INSTANCE_LOOP), listenerOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false, indexInGroupArrayName = "isSequential", indexCascades = CascadeGroup.FLAT, positionInGroup = 1),
+    MULTI_INSTANCE_LOOP_IS_SEQUENTIAL("multiInstanceLoopCharacteristics.sequential", "Multi-instance loop type", LIST_SELECT, setForSelect = setOf("","sequential", "parallel"), group = listOf(FunctionalGroupType.MULTI_INSTANCE_LOOP), listenerOrder = 100, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = false, indexInGroupArrayName = "isSequential", indexCascades = CascadeGroup.FLAT, positionInGroup = 1, mapValuesTo = mapOf("true" to "sequential", "false" to "parallel")),
     MULTI_INSTANCE_LOOP_COLLECTION("multiInstanceLoopCharacteristics.collection", "Multi instance loop-collection", STRING, group = listOf(FunctionalGroupType.MULTI_INSTANCE_LOOP)),
     MULTI_INSTANCE_LOOP_ELEMENT_VARIABLE("multiInstanceLoopCharacteristics.elementVariable", "Multi instance loop-elementVariable", STRING, group = listOf(FunctionalGroupType.MULTI_INSTANCE_LOOP)),
     MULTI_INSTANCE_LOOP_CARDINALITY_TYPE("multiInstanceLoopCharacteristics.loopCardinality.type", "Multi instance loop-Cardinality type", STRING, group = listOf(FunctionalGroupType.MULTI_INSTANCE_LOOP)),
@@ -191,6 +192,32 @@ enum class PropertyType(
     EXECUTION_LISTENER_EVENT("executionListener.@event", "Event", LIST_SELECT, setForSelect = setOf("","start", "end", "take"), group = listOf(FunctionalGroupType.EXECUTION_LISTENER), indexInGroupArrayName = "clazz"),
     EXECUTION_LISTENER_FIELD_NAME("executionListener.@fields.@name", "Name", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, listenerOrder = 95),
     EXECUTION_LISTENER_FIELD_STRING("executionListener.@fields.@string", "String", STRING, group = listOf(FunctionalGroupType.EXECUTION_LISTENER, FunctionalGroupType.EXECUTION_LISTENER_FILED), indexInGroupArrayName = "clazz.name", listenerOrder = 90);
+
+    private val invertedMapValuesTo: Map<Any, Any>?
+
+    init {
+        if (null == this.mapValuesTo) {
+            this.invertedMapValuesTo = null
+        } else {
+            this.invertedMapValuesTo = this.mapValuesTo.map { (k, v) -> v to k }.toMap()
+        }
+    }
+
+    fun mapFromXmlValue(value: Any?): Any? {
+        if (null == this.mapValuesTo) {
+            return value
+        }
+
+        return this.mapValuesTo[value]
+    }
+
+    fun mapToXmlValue(value: Any?): Any? {
+        if (null == this.invertedMapValuesTo) {
+            return value
+        }
+
+        return this.invertedMapValuesTo[value]
+    }
 
     fun isNestedProperty(): Boolean {
         return (group?.size ?: 0) > 1

@@ -233,8 +233,8 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             if (null != indexInArray) {
                 val minPathIdLen = type.indexInGroupArrayName!!.split(".").size
                 val computedIndex = indexInArray + (0 until minPathIdLen - indexInArray.size).map { "" }.toList()
-                Property(it, computedIndex)
-            } else Property(it)
+                Property(type.mapFromXmlValue(it), computedIndex)
+            } else Property(type.mapFromXmlValue(it))
         }
 
         if (null == node || node.isNull) {
