@@ -13,6 +13,7 @@ import com.valb3r.bpmn.intellij.plugin.camunda.parser.testevents.StringValueUpda
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeNullOrEmpty
 import org.amshove.kluent.shouldBeTrue
+import org.amshove.kluent.shouldNotBeNull
 import org.junit.jupiter.api.Test
 
 private const val FILE = "multi-instance/multi-instance-service-task.bpmn"
@@ -28,18 +29,19 @@ class CamundaMultiInstanceTest {
 
         val task = readSequentialServiceTask(processObject)
         task.id.shouldBeEqualTo(sequentialTaskId)
-        task.name.shouldBeEqualTo("NameExternal")
-        task.documentation.shouldBeEqualTo("Docs for external task")
-        task.asyncBefore!!.shouldBeTrue()
-        task.asyncAfter!!.shouldBeTrue()
-        // TODO 'exclusive' ?
-//        CamundaObjectFactory
+        task.name.shouldBeEqualTo("sequentialTask")
+        task.multiInstanceLoopCharacteristics.shouldNotBeNull()
+        task.multiInstanceLoopCharacteristics!!.collection!!.shouldBeEqualTo("multiInstanceColl")
+        task.multiInstanceLoopCharacteristics!!.elementVariable!!.shouldBeEqualTo("elementVar")
+        task.multiInstanceLoopCharacteristics!!.loopCardinality!!.type.shouldBeEqualTo("bpmn:tFormalExpression")
+        task.multiInstanceLoopCharacteristics!!.loopCardinality!!.expression.shouldBeEqualTo("1")
+        task.multiInstanceLoopCharacteristics!!.completionCondition!!.type.shouldBeEqualTo("bpmn:tFormalExpression")
+        task.multiInstanceLoopCharacteristics!!.completionCondition!!.expression.shouldBeEqualTo("if (true)")
+
         val props = BpmnProcessObject(processObject.process, processObject.diagram).toView(CamundaObjectFactory()).elemPropertiesByElementId[task.id]!!
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
-        props[PropertyType.ASYNC_BEFORE]!!.value.shouldBeEqualTo(task.asyncBefore)
-        props[PropertyType.ASYNC_AFTER]!!.value.shouldBeEqualTo(task.asyncAfter)
     }
 
     @Test

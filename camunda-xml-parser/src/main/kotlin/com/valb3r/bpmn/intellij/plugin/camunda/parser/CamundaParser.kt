@@ -13,6 +13,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.BpmnShapeObjectAdded
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.STRING
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.NS
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.PropertyTypeDetails
@@ -127,6 +128,13 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     // Unsupported? ERROR_CODE_VARIABLE(PropertyTypeDetails(PropertyType.ERROR_CODE_VARIABLE, "extensionElements.camunda:field?name=errorCodeVariable.camunda:string.text", XmlType.CDATA)),
     // Unsupported? OUTPUT_VARIABLE(PropertyTypeDetails(PropertyType.OUTPUT_VARIABLE, "extensionElements.camunda:field?name=outputVariable.camunda:string.text", XmlType.CDATA)),
     // Unsupported? DIRECTORY(PropertyTypeDetails(PropertyType.DIRECTORY, "extensionElements.camunda:field?name=directory.camunda:string.text", XmlType.CDATA)),
+    MULTI_INSTANCE_LOOP_IS_SEQUENTIAL(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_IS_SEQUENTIAL, "multiInstanceLoopCharacteristics.isSequential", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_LOOP_COLLECTION(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_COLLECTION, "multiInstanceLoopCharacteristics.camunda:collection", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_LOOP_ELEMENT_VARIABLE(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_ELEMENT_VARIABLE, "multiInstanceLoopCharacteristics.camunda:elementVariable", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_LOOP_CARDINALITY_TYPE(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_CARDINALITY_TYPE, "multiInstanceLoopCharacteristics.loopCardinality.type", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_LOOP_CARDINALITY_EXPRESSION(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_CARDINALITY_EXPRESSION, "multiInstanceLoopCharacteristics.loopCardinality.expression", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_COMPLETION_CONDITION_TYPE(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_COMPLETION_CONDITION_TYPE, "multiInstanceLoopCharacteristics.completionCondition.type", XmlType.CDATA)),
+    MULTI_INSTANCE_COMPLETION_CONDITION_EXPRESSION(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_COMPLETION_CONDITION_EXPRESSION, "multiInstanceLoopCharacteristics.completionCondition.type", XmlType.CDATA)),
     FAILED_JOB_RETRY_CYCLE(PropertyTypeDetails(PropertyType.FAILED_JOB_RETRY_CYCLE, "extensionElements.camunda:failedJobRetryTimeCycle.text", XmlType.CDATA)),
     FIELD_NAME(PropertyTypeDetails(PropertyType.FIELD_NAME, "extensionElements.camunda:field?name=@.name", XmlType.ATTRIBUTE)),
     FIELD_EXPRESSION(PropertyTypeDetails(PropertyType.FIELD_EXPRESSION, "extensionElements.camunda:field?name=@.camunda:expression.text", XmlType.CDATA)),
