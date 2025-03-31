@@ -10,6 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExecutionListener
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExtensionElement
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.multi_instance.MultiInstanceLoopCharacteristics
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.multi_instance.MultiInstanceLoopCharacteristicsMapper
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.factory.Mappers
@@ -35,7 +36,7 @@ data class BusinessRuleTask(
         return Mappers.getMapper(BusinessRuleTaskMapping::class.java).convertToDto(this)
     }
 
-    @Mapper(uses = [BpmnElementIdMapper::class])
+    @Mapper(uses = [BpmnElementIdMapper::class, MultiInstanceLoopCharacteristicsMapper::class])
     abstract class BusinessRuleTaskMapping {
 
         @Mapping(source = "forCompensation", target = "isForCompensation")

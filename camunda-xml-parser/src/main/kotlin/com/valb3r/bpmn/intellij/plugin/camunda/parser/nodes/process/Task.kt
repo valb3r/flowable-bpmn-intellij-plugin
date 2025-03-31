@@ -16,6 +16,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ListenerField
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.multi_instance.MultiInstanceLoopCharacteristics
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.multi_instance.MultiInstanceLoopCharacteristicsMapper
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -41,7 +42,7 @@ data class Task(
         return Mappers.getMapper(TaskMapping::class.java).convertToDto(this)
     }
 
-    @Mapper(uses = [BpmnElementIdMapper::class])
+    @Mapper(uses = [BpmnElementIdMapper::class, MultiInstanceLoopCharacteristicsMapper::class])
     abstract class TaskMapping {
 
         fun convertToDto(input: Task) : BpmnTask {

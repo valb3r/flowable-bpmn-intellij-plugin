@@ -18,6 +18,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.*
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.diagram.DiagramElementIdMapper
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.diagram.Plane
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.multi_instance.MultiInstanceLoopCharacteristicsMapper
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.Mappings
@@ -327,7 +328,8 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         UserTask.UserTaskMapping::class,
         StartEventNode.StartEventNodeMapping::class,
         IntermediateCatchEvent.Mapping::class,
-        SequenceFlow.Mapping::class
+        SequenceFlow.Mapping::class,
+        MultiInstanceLoopCharacteristicsMapper::class
     ])
     interface BodyMapping {
 

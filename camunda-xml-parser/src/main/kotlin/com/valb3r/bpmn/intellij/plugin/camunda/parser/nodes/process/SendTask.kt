@@ -17,6 +17,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendTask
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExecutionListener
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.multi_instance.MultiInstanceLoopCharacteristics
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.multi_instance.MultiInstanceLoopCharacteristicsMapper
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 
@@ -42,7 +43,7 @@ data class SendTask(
 
     // Can't use interface due to:
     // https://github.com/mapstruct/mapstruct/issues/1577
-    @Mapper(uses = [BpmnElementIdMapper::class])
+    @Mapper(uses = [BpmnElementIdMapper::class, MultiInstanceLoopCharacteristicsMapper::class])
     abstract class SendTaskMapping {
 
         fun convertToDto(input: SendTask) : BpmnSendTask {

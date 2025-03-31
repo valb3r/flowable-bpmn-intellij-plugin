@@ -10,6 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.ProcessBody
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.formprop.ExtensionElement
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.multi_instance.MultiInstanceLoopCharacteristics
+import com.valb3r.bpmn.intellij.plugin.camunda.parser.nodes.process.nested.multi_instance.MultiInstanceLoopCharacteristicsMapper
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.factory.Mappers
@@ -32,7 +33,7 @@ class Transaction: BpmnMappable<BpmnTransactionalSubProcess>, ProcessBody() {
         return Mappers.getMapper(TransactionMapping::class.java).convertToDto(this)
     }
 
-    @Mapper(uses = [BpmnElementIdMapper::class])
+    @Mapper(uses = [BpmnElementIdMapper::class, MultiInstanceLoopCharacteristicsMapper::class])
     abstract class TransactionMapping {  // Default methods of Kotlin interfaces are not understood by MapStruct
 
         fun mapNonCollapsed(input: List<Transaction>?) : List<BpmnTransactionalSubProcess>? {

@@ -2,7 +2,9 @@ package com.valb3r.bpmn.intellij.plugin.camunda.parser.multi_instance
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaObjectFactory
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaParser
@@ -21,7 +23,9 @@ private const val FILE = "multi-instance/multi-instance-service-task.bpmn"
 class CamundaMultiInstanceTest {
     private val parser = CamundaParser()
     private val sequentialTaskId = BpmnElementId("sequentialTask")
-    private val parallelTaskId = BpmnElementId("sequentialTask")
+    private val sequentialUserTaskId = BpmnElementId("sequentialUserTask")
+    private val sequentialCallActivityTaskId = BpmnElementId("sequentialCallActivity")
+    private val parallelTaskId = BpmnElementId("parallelTask")
 
     @Test
     fun `Multi instance sequential service task is parseable`() {
@@ -31,6 +35,7 @@ class CamundaMultiInstanceTest {
         task.id.shouldBeEqualTo(sequentialTaskId)
         task.name.shouldBeEqualTo("sequentialTask")
         task.multiInstanceLoopCharacteristics.shouldNotBeNull()
+        task.multiInstanceLoopCharacteristics!!.isSequential!!.shouldBeTrue()
         task.multiInstanceLoopCharacteristics!!.collection!!.shouldBeEqualTo("multiInstanceColl")
         task.multiInstanceLoopCharacteristics!!.elementVariable!!.shouldBeEqualTo("elementVar")
         task.multiInstanceLoopCharacteristics!!.loopCardinality!!.type.shouldBeEqualTo("bpmn:tFormalExpression")
@@ -42,6 +47,26 @@ class CamundaMultiInstanceTest {
         props[PropertyType.ID]!!.value.shouldBeEqualTo(task.id.id)
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
+    }
+
+    @Test
+    fun `Multi instance sequential user task is parseable`() {
+        val processObject = parser.parse(FILE.asResource()!!)
+
+        val task = readSequentialUserTask(processObject)
+        task.id.shouldBeEqualTo(sequentialUserTaskId)
+        task.multiInstanceLoopCharacteristics.shouldNotBeNull()
+        task.multiInstanceLoopCharacteristics!!.isSequential!!.shouldBeTrue()
+    }
+
+    @Test
+    fun `Multi instance sequential call activity is parseable`() {
+        val processObject = parser.parse(FILE.asResource()!!)
+
+        val activity = readSequentialCallActivityTask(processObject)
+        activity.id.shouldBeEqualTo(sequentialCallActivityTaskId)
+        activity.multiInstanceLoopCharacteristics.shouldNotBeNull()
+        activity.multiInstanceLoopCharacteristics!!.isSequential!!.shouldBeTrue()
     }
 
     @Test
@@ -88,5 +113,13 @@ class CamundaMultiInstanceTest {
 
     private fun readSequentialServiceTask(processObject: BpmnProcessObject): BpmnServiceTask {
         return processObject.process.body!!.serviceTask!!.filter { it.id == sequentialTaskId }[0]
+    }
+
+    private fun readSequentialUserTask(processObject: BpmnProcessObject): BpmnUserTask {
+        return processObject.process.body!!.userTask!!.filter { it.id == sequentialUserTaskId }[0]
+    }
+
+    private fun readSequentialCallActivityTask(processObject: BpmnProcessObject): BpmnCallActivity {
+        return processObject.process.body!!.callActivity!!.filter { it.id == sequentialCallActivityTaskId }[0]
     }
 }

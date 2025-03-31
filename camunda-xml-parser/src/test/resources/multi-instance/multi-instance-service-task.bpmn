@@ -14,6 +14,12 @@
                 <bpmn:completionCondition xsi:type="bpmn:tFormalExpression">if (true)</bpmn:completionCondition>
             </bpmn:multiInstanceLoopCharacteristics>
         </bpmn:serviceTask>
+        <bpmn:userTask id="sequentialUserTask" name="sequentialUserTask">
+            <bpmn:multiInstanceLoopCharacteristics isSequential="true" />
+        </bpmn:userTask>
+        <bpmn:callActivity id="sequentialCallActivity" name="sequentialCallActivity">
+            <bpmn:multiInstanceLoopCharacteristics isSequential="true" />
+        </bpmn:callActivity>
     </bpmn:process>
     <bpmndi:BPMNDiagram id="BPMNDiagram_1">
         <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0m6u8ni">
@@ -26,6 +32,14 @@
             </bpmndi:BPMNShape>
             <bpmndi:BPMNShape id="BPMNShape_1foo33i" bpmnElement="sequentialTask">
                 <dc:Bounds x="320" y="190" width="100" height="80" />
+                <bpmndi:BPMNLabel />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Activity_1vne3vc_di" bpmnElement="sequentialUserTask">
+                <dc:Bounds x="320" y="310" width="100" height="80" />
+                <bpmndi:BPMNLabel />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Activity_01rrg3c_di" bpmnElement="sequentialCallActivity">
+                <dc:Bounds x="320" y="440" width="100" height="80" />
                 <bpmndi:BPMNLabel />
             </bpmndi:BPMNShape>
         </bpmndi:BPMNPlane>

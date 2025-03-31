@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements
 
 data class MultiInstanceLoopCharacteristics(
+    val isSequential: Boolean?,
     val collection: String?,
     val elementVariable: String?,
     val loopCardinality: LoopCardinality?,
