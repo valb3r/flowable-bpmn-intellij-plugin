@@ -123,29 +123,32 @@ class PropertiesVisualizer(
                 continue
             }
             val groupType = property.first.group?.lastOrNull()
-            val isExpandButton = property.first.name == groupType?.actionResult?.propertyType
-            val isAlwaysVisible = property.first.group?.size == 1 && isExpandButton
-            val controlGroupIndex = ElementIndex(
-                if (isExpandButton && property.first.isNestedProperty()) property.first.group?.getOrNull(property.first.group!!.size - 2) else groupType,
-                property.second.index?.take(max(0, property.first.group!!.size - if (isExpandButton) 1 else 0))?.joinToString() ?: ""
-            )
-            val lengthInnerPad = property.second.index?.let {(it.size - 1) * 2} ?: 0
-            val paddGroup = "".padStart(lengthInnerPad * 2)
-            if (null != groupType && isExpandButton && !seenIndexes.contains(controlGroupIndex) && groupType.createExpansionButton) {
-                addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model, isAlwaysVisible)
-                model.addRow(arrayOf(
-                    paddGroup + groupType.groupCaption,
-                    buildButtonField(newElemsProvider, state, bpmnElementId, groupType, property.second.index?.dropLast(1) ?: listOf())
-                ))
-                seenIndexes.add(controlGroupIndex)
-            }
+            val hasExpandButton = property.first.name == groupType?.actionResult?.propertyType
+            val isAlwaysVisible = property.first.group?.size == 1 && hasExpandButton
+            val innerPaddingDepth = property.second.index?.let {(it.size - 1) * 2} ?: 0
+            val groupPadding = "".padStart(innerPaddingDepth * 2)
 
-            if (property.first.hideIfNullOrEmpty && (null == property.second.value || (property.second.value is String && (property.second.value as String).isBlank()))) {
+            val controlGroupIndex = handleControlGroup(
+                hasExpandButton,
+                property,
+                groupType,
+                seenIndexes,
+                filter,
+                model,
+                isAlwaysVisible,
+                groupPadding,
+                newElemsProvider,
+                state,
+                bpmnElementId
+            )
+
+            if (isHidden(property)) {
                 continue
             }
-            val nestedGroupLength = (2 + (if(!isExpandButton) 2 else 0) - (if (groupType?.createExpansionButton == false) 2 else 0))
-            val padd = paddGroup + "".padStart(if(groupType == null) 0 else nestedGroupLength)
-            val caption = padd + property.first.caption
+
+            val nestedGroupDepth = (2 + (if (!hasExpandButton) 2 else 0) - (if (groupType?.createExpansionButton == false) 2 else 0))
+            val padding = groupPadding + "".padStart(if (groupType == null) 0 else nestedGroupDepth)
+            val caption = padding + property.first.caption
             var row = when (property.first.valueType) {
                 STRING -> arrayOf(caption, buildTextField(state, bpmnElementId, property.first, property.second))
                 BOOLEAN -> arrayOf(caption, buildCheckboxField(state, bpmnElementId, property.first, property.second))
@@ -157,7 +160,7 @@ class PropertiesVisualizer(
 
             addVerifierIfAvailable(property, row)
 
-            if (isExpandButton) {
+            if (hasExpandButton) {
                 val controlExpandsGroupIndex = ElementIndex(
                     groupType,
                     property.second.index?.joinToString() ?: ""
@@ -179,6 +182,47 @@ class PropertiesVisualizer(
 
         return buttonsToClick
     }
+
+    private fun handleControlGroup(
+        hasExpandButton: Boolean,
+        property: Pair<PropertyType, Property>,
+        groupType: FunctionalGroupType?,
+        seenIndexes: MutableSet<ElementIndex>,
+        filter: RowExpansionFilter,
+        model: FirstLastColumnReadOnlyModel,
+        isAlwaysVisible: Boolean,
+        paddGroup: String,
+        newElemsProvider: NewElementsProvider,
+        state: Map<BpmnElementId, PropertyTable>,
+        bpmnElementId: BpmnElementId
+    ): ElementIndex {
+        val controlGroupIndex = ElementIndex(
+            if (hasExpandButton && property.first.isNestedProperty()) property.first.group?.getOrNull(property.first.group!!.size - 2) else groupType,
+            property.second.index?.take(max(0, property.first.group!!.size - if (hasExpandButton) 1 else 0))
+                ?.joinToString() ?: ""
+        )
+
+        if (null != groupType && hasExpandButton && !seenIndexes.contains(controlGroupIndex) && groupType.createExpansionButton) {
+            addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model, isAlwaysVisible)
+            model.addRow(
+                arrayOf(
+                    paddGroup + groupType.groupCaption,
+                    buildButtonField(
+                        newElemsProvider,
+                        state,
+                        bpmnElementId,
+                        groupType,
+                        property.second.index?.dropLast(1) ?: listOf()
+                    )
+                )
+            )
+            seenIndexes.add(controlGroupIndex)
+        }
+        return controlGroupIndex
+    }
+
+    private fun isHidden(property: Pair<PropertyType, Property>) =
+        property.first.hideIfNullOrEmpty && (null == property.second.value || (property.second.value is String && (property.second.value as String).isBlank()))
 
     private fun addVerifierIfAvailable(property: Pair<PropertyType, Property>, row: Array<Serializable>) {
         val control = row[1]

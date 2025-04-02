@@ -233,7 +233,13 @@ data class NewElem(val propertyType: String, val valuePattern: String = "", val 
 enum class CascadeGroup { 
     PARENTS_CASCADE, NONE, FLAT
 }
-enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewElem, val actionUiOnlyResult: List<NewElem> = listOf(), val createExpansionButton: Boolean = true, val actionCaption: String = "",) {
+enum class FunctionalGroupType(
+    val groupCaption: String,
+    val actionResult: NewElem,
+    val actionUiOnlyResult: List<NewElem> = listOf(),
+    val createExpansionButton: Boolean = true,
+    val actionCaption: String = "",
+) {
     ADD_FIELD("Fields", actionCaption = "Add field", actionResult = NewElem("FIELD_NAME", "Field %d"), actionUiOnlyResult = listOf(NewElem("FIELD_EXPRESSION", ""), NewElem("FIELD_STRING", ""))),
     ADD_FORM_PROPERTY("Form properties", actionCaption = "Add property", actionResult = NewElem("FORM_PROPERTY_ID", "Property %d"),
         actionUiOnlyResult = listOf(
