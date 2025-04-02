@@ -128,7 +128,7 @@ class PropertiesVisualizer(
             val innerPaddingDepth = property.second.index?.let {(it.size - 1) * 2} ?: 0
             val groupPadding = "".padStart(innerPaddingDepth * 2)
 
-            val controlGroupIndex = handleControlGroup(
+            val controlGroupIndex = handleControlBeingInGroup(
                 hasExpandButton,
                 property,
                 groupType,
@@ -183,7 +183,7 @@ class PropertiesVisualizer(
         return buttonsToClick
     }
 
-    private fun handleControlGroup(
+    private fun handleControlBeingInGroup(
         hasExpandButton: Boolean,
         property: Pair<PropertyType, Property>,
         groupType: FunctionalGroupType?,
@@ -197,16 +197,19 @@ class PropertiesVisualizer(
         bpmnElementId: BpmnElementId
     ): ElementIndex {
         val controlGroupIndex = ElementIndex(
-            if (hasExpandButton && property.first.isNestedProperty()) property.first.group?.getOrNull(property.first.group!!.size - 2) else groupType,
+            if (hasExpandButton && property.first.isDeeperNestedPropertyInGroup()) property.first.group?.getOrNull(property.first.group!!.size - 2) else groupType,
             property.second.index?.take(max(0, property.first.group!!.size - if (hasExpandButton) 1 else 0))
                 ?.joinToString() ?: ""
         )
 
-        if (null != groupType && hasExpandButton && !seenIndexes.contains(controlGroupIndex) && groupType.createExpansionButton) {
+        val shouldStartNewExpandableGroup =
+            null != groupType && hasExpandButton && !seenIndexes.contains(controlGroupIndex) && groupType.createExpansionButton
+
+        if (shouldStartNewExpandableGroup) {
             addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model, isAlwaysVisible)
             model.addRow(
                 arrayOf(
-                    paddGroup + groupType.groupCaption,
+                    paddGroup + groupType!!.groupCaption,
                     buildButtonField(
                         newElemsProvider,
                         state,

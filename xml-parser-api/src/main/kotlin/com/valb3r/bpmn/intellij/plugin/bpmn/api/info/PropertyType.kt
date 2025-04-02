@@ -219,7 +219,7 @@ enum class PropertyType(
         return this.invertedMapValuesTo[value]
     }
 
-    fun isNestedProperty(): Boolean {
+    fun isDeeperNestedPropertyInGroup(): Boolean {
         return (group?.size ?: 0) > 1
     }
 }
