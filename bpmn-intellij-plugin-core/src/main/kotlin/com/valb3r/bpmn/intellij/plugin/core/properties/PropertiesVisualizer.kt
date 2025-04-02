@@ -128,7 +128,7 @@ class PropertiesVisualizer(
             val innerPaddingDepth = property.second.index?.let {(it.size - 1) * 2} ?: 0
             val groupPadding = "".padStart(innerPaddingDepth * 2)
 
-            val controlGroupIndex = handleControlBeingInGroup(
+            val indexOfControlWithinGroup = handleControlBeingInGroup(
                 hasExpandButton,
                 property,
                 groupType,
@@ -170,10 +170,10 @@ class PropertiesVisualizer(
                 if (elemsToExpand.contains(controlExpandsGroupIndex)) {
                     buttonsToClick.add(button)
                 }
-                filter.setCollapseGroupControl(controlGroupIndex, controlExpandsGroupIndex, button)
+                filter.setCollapseGroupControl(indexOfControlWithinGroup, controlExpandsGroupIndex, button)
             }
 
-            addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model, isAlwaysVisible)
+            addCurrentRowToCollapsedSectionIfNeeded(indexOfControlWithinGroup, filter, model, isAlwaysVisible)
             model.addRow(row)
         }
 
@@ -191,25 +191,25 @@ class PropertiesVisualizer(
         filter: RowExpansionFilter,
         model: FirstLastColumnReadOnlyModel,
         isAlwaysVisible: Boolean,
-        paddGroup: String,
+        groupPadding: String,
         newElemsProvider: NewElementsProvider,
         state: Map<BpmnElementId, PropertyTable>,
         bpmnElementId: BpmnElementId
     ): ElementIndex {
-        val controlGroupIndex = ElementIndex(
+        val indexOfControlWithinGroup = ElementIndex(
             if (hasExpandButton && property.first.isDeeperNestedPropertyInGroup()) property.first.group?.getOrNull(property.first.group!!.size - 2) else groupType,
             property.second.index?.take(max(0, property.first.group!!.size - if (hasExpandButton) 1 else 0))
                 ?.joinToString() ?: ""
         )
 
         val shouldStartNewExpandableGroup =
-            null != groupType && hasExpandButton && !seenIndexes.contains(controlGroupIndex) && groupType.createExpansionButton
+            null != groupType && hasExpandButton && !seenIndexes.contains(indexOfControlWithinGroup) && groupType.createExpansionButton
 
         if (shouldStartNewExpandableGroup) {
-            addCurrentRowToCollapsedSectionIfNeeded(controlGroupIndex, filter, model, isAlwaysVisible)
+            addCurrentRowToCollapsedSectionIfNeeded(indexOfControlWithinGroup, filter, model, isAlwaysVisible)
             model.addRow(
                 arrayOf(
-                    paddGroup + groupType!!.groupCaption,
+                    groupPadding + groupType!!.groupCaption,
                     buildButtonField(
                         newElemsProvider,
                         state,
@@ -219,9 +219,9 @@ class PropertiesVisualizer(
                     )
                 )
             )
-            seenIndexes.add(controlGroupIndex)
+            seenIndexes.add(indexOfControlWithinGroup)
         }
-        return controlGroupIndex
+        return indexOfControlWithinGroup
     }
 
     private fun isHidden(property: Pair<PropertyType, Property>) =
