@@ -118,6 +118,16 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     ERROR_CODE_VARIABLE(PropertyTypeDetails(PropertyType.ERROR_CODE_VARIABLE, "extensionElements.flowable:field?name=errorCodeVariable.flowable:string.text", XmlType.CDATA)),
     OUTPUT_VARIABLE(PropertyTypeDetails(PropertyType.OUTPUT_VARIABLE, "extensionElements.flowable:field?name=outputVariable.flowable:string.text", XmlType.CDATA)),
     DIRECTORY(PropertyTypeDetails(PropertyType.DIRECTORY, "extensionElements.flowable:field?name=directory.flowable:string.text", XmlType.CDATA)),
+
+    // TODO:
+    MULTI_INSTANCE_LOOP_IS_SEQUENTIAL(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_IS_SEQUENTIAL, "multiInstanceLoopCharacteristics.isSequential", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_LOOP_COLLECTION(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_COLLECTION, "multiInstanceLoopCharacteristics.camunda:collection", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_LOOP_ELEMENT_VARIABLE(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_ELEMENT_VARIABLE, "multiInstanceLoopCharacteristics.camunda:elementVariable", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_LOOP_CARDINALITY_TYPE(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_CARDINALITY_TYPE, "multiInstanceLoopCharacteristics.loopCardinality.type", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_LOOP_CARDINALITY_EXPRESSION(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_CARDINALITY_EXPRESSION, "multiInstanceLoopCharacteristics.loopCardinality.expression", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_COMPLETION_CONDITION_TYPE(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_COMPLETION_CONDITION_TYPE, "multiInstanceLoopCharacteristics.completionCondition.type", XmlType.CDATA)),
+    MULTI_INSTANCE_COMPLETION_CONDITION_EXPRESSION(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_COMPLETION_CONDITION_EXPRESSION, "multiInstanceLoopCharacteristics.completionCondition.type", XmlType.CDATA)),
+
     FAILED_JOB_RETRY_CYCLE(PropertyTypeDetails(PropertyType.FAILED_JOB_RETRY_CYCLE, "extensionElements.flowable:failedJobRetryTimeCycle.text", XmlType.CDATA)),
     EVENT_NAME(PropertyTypeDetails(PropertyType.EVENT_NAME, "extensionElements.flowable:eventName.text", XmlType.CDATA)),
     EVENT_TYPE(PropertyTypeDetails(PropertyType.EVENT_TYPE, "extensionElements.flowable:eventType.text", XmlType.CDATA)),
