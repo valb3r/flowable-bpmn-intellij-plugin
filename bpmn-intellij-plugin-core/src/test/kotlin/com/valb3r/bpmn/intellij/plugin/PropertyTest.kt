@@ -4,7 +4,6 @@ import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.MultiInstanceLoopCharacteristics
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
@@ -22,7 +21,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 
 private val FORM_PROPERTY_ID = PropertyType.FORM_PROPERTY_ID.caption
-private val MULTI_INSTANCE_IS_SEQUENTIAL = PropertyType.MULTI_INSTANCE_LOOP_IS_SEQUENTIAL.caption
+private val MULTI_INSTANCE_LOOP_IS_SEQUENTIAL = PropertyType.MULTI_INSTANCE_LOOP_IS_SEQUENTIAL.caption
 private val MULTI_INSTANCE_LOOP_COLLECTION = PropertyType.MULTI_INSTANCE_LOOP_COLLECTION.caption
 private val MULTI_INSTANCE_LOOP_ELEMENT_VARIABLE = PropertyType.MULTI_INSTANCE_LOOP_ELEMENT_VARIABLE.caption
 private val MULTI_INSTANCE_LOOP_CARDINALITY_EXPRESSION = PropertyType.MULTI_INSTANCE_LOOP_CARDINALITY_EXPRESSION.caption
@@ -43,13 +42,25 @@ internal class PropertyTest : BaseUiTest() {
         val task = BpmnUserTask(userTaskBpmnId, "Name user task")
         prepareUserTask(task)
         clickOnId(userTaskDiagramId)
-        currentVisibleProperties().filterNotNull().filter { it.contains(MULTI_INSTANCE_IS_SEQUENTIAL) }.shouldNotBeEmpty()
+        currentVisibleProperties().filterNotNull().filter { it.contains(MULTI_INSTANCE_LOOP_IS_SEQUENTIAL) }.shouldNotBeEmpty()
         currentVisibleProperties().filterNotNull().filter { it.contains(MULTI_INSTANCE_LOOP_COLLECTION) }.shouldBeEmpty()
         currentVisibleProperties().filterNotNull().filter { it.contains(MULTI_INSTANCE_LOOP_ELEMENT_VARIABLE) }.shouldBeEmpty()
         currentVisibleProperties().filterNotNull().filter { it.contains(MULTI_INSTANCE_LOOP_CARDINALITY_EXPRESSION) }.shouldBeEmpty()
         currentVisibleProperties().filterNotNull().filter { it.contains(MULTI_INSTANCE_LOOP_CARDINALITY_TYPE) }.shouldBeEmpty()
         currentVisibleProperties().filterNotNull().filter { it.contains(MULTI_INSTANCE_COMPLETION_CONDITION_EXPRESSION) }.shouldBeEmpty()
         currentVisibleProperties().filterNotNull().filter { it.contains(MULTI_INSTANCE_COMPLETION_CONDITION_TYPE) }.shouldBeEmpty()
+
+        val isSequential = this.comboBoxConstructed[Pair(userTaskBpmnId, PropertyType.MULTI_INSTANCE_LOOP_IS_SEQUENTIAL)]!!
+        setComboBoxFieldValueInProperties(isSequential, "sequential")
+
+        argumentCaptor<List<EventPropagatableToXml>>().apply {
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            lastValue.shouldHaveSize(1)
+            val valueUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
+            valueUpdated.bpmnElementId.shouldBeEqualTo(userTaskBpmnId)
+            valueUpdated.newValue.shouldBeEqualTo("Property 1")
+            valueUpdated.propertyIndex!!.shouldContainSame(arrayOf("Property 1"))
+        }
     }
 
     @Test

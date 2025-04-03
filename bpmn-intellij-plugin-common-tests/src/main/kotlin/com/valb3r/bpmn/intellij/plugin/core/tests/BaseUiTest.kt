@@ -183,6 +183,7 @@ abstract class BaseUiTest {
     )
 
     protected val textFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
+    protected val comboBoxConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
     protected val multiLineTextFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, TextValueAccessor> = mutableMapOf()
     protected val boolFieldsConstructed: MutableMap<Pair<BpmnElementId, PropertyType>, SelectedValueAccessor> = mutableMapOf()
     protected val buttonsConstructed: MutableMap<Pair<BpmnElementId, FunctionalGroupType>, JButton> = mutableMapOf()
@@ -191,9 +192,10 @@ abstract class BaseUiTest {
     protected val popupsConstructed: MutableMap<String, JBPopupMenu> = mutableMapOf()
     protected val popupItemsConstructed: MutableMap<String, JBMenuItem> = mutableMapOf()
 
-    protected val comboboxFactory = { id: BpmnElementId, type: PropertyType, value: String, allowedValues: Set<String> -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
+    protected val comboboxFactory = { id: BpmnElementId, type: PropertyType, value: String, allowedValues: Set<String> -> comboBoxConstructed.computeIfAbsent(Pair(id, type)) {
         val res = mock<TextValueAccessor>()
         whenever(res.text).thenReturn(value)
+        whenever(res.component).thenReturn(JComboBox<String>())
         return@computeIfAbsent res
     } }
     protected val editorFactory = { id: BpmnElementId, type: PropertyType, value: String -> textFieldsConstructed.computeIfAbsent(Pair(id, type)) {
@@ -878,6 +880,11 @@ abstract class BaseUiTest {
         (idField.component as JTextField).text = value
     }
 
+    protected fun setComboBoxFieldValueInProperties(idField: TextValueAccessor, value: String) {
+        whenever(idField.text).thenReturn(value)
+        (idField.component as JComboBox<*>).selectedItem = value
+    }
+
     protected fun currentProperties() =
         (propertiesTable.model as DefaultTableModel).dataVector.flatMap { it.toList() }.map {
             when (it) {
@@ -921,6 +928,7 @@ abstract class BaseUiTest {
                     is JButton -> it.text
                     is JCheckBox -> null
                     is JTextField -> null
+                    is JComboBox<*> -> null
                     else -> {
                         it as String?
                     }
