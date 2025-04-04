@@ -250,7 +250,7 @@ class CurrentStateProvider(private val project: Project) {
             val result = mutableListOf<Property>()
             var eventProcessed = false
             for (prop in updated.getAll(event.property)) {
-                result += if (prop.index == event.propertyIndex && !eventProcessed) {
+                result += if (prop.indexWithinGroupArray == event.propertyIndex && !eventProcessed) {
                     eventProcessed = true
                     Property(event.newValue, event.propertyIndex!!)
                 } else {
@@ -276,9 +276,9 @@ class CurrentStateProvider(private val project: Project) {
     private fun updateIndexProperty(event: IndexUiOnlyValueUpdatedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: PropertyTable(mutableMapOf())
         updated[event.property] = updated.getAll(event.property).map {
-            if (it.index == event.propertyIndex || (null == it.index && event.propertyIndex.isEmpty())) {
+            if (it.indexWithinGroupArray == event.propertyIndex || (null == it.indexWithinGroupArray && event.propertyIndex.isEmpty())) {
 //                if (it.index!![0] == event.propertyIndex[0] || (null == it.index && event.propertyIndex.isEmpty())) {
-                    it.copy(index = event.newValue)
+                    it.copy(indexWithinGroupArray = event.newValue)
                 } else it
             }.toMutableList()
             updatedElemPropertiesByStaticElementId[event.bpmnElementId] = updated
@@ -292,7 +292,7 @@ class CurrentStateProvider(private val project: Project) {
     private fun removeUiOnlyProperty(event:  UiOnlyValueRemovedEvent, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
         val updated = updatedElemPropertiesByStaticElementId[event.bpmnElementId] ?: return
         val preparedProperty =
-            (updated.getAll(event.property).filter { it.index != event.propertyIndex }).toSet().toMutableList()
+            (updated.getAll(event.property).filter { it.indexWithinGroupArray != event.propertyIndex }).toSet().toMutableList()
             if (preparedProperty.size > 0) {
             updated[event.property] = preparedProperty
         } else {

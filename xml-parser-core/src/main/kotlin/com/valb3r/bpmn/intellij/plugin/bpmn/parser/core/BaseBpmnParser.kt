@@ -34,7 +34,6 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTra
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
-import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import org.dom4j.*
 import org.dom4j.io.OutputFormat
@@ -272,7 +271,7 @@ abstract class BaseBpmnParser: BpmnParser {
         trimWhitespace(parent, false)
 
         val newNode = createBpmnObject(update.newBpmnElement, parent) ?: throw IllegalArgumentException("Can't store: " + update.parentIdForXml)
-        update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.index?.toMutableList()) }
+        update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.indexWithinGroupArray?.toMutableList()) }
         trimWhitespace(parent, false)
     }
 
@@ -294,7 +293,7 @@ abstract class BaseBpmnParser: BpmnParser {
 
         val newNode = createBpmnObject(update.bpmnObject.element, diagramParent) ?: throw IllegalArgumentException("Can't store: " + update.bpmnObject)
 
-        update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.index?.toMutableList()) }
+        update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.indexWithinGroupArray?.toMutableList()) }
         trimWhitespace(diagramParent, false)
 
         val shapeParent = doc.selectSingleNode(

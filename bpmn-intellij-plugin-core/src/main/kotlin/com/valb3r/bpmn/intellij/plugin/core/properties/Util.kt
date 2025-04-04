@@ -43,7 +43,7 @@ private fun handleValueCascadeWithinSameElementWithoutIndex(
             if (null != prop.first.onUpdatedByUseHardcodedValue) prop.first.onUpdatedByUseHardcodedValue as String else event.newValue,
             null,
             null,
-            propertyIndex = prop.second.index
+            propertyIndex = prop.second.indexWithinGroupArray
         )
     }
 }
@@ -66,7 +66,7 @@ private fun handleValueCascadeGloballyBasedOnReferenceWithoutIndex(
                     event.newValue,
                     event.referencedValue,
                     null,
-                    propertyIndex = prop.second.index
+                    propertyIndex = prop.second.indexWithinGroupArray
                 )
             }
     }
@@ -82,13 +82,13 @@ private fun handleIndexChanges(
             ?.forEach { (cascadeType, cascadeProperty) ->
                 cascadeProperty.filter { cascaded ->
                     event.propertyIndex?.forEachIndexed { index, s ->
-                        if (null != cascaded.index && cascaded.index!![index] != s) {
+                        if (null != cascaded.indexWithinGroupArray && cascaded.indexWithinGroupArray!![index] != s) {
                             return@filter false
                         }
                     }
                     return@filter true
                 }.forEach {
-                    handleGroupIndexChangeDueToCascading(event, cascades, cascadeType, it.index)
+                    handleGroupIndexChangeDueToCascading(event, cascades, cascadeType, it.indexWithinGroupArray)
                 }
             }
     }
@@ -98,7 +98,7 @@ private fun handleIndexChanges(
         state.forEach { (id, props) ->
             props.getAll(type).filter { it.value == event.referencedValue }.forEach { prop ->
                 handleGroupIndexChangeDueToCascading(
-                    event.copy(bpmnElementId = id, propertyIndex = prop.index),
+                    event.copy(bpmnElementId = id, propertyIndex = prop.indexWithinGroupArray),
                     cascades,
                     type
                 )
@@ -121,7 +121,7 @@ private fun addStaticDependentFieldsToXml(
                 event.bpmnElementId,
                 prop.first,
                 it.valueDependProp,
-                propertyIndex = prop.second.index
+                propertyIndex = prop.second.indexWithinGroupArray
             )
         }
     }

@@ -260,7 +260,7 @@ data class PropertyTable(private val properties: MutableMap<PropertyType, Mutabl
     }
 
     fun getAllInitialized(type: PropertyType): List<Property> {
-        return properties[type]?.filter { null == type.group || null != it.index } ?: emptyList()
+        return properties[type]?.filter { null == type.group || null != it.indexWithinGroupArray } ?: emptyList()
     }
 
     fun view(): Map<PropertyType, List<Property>> {

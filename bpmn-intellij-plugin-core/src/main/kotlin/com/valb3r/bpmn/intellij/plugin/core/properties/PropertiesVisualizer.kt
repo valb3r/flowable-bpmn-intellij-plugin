@@ -125,8 +125,8 @@ class PropertiesVisualizer(
             val groupType = property.first.group?.lastOrNull()
             val hasExpandButton = property.first.name == groupType?.actionResult?.propertyType
             val isAlwaysVisible = property.first.group?.size == 1 && hasExpandButton
-            val parentIndex = property.second.index
-            val innerPaddingDepth = property.second.index?.let {(it.size - 1) * 2} ?: 0
+            val parentIndex = property.second.indexWithinGroupArray ?: listOf()
+            val innerPaddingDepth = property.second.indexWithinGroupArray?.let {(it.size - 1) * 2} ?: 0
             val groupPadding = "".padStart(innerPaddingDepth * 2)
 
             val indexOfControlWithinGroup = handleControlBeingInGroup(
@@ -164,7 +164,7 @@ class PropertiesVisualizer(
             if (hasExpandButton) {
                 val controlExpandsGroupIndex = ElementIndex(
                     groupType,
-                    parentIndex?.joinToString() ?: ""
+                    parentIndex.joinToString()
                 )
                 val button = buildArrowExpansionButton(bpmnElementId, filter, controlExpandsGroupIndex, sorter)
                 row += button
@@ -199,7 +199,7 @@ class PropertiesVisualizer(
     ): ElementIndex {
         val indexOfControlWithinGroup = ElementIndex(
             if (hasExpandButton && property.first.isDeeperNestedPropertyInGroup()) property.first.group?.getOrNull(property.first.group!!.size - 2) else groupType,
-            property.second.index?.take(max(0, property.first.group!!.size - if (hasExpandButton) 1 else 0))
+            property.second.indexWithinGroupArray?.take(max(0, property.first.group!!.size - if (hasExpandButton) 1 else 0))
                 ?.joinToString() ?: ""
         )
 
@@ -216,7 +216,7 @@ class PropertiesVisualizer(
                         state,
                         bpmnElementId,
                         groupType,
-                        property.second.index?.dropLast(1) ?: listOf()
+                        property.second.indexWithinGroupArray?.dropLast(1) ?: listOf()
                     )
                 )
             )
@@ -251,7 +251,7 @@ class PropertiesVisualizer(
 
     private fun computePropertyKey(entry: Pair<PropertyType, Property>): String {
         return entry.first.group?.mapIndexed { index, type ->
-            type.name + entry.second.index?.getOrElse(index) {""} + entry.first.positionInGroup.toString().padStart(4, '0')
+            type.name + entry.second.indexWithinGroupArray?.getOrElse(index) {""} + entry.first.positionInGroup.toString().padStart(4, '0')
         }?.joinToString() ?: ""
     }
 
@@ -342,11 +342,11 @@ class PropertiesVisualizer(
         return field.component
     }
 
-    private fun buildDropDownSelect(newElemsProvider: NewElementsProvider, state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, groupType: FunctionalGroupType?, type: PropertyType, value: Property, parentIndex: List<String>?): JComponent {
+    private fun buildDropDownSelect(newElemsProvider: NewElementsProvider, state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, groupType: FunctionalGroupType?, type: PropertyType, value: Property, parentIndex: List<String>): JComponent {
         val fieldValue = extractString(value)
         val field = dropDownFactory(bpmnElementId, type, fieldValue, type.setForSelect!!)
         addEditorTextListener(state, field, bpmnElementId, type, value)
-        if (null != groupType && null != parentIndex) {
+        if (null != groupType) {
             addDropDownListener(newElemsProvider, state, field.component as JComboBox<*>, bpmnElementId, groupType, parentIndex)
         }
         return field.component
@@ -412,7 +412,7 @@ class PropertiesVisualizer(
 
         field.addActionListener {
             val propType = propertyType(type.actionResult.propertyType)
-            val allPropsOfType = state[bpmnElementId]!!.getAll(propType).map { it.index?.joinToString() }.toSet()
+            val allPropsOfType = state[bpmnElementId]!!.getAll(propType).map { it.indexWithinGroupArray?.joinToString() }.toSet()
             val countFields = allPropsOfType.size
             val fieldName = (countFields..maxFields).map { type.actionResult.valuePattern.format(it) }.firstOrNull { !allPropsOfType.contains(it) } ?: UUID.randomUUID().toString()
             val propertyIndex = parentIndex + fieldName
@@ -429,7 +429,7 @@ class PropertiesVisualizer(
 
         field.addActionListener {
             val propType = propertyType(type.actionResult.propertyType)
-            val allPropsOfType = state[bpmnElementId]!!.getAll(propType).map { it.index?.joinToString() }.toSet()
+            val allPropsOfType = state[bpmnElementId]!!.getAll(propType).map { it.indexWithinGroupArray?.joinToString() }.toSet()
             val countFields = allPropsOfType.size
             val fieldName = (countFields..maxFields).map { type.actionResult.valuePattern.format(it) }.firstOrNull { !allPropsOfType.contains(it) } ?: UUID.randomUUID().toString()
             val propertyIndex = parentIndex + fieldName
@@ -453,7 +453,7 @@ class PropertiesVisualizer(
         value,
         if (type.cascades) initialValue else null,
         if (type == PropertyType.ID) BpmnElementId(value) else null,
-        property.index
+        property.indexWithinGroupArray
     )
 
     private fun prepareTable(): FirstLastColumnReadOnlyModel {

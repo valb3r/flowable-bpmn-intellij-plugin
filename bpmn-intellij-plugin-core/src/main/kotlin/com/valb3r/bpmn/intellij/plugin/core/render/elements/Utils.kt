@@ -10,5 +10,5 @@ fun computeCascadeChangeOfBpmnIncomingOutgoingIndex(ownerElementBpmnId: BpmnElem
     val elementId = ownerElementBpmnId ?: return defaultIndex
     return props[propertyType]
         ?.filter { it.value.value == elementId.id }
-        ?.map { StringValueUpdatedEvent(it.key, propertyType, "", propertyIndex = it.value.index) } ?: emptyList()
+        ?.map { StringValueUpdatedEvent(it.key, propertyType, "", propertyIndex = it.value.indexWithinGroupArray) } ?: emptyList()
 }

@@ -28,8 +28,6 @@ import java.awt.geom.Point2D
 import java.awt.image.BufferedImage
 import java.util.*
 import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JTextField
 import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableRowSorter
@@ -1530,10 +1528,10 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         clickOnId(userTaskDiagramId)
         val formProperty = currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_ID]
         formProperty!!.value.shouldBeNull()
-        formProperty.index.shouldBeNull()
+        formProperty.indexWithinGroupArray.shouldBeNull()
         val formPropName = currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_NAME]
         formPropName!!.value.shouldBeNull()
-        formPropName!!.index.shouldBeNull()
+        formPropName!!.indexWithinGroupArray.shouldBeNull()
 
 //        currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_VALUE_ID].shouldBeNull()
     }
@@ -1548,11 +1546,11 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         )
         clickOnId(userTaskDiagramId)
         currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_ID]
-            ?.index?.shouldContain(newValueProp)
+            ?.indexWithinGroupArray?.shouldContain(newValueProp)
         currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_NAME]
-            ?.index?.shouldContain(newValueProp)
+            ?.indexWithinGroupArray?.shouldContain(newValueProp)
         currentStateProvider(project).currentState().elemPropertiesByStaticElementId[userTaskBpmnId]!![PropertyType.FORM_PROPERTY_VALUE_ID]
-            ?.index?.shouldContain(newValueProp)
+            ?.indexWithinGroupArray?.shouldContain(newValueProp)
     }
 
     @Test
