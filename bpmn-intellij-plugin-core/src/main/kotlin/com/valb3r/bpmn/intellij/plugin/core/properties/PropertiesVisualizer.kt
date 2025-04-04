@@ -125,6 +125,7 @@ class PropertiesVisualizer(
             val groupType = property.first.group?.lastOrNull()
             val hasExpandButton = property.first.name == groupType?.actionResult?.propertyType
             val isAlwaysVisible = property.first.group?.size == 1 && hasExpandButton
+            val parentIndex = property.second.index
             val innerPaddingDepth = property.second.index?.let {(it.size - 1) * 2} ?: 0
             val groupPadding = "".padStart(innerPaddingDepth * 2)
 
@@ -155,7 +156,7 @@ class PropertiesVisualizer(
                 CLASS -> arrayOf(caption, buildClassField(state, bpmnElementId, property.first, property.second))
                 EXPRESSION -> arrayOf(caption, buildExpressionField(state, bpmnElementId, property.first, property.second))
                 ATTACHED_SEQUENCE_SELECT -> arrayOf(caption, buildDropDownSelectFieldForTargettedIds(state, bpmnElementId, property.first, property.second))
-                LIST_SELECT -> arrayOf(caption, buildDropDownSelect(state, bpmnElementId, property.first, property.second))
+                LIST_SELECT -> arrayOf(caption, buildDropDownSelect(newElemsProvider, state, bpmnElementId, groupType, property.first, property.second, parentIndex))
             }
 
             addVerifierIfAvailable(property, row)
@@ -163,7 +164,7 @@ class PropertiesVisualizer(
             if (hasExpandButton) {
                 val controlExpandsGroupIndex = ElementIndex(
                     groupType,
-                    property.second.index?.joinToString() ?: ""
+                    parentIndex?.joinToString() ?: ""
                 )
                 val button = buildArrowExpansionButton(bpmnElementId, filter, controlExpandsGroupIndex, sorter)
                 row += button
@@ -341,16 +342,19 @@ class PropertiesVisualizer(
         return field.component
     }
 
-    private fun buildDropDownSelect(state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: PropertyType, value: Property): JComponent {
+    private fun buildDropDownSelect(newElemsProvider: NewElementsProvider, state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, groupType: FunctionalGroupType?, type: PropertyType, value: Property, parentIndex: List<String>?): JComponent {
         val fieldValue = extractString(value)
         val field = dropDownFactory(bpmnElementId, type, fieldValue, type.setForSelect!!)
         addEditorTextListener(state, field, bpmnElementId, type, value)
+        if (null != groupType && null != parentIndex) {
+            addDropDownListener(newElemsProvider, state, field.component as JComboBox<*>, bpmnElementId, groupType, parentIndex)
+        }
         return field.component
     }
 
-    private fun buildButtonField(newElemsProvider: NewElementsProvider, state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, type: FunctionalGroupType, parentIndex: List<String>): JComponent {
-        val button = buttonFactory(bpmnElementId, type)
-        addButtonListener(newElemsProvider, state, button, bpmnElementId, type, parentIndex)
+    private fun buildButtonField(newElemsProvider: NewElementsProvider, state: Map<BpmnElementId, PropertyTable>, bpmnElementId: BpmnElementId, groupType: FunctionalGroupType, parentIndex: List<String>): JComponent {
+        val button = buttonFactory(bpmnElementId, groupType)
+        addButtonListener(newElemsProvider, state, button, bpmnElementId, groupType, parentIndex)
         return button
     }
 
@@ -400,6 +404,23 @@ class PropertiesVisualizer(
                     project
                 )
             }
+        }
+    }
+
+    private fun addDropDownListener(newElemsProvider: NewElementsProvider, state: Map<BpmnElementId, PropertyTable>, field: JComboBox<*>, bpmnElementId: BpmnElementId, type: FunctionalGroupType, parentIndex: List<String>) {
+        fun propertyType(name: String) = PropertyType.values().find { it.name == name }!!
+
+        field.addActionListener {
+            val propType = propertyType(type.actionResult.propertyType)
+            val allPropsOfType = state[bpmnElementId]!!.getAll(propType).map { it.index?.joinToString() }.toSet()
+            val countFields = allPropsOfType.size
+            val fieldName = (countFields..maxFields).map { type.actionResult.valuePattern.format(it) }.firstOrNull { !allPropsOfType.contains(it) } ?: UUID.randomUUID().toString()
+            val propertyIndex = parentIndex + fieldName
+            val events = mutableListOf<Event>(StringValueUpdatedEvent(bpmnElementId, propType, fieldName, propertyIndex = propertyIndex))
+            val supportedTypes = newElemsProvider.propertyTypes().map { it.name }.toSet()
+            events += type.actionUiOnlyResult.filter { supportedTypes.contains(it.propertyType) }.map { UiOnlyValueAddedEvent(bpmnElementId, propertyType(it.propertyType), it.valuePattern, propertyIndex = propertyIndex + it.uiOnlyaddedIndex) }
+            updateEventsRegistry(project).addEvents(events)
+            visualize(newElementsFactory(project), currentStateProvider(project).currentState().elemPropertiesByStaticElementId, bpmnElementId, expandedElems.toSet())
         }
     }
 
