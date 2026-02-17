@@ -59,7 +59,7 @@ intellijPlatform {
     pluginVerification {
         freeArgs = ["-mute", "TemplateWordInPluginName"]
         ides {
-            ide(intellijPlatformVersion)
+            ide(intelijIDEVersion)
         }
     }
 }
