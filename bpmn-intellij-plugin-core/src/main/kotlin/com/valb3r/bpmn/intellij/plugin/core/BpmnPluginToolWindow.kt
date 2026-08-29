@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core
 
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.application.WriteIntentReadAction
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
@@ -268,9 +269,11 @@ open class BpmnPluginToolWindow(
             return nonJavaEditorTextField(text)
         }
 
-        val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, psiTypeChar(), true)
-        fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
-        val document = PsiDocumentManager.getInstance(project).getDocument(fragment)!!
+        val document = WriteIntentReadAction.compute {
+            val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, psiTypeChar(), true)
+            fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
+            PsiDocumentManager.getInstance(project).getDocument(fragment)!!
+        }
         document.createGuardedBlock(0, 1).isGreedyToLeft = true
         document.createGuardedBlock(text.length - 1, text.length).isGreedyToRight = true
         EditorActionManager.getInstance().setReadonlyFragmentModificationHandler(document) {
@@ -311,7 +314,9 @@ open class BpmnPluginToolWindow(
     // JavaCodeFragmentFactory - important
     private fun createEditorForClass(project: Project, bpmnFile: PsiFile, text: String?): TextValueAccessor {
         val document = try {
-            JavaReferenceEditorUtil.createDocument(text, project, true)!!
+            WriteIntentReadAction.compute {
+                JavaReferenceEditorUtil.createDocument(text, project, true)!!
+            }
         } catch (ex: NoClassDefFoundError) {
             // Non-Java IJ IDE
             return nonJavaEditorTextField(text)
