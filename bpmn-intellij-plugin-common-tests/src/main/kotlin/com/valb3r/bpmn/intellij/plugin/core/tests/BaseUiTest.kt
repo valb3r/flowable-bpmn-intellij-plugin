@@ -176,7 +176,7 @@ abstract class BaseUiTest {
         null, null, null, null, null,
         null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null,
-        null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null,
         null, null, null, null, null,
         null ,null, null, null, null,
         null, null

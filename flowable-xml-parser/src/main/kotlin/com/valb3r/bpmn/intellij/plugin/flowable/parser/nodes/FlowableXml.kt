@@ -258,6 +258,11 @@ class ProcessNode : BpmnMappable<BpmnProcess>, ProcessBody() {
             "send-event",
             cachedMapper(SendEventMapper::class.java)
         ) { updates, target -> target.copy(sendEventTask = updates) }
+        result = extractTasksBasedOnType(
+            result,
+            "receive-event",
+            cachedMapper(ReceiveEventMapper::class.java)
+        ) { updates, target -> target.copy(receiveEventTask = updates) }
         return result
     }
 
@@ -775,6 +780,32 @@ class ProcessNode : BpmnMappable<BpmnProcess>, ProcessBody() {
                     triggerChannelType = triggerChannelType,
                 )
             input.eventExtensionElements = listOf(extensionFromEvent)
+        }
+    }
+
+    @Mapper
+    abstract class ReceiveEventMapper : ServiceTaskMapper<BpmnReceiveEventTask> {
+
+        abstract override fun convertToDto(input: BpmnServiceTask): BpmnReceiveEventTask
+
+        @AfterMapping
+        fun afterConvertToDto(@MappingTarget input: BpmnReceiveEventTask) {
+            input.eventExtensionElements = listOf(ExtensionFromEvent(
+                eventType = input.extensionElements?.firstOrNull { it.name == "eventType" }?.string,
+                triggerEventType = input.extensionElements?.firstOrNull { it.name == "triggerEventType" }?.string,
+                eventName = input.extensionElements?.firstOrNull { it.name == "eventName" }?.string,
+                channelKey = input.extensionElements?.firstOrNull { it.name == "channelKey" }?.string,
+                channelName = input.extensionElements?.firstOrNull { it.name == "channelName" }?.string,
+                channelDestination = input.extensionElements?.firstOrNull { it.name == "channelDestination" }?.string,
+                triggerEventName = input.extensionElements?.firstOrNull { it.name == "triggerEventName" }?.string,
+                triggerChannelKey = input.extensionElements?.firstOrNull { it.name == "triggerChannelKey" }?.string,
+                triggerChannelName = input.extensionElements?.firstOrNull { it.name == "triggerChannelName" }?.string,
+                triggerChannelDestination = input.extensionElements?.firstOrNull { it.name == "triggerChannelDestination" }?.string,
+                keyDetectionType = input.extensionElements?.firstOrNull { it.name == "keyDetectionType" }?.string,
+                keyDetectionValue = input.extensionElements?.firstOrNull { it.name == "keyDetectionValue" }?.string,
+                channelType = input.extensionElements?.firstOrNull { it.name == "channelType" }?.string,
+                triggerChannelType = input.extensionElements?.firstOrNull { it.name == "triggerChannelType" }?.string,
+            ))
         }
     }
 

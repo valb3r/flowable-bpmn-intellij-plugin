@@ -58,6 +58,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             BpmnServiceTask::class -> BpmnServiceTask(generateBpmnId())
             BpmnExternalTask::class -> BpmnExternalTask(generateBpmnId())
             BpmnSendEventTask::class -> BpmnSendEventTask(generateBpmnId())
+            BpmnReceiveEventTask::class -> BpmnReceiveEventTask(generateBpmnId())
             BpmnBusinessRuleTask::class -> BpmnBusinessRuleTask(generateBpmnId())
             BpmnReceiveTask::class -> BpmnReceiveTask(generateBpmnId())
             BpmnManualTask::class -> BpmnManualTask(generateBpmnId())

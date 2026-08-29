@@ -176,6 +176,7 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         result = extractTasksBasedOnType(result, "mule",  cachedMapper(MuleMapper::class.java)) { updates, target -> target.copy(muleTask = updates) }
         result = extractTasksBasedOnType(result, "dmn",  cachedMapper(DecisionMapper::class.java)) { updates, target -> target.copy(decisionTask = updates) }
         result = extractTasksBasedOnType(result, "shell",  cachedMapper(ShellMapper::class.java)) { updates, target -> target.copy(shellTask = updates) }
+        result = extractTasksBasedOnType(result, "receive-event", cachedMapper(ReceiveEventMapper::class.java)) { updates, target -> target.copy(receiveEventTask = updates) }
         return result
     }
 
@@ -479,6 +480,9 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         @Mapping(source = "forCompensation", target = "isForCompensation")
         fun convertToDto(input: BpmnServiceTask): T
     }
+
+    @Mapper
+    interface ReceiveEventMapper : ServiceTaskMapper<BpmnReceiveEventTask>
 
     @Mapper
     interface TimerCatchingMapper: IntermediateCatchEventMapper<BpmnIntermediateTimerCatchingEvent>

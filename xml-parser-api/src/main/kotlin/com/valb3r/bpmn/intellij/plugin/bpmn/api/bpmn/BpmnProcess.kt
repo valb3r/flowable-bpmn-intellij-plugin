@@ -72,6 +72,7 @@ data class BpmnProcessBody(
         val decisionTask: List<BpmnDecisionTask>?,
         val shellTask: List<BpmnShellTask>?,
         val sendEventTask: List<BpmnSendEventTask>?,
+        val receiveEventTask: List<BpmnReceiveEventTask>?,
         // end customizations
 
         // Sub-process alike
