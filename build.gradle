@@ -9,8 +9,8 @@ plugins {
 
 allprojects {
     ext {
-        intellijPlatformVersion = '2026.2.1'
-        intellijPlatformPlugins = ['com.intellij.java', 'com.intellij.database'] // DatabaseTools is for BPMN process 'debugging'
+        intellijPlatformVersion = '2025.1.3'
+        intellijPlatformPlugins = ['com.intellij.java'] // DatabaseTools is an optional runtime dependency for BPMN debugging
 
         kotlinStdlib = '2.4.10'
         kotlinApiVersion = '2.2'
@@ -33,8 +33,8 @@ allprojects {
 group = 'com.valb3r'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 dependencies {
@@ -50,7 +50,7 @@ allprojects {
     plugins.withId('java') {
         java {
             toolchain {
-                languageVersion = JavaLanguageVersion.of(25)
+                languageVersion = JavaLanguageVersion.of(21)
             }
         }
     }
@@ -69,7 +69,7 @@ subprojects {
 
     tasks.withType(KotlinCompile).configureEach {
         compilerOptions {
-            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
             apiVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2
         }
     }

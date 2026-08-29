@@ -1,7 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core
 
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.application.WriteIntentReadAction
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
@@ -14,6 +14,7 @@ import com.intellij.openapi.editor.event.EditorMouseListener
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileTypes.StdFileTypes
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Computable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.wm.IdeFocusManager
@@ -269,11 +270,11 @@ open class BpmnPluginToolWindow(
             return nonJavaEditorTextField(text)
         }
 
-        val document = WriteIntentReadAction.compute {
+        val document = ApplicationManager.getApplication().runReadAction(Computable<Document> {
             val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, psiTypeChar(), true)
             fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
             PsiDocumentManager.getInstance(project).getDocument(fragment)!!
-        }
+        })
         document.createGuardedBlock(0, 1).isGreedyToLeft = true
         document.createGuardedBlock(text.length - 1, text.length).isGreedyToRight = true
         EditorActionManager.getInstance().setReadonlyFragmentModificationHandler(document) {
@@ -314,9 +315,9 @@ open class BpmnPluginToolWindow(
     // JavaCodeFragmentFactory - important
     private fun createEditorForClass(project: Project, bpmnFile: PsiFile, text: String?): TextValueAccessor {
         val document = try {
-            WriteIntentReadAction.compute {
+            ApplicationManager.getApplication().runReadAction(Computable<Document> {
                 JavaReferenceEditorUtil.createDocument(text, project, true)!!
-            }
+            })
         } catch (ex: NoClassDefFoundError) {
             // Non-Java IJ IDE
             return nonJavaEditorTextField(text)
