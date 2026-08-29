@@ -14,12 +14,12 @@ java {
 dependencies {
     intellijPlatform {
         intellijIdeaUltimate(intellijPlatformVersion)
+        pluginComposedModule(implementation(project(":bpmn-intellij-plugin-core")))
+        pluginComposedModule(implementation(project(":bpmn-intellij-plugin-commons")))
     }
 
     implementation project(":xml-parser-core")
     implementation project(":camunda-xml-parser")
-    implementation project(":bpmn-intellij-plugin-core")
-    implementation project(":bpmn-intellij-plugin-commons")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson"
