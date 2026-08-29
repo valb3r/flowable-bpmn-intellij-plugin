@@ -140,7 +140,15 @@ class CanvasBuilder(
         return connection
     }
 
-    private fun readFile(bpmnFile: VirtualFile): String = ApplicationManager.getApplication().runReadAction(Computable {
-        String(bpmnFile.contentsToByteArray(), UTF_8)
-    })
+    private fun readFile(bpmnFile: VirtualFile): String {
+        val application = ApplicationManager.getApplication()
+        return if (application != null) {
+            application.runReadAction(Computable {
+                String(bpmnFile.contentsToByteArray(), UTF_8)
+            })
+        } else {
+            // Plain unit tests do not install an IntelliJ Application instance.
+            String(bpmnFile.contentsToByteArray(), UTF_8)
+        }
+    }
 }
