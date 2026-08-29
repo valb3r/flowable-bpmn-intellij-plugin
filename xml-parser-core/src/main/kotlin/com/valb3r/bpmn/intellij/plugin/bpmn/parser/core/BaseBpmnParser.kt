@@ -142,7 +142,7 @@ abstract class BaseBpmnParser: BpmnParser {
             // FIXME https://github.com/FasterXML/jackson-module-kotlin/issues/138
             JacksonXmlModule().apply { setXMLTextElementName(CDATA_FIELD) }
         )
-        mapper.registerModule(KotlinModule())
+        mapper.registerModule(KotlinModule.Builder().build())
         mapper.enable(SerializationFeature.INDENT_OUTPUT)
         mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)

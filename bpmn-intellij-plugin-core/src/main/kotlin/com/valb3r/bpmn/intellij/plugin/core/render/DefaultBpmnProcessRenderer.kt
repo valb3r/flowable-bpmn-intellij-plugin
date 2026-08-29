@@ -31,7 +31,6 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.shapes.*
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
-import groovy.lang.Tuple2
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -326,7 +325,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         var locationY = undoRedoStartMargin
 
         if (state.currentState.undoRedo.isNotEmpty()) {
-            var sizes = Tuple2(0.0f, 0.0f)
+            var sizes = Pair(0.0f, 0.0f)
             if (state.currentState.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.UNDO)) {
                 sizes = drawIconWithAction(state, undoId, locationX, locationY, renderedArea, { dest -> dest.undo() }, icons.undo)
                 locationX += sizes.first + iconMargin
@@ -365,13 +364,13 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             renderedArea: MutableMap<DiagramElementId, AreaWithZindex>,
             onClick: (ProcessModelUpdateEvents) -> Unit,
             icon: Icon
-    ): Tuple2<Float, Float> {
+    ): Pair<Float, Float> {
         val color = if (isActive(actionElementId, state)) Colors.SELECTED_COLOR else null
         val areaRedo = color?.let { state.ctx.canvas.drawFilledIconAtScreen(Point2D.Float(locationX, locationY), icon, Colors.BACKGROUND_COLOR.color, it.color) }
                 ?: state.ctx.canvas.drawFilledIconAtScreen(Point2D.Float(locationX, locationY), icon, Colors.BACKGROUND_COLOR.color)
         renderedArea[actionElementId] = AreaWithZindex(areaRedo, AreaType.SHAPE, index = ICON_Z_INDEX)
         state.ctx.interactionContext.clickCallbacks[actionElementId] = onClick
-        return Tuple2(icon.iconWidth.toFloat(), icon.iconHeight.toFloat())
+        return Pair(icon.iconWidth.toFloat(), icon.iconHeight.toFloat())
     }
 
     private fun drawAnchorsHit(canvas: CanvasPainter, anchors: AnchorHit) {

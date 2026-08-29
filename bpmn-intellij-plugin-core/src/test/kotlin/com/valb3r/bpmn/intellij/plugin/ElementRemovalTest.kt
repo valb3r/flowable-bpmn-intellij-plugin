@@ -1,8 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
-import com.nhaarman.mockitokotlin2.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.verify
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DiagramElementRemovedEvent

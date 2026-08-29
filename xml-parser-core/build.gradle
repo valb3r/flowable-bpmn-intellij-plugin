@@ -5,16 +5,16 @@ plugins {
 
 group = 'com.valb3r.bpmn.intellij.plugin.bpmn.parser.core'
 
-sourceCompatibility = 17
-
-repositories {
-    mavenCentral()
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 dependencies {
     api project(":xml-parser-api")
 
     api "org.dom4j:dom4j:$dom4j" // Implementation comes from IntelliJ
+    api "jaxen:jaxen:$jaxen"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
@@ -31,7 +31,7 @@ test {
 
     testLogging {
         events "failed"
-        exceptionFormat "full"
+        exceptionFormat = "full"
     }
 }
 

@@ -1,9 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.never
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
+import org.mockito.kotlin.any
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor

@@ -8,13 +8,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 17
-      uses: actions/setup-java@v1
+    - uses: actions/checkout@v6
+    - name: Set up JDK 25
+      uses: actions/setup-java@v5
       with:
-        java-version: 17
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+        distribution: temurin
+        java-version: 25
+    - uses: gradle/actions/setup-gradle@v6
     - name: Build with Gradle
       run: |
         ./gradlew clean build \
@@ -22,7 +22,7 @@ jobs:
             :camunda-intellij-plugin:buildPlugin :camunda-intellij-plugin:verifyPlugin \
             :activiti-intellij-plugin:buildPlugin :activiti-intellij-plugin:verifyPlugin
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         flags: unittests

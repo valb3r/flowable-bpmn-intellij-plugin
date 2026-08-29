@@ -6,14 +6,9 @@ plugins {
 
 group = 'com.valb3r.bpmn.intellij.plugin.flowable'
 
-sourceCompatibility = 17
-
-repositories {
-    mavenCentral()
-
-    intellijPlatform {
-        defaultRepositories()
-    }
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 dependencies {
@@ -36,7 +31,7 @@ dependencies {
     testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformRunner"
     testImplementation "org.amshove.kluent:kluent:$kluent"
     testImplementation "org.mockito:mockito-core:$mockitoCore"
-    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlin"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlin"
 }
 
 sourceSets {
@@ -59,7 +54,7 @@ intellijPlatform {
     pluginVerification {
         freeArgs = ["-mute", "TemplateWordInPluginName"]
         ides {
-            ide(intellijPlatformVersion)
+            current()
         }
     }
 }
@@ -78,7 +73,7 @@ test {
 
     testLogging {
         events "failed"
-        exceptionFormat "full"
+        exceptionFormat = "full"
     }
 }
 

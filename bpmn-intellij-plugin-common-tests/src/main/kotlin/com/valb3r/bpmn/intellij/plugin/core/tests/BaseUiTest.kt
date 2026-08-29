@@ -7,7 +7,7 @@ import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.messages.MessageBus
 import com.intellij.util.messages.MessageBusConnection
-import com.nhaarman.mockitokotlin2.*
+import org.mockito.kotlin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable

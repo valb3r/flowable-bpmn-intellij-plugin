@@ -1,9 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
-import com.nhaarman.mockitokotlin2.times
-import com.nhaarman.mockitokotlin2.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType

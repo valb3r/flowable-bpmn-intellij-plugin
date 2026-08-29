@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLanguageInjectionHost
-import com.nhaarman.mockitokotlin2.*
+import org.mockito.kotlin.*
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
 import com.valb3r.bpmn.intellij.plugin.camunda.langinjection.CamundaDelegateExpressionUiInjector
 import org.junit.jupiter.api.BeforeEach

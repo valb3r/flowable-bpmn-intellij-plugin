@@ -6,14 +6,9 @@ plugins {
 
 group = 'com.valb3r.bpmn.intellij.plugin.core.tests'
 
-sourceCompatibility = 17
-
-repositories {
-    mavenCentral()
-
-    intellijPlatform {
-        defaultRepositories()
-    }
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 dependencies {
@@ -31,7 +26,7 @@ dependencies {
     implementation "org.junit.jupiter:junit-jupiter-api:$junitJupiter"
     implementation "org.amshove.kluent:kluent:$kluent"
     implementation "org.mockito:mockito-core:$mockitoCore"
-    implementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlin"
+    implementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlin"
 }
 
 sourceSets {

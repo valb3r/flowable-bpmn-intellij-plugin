@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.activiti.ui.components.popupmenu
 
-import com.nhaarman.mockitokotlin2.*
+import org.mockito.kotlin.*
 import com.valb3r.bpmn.intellij.activiti.plugin.popupmenu.ActivitiCanvasPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiObjectFactory
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.CopyPasteActionHandler

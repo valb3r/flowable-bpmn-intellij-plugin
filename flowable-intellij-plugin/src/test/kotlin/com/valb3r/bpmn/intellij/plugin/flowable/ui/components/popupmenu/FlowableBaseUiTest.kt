@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.ui.components.popupmenu
 
-import com.nhaarman.mockitokotlin2.*
+import org.mockito.kotlin.*
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.CopyPasteActionHandler
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.DATA_FLAVOR
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.SystemClipboard

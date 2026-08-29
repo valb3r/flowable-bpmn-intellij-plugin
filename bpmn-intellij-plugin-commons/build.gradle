@@ -4,18 +4,12 @@ plugins {
     id 'org.jetbrains.intellij.platform.module'
 }
 
-group 'com.valb3r.bpmn.intellij.plugin.commons'
+group = 'com.valb3r.bpmn.intellij.plugin.commons'
 
-sourceCompatibility = 17
-
-repositories {
-    mavenCentral()
-
-    intellijPlatform {
-        defaultRepositories()
-    }
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
-
 
 dependencies {
     intellijPlatform {
@@ -36,7 +30,7 @@ dependencies {
     testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformRunner"
     testImplementation "org.amshove.kluent:kluent:$kluent"
     testImplementation "org.mockito:mockito-core:$mockitoCore"
-    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlin"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlin"
 }
 
 sourceSets {
@@ -56,7 +50,7 @@ test {
 
     testLogging {
         events "failed"
-        exceptionFormat "full"
+        exceptionFormat = "full"
     }
 }
 

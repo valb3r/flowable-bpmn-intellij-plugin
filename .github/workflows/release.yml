@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
         with:
           ref: master
           fetch-depth: 0
@@ -25,18 +25,22 @@ jobs:
           fi
         env:
           TAG_NAME: ${{ github.ref_name }}
-      - name: Set up JDK 17
-        uses: actions/setup-java@v1
+      - name: Set up JDK 25
+        uses: actions/setup-java@v5
         with:
-          java-version: 17
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v6
       - name: Build, test with Gradle
         run: |
-          ./gradlew clean build buildPlugin runPluginVerifier jacocoTestReport \
-            -x :bpmn-intellij-plugin-commons:runPluginVerifier \
-            -x :bpmn-intellij-plugin-core:runPluginVerifier
+          ./gradlew clean build jacocoTestReport \
+            :flowable-intellij-plugin:buildPlugin :flowable-intellij-plugin:verifyPlugin \
+            :camunda-intellij-plugin:buildPlugin :camunda-intellij-plugin:verifyPlugin \
+            :activiti-intellij-plugin:buildPlugin :activiti-intellij-plugin:verifyPlugin
       - name: Release plugin(s)
-        run: ./gradlew publishPlugin
+        run: |
+          ./gradlew :flowable-intellij-plugin:publishPlugin \
+            :camunda-intellij-plugin:publishPlugin \
+            :activiti-intellij-plugin:publishPlugin
         env:
           INTELLIJ_PLUGIN_PUBLISH_TOKEN: ${{ secrets.INTELLIJ_PLUGIN_PUBLISH_TOKEN }}

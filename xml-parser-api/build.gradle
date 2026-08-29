@@ -6,16 +6,15 @@ plugins {
 
 group = 'com.valb3r.bpmn.intellij.plugin.bpmn.api'
 
-sourceCompatibility = 17
-
-repositories {
-    mavenCentral()
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 dependencies {
     api "org.jetbrains.kotlin:kotlin-stdlib"
 
-    api "com.fasterxml.jackson.core:jackson-annotations:$jackson"
+    api "com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotations"
 
     api "org.mapstruct:mapstruct:$mapstruct"
     kapt "org.mapstruct:mapstruct-processor:$mapstruct"
