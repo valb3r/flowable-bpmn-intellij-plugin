@@ -1,12 +1,13 @@
 package com.valb3r.bpmn.intellij.activiti.plugin
 
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.openapi.util.Computable
 import com.valb3r.bpmn.intellij.activiti.plugin.advertisement.ActivitiAdvertisementState
 import com.valb3r.bpmn.intellij.activiti.plugin.notifications.showNotificationBalloon
 import com.valb3r.bpmn.intellij.activiti.plugin.popupmenu.ActivitiCanvasPopupMenuProvider
@@ -33,8 +34,8 @@ class ActivitiBpmnPluginToolWindowFactory: ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         log.info("Creating tool window content")
-        currentSettingsStateProvider.set { ServiceManager.getService(ActivitiBpmnPluginSettingsState::class.java) }
-        currentAdvertisementStateProvider.set { ServiceManager.getService(ActivitiAdvertisementState::class.java) }
+        currentSettingsStateProvider.set { project.getService(ActivitiBpmnPluginSettingsState::class.java) }
+        currentAdvertisementStateProvider.set { project.getService(ActivitiAdvertisementState::class.java) }
 
         val bpmnWindow = BpmnPluginToolWindow(
             project,
@@ -56,7 +57,7 @@ class ActivitiBpmnPluginToolWindowFactory: ToolWindowFactory {
         }
 
         // register the call graph tool window as a project service, so it can be accessed by editor menu actions.
-        val windowService = ServiceManager.getService(project, ActivitiBpmnPluginToolWindowProjectService::class.java)
+        val windowService = project.getService(ActivitiBpmnPluginToolWindowProjectService::class.java)
         windowService.bpmnToolWindow = bpmnWindow
 
         // register the tool window content
@@ -70,6 +71,9 @@ class ActivitiBpmnPluginToolWindowFactory: ToolWindowFactory {
     }
 
     private fun isActiviti7(input: VirtualFile): Boolean {
-        return String(input.contentsToByteArray(), StandardCharsets.UTF_8).contains("xmlns:bpmn2=\"http://www.omg.org/spec/BPMN/20100524/MODEL\"")
+        return ApplicationManager.getApplication().runReadAction(Computable {
+            String(input.contentsToByteArray(), StandardCharsets.UTF_8)
+                .contains("xmlns:bpmn2=\"http://www.omg.org/spec/BPMN/20100524/MODEL\"")
+        })
     }
 }

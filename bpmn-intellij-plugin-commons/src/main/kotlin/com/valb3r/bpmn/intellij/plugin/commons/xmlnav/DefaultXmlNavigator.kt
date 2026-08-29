@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.VirtualFile
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.getCurrentFile
@@ -16,15 +17,20 @@ import java.nio.charset.StandardCharsets
 abstract class DefaultXmlNavigator(private val project: Project): XmlNavigator {
 
     override fun jumpTo(id: BpmnElementId) {
-        ApplicationManager.getApplication().invokeLater {
-            val virtualFile = getCurrentFile(project).virtualFile
+        ApplicationManager.getApplication().executeOnPooledThread {
+            val (virtualFile, offset) = ApplicationManager.getApplication().runReadAction(Computable {
+                val file = getCurrentFile(project).virtualFile
+                file to findOffset(id, file)
+            })
+            ApplicationManager.getApplication().invokeLater {
             val descriptor = OpenFileDescriptor(project, virtualFile)
             val fileEditor = FileEditorManager.getInstance(project).openEditor(descriptor, true).firstOrNull()
             fileEditor?.apply {
                 val ctx = DataManager.getInstance().getDataContext(this.component)
                 val editor = ctx.getData(PlatformDataKeys.EDITOR)
-                editor?.caretModel?.moveToOffset(findOffset(id, virtualFile))
+                editor?.caretModel?.moveToOffset(offset)
                 editor?.scrollingModel?.scrollToCaret(ScrollType.MAKE_VISIBLE)
+            }
             }
         }
     }

@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.core.events
 
 import com.google.common.hash.Hashing
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.application.WriteIntentReadAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -44,18 +45,16 @@ class IntelliJFileCommitter(private val parser: BpmnParser, private val project:
 
     override fun executeCommitAndGetHash(content: String?, events: List<EventPropagatableToXml>, hasher: (String) -> String, updateHash: (String) -> Unit) {
         var hash: String?
-        val doc = FileDocumentManager.getInstance().getDocument(file)!!
+        val doc = WriteIntentReadAction.compute {
+            FileDocumentManager.getInstance().getDocument(file)
+        } ?: return
         WriteCommandAction.runWriteCommandAction(project) {
-            val newText = parser.update(
-                    content ?: doc.text,
-                    events
-            )
-
+            val newText = parser.update(content ?: doc.text, events)
             hash = hasher(newText)
             doc.replaceString(0, doc.textLength, newText)
             updateHash(hash!!)
+            FileDocumentManager.getInstance().saveDocument(doc)
         }
-        FileDocumentManager.getInstance().saveDocument(doc)
     }
 
 }

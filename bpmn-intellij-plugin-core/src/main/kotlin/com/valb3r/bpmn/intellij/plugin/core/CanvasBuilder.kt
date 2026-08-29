@@ -1,12 +1,14 @@
 package com.valb3r.bpmn.intellij.plugin.core
 
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import com.intellij.openapi.util.Computable
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.messages.Topic
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
@@ -116,7 +118,9 @@ class CanvasBuilder(
                         ?: return
 
                 if (!registry.fileStateMatches(readFile(event.file))) {
-                    onUpdate(event.file)
+                    ApplicationManager.getApplication().invokeLater {
+                        onUpdate(event.file)
+                    }
                 }
             }
         })
@@ -136,5 +140,7 @@ class CanvasBuilder(
         return connection
     }
 
-    private fun readFile(bpmnFile: VirtualFile) = String(bpmnFile.contentsToByteArray(), UTF_8)
+    private fun readFile(bpmnFile: VirtualFile): String = ApplicationManager.getApplication().runReadAction(Computable {
+        String(bpmnFile.contentsToByteArray(), UTF_8)
+    })
 }
