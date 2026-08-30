@@ -84,6 +84,8 @@ open class ProcessBody {
     var manualTask: List<ManualTask>? = null
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
     var receiveTask: List<ReceiveTask>? = null
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var receiveEventTask: List<ServiceTask>? = null
 
     // Sub process alike
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)

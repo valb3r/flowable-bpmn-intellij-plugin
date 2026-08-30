@@ -184,6 +184,7 @@ abstract class BaseCanvasPopupMenuProvider(private val project: Project) : Canva
     protected val SHELL_TASK = MenuItemDef("Shell task",  SHELL_TASK_ICON, {project, sceneLocation, focus -> ShapeCreator(project, BpmnShellTask::class, sceneLocation, focus)}, {project, focus ->  ShapeTypeChange(project, BpmnShellTask::class, focus)}, 'b')
     protected val EXTERNAL_TASK = MenuItemDef("External Worker task", EXTERNAL_TASK_ICON, {project, sceneLocation, focus -> ShapeCreator(project, BpmnExternalTask::class, sceneLocation, focus)}, {project, focus ->  ShapeTypeChange(project, BpmnExternalTask::class, focus)}, 'w')
     protected val SEND_EVENT_TASK = MenuItemDef("Send event task", SEND_TASK_ICON, {project, sceneLocation, focus -> ShapeCreator(project, BpmnSendEventTask::class, sceneLocation, focus)}, {project, focus ->  ShapeTypeChange(project, BpmnSendEventTask::class, focus)}, 't')
+    protected val RECEIVE_EVENT_TASK = MenuItemDef("Receive event task", SEND_TASK_ICON, {project, sceneLocation, focus -> ShapeCreator(project, BpmnReceiveEventTask::class, sceneLocation, focus)}, {project, focus ->  ShapeTypeChange(project, BpmnReceiveEventTask::class, focus)}, 'v')
 
     protected fun addItem(menu: JPopupMenu, text: String, icon: Icon, listener: ActionListener) {
         val item = JBMenuItem(text, icon)

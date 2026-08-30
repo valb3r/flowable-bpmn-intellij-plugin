@@ -31,6 +31,7 @@ class CamundaCanvasPopupMenuProvider(project: Project) : BaseCanvasPopupMenuProv
         menu.addNewElementItem(sceneLocation, focus,  SEND_TASK)
         menu.addNewElementItem(sceneLocation, focus,  RECEIVE_TASK)
         menu.addNewElementItem(sceneLocation, focus,  MANUAL_TASK)
+        menu.addNewElementItem(sceneLocation, focus,  RECEIVE_EVENT_TASK)
         menu.addNewElementItem(sceneLocation, focus,  EXTERNAL_TASK)
         // Unsupported addItem(menu, "Camel task", CAMEL_TASK, ShapeCreator(project, BpmnCamelTask::class, sceneLocation, focus))
         // Unsupported addItem(menu, "Http task", HTTP_TASK, ShapeCreator(project, BpmnHttpTask::class, sceneLocation, focus))
@@ -165,6 +166,7 @@ class CamundaCanvasPopupMenuProvider(project: Project) : BaseCanvasPopupMenuProv
         popup.addMutateElementItem(focus,  SEND_TASK)
         popup.addMutateElementItem(focus,  RECEIVE_TASK)
         popup.addMutateElementItem(focus,  MANUAL_TASK)
+        popup.addMutateElementItem(focus,  RECEIVE_EVENT_TASK)
         popup.addMutateElementItem(focus,  MANUAL_TASK)
     }
 }

@@ -21,6 +21,8 @@ class ActivitiCanvasPopupMenuProvider(project: Project) : BaseCanvasPopupMenuPro
 
     override fun activities(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu {
         val menu = JMenu("Activities")
+        menu.addNewElementItem(sceneLocation, focus, TASK)
+        menu.addNewElementItem(sceneLocation, focus, SEND_TASK)
         menu.addNewElementItem(sceneLocation, focus, USER_TASK)
         menu.addNewElementItem(sceneLocation, focus, SERVICE_TASK)
         menu.addNewElementItem(sceneLocation, focus, SCRIPT_TASK)
@@ -31,6 +33,7 @@ class ActivitiCanvasPopupMenuProvider(project: Project) : BaseCanvasPopupMenuPro
         menu.addNewElementItem(sceneLocation, focus, CAMEL_TASK)
         menu.addNewElementItem(sceneLocation, focus, MULE_TASK)
         menu.addNewElementItem(sceneLocation, focus, DECISION_TASK)
+        menu.addNewElementItem(sceneLocation, focus, RECEIVE_EVENT_TASK)
         return menu
     }
 
@@ -103,6 +106,8 @@ class ActivitiCanvasPopupMenuProvider(project: Project) : BaseCanvasPopupMenuPro
     }
 
     override fun mutateTask(popup: JPopupMenu, focus: BpmnElementId) {
+        popup.addMutateElementItem(focus, TASK)
+        popup.addMutateElementItem(focus, SEND_TASK)
         popup.addMutateElementItem(focus, USER_TASK)
         popup.addMutateElementItem(focus, SERVICE_TASK)
         popup.addMutateElementItem(focus, SCRIPT_TASK)
@@ -113,6 +118,7 @@ class ActivitiCanvasPopupMenuProvider(project: Project) : BaseCanvasPopupMenuPro
         popup.addMutateElementItem(focus, CAMEL_TASK)
         popup.addMutateElementItem(focus, MULE_TASK)
         popup.addMutateElementItem(focus, DECISION_TASK)
+        popup.addMutateElementItem(focus, RECEIVE_EVENT_TASK)
     }
 
     override fun mutateGateway(popup: JPopupMenu, focus: BpmnElementId) {
