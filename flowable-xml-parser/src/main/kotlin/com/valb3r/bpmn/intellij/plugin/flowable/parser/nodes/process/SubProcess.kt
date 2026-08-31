@@ -19,6 +19,7 @@ class SubProcess: BpmnMappable<BpmnSubProcess>, ProcessBody() {
     @JacksonXmlProperty(isAttribute = true) var name: String? = null
     var documentation: String? = null
     @JacksonXmlProperty(isAttribute = true) var async: Boolean? = null
+    @JacksonXmlProperty(isAttribute = true) var asyncLeave: Boolean? = null
     @JacksonXmlProperty(isAttribute = true) var exclusive: Boolean? = null
     @JacksonXmlProperty(isAttribute = true) var triggeredByEvent: Boolean? = null
     @JsonIgnore var hasExternalDiagram: Boolean = false

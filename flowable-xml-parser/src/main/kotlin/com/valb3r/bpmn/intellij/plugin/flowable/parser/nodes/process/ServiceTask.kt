@@ -22,6 +22,7 @@ data class ServiceTask(
     @JacksonXmlProperty(isAttribute = true) val name: String?,
     val documentation: String?,
     @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
+    @JacksonXmlProperty(isAttribute = true) val asyncLeave: Boolean?,
     @JacksonXmlProperty(isAttribute = true) val expression: String?,
     @JacksonXmlProperty(isAttribute = true) val delegateExpression: String?,
     @JacksonXmlProperty(isAttribute = true, localName = "class") val clazz: String?,
@@ -31,6 +32,7 @@ data class ServiceTask(
     @JacksonXmlProperty(isAttribute = true) val triggerable: Boolean?,
     @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
     @JacksonXmlProperty(isAttribute = true) val useLocalScopeForResultVariable: Boolean?,
+    @JacksonXmlProperty(isAttribute = true) val storeResultVariableAsTransient: Boolean?,
     @JacksonXmlProperty(isAttribute = true) val type: String?,
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null,
 ): BpmnMappable<BpmnServiceTask> {

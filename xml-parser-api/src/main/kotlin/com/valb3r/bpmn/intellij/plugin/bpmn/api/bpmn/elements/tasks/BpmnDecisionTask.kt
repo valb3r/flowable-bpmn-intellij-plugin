@@ -13,6 +13,7 @@ data class BpmnDecisionTask(
         val name: String? = null,
         val documentation: String? = null,
         val async: Boolean? = null,
+        val asyncLeave: Boolean? = null,
         val asyncBefore: Boolean? = null,
         val asyncAfter: Boolean? = null,
         val exclusive: Boolean? = null,

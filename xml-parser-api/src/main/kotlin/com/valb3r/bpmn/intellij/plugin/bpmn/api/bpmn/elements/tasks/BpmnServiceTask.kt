@@ -9,6 +9,7 @@ data class BpmnServiceTask(
         val name: String? = null,
         val documentation: String? = null,
         val async: Boolean? = null,
+        val asyncLeave: Boolean? = null,
         val asyncBefore: Boolean? = null,
         val asyncAfter: Boolean? = null,
         val exclusive: Boolean? = null,
@@ -20,6 +21,7 @@ data class BpmnServiceTask(
         val triggerable: Boolean? = null,
         val isForCompensation: Boolean? = null,
         val useLocalScopeForResultVariable: Boolean? = null,
+        val storeResultVariableAsTransient: Boolean? = null,
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
         // Customizations (Flowable) - http task, camel task,...:

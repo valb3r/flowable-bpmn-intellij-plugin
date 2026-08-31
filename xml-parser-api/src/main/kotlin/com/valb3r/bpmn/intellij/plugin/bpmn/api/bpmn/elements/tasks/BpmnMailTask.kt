@@ -12,6 +12,7 @@ data class BpmnMailTask(
         val asyncAfter: Boolean? = null,
         val documentation: String? = null,
         val async: Boolean? = null,
+        val asyncLeave: Boolean? = null,
         val isForCompensation: Boolean? = null,
         val headers: String? = null,
         val to: String? = null,

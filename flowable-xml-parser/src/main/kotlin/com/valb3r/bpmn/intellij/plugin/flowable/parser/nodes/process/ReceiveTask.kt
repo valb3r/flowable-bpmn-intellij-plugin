@@ -18,6 +18,7 @@ data class ReceiveTask(
         @JacksonXmlProperty(isAttribute = true) val name: String?,
         @JacksonXmlProperty(isAttribute = true) val documentation: String?,
         @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
+        @JacksonXmlProperty(isAttribute = true) val asyncLeave: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
         @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 ): BpmnMappable<BpmnReceiveTask> {

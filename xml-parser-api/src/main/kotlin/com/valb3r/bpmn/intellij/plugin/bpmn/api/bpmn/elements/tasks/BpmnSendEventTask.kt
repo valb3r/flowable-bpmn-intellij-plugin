@@ -9,6 +9,7 @@ data class BpmnSendEventTask(
     val name: String? = null,
     val documentation: String? = null,
     val async: Boolean? = null,
+    val asyncLeave: Boolean? = null,
     val exclusive: Boolean? = null,
     val triggerable: Boolean? = null,
 

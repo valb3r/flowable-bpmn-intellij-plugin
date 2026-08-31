@@ -88,6 +88,10 @@ open class ProcessBody {
     // Service task alike:
     @JsonMerge
     @JacksonXmlElementWrapper(useWrapping = false)
+    var task: List<Task>? = null
+
+    @JsonMerge
+    @JacksonXmlElementWrapper(useWrapping = false)
     var userTask: List<UserTask>? = null
 
     @JsonMerge

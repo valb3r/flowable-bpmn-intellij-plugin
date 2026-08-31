@@ -18,6 +18,7 @@ data class ScriptTask(
         @JacksonXmlProperty(isAttribute = true) val name: String?,
         val documentation: String?,
         @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
+        @JacksonXmlProperty(isAttribute = true) val asyncLeave: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
         @JacksonXmlProperty(isAttribute = false, localName = "script") val scriptBody: String?,
         @JacksonXmlProperty(isAttribute = true) val scriptFormat: String?,

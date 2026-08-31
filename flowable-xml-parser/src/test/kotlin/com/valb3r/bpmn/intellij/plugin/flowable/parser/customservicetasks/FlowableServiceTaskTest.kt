@@ -32,6 +32,8 @@ internal class FlowableServiceTaskTest {
         task.name.shouldBeEqualTo("Service task name")
         task.documentation.shouldBeEqualTo("Docs for service task")
         task.async!!.shouldBeTrue()
+        task.asyncLeave!!.shouldBeTrue()
+        task.storeResultVariableAsTransient!!.shouldBeTrue()
         // TODO 'exclusive' ?
         task.isForCompensation!!.shouldBeTrue()
         task.delegateExpression.shouldBeEqualTo("\${do.delegateTo()}")
@@ -48,6 +50,8 @@ internal class FlowableServiceTaskTest {
         props[PropertyType.NAME]!!.value.shouldBeEqualTo(task.name)
         props[PropertyType.DOCUMENTATION]!!.value.shouldBeEqualTo(task.documentation)
         props[PropertyType.ASYNC]!!.value.shouldBeEqualTo(task.async)
+        props[PropertyType.ASYNC_LEAVE]!!.value.shouldBeEqualTo(task.asyncLeave)
+        props[PropertyType.STORE_RESULT_VARIABLE_AS_TRANSIENT]!!.value.shouldBeEqualTo(task.storeResultVariableAsTransient)
         props[PropertyType.IS_FOR_COMPENSATION]!!.value.shouldBeEqualTo(task.isForCompensation)
         props[PropertyType.DELEGATE_EXPRESSION]!!.value.shouldBeEqualTo(task.delegateExpression)
         props[PropertyType.CLASS]!!.value.shouldBeEqualTo(task.clazz)
@@ -64,6 +68,7 @@ internal class FlowableServiceTaskTest {
         {value: String -> readAndUpdate(PropertyType.NAME, value).name.shouldBeEqualTo(value)} ("new Name");
         {value: String -> readAndUpdate(PropertyType.DOCUMENTATION, value).documentation.shouldBeEqualTo(value)} ("new docs");
         {value: Boolean -> readAndUpdate(PropertyType.ASYNC, value).async.shouldBeEqualTo(value)} (false);
+        {value: Boolean -> readAndUpdate(PropertyType.ASYNC_LEAVE, value).asyncLeave.shouldBeEqualTo(value)} (false);
         {value: Boolean -> readAndUpdate(PropertyType.IS_FOR_COMPENSATION, value).isForCompensation.shouldBeEqualTo(value)} (false);
         {value: String -> readAndUpdate(PropertyType.DELEGATE_EXPRESSION, value).delegateExpression.shouldBeEqualTo(value)} ("\${>Delegate expr}");
         {value: String -> readAndUpdate(PropertyType.CLASS, value).clazz.shouldBeEqualTo(value)} ("com.foo.bar.another.class");
@@ -71,7 +76,8 @@ internal class FlowableServiceTaskTest {
         {value: String -> readAndUpdate(PropertyType.RESULT_VARIABLE_NAME, value).resultVariableName.shouldBeEqualTo(value)} ("NEW_RESULT_TO");
         {value: String -> readAndUpdate(PropertyType.SKIP_EXPRESSION, value).skipExpression.shouldBeEqualTo(value)} ("#{skipStuff.yes()}");
         {value: Boolean -> readAndUpdate(PropertyType.IS_TRIGGERABLE, value).triggerable.shouldBeEqualTo(value)} (false);
-        {value: Boolean -> readAndUpdate(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, value).useLocalScopeForResultVariable.shouldBeEqualTo(value)} (false)
+        {value: Boolean -> readAndUpdate(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, value).useLocalScopeForResultVariable.shouldBeEqualTo(value)} (false);
+        {value: Boolean -> readAndUpdate(PropertyType.STORE_RESULT_VARIABLE_AS_TRANSIENT, value).storeResultVariableAsTransient.shouldBeEqualTo(value)} (false)
     }
 
     @Test

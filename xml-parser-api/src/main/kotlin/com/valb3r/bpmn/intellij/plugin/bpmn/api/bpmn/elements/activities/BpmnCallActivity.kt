@@ -10,6 +10,7 @@ data class BpmnCallActivity(
         val name: String? = null,
         val documentation: String? = null,
         val async: Boolean? = null,
+        val asyncLeave: Boolean? = null,
         val calledElement: String? = null,
         val calledElementType: String? = null,
         val inheritVariables: Boolean? = null,
