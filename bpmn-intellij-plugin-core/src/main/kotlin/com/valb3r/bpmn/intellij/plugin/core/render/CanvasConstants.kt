@@ -1,7 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.ui.JreHiDpiUtil
+import com.intellij.ui.scale.JBUIScale
 import java.awt.geom.Point2D
 
 interface CanvasConstants {
@@ -21,9 +21,9 @@ data class DefaultCanvasConstants(
 ): CanvasConstants
 
 fun isJreHiDPIEnabled(): Boolean {
-    return JreHiDpiUtil.isJreHiDPIEnabled()
+    return JBUIScale.isUsrHiDPI
 }
 
 fun isJreHiDPIEnabledOnWindows(): Boolean {
-    return JreHiDpiUtil.isJreHiDPIEnabled() && SystemInfo.isWindows
+    return JBUIScale.isUsrHiDPI && SystemInfo.isWindows
 }
