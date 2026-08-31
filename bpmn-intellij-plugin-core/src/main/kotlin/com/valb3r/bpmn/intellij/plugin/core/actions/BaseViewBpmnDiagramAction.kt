@@ -7,9 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task.Backgroundable
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiFile
@@ -42,11 +40,8 @@ abstract class BaseViewBpmnDiagramAction : AnAction() {
                 }
             }
 
-            val indicator = BackgroundableProcessIndicator(task)
-            indicator.isIndeterminate = true
-
             invokeLater { toolWindow.title = "[Loading...] ${file.name}" }
-            ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, indicator)
+            task.queue()
         }
     }
 

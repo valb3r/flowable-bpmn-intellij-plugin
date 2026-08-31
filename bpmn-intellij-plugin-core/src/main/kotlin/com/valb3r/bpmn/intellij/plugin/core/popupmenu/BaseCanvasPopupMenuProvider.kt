@@ -5,7 +5,7 @@ import ShapeTypeChange
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.JBMenuItem
 import com.intellij.openapi.ui.JBPopupMenu
-import com.intellij.openapi.util.IconLoader
+import com.intellij.ui.IconManager
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
@@ -38,81 +38,81 @@ import javax.swing.JPopupMenu
 import javax.swing.KeyStroke
 
 // Functional
-private val COPY_ICON = IconLoader.getIcon("/icons/actions/copy.png", BpmnAdHocSubProcess::class.java)
-private val CUT_ICON = IconLoader.getIcon("/icons/actions/cut.png", BaseCanvasPopupMenuProvider::class.java)
-private val PASTE_ICON = IconLoader.getIcon("/icons/actions/paste.png", BaseCanvasPopupMenuProvider::class.java)
-private val SAVE_TO_PNG_ICON = IconLoader.getIcon("/icons/actions/save-to-png.png", BaseCanvasPopupMenuProvider::class.java)
+private val COPY_ICON = IconManager.getInstance().getIcon("/icons/actions/copy.png", BpmnAdHocSubProcess::class.java.classLoader)
+private val CUT_ICON = IconManager.getInstance().getIcon("/icons/actions/cut.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val PASTE_ICON = IconManager.getInstance().getIcon("/icons/actions/paste.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val SAVE_TO_PNG_ICON = IconManager.getInstance().getIcon("/icons/actions/save-to-png.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
 
 // Events
 // Start
-private val START_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/start-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val START_MESSAGE_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/message-start-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val START_ERROR_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/error-start-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val START_SIGNAL_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/signal-start-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val START_TIMER_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/timer-start-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val START_CONDITIONAL_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/conditional-start-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val START_ESCALATION_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/escalation-start-event.png", BaseCanvasPopupMenuProvider::class.java)
+private val START_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/start-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val START_MESSAGE_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/message-start-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val START_ERROR_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/error-start-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val START_SIGNAL_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/signal-start-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val START_TIMER_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/timer-start-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val START_CONDITIONAL_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/conditional-start-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val START_ESCALATION_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/escalation-start-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
 
 // End
-private val END_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/end-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val CANCEL_END_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/cancel-end-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val ERROR_END_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/error-end-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val TERMINATE_END_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/terminate-end-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val ESCALATION_END_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/escalation-end-event.png", BaseCanvasPopupMenuProvider::class.java)
+private val END_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/end-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val CANCEL_END_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/cancel-end-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val ERROR_END_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/error-end-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val TERMINATE_END_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/terminate-end-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val ESCALATION_END_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/escalation-end-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
 
 // Boundary
-private val BOUNDARY_CANCEL_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/cancel-boundary-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val BOUNDARY_COMPENSATION_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/compensation-boundary-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val BOUNDARY_ERROR_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/error-boundary-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val BOUNDARY_MESSAGE_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/message-boundary-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val BOUNDARY_SIGNAL_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/signal-boundary-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val BOUNDARY_TIMER_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/timer-boundary-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val BOUNDARY_CONDITIONAL_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/conditional-boundary-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val BOUNDARY_ESCALATION_EVENT_ICON = IconLoader.getIcon("/icons/popupmenu/escalation-boundary-event.png", BaseCanvasPopupMenuProvider::class.java)
+private val BOUNDARY_CANCEL_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/cancel-boundary-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val BOUNDARY_COMPENSATION_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/compensation-boundary-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val BOUNDARY_ERROR_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/error-boundary-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val BOUNDARY_MESSAGE_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/message-boundary-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val BOUNDARY_SIGNAL_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/signal-boundary-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val BOUNDARY_TIMER_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/timer-boundary-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val BOUNDARY_CONDITIONAL_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/conditional-boundary-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val BOUNDARY_ESCALATION_EVENT_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/escalation-boundary-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
 
 // Intermediate events
 // Catch
-private val INTERMEDIATE_TIMER_CATCHING_ICON = IconLoader.getIcon("/icons/popupmenu/timer-catch-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val INTERMEDIATE_MESSAGE_CATCHING_ICON = IconLoader.getIcon("/icons/popupmenu/message-catch-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val INTERMEDIATE_SIGNAL_CATCHING_ICON = IconLoader.getIcon("/icons/popupmenu/signal-catch-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val INTERMEDIATE_CONDITIONAL_CATCHING_ICON = IconLoader.getIcon("/icons/popupmenu/conditional-catch-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val INTERMEDIATE_LINK_CATCHING_ICON = IconLoader.getIcon("/icons/popupmenu/intermediate-link-catch-event.png", BaseCanvasPopupMenuProvider::class.java)
+private val INTERMEDIATE_TIMER_CATCHING_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/timer-catch-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val INTERMEDIATE_MESSAGE_CATCHING_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/message-catch-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val INTERMEDIATE_SIGNAL_CATCHING_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/signal-catch-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val INTERMEDIATE_CONDITIONAL_CATCHING_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/conditional-catch-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val INTERMEDIATE_LINK_CATCHING_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/intermediate-link-catch-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
 
 // Throw
-private val INTERMEDIATE_NONE_THROWING_ICON = IconLoader.getIcon("/icons/popupmenu/none-throw-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val INTERMEDIATE_SIGNAL_THROWING_ICON = IconLoader.getIcon("/icons/popupmenu/signal-throw-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val INTERMEDIATE_ESCALATION_THROWING_ICON = IconLoader.getIcon("/icons/popupmenu/escalation-throw-event.png", BaseCanvasPopupMenuProvider::class.java)
-private val INTERMEDIATE_LINK_THROWING_ICON = IconLoader.getIcon("/icons/popupmenu/intermediate-link-throw-event.png", BaseCanvasPopupMenuProvider::class.java)
+private val INTERMEDIATE_NONE_THROWING_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/none-throw-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val INTERMEDIATE_SIGNAL_THROWING_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/signal-throw-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val INTERMEDIATE_ESCALATION_THROWING_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/escalation-throw-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val INTERMEDIATE_LINK_THROWING_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/intermediate-link-throw-event.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
 
 // Service-task alike
-private val TASK_ICON = IconLoader.getIcon("/icons/popupmenu/call-activity.png", BaseCanvasPopupMenuProvider::class.java)
-private val SERVICE_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/service-task.png", BaseCanvasPopupMenuProvider::class.java)
-private val USER_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/user-task.png", BaseCanvasPopupMenuProvider::class.java)
-private val SCRIPT_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/script-task.png", BaseCanvasPopupMenuProvider::class.java)
-private val BUSINESS_RULE_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/business-rule-task.png", BaseCanvasPopupMenuProvider::class.java)
-private val RECEIVE_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/receive-task.png", BaseCanvasPopupMenuProvider::class.java)
-private val MANUAL_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/manual-task.png", BaseCanvasPopupMenuProvider::class.java)
-private val CAMEL_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/camel-task.png", BaseCanvasPopupMenuProvider::class.java)
-private val MAIL_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/mail-task.png", BaseCanvasPopupMenuProvider::class.java)
-private val MULE_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/mule-task.png", BaseCanvasPopupMenuProvider::class.java)
-private val DECISION_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/decision-task.png", BaseCanvasPopupMenuProvider::class.java)
-private val HTTP_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/http-task.png", BaseCanvasPopupMenuProvider::class.java)
-private val SHELL_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/shell-task.png", BaseCanvasPopupMenuProvider::class.java)
-private val EXTERNAL_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/external-task.png", BaseCanvasPopupMenuProvider::class.java)
-private val SEND_TASK_ICON = IconLoader.getIcon("/icons/popupmenu/send-task.png", BaseCanvasPopupMenuProvider::class.java)
+private val TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/call-activity.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val SERVICE_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/service-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val USER_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/user-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val SCRIPT_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/script-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val BUSINESS_RULE_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/business-rule-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val RECEIVE_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/receive-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val MANUAL_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/manual-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val CAMEL_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/camel-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val MAIL_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/mail-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val MULE_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/mule-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val DECISION_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/decision-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val HTTP_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/http-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val SHELL_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/shell-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val EXTERNAL_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/external-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val SEND_TASK_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/send-task.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
 
 // Sub process alike
-private val CALL_ACTIVITY_ICON = IconLoader.getIcon("/icons/popupmenu/call-activity.png", BaseCanvasPopupMenuProvider::class.java)
-private val SUB_PROCESS_ICON = IconLoader.getIcon("/icons/popupmenu/subprocess.png", BaseCanvasPopupMenuProvider::class.java)
-private val EVENT_SUB_PROCESS_ICON = IconLoader.getIcon("/icons/popupmenu/event-subprocess.png", BaseCanvasPopupMenuProvider::class.java)
-private val ADHOC_SUB_PROCESS_ICON = IconLoader.getIcon("/icons/popupmenu/adhoc-subprocess.png", BaseCanvasPopupMenuProvider::class.java)
+private val CALL_ACTIVITY_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/call-activity.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val SUB_PROCESS_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/subprocess.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val EVENT_SUB_PROCESS_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/event-subprocess.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val ADHOC_SUB_PROCESS_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/adhoc-subprocess.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
 
 // Gateway
-private val EXCLUSIVE_GATEWAY_ICON = IconLoader.getIcon("/icons/popupmenu/exclusive-gateway.png", BaseCanvasPopupMenuProvider::class.java)
-private val PARALLEL_GATEWAY_ICON = IconLoader.getIcon("/icons/popupmenu/parallel-gateway.png", BaseCanvasPopupMenuProvider::class.java)
-private val INCLUSIVE_GATEWAY_ICON = IconLoader.getIcon("/icons/popupmenu/inclusive-gateway.png", BaseCanvasPopupMenuProvider::class.java)
-private val EVENT_GATEWAY_ICON = IconLoader.getIcon("/icons/popupmenu/event-gateway.png", BaseCanvasPopupMenuProvider::class.java)
-private val COMPLEX_GATEWAY_ICON = IconLoader.getIcon("/icons/popupmenu/complex-gateway.png", BaseCanvasPopupMenuProvider::class.java)
+private val EXCLUSIVE_GATEWAY_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/exclusive-gateway.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val PARALLEL_GATEWAY_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/parallel-gateway.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val INCLUSIVE_GATEWAY_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/inclusive-gateway.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val EVENT_GATEWAY_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/event-gateway.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
+private val COMPLEX_GATEWAY_ICON = IconManager.getInstance().getIcon("/icons/popupmenu/complex-gateway.png", BaseCanvasPopupMenuProvider::class.java.classLoader)
 
 data class MenuItemDef(
     val name: String,
