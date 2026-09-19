@@ -18,7 +18,7 @@ class NoIconWithMultiInstanceMarkerShape(
     override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
         val area = super.doRender(ctx, shapeCtx)
         if (isMultiInstance()) {
-            ctx.canvas.drawTriggered(shapeCtx.shape, state().icons.triggered)
+            ctx.canvas.drawMultiInstance(shapeCtx.shape, state().icons.multiInstance)
         }
         return area
     }

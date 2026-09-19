@@ -274,6 +274,34 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         ))
     }
 
+    fun drawMultiInstance(shape: Rectangle2D.Float, icon: SvgIcon): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(shape.x, shape.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(shape.x + shape.width, shape.y + shape.height))
+        val iconSize = 14
+
+        if (rightBottom.x - leftTop.x < (iconMargin + iconSize) * 2) {
+            return Area(shape)
+        }
+
+        if (rightBottom.y - leftTop.y < (iconMargin + iconSize) * 1.5) {
+            return Area(shape)
+        }
+
+        val iconX = (rightBottom.x - iconSize - iconMargin).toInt()
+        val iconY = (leftTop.y + iconMargin).toInt()
+        val image = rasterizeSvg(icon, iconSize.toFloat(), iconSize.toFloat(), isUnderDarcula())
+        graphics2D.drawImage(image, iconX, iconY, iconSize, iconSize, null)
+
+        val iconTop = camera.fromCameraView(Point2D.Float(leftTop.x, leftTop.y + iconMargin + iconSize))
+        val iconBottom = camera.fromCameraView(Point2D.Float(rightBottom.x, rightBottom.y))
+        return Area(Rectangle2D.Float(
+            iconTop.x,
+            iconTop.y,
+            iconBottom.x - iconTop.x,
+            iconBottom.y - iconTop.y
+        ))
+    }
+
     fun drawRoundedRectWithIconAtBottom(shape: Rectangle2D.Float, icon: Icon, name: String?, background: Color, border: Color, textColor: Color): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.x, shape.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.x + shape.width, shape.y + shape.height))
