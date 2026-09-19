@@ -51,6 +51,11 @@ enum class Activiti7PropertyTypeDetails(val details: PropertyTypeDetails) {
     SIGNAL_REF(PropertyTypeDetails(PropertyType.SIGNAL_REF, "signalEventDefinition.signalRef", XmlType.ATTRIBUTE)),
     // END TODO
     COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "bpmn2:completionCondition.text", XmlType.CDATA)),
+    MULTI_INSTANCE_IS_SEQUENTIAL(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_IS_SEQUENTIAL, "bpmn2:multiInstanceLoopCharacteristics.isSequential", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_COLLECTION(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_COLLECTION, "bpmn2:multiInstanceLoopCharacteristics.activiti:collection", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_ELEMENT_VARIABLE(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_ELEMENT_VARIABLE, "bpmn2:multiInstanceLoopCharacteristics.activiti:elementVariable", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_LOOP_CARDINALITY(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_CARDINALITY, "bpmn2:multiInstanceLoopCharacteristics.loopCardinality", XmlType.CDATA)),
+    MULTI_INSTANCE_COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_COMPLETION_CONDITION, "bpmn2:multiInstanceLoopCharacteristics.completionCondition", XmlType.CDATA)),
     DEFAULT_FLOW(PropertyTypeDetails(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE))
 }
 

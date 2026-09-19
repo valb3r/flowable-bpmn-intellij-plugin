@@ -20,15 +20,22 @@ class Transaction: BpmnMappable<BpmnTransactionalSubProcess>, ProcessBody() {
     var documentation: String? = null
     @JacksonXmlProperty(isAttribute = true) var async: Boolean? = null
     @JacksonXmlProperty(isAttribute = true) var exclusive: Boolean? = null
+    var multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null
     @JsonIgnore var hasExternalDiagram: Boolean = false
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 
     override fun toElement(): BpmnTransactionalSubProcess {
-        return Mappers.getMapper(TransactionMapping::class.java).convertToDto(this)
+        return Mappers.getMapper(TransactionMapping::class.java).convertToDto(this).copy(
+            multiInstanceLoopCharacteristics = multiInstanceLoopCharacteristics?.toElement()
+        )
     }
 
     @Mapper(uses = [BpmnElementIdMapper::class])
     abstract class TransactionMapping {  // Default methods of Kotlin interfaces are not understood by MapStruct
+
+        @Mapping(target = "multiInstanceLoopCharacteristics", ignore = true)
+        @Mapping(target = "transactionalSubprocess", constant = "true")
+        abstract fun convertToDtoWithoutMultiInstance(input: Transaction) : BpmnTransactionalSubProcess
 
         fun mapNonCollapsed(input: List<Transaction>?) : List<BpmnTransactionalSubProcess>? {
             return input?.filter { !it.hasExternalDiagram }?.map { convertToDto(it) }
@@ -38,8 +45,7 @@ class Transaction: BpmnMappable<BpmnTransactionalSubProcess>, ProcessBody() {
             return input?.filter { it.hasExternalDiagram }?.map { convertToCollapsedDto(it) }
         }
 
-        @Mapping(target = "transactionalSubprocess", constant = "true")
-        abstract fun convertToDto(input: Transaction) : BpmnTransactionalSubProcess
+        fun convertToDto(input: Transaction) : BpmnTransactionalSubProcess = convertToDtoWithoutMultiInstance(input)
 
         @Mapping(target = "transactionalSubprocess", constant = "true")
         abstract fun convertToCollapsedDto(input: Transaction) : BpmnTransactionCollapsedSubprocess

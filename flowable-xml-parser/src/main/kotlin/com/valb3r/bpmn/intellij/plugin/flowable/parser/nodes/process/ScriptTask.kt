@@ -22,6 +22,7 @@ data class ScriptTask(
         @JacksonXmlProperty(isAttribute = false, localName = "script") val scriptBody: String?,
         @JacksonXmlProperty(isAttribute = true) val scriptFormat: String?,
         @JacksonXmlProperty(isAttribute = true) val autoStoreVariables: Boolean?,
+        val multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null,
         @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 ): BpmnMappable<BpmnScriptTask> {
 
@@ -32,12 +33,14 @@ data class ScriptTask(
     @Mapper(uses = [BpmnElementIdMapper::class])
     abstract class ScriptTaskMapping {
 
+        @Mapping(target = "multiInstanceLoopCharacteristics", ignore = true)
         @Mapping(source = "forCompensation", target = "isForCompensation")
-        protected abstract fun doConvertToDto(input: ScriptTask) : BpmnScriptTask
+        protected abstract fun doConvertToDtoWithMultiInstanceIgnored(input: ScriptTask) : BpmnScriptTask
 
         fun convertToDto(input: ScriptTask) : BpmnScriptTask {
-            val task = doConvertToDto(input)
+            val task = doConvertToDtoWithMultiInstanceIgnored(input)
             return task.copy(
+                multiInstanceLoopCharacteristics = input.multiInstanceLoopCharacteristics?.toElement(),
                 executionListener = input.extensionElements?.filterIsInstance<ExecutionListener>()?.map { ExeсutionListener(it.clazz, it.event, it.fields?.map { ListenerField(it.name, it.string) }) },
             )
         }

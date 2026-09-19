@@ -23,6 +23,7 @@ data class BusinessRuleTask(
         @JacksonXmlProperty(isAttribute = true) val rules: String?,
         @JacksonXmlProperty(isAttribute = true) val resultVariable: String?,
         @JacksonXmlProperty(isAttribute = true) val exclude: Boolean?,
+        val multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null,
         @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 ): BpmnMappable<BpmnBusinessRuleTask> {
 
@@ -33,12 +34,14 @@ data class BusinessRuleTask(
     @Mapper(uses = [BpmnElementIdMapper::class])
     abstract class BusinessRuleTaskMapping {
 
+        @Mapping(target = "multiInstanceLoopCharacteristics", ignore = true)
         @Mapping(source = "forCompensation", target = "isForCompensation")
-        protected abstract fun doConvertToDto(input: BusinessRuleTask) : BpmnBusinessRuleTask
+        protected abstract fun doConvertToDtoWithMultiInstanceIgnored(input: BusinessRuleTask) : BpmnBusinessRuleTask
 
         fun convertToDto(input: BusinessRuleTask) : BpmnBusinessRuleTask {
-            val task = doConvertToDto(input)
+            val task = doConvertToDtoWithMultiInstanceIgnored(input)
             return task.copy(
+                multiInstanceLoopCharacteristics = input.multiInstanceLoopCharacteristics?.toElement(),
                 executionListener = input.extensionElements?.filterIsInstance<ExecutionListener>()?.map { ExeсutionListener(it.clazz, it.event, it.fields?.map { ListenerField(it.name, it.string) }) },
             )
         }

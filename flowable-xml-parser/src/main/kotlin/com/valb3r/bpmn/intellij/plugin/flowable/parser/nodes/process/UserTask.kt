@@ -30,6 +30,7 @@ data class UserTask(
         @JacksonXmlProperty(isAttribute = true) val formFieldValidation: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val priority: String?,
         @JacksonXmlProperty(isAttribute = true) val skipExpression: String?,
+        val multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null,
         @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 ): BpmnMappable<BpmnUserTask> {
 
@@ -41,16 +42,18 @@ data class UserTask(
     @Mapper(uses = [BpmnElementIdMapper::class])
     abstract class UserTaskMapping {
 
+        @Mapping(target = "multiInstanceLoopCharacteristics", ignore = true)
+        @Mapping(source = "forCompensation", target = "isForCompensation")
+        protected abstract fun doConvertToDtoWithMultiInstanceIgnored(input: UserTask) : BpmnUserTask
+
         fun convertToDto(input: UserTask) : BpmnUserTask {
-            val task = doConvertToDto(input)
+            val task = doConvertToDtoWithMultiInstanceIgnored(input)
             return task.copy(
+                multiInstanceLoopCharacteristics = input.multiInstanceLoopCharacteristics?.toElement(),
                 formPropertiesExtension = input.extensionElements?.filterIsInstance<FormProperty>()?.map { mapFormProperty(it) },
                 executionListener = input.extensionElements?.filterIsInstance<ExecutionListener>()?.map { ExeсutionListener(it.clazz, it.event, it.fields?.map { ListenerField(it.name, it.string) }) },
             )
         }
-
-        @Mapping(source = "forCompensation", target = "isForCompensation")
-        protected abstract fun doConvertToDto(input: UserTask) : BpmnUserTask
 
         protected abstract fun mapFormProperty(input: FormProperty) : ExtensionFormProperty
     }

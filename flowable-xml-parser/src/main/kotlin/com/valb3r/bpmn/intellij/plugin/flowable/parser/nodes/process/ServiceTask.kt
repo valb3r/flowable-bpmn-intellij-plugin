@@ -32,6 +32,7 @@ data class ServiceTask(
     @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
     @JacksonXmlProperty(isAttribute = true) val useLocalScopeForResultVariable: Boolean?,
     @JacksonXmlProperty(isAttribute = true) val type: String?,
+    val multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null,
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null,
 ): BpmnMappable<BpmnServiceTask> {
 
@@ -41,12 +42,17 @@ data class ServiceTask(
 
     // Can't use interface due to:
     // https://github.com/mapstruct/mapstruct/issues/1577
-    @Mapper(uses = [BpmnElementIdMapper::class])
+    @Mapper(uses = [BpmnElementIdMapper::class, MultiInstanceLoopCharacteristics.Mapping::class])
     abstract class ServiceTaskMapping {
 
+        @Mapping(target = "multiInstanceLoopCharacteristics", ignore = true)
+        @Mapping(source = "forCompensation", target = "isForCompensation")
+        protected abstract fun doConvertToDtoWithMultiInstanceIgnored(input: ServiceTask) : BpmnServiceTask
+
         fun convertToDto(input: ServiceTask) : BpmnServiceTask {
-            val task = doConvertToDto(input)
+            val task = doConvertToDtoWithMultiInstanceIgnored(input)
             return task.copy(
+                    multiInstanceLoopCharacteristics = input.multiInstanceLoopCharacteristics?.toElement(),
                     fieldsExtension = input.extensionElements?.filterIsInstance<FieldExtensionElement>()?.map { ExtensionField(it.name, it.string, it.expression) },
                     extensionElementsMappingPayloadToEvent = input.extensionElements?.filterIsInstance<ExtensionElementMappingPayloadToEvent>()?.map { ExtensionEventPayload(it.source, it.target, it.type) },
                     extensionElementsMappingPayloadFromEvent = input.extensionElements?.filterIsInstance<ExtensionElementMappingPayloadFromEvent>()?.map { ExtensionEventPayload(it.source, it.target, it.type) },
@@ -57,9 +63,6 @@ data class ServiceTask(
                     executionListener = input.extensionElements?.filterIsInstance<ExecutionListener>()?.map { ExeсutionListener(it.clazz, it.event, it.fields?.map { ListenerField(it.name, it.string) })},
                 )
         }
-
-        @Mapping(source = "forCompensation", target = "isForCompensation")
-        protected abstract fun doConvertToDto(input: ServiceTask) : BpmnServiceTask
 
         private fun buildUnmappedProperties(vararg unmappedProp:UnmappedProperty) : List<UnmappedProperty>{
             return unmappedProp.filter { null != it.name && null != it.string }.map{ it }
