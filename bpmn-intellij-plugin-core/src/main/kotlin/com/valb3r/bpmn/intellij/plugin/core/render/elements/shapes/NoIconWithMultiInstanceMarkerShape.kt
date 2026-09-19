@@ -35,6 +35,11 @@ class NoIconWithMultiInstanceMarkerShape(
             PropertyType.MULTI_INSTANCE_ELEMENT_VARIABLE,
             PropertyType.MULTI_INSTANCE_LOOP_CARDINALITY,
             PropertyType.MULTI_INSTANCE_COMPLETION_CONDITION,
+            PropertyType.MULTI_INSTANCE_ELEMENT_INDEX_VARIABLE,
+            PropertyType.MULTI_INSTANCE_NO_WAIT_STATES_ASYNC_LEAVE,
+            PropertyType.MULTI_INSTANCE_LOOP_DATA_INPUT_REF,
+            PropertyType.MULTI_INSTANCE_INPUT_DATA_ITEM,
+            PropertyType.VARIABLE_AGGREGATION_TARGET,
         )
     }
 }

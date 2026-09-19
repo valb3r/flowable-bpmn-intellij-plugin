@@ -104,6 +104,20 @@ enum class PropertyType(
     MULTI_INSTANCE_ELEMENT_VARIABLE("multiInstanceLoopCharacteristics.elementVariable", "Multi-instance element variable", STRING),
     MULTI_INSTANCE_LOOP_CARDINALITY("multiInstanceLoopCharacteristics.loopCardinality", "Loop cardinality", T_EXPRESSION),
     MULTI_INSTANCE_COMPLETION_CONDITION("multiInstanceLoopCharacteristics.completionCondition", "Multi-instance completion condition", T_EXPRESSION),
+    MULTI_INSTANCE_ELEMENT_INDEX_VARIABLE("multiInstanceLoopCharacteristics.elementIndexVariable", "Multi-instance element index variable", STRING),
+    MULTI_INSTANCE_NO_WAIT_STATES_ASYNC_LEAVE("multiInstanceLoopCharacteristics.noWaitStatesAsyncLeave", "Optimize for only automatic steps", BOOLEAN),
+    MULTI_INSTANCE_LOOP_DATA_INPUT_REF("multiInstanceLoopCharacteristics.loopDataInputRef", "Loop data input reference", STRING),
+    MULTI_INSTANCE_INPUT_DATA_ITEM("multiInstanceLoopCharacteristics.inputDataItem", "Input data item", STRING),
+    VARIABLE_AGGREGATION_TARGET("multiInstanceLoopCharacteristics.variableAggregations.@target", "Target variable", STRING, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target", listenerOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),
+    VARIABLE_AGGREGATION_TARGET_EXPRESSION("multiInstanceLoopCharacteristics.variableAggregations.@targetExpression", "Target expression", T_EXPRESSION, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target"),
+    VARIABLE_AGGREGATION_DELEGATE_EXPRESSION("multiInstanceLoopCharacteristics.variableAggregations.@delegateExpression", "Delegate expression", T_EXPRESSION, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target"),
+    VARIABLE_AGGREGATION_CLASS("multiInstanceLoopCharacteristics.variableAggregations.@clazz", "Class", CLASS, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target"),
+    VARIABLE_AGGREGATION_CREATE_OVERVIEW("multiInstanceLoopCharacteristics.variableAggregations.@createOverviewVariable", "Create overview variable", BOOLEAN, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target"),
+    VARIABLE_AGGREGATION_STORE_AS_TRANSIENT("multiInstanceLoopCharacteristics.variableAggregations.@storeAsTransientVariable", "Store as transient variable", BOOLEAN, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target"),
+    VARIABLE_AGGREGATION_VARIABLE_SOURCE("multiInstanceLoopCharacteristics.variableAggregations.@definitions.@source", "Source variable", STRING, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION, FunctionalGroupType.VARIABLE_AGGREGATION_VARIABLE), indexInGroupArrayName = "target.source", listenerOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),
+    VARIABLE_AGGREGATION_VARIABLE_SOURCE_EXPRESSION("multiInstanceLoopCharacteristics.variableAggregations.@definitions.@sourceExpression", "Source expression", T_EXPRESSION, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION, FunctionalGroupType.VARIABLE_AGGREGATION_VARIABLE), indexInGroupArrayName = "target.source"),
+    VARIABLE_AGGREGATION_VARIABLE_TARGET("multiInstanceLoopCharacteristics.variableAggregations.@definitions.@target", "Target variable", STRING, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION, FunctionalGroupType.VARIABLE_AGGREGATION_VARIABLE), indexInGroupArrayName = "target.source"),
+    VARIABLE_AGGREGATION_VARIABLE_TARGET_EXPRESSION("multiInstanceLoopCharacteristics.variableAggregations.@definitions.@targetExpression", "Target expression", T_EXPRESSION, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION, FunctionalGroupType.VARIABLE_AGGREGATION_VARIABLE), indexInGroupArrayName = "target.source"),
     DEFAULT_FLOW("defaultElement", "Default flow element", ATTACHED_SEQUENCE_SELECT, "defaultElement", false, ID),
     DEFAULT_FLOW_ON_SEQUENCE("defaultElement_onSequence", "Default flow element", BOOLEAN, externalProperty = DefaultFlowExternalProp(), isUsedOnlyBy = setOf(BpmnSequenceFlow::class)),
     IS_TRANSACTIONAL_SUBPROCESS("transactionalSubprocess", "Is transactional subprocess", BOOLEAN, "transactionalSubprocess", elementUpdateChangesClass = true),
@@ -259,6 +273,26 @@ enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewEl
     EXECUTION_LISTENER_FILED("Fields", actionCaption = "Add fields injection", actionResult = NewElem("EXECUTION_LISTENER_FIELD_NAME", "Name %d"),
         actionUiOnlyResult = listOf(
             NewElem("EXECUTION_LISTENER_FIELD_STRING", ""),
+        )
+    ),
+    VARIABLE_AGGREGATION("Variable aggregations", actionCaption = "Add aggregation", actionResult = NewElem("VARIABLE_AGGREGATION_TARGET", "Aggregation %d"),
+        actionUiOnlyResult = listOf(
+            NewElem("VARIABLE_AGGREGATION_TARGET_EXPRESSION", ""),
+            NewElem("VARIABLE_AGGREGATION_DELEGATE_EXPRESSION", ""),
+            NewElem("VARIABLE_AGGREGATION_CLASS", ""),
+            NewElem("VARIABLE_AGGREGATION_CREATE_OVERVIEW", ""),
+            NewElem("VARIABLE_AGGREGATION_STORE_AS_TRANSIENT", ""),
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_SOURCE", "", uiOnlyaddedIndex = listOf("")),
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_SOURCE_EXPRESSION", "", uiOnlyaddedIndex = listOf("")),
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_TARGET", "", uiOnlyaddedIndex = listOf("")),
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_TARGET_EXPRESSION", "", uiOnlyaddedIndex = listOf(""))
+        )
+    ),
+    VARIABLE_AGGREGATION_VARIABLE("Variable definitions", actionCaption = "Add variable", actionResult = NewElem("VARIABLE_AGGREGATION_VARIABLE_SOURCE", "Variable %d"),
+        actionUiOnlyResult = listOf(
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_SOURCE_EXPRESSION", ""),
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_TARGET", ""),
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_TARGET_EXPRESSION", "")
         )
     )
 }
