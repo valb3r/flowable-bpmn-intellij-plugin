@@ -26,6 +26,6 @@ class MultiInstanceLoopCharacteristics {
     )
 
     class Mapping {
-        fun convertToDto(input: MultiInstanceLoopCharacteristics): BpmnMultiInstanceLoopCharacteristics = input.toElement()
+        fun convertToDto(input: MultiInstanceLoopCharacteristics?): BpmnMultiInstanceLoopCharacteristics? = input?.toElement()
     }
 }
