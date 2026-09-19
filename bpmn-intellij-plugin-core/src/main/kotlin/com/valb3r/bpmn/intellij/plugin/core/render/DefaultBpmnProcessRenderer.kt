@@ -247,7 +247,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             is BpmnTransactionalSubProcess -> NoIconDoubleBorderShape(id, bpmn.id, shape, state, areaType = AreaType.SHAPE_THAT_NESTS)
             is BpmnCollapsedSubprocess -> ExpandableShapeNoIcon(id, bpmn.id, isCollapsed(bpmn.id, state), icons.plus, icons.minus, shape, state, areaType = AreaType.SHAPE_THAT_NESTS)
             is BpmnTransactionCollapsedSubprocess -> ExpandableShapeNoIcon(id, bpmn.id, isCollapsed(bpmn.id, state), icons.plus, icons.minus, shape, state, areaType = AreaType.SHAPE_THAT_NESTS)
-            is BpmnCallActivity -> NoIconShape(id, bpmn.id, shape, state)
+            is BpmnCallActivity -> NoIconWithMultiInstanceMarkerShape(id, bpmn.id, shape, state)
             is BpmnAdHocSubProcess -> BottomMiddleIconShape(id, bpmn.id, icons.tilde, shape, state, areaType = AreaType.SHAPE_THAT_NESTS)
             is BpmnExclusiveGateway -> IconShape(id, bpmn.id, icons.exclusiveGateway, shape, state)
             is BpmnParallelGateway -> IconShape(id, bpmn.id, icons.parallelGateway, shape, state)
