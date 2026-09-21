@@ -131,6 +131,10 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
 
         // Linking elements
         body.sequenceFlow?.forEach { fillFor(parentId, it) }
+
+        // Artifacts
+        body.textAnnotation?.forEach { fillFor(parentId, it) }
+        body.association?.forEach { fillFor(parentId, it) }
     }
 
     private fun reassignParentsBasedOnTargetRef(

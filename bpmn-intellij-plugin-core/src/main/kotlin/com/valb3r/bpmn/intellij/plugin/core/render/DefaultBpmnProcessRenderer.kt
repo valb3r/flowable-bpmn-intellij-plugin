@@ -3,6 +3,8 @@ package com.valb3r.bpmn.intellij.plugin.core.render
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnAssociation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
@@ -174,9 +176,12 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     }
 
     private fun createShapes(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
-        state().currentState.shapes.forEach {
+        state().currentState.shapes.forEach shapeLoop@ {
             val elem = state().currentState.elementByBpmnId[it.bpmnElement]
             elem?.let { bpmn ->
+                if (bpmn.element is BpmnAssociation) {
+                    return@shapeLoop
+                }
                 mapFromShape(state, it.id, it, bpmn.element).let { shape ->
                     elements += shape
                     elementsById[bpmn.id] = shape
@@ -187,7 +192,13 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
     private fun createEdges(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
         state().currentState.edges.forEach {
-            val edge = EdgeRenderElement(it.id, it.bpmnElement!!, it, state)
+            val edge = EdgeRenderElement(
+                it.id,
+                it.bpmnElement!!,
+                it,
+                state,
+                state().currentState.elementByBpmnId[it.bpmnElement]?.element !is BpmnAssociation,
+            )
             elements += edge
             elementsById[it.bpmnElement!!] = edge
         }
@@ -254,6 +265,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             is BpmnInclusiveGateway -> IconShape(id, bpmn.id, icons.inclusiveGateway, shape, state)
             is BpmnEventGateway -> IconShape(id, bpmn.id, icons.eventGateway, shape, state)
             is BpmnComplexGateway -> IconShape(id, bpmn.id, icons.complexGateway, shape, state)
+            is BpmnTextAnnotation -> TextAnnotationShape(id, bpmn.id, shape, state)
             is BpmnEndEvent -> EllipticIconOnLayerShape(id, bpmn.id, icons.endEvent, shape, state, Colors.END_EVENT)
             is BpmnEndCancelEvent -> EllipticIconOnLayerShape(id, bpmn.id, icons.cancelEndEvent, shape, state, Colors.END_EVENT)
             is BpmnEndErrorEvent -> EllipticIconOnLayerShape(id, bpmn.id, icons.errorEndEvent, shape, state, Colors.END_EVENT)

@@ -108,6 +108,26 @@ open class ProcessBody {
     // Linking elements
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
     var sequenceFlow: List<SequenceFlow>? = null
+
+    // Artifacts
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var textAnnotation: List<TextAnnotation>? = null
+
+    @JsonMerge @JacksonXmlElementWrapper(useWrapping = false)
+    var association: List<Association>? = null
+}
+
+data class Association(
+    @JacksonXmlProperty(isAttribute = true) val id: String,
+    @JacksonXmlProperty(isAttribute = true) val sourceRef: String?,
+    @JacksonXmlProperty(isAttribute = true) val targetRef: String?,
+    @JacksonXmlProperty(isAttribute = true) val associationDirection: String?,
+) {
+    class Mapping {
+        fun convertToDto(input: Association) = com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnAssociation(
+            BpmnElementId(input.id), input.sourceRef, input.targetRef, input.associationDirection
+        )
+    }
 }
 
 // For mixed lists in XML we need to have JsonSetter/JsonMerge on field
@@ -319,7 +339,9 @@ class ProcessNode: BpmnMappable<BpmnProcess>, ProcessBody() {
         UserTask.UserTaskMapping::class,
         StartEventNode.StartEventNodeMapping::class,
         SequenceFlow.Mapping::class,
-        MultiInstanceLoopCharacteristics.Mapping::class
+        MultiInstanceLoopCharacteristics.Mapping::class,
+        TextAnnotation.Mapping::class,
+        Association.Mapping::class
     ])
     interface BodyMapping {
 

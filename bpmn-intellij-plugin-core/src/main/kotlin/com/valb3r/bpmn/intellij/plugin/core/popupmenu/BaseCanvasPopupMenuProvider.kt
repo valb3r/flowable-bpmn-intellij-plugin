@@ -8,6 +8,7 @@ import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.ui.IconManager
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.catching.*
@@ -184,6 +185,7 @@ abstract class BaseCanvasPopupMenuProvider(private val project: Project) : Canva
     protected val SHELL_TASK = MenuItemDef("Shell task",  SHELL_TASK_ICON, {project, sceneLocation, focus -> ShapeCreator(project, BpmnShellTask::class, sceneLocation, focus)}, {project, focus ->  ShapeTypeChange(project, BpmnShellTask::class, focus)}, 'b')
     protected val EXTERNAL_TASK = MenuItemDef("External Worker task", EXTERNAL_TASK_ICON, {project, sceneLocation, focus -> ShapeCreator(project, BpmnExternalTask::class, sceneLocation, focus)}, {project, focus ->  ShapeTypeChange(project, BpmnExternalTask::class, focus)}, 'w')
     protected val SEND_EVENT_TASK = MenuItemDef("Send event task", SEND_TASK_ICON, {project, sceneLocation, focus -> ShapeCreator(project, BpmnSendEventTask::class, sceneLocation, focus)}, {project, focus ->  ShapeTypeChange(project, BpmnSendEventTask::class, focus)}, 't')
+    protected val TEXT_ANNOTATION = MenuItemDef("Text annotation", TASK_ICON, {project, sceneLocation, focus -> ShapeCreator(project, BpmnTextAnnotation::class, sceneLocation, focus)}, {project, focus -> ShapeTypeChange(project, BpmnTextAnnotation::class, focus)}, 'a')
 
     protected fun addItem(menu: JPopupMenu, text: String, icon: Icon, listener: ActionListener) {
         val item = JBMenuItem(text, icon)
