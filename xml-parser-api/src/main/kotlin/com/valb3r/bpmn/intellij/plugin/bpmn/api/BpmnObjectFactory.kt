@@ -1,6 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnAssociation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WithDiagramId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
@@ -11,6 +12,7 @@ interface BpmnObjectFactory {
 
     fun <T: WithBpmnId> newBpmnObject(clazz: KClass<T>): T
     fun <T: WithBpmnId> newOutgoingSequence(sourceRef: T): BpmnSequenceFlow
+    fun <T: WithBpmnId> newAssociation(sourceRef: T): BpmnAssociation
     fun <T: WithBpmnId> propertiesOf(obj: T):  PropertyTable
     fun <T: WithDiagramId> newDiagramObject(clazz: KClass<T>, forBpmnObject: WithBpmnId): T
     fun propertyTypes(): List<PropertyType>

@@ -80,6 +80,8 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     MULTI_INSTANCE_NO_WAIT_STATES_ASYNC_LEAVE(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_NO_WAIT_STATES_ASYNC_LEAVE, "multiInstanceLoopCharacteristics.flowable:noWaitStatesAsyncLeave", XmlType.ATTRIBUTE)),
     MULTI_INSTANCE_LOOP_DATA_INPUT_REF(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_DATA_INPUT_REF, "multiInstanceLoopCharacteristics.loopDataInputRef", XmlType.CDATA)),
     MULTI_INSTANCE_INPUT_DATA_ITEM(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_INPUT_DATA_ITEM, "multiInstanceLoopCharacteristics.inputDataItem.name", XmlType.ATTRIBUTE)),
+    TEXT_ANNOTATION_TEXT(PropertyTypeDetails(PropertyType.TEXT_ANNOTATION_TEXT, "text.text", XmlType.CDATA)),
+    TEXT_ANNOTATION_TEXT_FORMAT(PropertyTypeDetails(PropertyType.TEXT_ANNOTATION_TEXT_FORMAT, "textFormat", XmlType.ATTRIBUTE)),
     VARIABLE_AGGREGATION_TARGET(PropertyTypeDetails(PropertyType.VARIABLE_AGGREGATION_TARGET, "multiInstanceLoopCharacteristics.extensionElements.flowable:variableAggregation?target=@.target", XmlType.ATTRIBUTE)),
     VARIABLE_AGGREGATION_TARGET_EXPRESSION(PropertyTypeDetails(PropertyType.VARIABLE_AGGREGATION_TARGET_EXPRESSION, "multiInstanceLoopCharacteristics.extensionElements.flowable:variableAggregation?target=@.targetExpression", XmlType.ATTRIBUTE)),
     VARIABLE_AGGREGATION_DELEGATE_EXPRESSION(PropertyTypeDetails(PropertyType.VARIABLE_AGGREGATION_DELEGATE_EXPRESSION, "multiInstanceLoopCharacteristics.extensionElements.flowable:variableAggregation?target=@.delegateExpression", XmlType.ATTRIBUTE)),

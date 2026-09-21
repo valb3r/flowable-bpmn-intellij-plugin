@@ -1,6 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnAssociation
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
@@ -92,7 +94,11 @@ data class BpmnProcessBody(
         val complexGateway: List<BpmnComplexGateway>?,
 
         // Linking elements
-        val sequenceFlow: List<BpmnSequenceFlow>?
+        val sequenceFlow: List<BpmnSequenceFlow>?,
+
+        // Artifacts
+        val textAnnotation: List<BpmnTextAnnotation>? = null,
+        val association: List<BpmnAssociation>? = null,
 )
 
 data class BpmnProcess(

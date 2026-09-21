@@ -20,6 +20,8 @@ enum class ActivitiPropertyTypeDetails(val details: PropertyTypeDetails) {
     ID(PropertyTypeDetails(PropertyType.ID, "id", XmlType.ATTRIBUTE)),
     NAME(PropertyTypeDetails(PropertyType.NAME,"name", XmlType.ATTRIBUTE)),
     DOCUMENTATION(PropertyTypeDetails(PropertyType.DOCUMENTATION, "documentation.text", XmlType.CDATA, forceFirst = true)),
+    TEXT_ANNOTATION_TEXT(PropertyTypeDetails(PropertyType.TEXT_ANNOTATION_TEXT, "text.text", XmlType.CDATA)),
+    TEXT_ANNOTATION_TEXT_FORMAT(PropertyTypeDetails(PropertyType.TEXT_ANNOTATION_TEXT_FORMAT, "textFormat", XmlType.ATTRIBUTE)),
     IS_FOR_COMPENSATION(PropertyTypeDetails(PropertyType.IS_FOR_COMPENSATION, "isForCompensation", XmlType.ATTRIBUTE)),
     ASYNC(PropertyTypeDetails(PropertyType.ASYNC, "activiti:async", XmlType.ATTRIBUTE)),
     ASSIGNEE(PropertyTypeDetails(PropertyType.ASSIGNEE, "activiti:assignee", XmlType.ATTRIBUTE)),

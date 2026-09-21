@@ -27,7 +27,8 @@ abstract class BaseEdgeRenderElement(
         bpmnElementId: BpmnElementId,
         protected val edge: EdgeWithIdentifiableWaypoints,
         private val edgeColor: Colors,
-        state: () -> RenderState
+        state: () -> RenderState,
+        private val arrowAtEnd: Boolean = true,
 ): BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 
     private val anchors = computeAnchors()
@@ -53,7 +54,7 @@ abstract class BaseEdgeRenderElement(
 
         updatedAnchors.forEachIndexed {pos, waypoint ->
             when {
-                pos == updatedAnchors.size - 1 -> area.add(ctx.canvas.drawLineWithArrow(updatedAnchors[pos - 1], waypoint, color(isActiveEdge(pos, activeWaypoints), edgeColor)))
+                pos == updatedAnchors.size - 1 && arrowAtEnd -> area.add(ctx.canvas.drawLineWithArrow(updatedAnchors[pos - 1], waypoint, color(isActiveEdge(pos, activeWaypoints), edgeColor)))
                 pos > 0 -> area.add(ctx.canvas.drawLine(updatedAnchors[pos - 1], waypoint, color(isActiveEdge(pos, activeWaypoints), edgeColor)))
             }
         }

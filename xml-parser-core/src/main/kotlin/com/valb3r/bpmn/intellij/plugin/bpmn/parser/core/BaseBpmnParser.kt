@@ -11,6 +11,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnAssociation
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
@@ -381,6 +383,7 @@ abstract class BaseBpmnParser: BpmnParser {
         is BpmnMuleTask -> createServiceTaskWithType(diagramParent, "mule")
         is BpmnDecisionTask -> createServiceTaskWithType(diagramParent, "dmn")
         is BpmnShellTask -> createServiceTaskWithType(diagramParent, "shell")
+        is BpmnTextAnnotation -> diagramParent.addElement(modelNs().named("textAnnotation"))
 
         // Sub processes
         is BpmnCallActivity -> diagramParent.addElement(modelNs().named("callActivity"))
@@ -452,6 +455,7 @@ abstract class BaseBpmnParser: BpmnParser {
 
         val newNode = when (update.bpmnObject.element) {
             is BpmnSequenceFlow -> diagramParent.addElement(modelNs().named("sequenceFlow"))
+            is BpmnAssociation -> diagramParent.addElement(modelNs().named("association"))
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
 

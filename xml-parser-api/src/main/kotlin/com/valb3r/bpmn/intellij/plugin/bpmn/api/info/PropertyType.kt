@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.info
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartErrorEvent
@@ -108,6 +109,8 @@ enum class PropertyType(
     MULTI_INSTANCE_NO_WAIT_STATES_ASYNC_LEAVE("multiInstanceLoopCharacteristics.noWaitStatesAsyncLeave", "Optimize for only automatic steps", BOOLEAN),
     MULTI_INSTANCE_LOOP_DATA_INPUT_REF("multiInstanceLoopCharacteristics.loopDataInputRef", "Loop data input reference", STRING),
     MULTI_INSTANCE_INPUT_DATA_ITEM("multiInstanceLoopCharacteristics.inputDataItem", "Input data item", STRING),
+    TEXT_ANNOTATION_TEXT("text.text", "Text", STRING, multiline = true, isUsedOnlyBy = setOf(BpmnTextAnnotation::class)),
+    TEXT_ANNOTATION_TEXT_FORMAT("textFormat", "Text format", STRING, isUsedOnlyBy = setOf(BpmnTextAnnotation::class)),
     VARIABLE_AGGREGATION_TARGET("multiInstanceLoopCharacteristics.variableAggregations.@target", "Target variable", STRING, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target", listenerOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),
     VARIABLE_AGGREGATION_TARGET_EXPRESSION("multiInstanceLoopCharacteristics.variableAggregations.@targetExpression", "Target expression", T_EXPRESSION, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target"),
     VARIABLE_AGGREGATION_DELEGATE_EXPRESSION("multiInstanceLoopCharacteristics.variableAggregations.@delegateExpression", "Delegate expression", T_EXPRESSION, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target"),

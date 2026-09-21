@@ -148,6 +148,41 @@ open class ProcessBody {
     @JsonMerge
     @JacksonXmlElementWrapper(useWrapping = false)
     var sequenceFlow: List<SequenceFlow>? = null
+
+    @JsonMerge
+    @JacksonXmlElementWrapper(useWrapping = false)
+    var textAnnotation: List<TextAnnotation>? = null
+
+    @JsonMerge
+    @JacksonXmlElementWrapper(useWrapping = false)
+    var association: List<Association>? = null
+}
+
+data class Association(
+    @JacksonXmlProperty(isAttribute = true) val id: String,
+    @JacksonXmlProperty(isAttribute = true) val sourceRef: String?,
+    @JacksonXmlProperty(isAttribute = true) val targetRef: String?,
+    @JacksonXmlProperty(isAttribute = true) val associationDirection: String?,
+) {
+    class Mapping {
+        fun convertToDto(input: Association) = com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnAssociation(
+            BpmnElementId(input.id), input.sourceRef, input.targetRef, input.associationDirection
+        )
+    }
+}
+
+data class TextAnnotation(
+    @JacksonXmlProperty(isAttribute = true) val id: String,
+    @JacksonXmlProperty(isAttribute = true) val textFormat: String?,
+    val text: String?,
+) {
+    @Mapper(uses = [BpmnElementIdMapper::class])
+    interface Mapping {
+        fun map(input: String?): com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.TextAnnotationText? =
+            input?.let { com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.TextAnnotationText(it) }
+
+        fun convertToDto(input: TextAnnotation): com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
+    }
 }
 
 // For mixed lists in XML we need to have JsonSetter/JsonMerge on field
@@ -202,7 +237,10 @@ class ProcessNode : BpmnMappable<BpmnProcess>, ProcessBody() {
 
     private fun mapBody(body: ProcessBody): BpmnProcessBody {
         val bodyMapper = cachedMapper(BodyMapping::class.java)
-        return fillBodyWithDedicatedElements(bodyMapper.convertToDto(body))
+        val sequenceFlowMapper = cachedMapper(SequenceFlow.Mapping::class.java)
+        return fillBodyWithDedicatedElements(bodyMapper.convertToDto(body)).copy(
+            sequenceFlow = body.sequenceFlow?.map { sequenceFlowMapper.convertToDto(it) }
+        )
     }
 
     private fun fillBodyWithDedicatedElements(processBody: BpmnProcessBody): BpmnProcessBody {
@@ -533,8 +571,9 @@ class ProcessNode : BpmnMappable<BpmnProcess>, ProcessBody() {
             ScriptTask.ScriptTaskMapping::class,
             UserTask.UserTaskMapping::class,
             StartEventNode.StartEventNodeMapping::class,
-            SequenceFlow.Mapping::class,
-            MultiInstanceLoopCharacteristics.Mapping::class
+            MultiInstanceLoopCharacteristics.Mapping::class,
+            TextAnnotation.Mapping::class,
+            Association.Mapping::class
         ]
     )
     interface BodyMapping {

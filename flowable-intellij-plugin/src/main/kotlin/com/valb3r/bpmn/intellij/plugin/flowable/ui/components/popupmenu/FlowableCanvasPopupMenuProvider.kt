@@ -46,6 +46,7 @@ class FlowableCanvasPopupMenuProvider(val project: Project) : BaseCanvasPopupMen
         menu.addNewElementItem(sceneLocation, focus, EVENT_SUB_PROCESS)
         menu.addNewElementItem(sceneLocation, focus, CALL_ACTIVITY)
         menu.addNewElementItem(sceneLocation, focus, ADHOC_SUB_PROCESS)
+        menu.addNewElementItem(sceneLocation, focus, TEXT_ANNOTATION)
         return menu
     }
 

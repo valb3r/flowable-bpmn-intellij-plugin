@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.core.render.elements.shapes
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
@@ -57,6 +58,7 @@ abstract class ShapeRenderElement(
         val elem = state().currentState.elementByDiagramId[shape.id]
         val props = state().currentState.elemPropertiesByStaticElementId[elem]
         val name = props?.get(PropertyType.NAME)?.value as String?
+            ?: props?.get(PropertyType.TEXT_ANNOTATION_TEXT)?.value as String?
 
         state().ctx.interactionContext.dragEndCallbacks[elementId] = {
             dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex> -> onDragEnd(dx, dy, droppedOn, allDroppedOnAreas)
@@ -332,30 +334,37 @@ abstract class ShapeRenderElement(
 
         val sourceElem = state().currentState.elementByBpmnId[bpmnElementId] ?: return mutableListOf()
 
-        val newSequenceBpmn = newElementsFactory(state().ctx.project).newOutgoingSequence(sourceElem.element)
+        val newConnection = if (sourceElem.element is BpmnTextAnnotation) {
+            newElementsFactory(state().ctx.project).newAssociation(sourceElem.element)
+        } else {
+            newElementsFactory(state().ctx.project).newOutgoingSequence(sourceElem.element)
+        }
         val anchors = findSequenceAnchors(targetArea) ?: return mutableListOf()
         val notYetExistingDiagramId = DiagramElementId("")
         val sourceBounds = shape.rectBounds()
         val firstAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.first, Point2D.Float(sourceBounds.centerX.toFloat(), sourceBounds.centerY.toFloat()))
         val secondAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.second, anchors.second)
-        val newSequenceDiagram = newElementsFactory(state().ctx.project).newDiagramObject(EdgeElement::class, newSequenceBpmn)
+        val newSequenceDiagram = newElementsFactory(state().ctx.project).newDiagramObject(EdgeElement::class, newConnection)
                 .copy(waypoint = listOf(
                         WaypointElement(firstAnchorCompensated.x, firstAnchorCompensated.y),
                         WaypointElement(secondAnchorCompensated.x, secondAnchorCompensated.y)
                 ))
 
-        val props = newElementsFactory(state().ctx.project).propertiesOf(newSequenceBpmn)
+        val props = newElementsFactory(state().ctx.project).propertiesOf(newConnection)
         props[PropertyType.TARGET_REF] = Property(droppedOn.id)
 
-        return mutableListOf(
+        val events = mutableListOf<Event>(
                 BpmnEdgeObjectAddedEvent(
-                        WithParentId(parentForRelatedSequenceElem().bpmnElementId, newSequenceBpmn),
+                        WithParentId(parentForRelatedSequenceElem().bpmnElementId, newConnection),
                         EdgeElementState(newSequenceDiagram),
                         props
-                ),
-                StringValueUpdatedEvent(bpmnElementId, PropertyType.BPMN_OUTGOING, newSequenceBpmn.id.id, propertyIndex = listOf(newSequenceBpmn.id.id)),
-                StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_INCOMING, newSequenceBpmn.id.id, propertyIndex = listOf(newSequenceBpmn.id.id))
+                )
         )
+        if (newConnection is BpmnSequenceFlow) {
+            events += StringValueUpdatedEvent(bpmnElementId, PropertyType.BPMN_OUTGOING, newConnection.id.id, propertyIndex = listOf(newConnection.id.id))
+            events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_INCOMING, newConnection.id.id, propertyIndex = listOf(newConnection.id.id))
+        }
+        return events
     }
 
     private fun findSequenceAnchors(droppedOnTarget: AreaWithZindex): Pair<Point2D.Float, Point2D.Float>? {

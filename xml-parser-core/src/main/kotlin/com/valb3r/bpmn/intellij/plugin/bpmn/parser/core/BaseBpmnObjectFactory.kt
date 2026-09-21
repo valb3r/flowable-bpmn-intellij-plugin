@@ -7,7 +7,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnObjectFactory
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnAssociation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.TextAnnotationText
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ConditionExpression
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
@@ -88,6 +91,7 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
             BpmnIntermediateNoneThrowingEvent::class -> BpmnIntermediateNoneThrowingEvent(generateBpmnId())
             BpmnIntermediateSignalThrowingEvent::class -> BpmnIntermediateSignalThrowingEvent(generateBpmnId(), signalEventDefinition = BpmnSignalEventDefinition(null))
             BpmnIntermediateEscalationThrowingEvent::class -> BpmnIntermediateEscalationThrowingEvent(generateBpmnId())
+            BpmnTextAnnotation::class -> BpmnTextAnnotation(generateBpmnId(), TextAnnotationText(""))
             else -> throw IllegalArgumentException("Can't create class: " + clazz.qualifiedName)
         }
 
@@ -126,14 +130,19 @@ abstract class BaseBpmnObjectFactory : BpmnObjectFactory {
         }
     }
 
+    override fun <T : WithBpmnId> newAssociation(sourceRef: T): BpmnAssociation {
+        return BpmnAssociation(generateBpmnId(), sourceRef.id.id, "", "None")
+    }
+
     override fun <T : WithBpmnId> propertiesOf(obj: T): PropertyTable {
         val table = when (obj) {
             is BpmnStartEventAlike, is EndEventAlike, is BpmnBoundaryEventAlike, is BpmnTaskAlike, is BpmnGatewayAlike,
-            is IntermediateCatchingEventAlike, is IntermediateThrowingEventAlike, is BpmnProcess
+            is IntermediateCatchingEventAlike, is IntermediateThrowingEventAlike, is BpmnProcess, is BpmnTextAnnotation
             -> processDtoToPropertyMap(obj)
 
             is BpmnStructuralElementAlike -> fillForCallActivity(obj)
             is BpmnSequenceFlow -> fillForSequenceFlow(obj)
+            is BpmnAssociation -> processDtoToPropertyMap(obj)
             else -> throw IgnorableParserException("Can't parse properties of element with ID ${obj.id.id} (${obj.javaClass.simpleName})")
         }
         
