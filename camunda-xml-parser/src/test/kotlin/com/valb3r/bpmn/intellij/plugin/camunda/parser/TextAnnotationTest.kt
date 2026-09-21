@@ -12,25 +12,21 @@ internal class TextAnnotationTest {
     @Test
     fun `text annotations are parsed exposed and updated`() {
         val parser = CamundaParser()
-        val parsed = parser.parse("popurri.bpmn".asResource()!!)
-        val annotation = parsed.process.body!!.textAnnotation!!.single { it.id.id == "textAnnotationId" }
+        val parsed = parser.parse("text-annotation.bpmn".asResource()!!)
+        val annotation = parsed.process.body!!.textAnnotation!!.single()
 
         annotation.text!!.text.shouldBeEqualTo("Text annotation")
         annotation.textFormat.shouldBeEqualTo("text/plain")
+        parsed.process.body!!.association!!.single().targetRef.shouldBeEqualTo("textAnnotationId")
         parsed.propsOf("textAnnotationId")[PropertyType.TEXT_ANNOTATION_TEXT]
             .shouldBeEqualTo(Property("Text annotation"))
 
         val updated = readAndUpdateProcess(
             parser,
-            "popurri.bpmn",
-            StringValueUpdatedEvent(
-                BpmnElementId("textAnnotationId"),
-                PropertyType.TEXT_ANNOTATION_TEXT,
-                "Updated annotation text",
-            ),
+            "text-annotation.bpmn",
+            StringValueUpdatedEvent(BpmnElementId("textAnnotationId"), PropertyType.TEXT_ANNOTATION_TEXT, "Updated annotation text"),
         )
 
-        updated.process.body!!.textAnnotation!!.single { it.id.id == "textAnnotationId" }.text!!.text
-            .shouldBeEqualTo("Updated annotation text")
+        updated.process.body!!.textAnnotation!!.single().text!!.text.shouldBeEqualTo("Updated annotation text")
     }
 }
