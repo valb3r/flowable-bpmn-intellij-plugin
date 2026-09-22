@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.activiti.plugin
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
@@ -34,8 +35,8 @@ class ActivitiBpmnPluginToolWindowFactory: ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         log.info("Creating tool window content")
-        currentSettingsStateProvider.set { project.getService(ActivitiBpmnPluginSettingsState::class.java) }
-        currentAdvertisementStateProvider.set { project.getService(ActivitiAdvertisementState::class.java) }
+        currentSettingsStateProvider.set { ServiceManager.getService(ActivitiBpmnPluginSettingsState::class.java) }
+        currentAdvertisementStateProvider.set { ServiceManager.getService(ActivitiAdvertisementState::class.java) }
 
         val bpmnWindow = BpmnPluginToolWindow(
             project,
