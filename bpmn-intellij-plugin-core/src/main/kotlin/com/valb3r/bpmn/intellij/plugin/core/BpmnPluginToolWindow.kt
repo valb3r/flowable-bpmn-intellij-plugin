@@ -137,7 +137,7 @@ open class BpmnPluginToolWindow(
 
     fun hackFixForMacOsScrollbars() {
         // Preventing scrollbar thumb disappearing on MacOS, it is default behavior there, but is undesired for diagram
-        if (!SystemInfo.isMac) {
+        if (!SystemInfo.isMac || !::canvasVScroll.isInitialized || !::canvasHScroll.isInitialized) {
             return
         }
         
