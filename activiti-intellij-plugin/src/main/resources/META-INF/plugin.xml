@@ -4,7 +4,7 @@
     <name>Activiti BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.5.4.4</version>
+    <version>0.5.5</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -40,6 +40,21 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+      <p>0.5.5:</p>
+        <ul>
+          <li>
+            Fixed compatibility issue with IntelliJ 2026+
+          </li>
+          <li>
+            Minimal version of JetBrains apps 2025+
+          </li>
+          <li>
+            Support for multi-instance properties
+          </li>
+          <li>
+            Support for text annotations
+          </li>
+        </ul>
       <p>0.5.4.4:</p>
         <ul>
           <li>
@@ -47,36 +62,6 @@
           </li>
           <li>
             Support for 'Select All' elements via Ctrl-A or Cmd-A (MacOS)
-          </li>
-        </ul>
-      <p>0.5.4.3:</p>
-        <ul>
-          <li>
-            XML injections to the expressions of 'sendTask' element
-          </li>
-          <li>
-            Support for 'formKey' on startEvent
-          </li>
-          <li>
-            Remove deprecated methods usage
-          </li>
-        </ul>
-      <p>0.5.4.2:</p>
-        <ul>
-          <li>
-            Hotfix: Support for IJ Community edition 2023.2
-          </li>
-        </ul>
-      <p>0.5.4:</p>
-        <ul>
-          <li>
-            Initial support for IJ Community Edition and other JB IDEs (limited language injection support compared to IU)
-          </li>
-          <li>
-            Improved language injection (IJ Ultimate)
-          </li>
-          <li>
-            Fixed: Language injection into XML was using hardcoded extension list
           </li>
         </ul>
     ]]></change-notes>
