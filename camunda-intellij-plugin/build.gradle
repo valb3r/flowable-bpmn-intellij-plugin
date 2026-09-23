@@ -40,7 +40,7 @@ sourceSets {
 
 intellijPlatform {
     pluginConfiguration {
-        name = 'camunda-bpmn-plugin'
+        name = 'Camunda BPMN visualizer'
     }
 
     publishing {
