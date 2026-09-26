@@ -1,13 +1,24 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
 import org.junit.jupiter.api.Test
 
 internal class TextAnnotationTest {
+
+    @Test
+    fun `new text annotation does not expose mail task text property`() {
+        val factory = FlowableObjectFactory()
+        val annotation = factory.newBpmnObject(BpmnTextAnnotation::class)
+
+        factory.propertiesOf(annotation)[PropertyType.TEXT].shouldBeNull()
+        factory.propertiesOf(annotation)[PropertyType.TEXT_ANNOTATION_TEXT].shouldBeEqualTo(Property(""))
+    }
 
     @Test
     fun `text annotations are parsed exposed and updated`() {

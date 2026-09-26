@@ -9,6 +9,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartErrorEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryErrorEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnMailTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendEventTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import kotlin.reflect.KClass
@@ -151,7 +152,7 @@ enum class PropertyType(
     SUBJECT("subject", "Subject", STRING),
     CC("cc", "CC", STRING),
     BCC("bcc", "BCC", STRING),
-    TEXT("text", "Text", STRING, multiline = true),
+    TEXT("text", "Text", STRING, multiline = true, isUsedOnlyBy = setOf(BpmnMailTask::class)),
     HTML("html", "Html", STRING, multiline = true),
     CHARSET("charset", "Charset", STRING),
     ENDPOINT_URL("endpointUrl", "Endpoint url", STRING),
