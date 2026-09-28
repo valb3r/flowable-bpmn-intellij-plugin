@@ -49,6 +49,54 @@ import java.nio.charset.StandardCharsets
 
 const val CDATA_FIELD = "CDATA"
 
+private val ARTIFACT_ELEMENT_NAMES = setOf(
+    "association",
+    "group",
+    "textAnnotation",
+)
+
+private val ELEMENTS_AFTER_FLOW_ELEMENTS = ARTIFACT_ELEMENT_NAMES + setOf(
+    "completionCondition",
+    "resourceRole",
+    "correlationSubscription",
+    "supports",
+)
+
+private val ELEMENTS_AFTER_ARTIFACTS = setOf(
+    "completionCondition",
+    "resourceRole",
+    "correlationSubscription",
+    "supports",
+)
+
+private val ELEMENTS_AFTER_GLOBAL_MESSAGE_DEFINITIONS = setOf(
+    "process",
+    "collaboration",
+    "choreography",
+    "BPMNDiagram",
+    "relationship",
+)
+
+private val BASE_ELEMENT_CHILD_ORDER = mapOf(
+    "documentation" to 0,
+    "extensionElements" to 1,
+    "auditing" to 2,
+    "monitoring" to 3,
+    "categoryValueRef" to 4,
+    "incoming" to 5,
+    "outgoing" to 6,
+)
+
+private val MULTI_INSTANCE_CHILD_ORDER = mapOf(
+    "loopCardinality" to 0,
+    "loopDataInputRef" to 1,
+    "loopDataOutputRef" to 2,
+    "inputDataItem" to 3,
+    "outputDataItem" to 4,
+    "complexBehaviorDefinition" to 5,
+    "completionCondition" to 6,
+)
+
 data class PropertyTypeDetails(
     val propertyType: PropertyType,
     val xmlPath: String,
@@ -178,6 +226,14 @@ abstract class BaseBpmnParser: BpmnParser {
                 is BpmnParentChanged -> applyParentChange(doc, event)
             }
         }
+
+        placeGlobalMessageDefinitions(doc)
+    }
+
+    private fun placeGlobalMessageDefinitions(doc: Document) {
+        doc.rootElement.elements()
+            .filter { it.name.substringAfter(':') == "message" }
+            .forEach { moveBeforeFirst(it, ELEMENTS_AFTER_GLOBAL_MESSAGE_DEFINITIONS) }
     }
 
     private fun applyLocationUpdate(doc: Document, update: LocationUpdateWithId) {
@@ -274,6 +330,7 @@ abstract class BaseBpmnParser: BpmnParser {
         trimWhitespace(parent, false)
 
         val newNode = createBpmnObject(update.newBpmnElement, parent) ?: throw IllegalArgumentException("Can't store: " + update.parentIdForXml)
+        placeFlowElementOrArtifact(newNode, update.newBpmnElement is BpmnTextAnnotation)
         update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.index?.toMutableList()) }
         trimWhitespace(parent, false)
     }
@@ -295,6 +352,7 @@ abstract class BaseBpmnParser: BpmnParser {
                 )!!
 
         val newNode = createBpmnObject(update.bpmnObject.element, diagramParent) ?: throw IllegalArgumentException("Can't store: " + update.bpmnObject)
+        placeFlowElementOrArtifact(newNode, update.bpmnObject.element is BpmnTextAnnotation)
 
         update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.index?.toMutableList()) }
         trimWhitespace(diagramParent, false)
@@ -458,6 +516,7 @@ abstract class BaseBpmnParser: BpmnParser {
             is BpmnAssociation -> diagramParent.addElement(modelNs().named("association"))
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
+        placeFlowElementOrArtifact(newNode, update.bpmnObject.element is BpmnAssociation)
 
         update.props.forEach { k, v ->  setToNode(newNode, k, v.value) }
         trimWhitespace(diagramParent, false)
@@ -506,6 +565,33 @@ abstract class BaseBpmnParser: BpmnParser {
 
         node.parent.remove(node)
         newParent.add(node)
+        placeFlowElementOrArtifact(node, node.name in ARTIFACT_ELEMENT_NAMES)
+    }
+
+    private fun placeFlowElementOrArtifact(element: Element, isArtifact: Boolean) {
+        moveBeforeFirst(element, if (isArtifact) ELEMENTS_AFTER_ARTIFACTS else ELEMENTS_AFTER_FLOW_ELEMENTS)
+    }
+
+    private fun moveBeforeFirst(element: Element, followingElementNames: Set<String>) {
+        val parent = element.parent as Element
+        val firstTailElement = parent.elements().firstOrNull {
+            it !== element && it.name in followingElementNames
+        } ?: return
+
+        moveBefore(element, firstTailElement)
+    }
+
+    private fun moveBefore(element: Element, followingElement: Element) {
+        val parent = element.parent as Element
+        val content = parent.content()
+        val elementIndex = content.indexOf(element)
+        val tailElementIndex = content.indexOf(followingElement)
+        if (elementIndex < tailElementIndex) {
+            return
+        }
+
+        element.detach()
+        content.add(tailElementIndex, element)
     }
 
     private fun setToNode(node: Element, type: PropertyType, value: Any?, valueIndexInArray: MutableList<String>? = null) {
@@ -553,14 +639,8 @@ abstract class BaseBpmnParser: BpmnParser {
                 }
 
                 // Sorting data in CustomizedXmlWriter is expensive performance-wise
-                val newElem = if (details.forceFirst) {
-                    val newElem = currentNode.addElement(name)
-                    currentNode.remove(newElem)
-                    currentNode.content().add(0, newElem)
-                    newElem
-                } else {
-                    currentNode.addElement(name)
-                }
+                val newElem = currentNode.addElement(name)
+                placeNestedElement(currentNode, newElem, details.forceFirst)
 
                 currentNode = newElem
                 // TODO Handle this with setAttributeOrValueOrCdataOrRemoveIfNull ?
@@ -580,6 +660,39 @@ abstract class BaseBpmnParser: BpmnParser {
             details,
             asString(type.valueType, value)
         )
+    }
+
+    private fun placeNestedElement(parent: Element, element: Element, forceFirst: Boolean) {
+        if (forceFirst) {
+            element.detach()
+            parent.content().add(0, element)
+            return
+        }
+
+        val elementName = element.name.substringAfter(':')
+        val firstFollowingElement = when {
+            elementName in BASE_ELEMENT_CHILD_ORDER -> {
+                val elementOrder = BASE_ELEMENT_CHILD_ORDER.getValue(elementName)
+                parent.elements().firstOrNull {
+                    it !== element && (BASE_ELEMENT_CHILD_ORDER[it.name.substringAfter(':')] ?: Int.MAX_VALUE) > elementOrder
+                }
+            }
+            parent.name.substringAfter(':') == "multiInstanceLoopCharacteristics" -> {
+                val elementOrder = MULTI_INSTANCE_CHILD_ORDER[elementName] ?: return
+                parent.elements().firstOrNull {
+                    it !== element && (MULTI_INSTANCE_CHILD_ORDER[it.name.substringAfter(':')] ?: -1) > elementOrder
+                }
+            }
+            elementName.endsWith("EventDefinition") -> parent.elements().firstOrNull {
+                it !== element && it.name.substringAfter(':') == "eventDefinitionRef"
+            }
+            elementName == "multiInstanceLoopCharacteristics" -> parent.elements().firstOrNull {
+                it !== element && it.name.substringAfter(':') == "rendering"
+            }
+            else -> null
+        }
+
+        firstFollowingElement?.let { moveBefore(element, it) }
     }
 
     private fun nodeChildByName(target: Element, name: String, attrName: String?, attrValue: String?): Element? {

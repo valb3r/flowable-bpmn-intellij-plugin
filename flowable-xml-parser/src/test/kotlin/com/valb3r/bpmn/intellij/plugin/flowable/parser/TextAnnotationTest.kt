@@ -6,7 +6,9 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeLessThan
 import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.shouldContain
 import org.junit.jupiter.api.Test
 
 internal class TextAnnotationTest {
@@ -42,5 +44,26 @@ internal class TextAnnotationTest {
 
         updated.process.body!!.textAnnotation!!.single { it.id.id == "globalAnnotationId" }.text!!.text
             .shouldBeEqualTo("Updated annotation text")
+    }
+
+    @Test
+    fun `extension elements added to text annotation are stored before text`() {
+        val updated = FlowableParser().update(
+            "popurri.bpmn20.xml".asResource()!!,
+            listOf(
+                StringValueUpdatedEvent(
+                    BpmnElementId("globalAnnotationId"),
+                    PropertyType.TEXT,
+                    "",
+                ),
+            ),
+        )
+        val annotationStart = updated.indexOf("<textAnnotation id=\"globalAnnotationId\"")
+        val annotationEnd = updated.indexOf("</textAnnotation>", annotationStart)
+        val annotationXml = updated.substring(annotationStart, annotationEnd)
+
+        annotationXml.shouldContain("<extensionElements>")
+        annotationXml.shouldContain("<text>")
+        annotationXml.indexOf("<extensionElements>").shouldBeLessThan(annotationXml.indexOf("<text>"))
     }
 }
