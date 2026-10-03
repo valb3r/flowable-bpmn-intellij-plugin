@@ -61,7 +61,7 @@ enum class Activiti7PropertyTypeDetails(val details: PropertyTypeDetails) {
     DEFAULT_FLOW(PropertyTypeDetails(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE))
 }
 
-class Activiti7Parser : ActivitiParser() {
+class Activiti7Parser(laxParsingEnabled: () -> Boolean = { true }) : ActivitiParser(laxParsingEnabled) {
 
     override fun propertyTypeDetails(): List<PropertyTypeDetails> {
         return Activiti7PropertyTypeDetails.values().map { it.details }

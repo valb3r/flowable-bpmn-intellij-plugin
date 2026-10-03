@@ -75,7 +75,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             val newEdge = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val dragStartTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()
             val dragEndTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskEndDiagramId }.shouldHaveSingleItem()
@@ -126,7 +126,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             val newEdge = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val dragSubprocess = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == subprocessDiagramId }.shouldHaveSingleItem()
             val dragStartTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()
@@ -172,7 +172,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             val newEdge = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val dragSubProcess = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == subprocessDiagramId }.shouldHaveSingleItem()
             val dragStartTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()
@@ -218,7 +218,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             val dragSubProcess = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == subprocessInSubProcessDiagramId }.shouldHaveSingleItem()
             val dragStartTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()
             lastValue.shouldHaveSize(2)
@@ -252,7 +252,7 @@ internal class UiMultiSelectTest: BaseUiTest() {
         canvas.stopDragOrSelect()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             val dragRootSubProcess = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == subprocessDiagramId }.shouldHaveSingleItem()
             val dragNestedSubProcess = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == subprocessInSubProcessDiagramId }.shouldHaveSingleItem()
             val dragStartTask = lastValue.filterIsInstance<DraggedToEvent>().filter { it.diagramElementId == serviceTaskStartDiagramId }.shouldHaveSingleItem()

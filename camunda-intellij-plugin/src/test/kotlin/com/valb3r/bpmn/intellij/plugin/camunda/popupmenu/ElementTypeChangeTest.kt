@@ -42,7 +42,7 @@ class ElementTypeChangeTest: CamundaBaseUiTest() {
         )
         props.keys.shouldContainSame(userTaskProps)
         argumentCaptor<List<EventPropagatableToXml>>().let {
-            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any(), any())
             it.firstValue.shouldHaveSize(1)
             val changedType = it.firstValue.filterIsInstance<BpmnElementTypeChangeEvent>().shouldHaveSingleItem()
             changedType.props.keys.shouldContainSame(userTaskProps)

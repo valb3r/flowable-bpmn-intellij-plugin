@@ -12,7 +12,11 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 
 // TODO - move to some implementation module
-data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<DiagramElement>) {
+data class BpmnProcessObject(
+    val process: BpmnProcess,
+    val diagram: List<DiagramElement>,
+    val laxHunks: List<BpmnLaxHunk> = emptyList()
+) {
 
 
     fun toView(factory: BpmnObjectFactory) : BpmnProcessObjectView {
@@ -49,7 +53,8 @@ data class BpmnProcessObject(val process: BpmnProcess, val diagram: List<Diagram
                 elementByStaticId,
                 propertiesById,
                 diagram,
-                suppressedExceptions
+                suppressedExceptions,
+                laxHunks
         )
     }
 
@@ -228,7 +233,8 @@ data class BpmnProcessObjectView(
         val elementByStaticId: Map<BpmnElementId, WithParentId>,
         val elemPropertiesByElementId: Map<BpmnElementId, PropertyTable>,
         val diagram: List<DiagramElement>,
-        val suppressedExceptions: List<IgnorableParserException>
+        val suppressedExceptions: List<IgnorableParserException>,
+        val laxHunks: List<BpmnLaxHunk> = emptyList()
 )
 
 data class PropertyTable(private val properties: MutableMap<PropertyType, MutableList<Property>>) {

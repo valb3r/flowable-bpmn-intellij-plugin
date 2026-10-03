@@ -18,6 +18,10 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:$junitPlatformRunner"
+
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jackson"
 }

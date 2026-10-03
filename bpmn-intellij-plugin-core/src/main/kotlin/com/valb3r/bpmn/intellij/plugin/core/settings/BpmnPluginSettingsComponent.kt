@@ -31,6 +31,7 @@ class BpmnPluginSettingsComponent() {
     private lateinit var openExtensions: JTextField
     private lateinit var enableFps: JCheckBox
     private lateinit var disableXsdSchema: JCheckBox
+    private lateinit var enableLaxParsing: JCheckBox
 
     fun createSettingsPanel(): JPanel {
         // Create the root settings panel with the same GridLayoutManager:
@@ -422,6 +423,19 @@ class BpmnPluginSettingsComponent() {
             )
         )
 
+        this.enableLaxParsing = JCheckBox("Enable lax XML parsing")
+        settingsPanel.add(
+            enableLaxParsing,
+            GridConstraints(
+                11, 1, 1, 2,
+                GridConstraints.ANCHOR_SOUTHWEST,
+                GridConstraints.FILL_NONE,
+                GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW,
+                GridConstraints.SIZEPOLICY_FIXED,
+                null, null, null, 0, false
+            )
+        )
+
         onAfterCreate()
         return settingsPanel
     }
@@ -466,6 +480,7 @@ class BpmnPluginSettingsComponent() {
         openExtensions.text = state.openExtensions.joinToString(DELIMITER)
         enableFps.isSelected = state.enableFps
         disableXsdSchema.isSelected = state.disableXsdSchema
+        enableLaxParsing.isSelected = state.enableLaxParsing
     }
 
     private fun populateFontComboboxes(actualUiFont: Font, actualDataFont: Font) {
@@ -512,6 +527,7 @@ class BpmnPluginSettingsComponent() {
         })
         enableFps.addChangeListener { state.enableFps = enableFps.isSelected }
         disableXsdSchema.addChangeListener { state.disableXsdSchema = disableXsdSchema.isSelected }
+        enableLaxParsing.addChangeListener { state.enableLaxParsing = enableLaxParsing.isSelected }
     }
 
     private fun extensions() = openExtensions.text.split(DELIMITER).toSet()

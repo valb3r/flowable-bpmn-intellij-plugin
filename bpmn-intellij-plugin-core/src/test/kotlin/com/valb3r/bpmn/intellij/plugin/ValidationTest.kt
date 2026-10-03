@@ -29,7 +29,7 @@ internal class ValidationTest: BaseUiTest() {
 
         propertiesVisualizer(project).clear()
 
-        verify(fileCommitter, never()).executeCommitAndGetHash(any(), any(), any(), any())
+        verify(fileCommitter, never()).executeCommitAndGetHash(any(), any(), any(), any(), any())
     }
 
     @Test
@@ -39,6 +39,6 @@ internal class ValidationTest: BaseUiTest() {
 
         propertiesVisualizer(project).clear()
 
-        verify(fileCommitter).executeCommitAndGetHash(any(), any(), any(), any())
+        verify(fileCommitter).executeCommitAndGetHash(any(), any(), any(), any(), any())
     }
 }
