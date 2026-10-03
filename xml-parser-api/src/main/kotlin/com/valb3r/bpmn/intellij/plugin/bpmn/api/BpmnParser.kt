@@ -11,7 +11,7 @@ interface BpmnParser {
 
     // Keeping update model simple by following:
     // https://www.jetbrains.org/intellij/sdk/docs/tutorials/editor_basics/working_with_text.html#safely-replacing-selected-text-in-the-document
-    fun update(input: String, events: List<EventPropagatableToXml>): String
+    fun update(input: String, events: List<EventPropagatableToXml>, laxHunks: List<BpmnLaxHunk> = emptyList()): String
 
     fun updateDiagram(input: String, diagrams: List<DiagramElement>): String
 }

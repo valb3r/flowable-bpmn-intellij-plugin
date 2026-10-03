@@ -20,6 +20,7 @@ import com.valb3r.bpmn.intellij.plugin.core.getContentFactory
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.parser.registerParser
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.core.xmlnav.registerXmlNavigator
 
@@ -38,7 +39,7 @@ class CamundaBpmnPluginToolWindowFactory: ToolWindowFactory {
             { showNotificationBalloon(project, it, NotificationType.WARNING) },
             {
                 registerPopupMenuProvider(project, CamundaCanvasPopupMenuProvider(project))
-                registerParser(project, CamundaParser())
+                registerParser(project, CamundaParser { currentSettings().enableLaxParsing })
                 registerNewElementsFactory(project, CamundaObjectFactory())
             }
         ) {

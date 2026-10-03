@@ -52,6 +52,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
         var enableFps = false
         var enableAutoLayout = true
         var disableXsdSchema = false
+        var enableLaxParsing = true
 
         // Internal state
         var noJavaOrSpelSupportShown: Boolean? = false
@@ -71,6 +72,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             if (enableFps != other.enableFps) return false
             if (enableAutoLayout != other.enableAutoLayout) return false
             if (disableXsdSchema != other.disableXsdSchema) return false
+            if (enableLaxParsing != other.enableLaxParsing) return false
             if (noJavaOrSpelSupportShown != other.noJavaOrSpelSupportShown) return false
 
             return true
@@ -92,6 +94,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             data.enableFps = enableFps
             data.enableAutoLayout = enableAutoLayout
             data.disableXsdSchema = disableXsdSchema
+            data.enableLaxParsing = enableLaxParsing
             data.noJavaOrSpelSupportShown = noJavaOrSpelSupportShown
             return data
         }

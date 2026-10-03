@@ -365,7 +365,7 @@ abstract class BaseUiTest {
         addSequenceElementOnFirstTaskTo(target)
 
         argumentCaptor<List<EventPropagatableToXml>>().let {
-            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any(), any())
             it.firstValue.shouldHaveSize(3)
             it.firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).map { value -> value.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
             return it.firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
@@ -376,7 +376,7 @@ abstract class BaseUiTest {
         addSequenceElementOnFirstTaskToSecondTask()
 
         argumentCaptor<List<EventPropagatableToXml>>().let {
-            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any(), any())
             it.firstValue.shouldHaveSize(3)
             it.firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).map { value -> value.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
             return it.firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
@@ -394,7 +394,7 @@ abstract class BaseUiTest {
         canvas.paintComponent(graphics)
 
         argumentCaptor<List<EventPropagatableToXml>>().let {
-            verify(fileCommitter, atLeastOnce()).executeCommitAndGetHash(any(), it.capture(), any(), any())
+            verify(fileCommitter, atLeastOnce()).executeCommitAndGetHash(any(), it.capture(), any(), any(), any())
             return it.lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().last().shouldNotBeNull()
         }
     }

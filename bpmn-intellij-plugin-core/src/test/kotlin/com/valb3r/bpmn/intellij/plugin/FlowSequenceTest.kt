@@ -46,7 +46,7 @@ internal class FlowSequenceTest: BaseUiTest() {
         propertiesVisualizer(project).clear()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             firstValue.shouldHaveSize(2)
             val xmlOnlyUpdate = firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
             val uiOnlyUpdate = firstValue.filterIsInstance<BooleanValueUpdatedEvent>().shouldHaveSingleItem()
@@ -70,7 +70,7 @@ internal class FlowSequenceTest: BaseUiTest() {
         propertiesVisualizer(project).clear()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter, times(2)).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             lastValue.shouldHaveSize(5)
             val xmlOnlyUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().filter { it.property == PropertyType.DEFAULT_FLOW }.shouldHaveSingleItem()
             val uiOnlyUpdate = lastValue.filterIsInstance<BooleanValueUpdatedEvent>().filter { it.property == PropertyType.DEFAULT_FLOW_ON_SEQUENCE }.shouldHaveSingleItem()
