@@ -44,7 +44,7 @@ class BpmnFile(
     @JacksonXmlProperty(localName = "process")
         @JsonMerge
         @JacksonXmlElementWrapper(useWrapping = false)
-        var processes: List<ProcessNode>,
+        var processes: List<ProcessNode> = emptyList(),
 
     @JacksonXmlProperty(localName = "BPMNDiagram")
         @JsonMerge

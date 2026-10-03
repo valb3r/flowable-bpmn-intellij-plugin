@@ -137,15 +137,22 @@ open class ActivitiParser : BaseBpmnParser() {
     private val mapper: XmlMapper = mapper()
 
     override fun parse(input: String): BpmnProcessObject {
+        if (input.isBlank()) {
+            return emptyProcessObject()
+        }
+
         val dto = mapper.readValue<BpmnFile>(input)
+        if (dto.processes.isEmpty()) {
+            return emptyProcessObject(dto.diagrams.orEmpty().map { it.toElement() })
+        }
         return toProcessObject(dto)
     }
 
     private fun toProcessObject(dto: BpmnFile): BpmnProcessObject {
         // TODO - Multi process support?
-        markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
+        markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams.orEmpty())
         val process = dto.processes[0].toElement()
-        val diagrams = dto.diagrams!!.map { it.toElement() }
+        val diagrams = dto.diagrams.orEmpty().map { it.toElement() }
 
         return BpmnProcessObject(process, diagrams)
     }
