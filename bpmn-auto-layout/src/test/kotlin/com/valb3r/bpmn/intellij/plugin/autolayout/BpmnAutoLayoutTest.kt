@@ -442,7 +442,7 @@ class BpmnAutoLayoutTest {
         val actualLayerGap = updatedTaskBounds.y - movedStartBounds.maxY
 
         (updatedTaskBounds.y > movedStartBounds.y).shouldBeTrue()
-        actualLayerGap.shouldBeWithin(generatedLayerGap, 0.01f)
+        actualLayerGap.shouldBeWithin(generatedLayerGap, 0.01)
         (actualLayerGap >= 239.0f).shouldBeTrue()
     }
 
