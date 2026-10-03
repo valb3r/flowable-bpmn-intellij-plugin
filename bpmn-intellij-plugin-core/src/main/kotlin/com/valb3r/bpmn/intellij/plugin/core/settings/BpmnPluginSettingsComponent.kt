@@ -30,13 +30,14 @@ class BpmnPluginSettingsComponent() {
     private lateinit var dataFontSize: JSpinner
     private lateinit var openExtensions: JTextField
     private lateinit var enableFps: JCheckBox
+    private lateinit var enableAutoLayout: JCheckBox
     private lateinit var disableXsdSchema: JCheckBox
 
     fun createSettingsPanel(): JPanel {
         // Create the root settings panel with the same GridLayoutManager:
         this.settingsPanel = JPanel(
             GridLayoutManager(
-                12,        // row-count
+                13,        // row-count
                 3,         // column-count
                 JBUI.emptyInsets(), // same margins as <margin top="0" left="0" bottom="0" right="0"/>
                 -1,        // hGap (unused)
@@ -422,6 +423,20 @@ class BpmnPluginSettingsComponent() {
             )
         )
 
+        // 25) JCheckBox "enableAutoLayout" (row=12, column=0..2)
+        this.enableAutoLayout = JCheckBox("Automatically add missing diagram layout")
+        settingsPanel.add(
+            enableAutoLayout,
+            GridConstraints(
+                12, 0, 1, 3,
+                GridConstraints.ANCHOR_SOUTHWEST,
+                GridConstraints.FILL_NONE,
+                GridConstraints.SIZEPOLICY_CAN_SHRINK or GridConstraints.SIZEPOLICY_CAN_GROW,
+                GridConstraints.SIZEPOLICY_FIXED,
+                null, null, null, 0, false
+            )
+        )
+
         onAfterCreate()
         return settingsPanel
     }
@@ -465,6 +480,7 @@ class BpmnPluginSettingsComponent() {
         dataFontSize.value = state.dataFontSize
         openExtensions.text = state.openExtensions.joinToString(DELIMITER)
         enableFps.isSelected = state.enableFps
+        enableAutoLayout.isSelected = state.enableAutoLayout
         disableXsdSchema.isSelected = state.disableXsdSchema
     }
 
@@ -511,6 +527,7 @@ class BpmnPluginSettingsComponent() {
             }
         })
         enableFps.addChangeListener { state.enableFps = enableFps.isSelected }
+        enableAutoLayout.addChangeListener { state.enableAutoLayout = enableAutoLayout.isSelected }
         disableXsdSchema.addChangeListener { state.disableXsdSchema = disableXsdSchema.isSelected }
     }
 

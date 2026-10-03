@@ -50,6 +50,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
         var openExtensions = mutableSetOf("bpmn", "bpmn20.xml")
 
         var enableFps = false
+        var enableAutoLayout = true
         var disableXsdSchema = false
 
         // Internal state
@@ -68,6 +69,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             if (dataFontName != other.dataFontName) return false
             if (openExtensions != other.openExtensions) return false
             if (enableFps != other.enableFps) return false
+            if (enableAutoLayout != other.enableAutoLayout) return false
             if (disableXsdSchema != other.disableXsdSchema) return false
             if (noJavaOrSpelSupportShown != other.noJavaOrSpelSupportShown) return false
 
@@ -88,6 +90,7 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             data.dataFontName = dataFontName
             data.openExtensions = openExtensions
             data.enableFps = enableFps
+            data.enableAutoLayout = enableAutoLayout
             data.disableXsdSchema = disableXsdSchema
             data.noJavaOrSpelSupportShown = noJavaOrSpelSupportShown
             return data
