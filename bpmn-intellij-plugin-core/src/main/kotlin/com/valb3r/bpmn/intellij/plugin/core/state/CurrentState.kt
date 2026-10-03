@@ -82,7 +82,7 @@ class CurrentStateProvider(private val project: Project) {
                 0L
         )
         currentState = fileState
-        updateEventsRegistry(project).reset(fileContent)
+        updateEventsRegistry(project).reset(fileContent, processObject.laxHunks)
     }
 
     fun currentState(): CurrentState {

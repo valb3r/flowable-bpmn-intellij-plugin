@@ -8,6 +8,7 @@ import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnLaxHunk
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
@@ -38,6 +39,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.lax.LaxXmlPreprocessor
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.lax.PreparedLaxXml
 import org.dom4j.*
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.SAXReader
@@ -104,7 +107,9 @@ data class PropertyTypeDetails(
     val forceFirst: Boolean = false
 )
 
-abstract class BaseBpmnParser: BpmnParser {
+abstract class BaseBpmnParser(private val laxParsingEnabled: () -> Boolean = { true }): BpmnParser {
+
+    private val laxXmlPreprocessor = LaxXmlPreprocessor()
 
     abstract override fun parse(input: String): BpmnProcessObject
 
@@ -144,14 +149,26 @@ abstract class BaseBpmnParser: BpmnParser {
      * Impossible to use FasterXML - Multiple objects of same type issue:
      * https://github.com/FasterXML/jackson-dataformat-xml/issues/205
      */
-    override fun update(input: String, events: List<EventPropagatableToXml>): String {
+    override fun update(input: String, events: List<EventPropagatableToXml>, laxHunks: List<BpmnLaxHunk>): String {
+        val effectiveHunks = when {
+            laxHunks.isNotEmpty() -> laxHunks
+            laxParsingEnabled() -> laxXmlPreprocessor.prepare(input).hunks
+            else -> emptyList()
+        }
+        val prepared = laxXmlPreprocessor.prepareForUpdate(input, effectiveHunks)
         val reader = SAXReader()
-        val doc = reader.read(ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8)))
+        val doc = reader.read(ByteArrayInputStream(prepared.xml.toByteArray(StandardCharsets.UTF_8)))
 
         val os = ByteArrayOutputStream()
         parseAndWrite(doc, os, events)
 
-        return os.toString(StandardCharsets.UTF_8.name())
+        return laxXmlPreprocessor.restore(os.toString(StandardCharsets.UTF_8.name()), prepared.markers)
+    }
+
+    protected fun prepareLaxXmlForJackson(input: String) = if (laxParsingEnabled()) {
+        laxXmlPreprocessor.prepare(input)
+    } else {
+        PreparedLaxXml(input, emptyList())
     }
 
 
