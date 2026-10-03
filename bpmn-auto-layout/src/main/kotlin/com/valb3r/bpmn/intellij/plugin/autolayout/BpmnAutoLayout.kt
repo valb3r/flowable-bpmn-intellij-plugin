@@ -517,8 +517,19 @@ class BpmnAutoLayout(
 
         val existingWaypoints = existingEdges[flow.id.id]?.waypoint.orEmpty()
         val existingPoint = existingWaypoints.endpointAt(attachedEndpointIndex)
+
         if (existingPoint != null) {
-            return SequenceAttachmentPoint(existingPoint, existingWaypoints.sideAtEndpoint(attachedEndpointIndex))
+            val generatedOtherBounds = generatedShapes[otherId]?.rectBounds()
+            val actualOtherBounds = allocatedShapes[otherId]?.rectBounds()
+            val translatedPoint = if (generatedOtherBounds != null && actualOtherBounds != null) {
+                existingPoint.copy(
+                    x = existingPoint.x + actualOtherBounds.x - generatedOtherBounds.x,
+                    y = existingPoint.y + actualOtherBounds.y - generatedOtherBounds.y,
+                )
+            } else {
+                existingPoint
+            }
+            return SequenceAttachmentPoint(translatedPoint, existingWaypoints.sideAtEndpoint(attachedEndpointIndex))
         }
 
         // Generated routes can hint only when the opposite shape has a known placement.
