@@ -138,16 +138,23 @@ open class ActivitiParser(laxParsingEnabled: () -> Boolean = { true }) : BaseBpm
     private val mapper: XmlMapper = mapper()
 
     override fun parse(input: String): BpmnProcessObject {
+        if (input.isBlank()) {
+            return emptyProcessObject()
+        }
+
         val prepared = prepareLaxXmlForJackson(input)
         val dto = mapper.readValue<BpmnFile>(prepared.xml)
+        if (dto.processes.isEmpty()) {
+            return emptyProcessObject(dto.diagrams.orEmpty().map { it.toElement() }, prepared.hunks)
+        }
         return toProcessObject(dto, prepared.hunks)
     }
 
     private fun toProcessObject(dto: BpmnFile, laxHunks: List<BpmnLaxHunk>): BpmnProcessObject {
         // TODO - Multi process support?
-        markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
+        markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams.orEmpty())
         val process = dto.processes[0].toElement()
-        val diagrams = dto.diagrams!!.map { it.toElement() }
+        val diagrams = dto.diagrams.orEmpty().map { it.toElement() }
 
         return BpmnProcessObject(process, diagrams, laxHunks)
     }

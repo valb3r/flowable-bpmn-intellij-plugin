@@ -11,6 +11,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnLaxHunk
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnAssociation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
@@ -35,6 +36,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEve
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
@@ -114,6 +116,10 @@ abstract class BaseBpmnParser(private val laxParsingEnabled: () -> Boolean = { t
     abstract override fun parse(input: String): BpmnProcessObject
 
     override fun validateForErrors(input: String): String? {
+        if (input.isBlank() || !hasProcessElement(input)) {
+            return null
+        }
+
         if (!input.contains("BPMNDiagram")) {
             return "Unable to parse, missing <b>BPMNDiagram</b> XML tag that is required to build diagram<br>" +
                     "For details see:<br>" +
@@ -128,7 +134,26 @@ abstract class BaseBpmnParser(private val laxParsingEnabled: () -> Boolean = { t
         return null
     }
 
+    protected fun emptyProcessObject(
+        diagrams: List<DiagramElement> = emptyList(),
+        laxHunks: List<BpmnLaxHunk> = emptyList()
+    ): BpmnProcessObject {
+        return BpmnProcessObject(
+            BpmnProcess(BpmnElementId(""), null, null, null, null, null),
+            diagrams,
+            laxHunks
+        )
+    }
+
+    private fun hasProcessElement(input: String): Boolean {
+        return Regex("<\\s*(?:[\\w.-]+:)?process(?=[\\s/>])").containsMatchIn(input)
+    }
+
     override fun validateForWarnings(input: String): String? {
+        if (input.isBlank() || !hasProcessElement(input)) {
+            return null
+        }
+
         if (input.contains(engineNs().url)) {
             return null
         }
