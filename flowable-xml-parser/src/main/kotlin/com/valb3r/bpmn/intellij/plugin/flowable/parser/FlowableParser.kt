@@ -187,11 +187,15 @@ class FlowableParser : BaseBpmnParser() {
         return toProcessObject(dto)
     }
 
+    override fun validateForErrors(input: String): String? =
+        if (input.contains("BPMNDiagram")) super.validateForErrors(input) else null
+
     private fun toProcessObject(dto: BpmnFile): BpmnProcessObject {
         // TODO - Multi process support?
-        markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
+        val diagramNodes = dto.diagrams.orEmpty()
+        markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], diagramNodes)
         val process = dto.processes[0].toElement()
-        val diagrams = dto.diagrams!!.map { it.toElement() }
+        val diagrams = diagramNodes.map { it.toElement() }
 
         return BpmnProcessObject(process, diagrams)
     }

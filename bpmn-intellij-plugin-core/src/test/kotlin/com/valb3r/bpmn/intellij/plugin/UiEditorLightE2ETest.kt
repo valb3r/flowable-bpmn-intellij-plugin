@@ -57,6 +57,80 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
     }
 
     @Test
+    fun `opening processes with missing or absent diagram elements auto lays out and shows feedback`() {
+        val process = basicProcess.copy(
+            basicProcess.process.copy(
+                body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd)),
+            ),
+            listOf(
+                DiagramElement(
+                    diagramMainElementId,
+                    PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart), emptyList()),
+                ),
+            ),
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        var autoLayoutFeedbackCount = 0
+        val builder = CanvasBuilder(renderer, onAutoLayoutApplied = { autoLayoutFeedbackCount++ })
+
+        fun openCurrentProcess(forceAutoLayout: Boolean = false) {
+            builder.build(
+                { fileCommitter },
+                parser,
+                propertiesTable,
+                comboboxFactory,
+                editorFactory,
+                editorFactory,
+                editorFactory,
+                multiLineEditorFactory,
+                checkboxFieldFactory,
+                buttonFactory,
+                arrowButtonFactory,
+                canvas,
+                project,
+                virtualFile,
+                forceAutoLayout,
+            )
+        }
+
+        openCurrentProcess()
+
+        argumentCaptor<List<DiagramElement>>().apply {
+            verify(parser).updateDiagram(any(), capture())
+            firstValue.single().bpmnPlane.bpmnShape.orEmpty().map { it.bpmnElement }
+                .shouldContainSame(listOf(bpmnServiceTaskStart.id, bpmnServiceTaskEnd.id))
+        }
+        autoLayoutFeedbackCount.shouldBeEqualTo(1)
+
+        whenever(parser.parse("")).thenReturn(process.copy(diagram = emptyList()))
+        openCurrentProcess()
+
+        verify(parser, times(2)).updateDiagram(any(), any())
+        autoLayoutFeedbackCount.shouldBeEqualTo(2)
+
+        val movedStart = diagramServiceTaskStart.copyAndTranslate(500.0f, 500.0f)
+        whenever(parser.parse("")).thenReturn(
+            process.copy(
+                diagram = listOf(
+                    DiagramElement(
+                        diagramMainElementId,
+                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(movedStart), emptyList()),
+                    ),
+                ),
+            ),
+        )
+        openCurrentProcess(forceAutoLayout = true)
+
+        argumentCaptor<List<DiagramElement>>().apply {
+            verify(parser, times(3)).updateDiagram(any(), capture())
+            val autoLayoutStart = lastValue.single().bpmnPlane.bpmnShape.orEmpty()
+                .single { it.bpmnElement == bpmnServiceTaskStart.id }
+            autoLayoutStart.rectBounds().x.shouldNotBeEqualTo(movedStart.rectBounds().x)
+        }
+        autoLayoutFeedbackCount.shouldBeEqualTo(3)
+    }
+
+    @Test
     fun `Action elements are shown when service task is selected`() {
         prepareTwoServiceTaskView()
 

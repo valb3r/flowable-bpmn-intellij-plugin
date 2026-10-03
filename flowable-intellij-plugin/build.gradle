@@ -16,6 +16,7 @@ dependencies {
         intellijIdeaUltimate(intellijPlatformVersion)
         pluginComposedModule(implementation(project(":bpmn-intellij-plugin-core")))
         pluginComposedModule(implementation(project(":bpmn-intellij-plugin-commons")))
+        pluginComposedModule(implementation(project(":bpmn-auto-layout")))
     }
 
     implementation project(":xml-parser-core")

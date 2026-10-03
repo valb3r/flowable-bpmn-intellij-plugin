@@ -149,11 +149,14 @@ open class BpmnPluginToolWindow(
 
     fun getContent() = this.mainToolWindowForm
 
-    fun openFileAndRender(bpmnFile: PsiFile, context: BpmnActionContext) {
+    fun openFileAndRender(bpmnFile: PsiFile, context: BpmnActionContext, forceAutoLayout: Boolean = false) {
         checkIfJavaAndSpelIsPresentAndNotifyOnceIfNot()
         onBeforeFileOpen(bpmnFile)
         val bpmnParser = currentParser(project)
         if (this.canvasBuilder.assertFileContentAndShowErrorOrWarning(bpmnParser, bpmnFile.virtualFile, onBadContentErrorCallback, onBadContentWarningCallback)) return
+        canvas.autoLayoutAction = {
+            openFileAndRender(bpmnFile, BpmnActionContext(project), forceAutoLayout = true)
+        }
 
         val multiEditJTable = invokeAndWaitIfNeeded {
             val table = MultiEditJTable(DefaultTableModel())
@@ -185,7 +188,8 @@ open class BpmnPluginToolWindow(
                 { createArrowButton() },
                 canvas,
                 bpmnFile.project,
-                virtualFile
+                virtualFile,
+                forceAutoLayout,
         )
 
         invokeAndWaitIfNeeded { setupUiAfterRun() }

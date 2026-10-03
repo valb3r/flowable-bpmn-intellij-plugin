@@ -24,6 +24,7 @@ dependencyResolutionManagement {
 
 include 'xml-parser-api'
 include 'xml-parser-core'
+include 'bpmn-auto-layout'
 include 'flowable-xml-parser'
 include 'activiti-xml-parser'
 include 'camunda-xml-parser'
@@ -36,6 +37,7 @@ include 'camunda-intellij-plugin'
 
 project(":xml-parser-api").projectDir = file("xml-parser-api")
 project(":xml-parser-core").projectDir = file("xml-parser-core")
+project(":bpmn-auto-layout").projectDir = file("bpmn-auto-layout")
 project(":flowable-xml-parser").projectDir = file("flowable-xml-parser")
 project(":activiti-xml-parser").projectDir = file("activiti-xml-parser")
 project(":camunda-xml-parser").projectDir = file("camunda-xml-parser")

@@ -28,12 +28,14 @@ import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.copyToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.cutToClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.pasteFromClipboard
 import com.valb3r.bpmn.intellij.plugin.core.actions.saveDiagramToPng
+import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.lastRenderedState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.CanvasPopupMenuProvider
 import java.awt.event.ActionListener
 import java.awt.geom.Point2D
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.Icon
+import javax.swing.JMenuItem
 import javax.swing.JMenu
 import javax.swing.JPopupMenu
 import javax.swing.KeyStroke
@@ -206,6 +208,13 @@ abstract class BaseCanvasPopupMenuProvider(private val project: Project) : Canva
         }
     }
 
+    protected fun layoutMenu(onAutoLayout: () -> Unit = { currentCanvas(project).autoLayoutAction?.invoke() }): JMenu =
+        JMenu("Layout").apply {
+            add(JMenuItem("Auto-Layout").apply {
+                addActionListener { onAutoLayout() }
+            })
+        }
+
     override fun popupMenu(sceneLocation: Point2D.Float, parent: BpmnElementId): JBPopupMenu {
         val popup = currentPopupMenuUiComponentSupplier.get()(MAIN_POPUP_MENU)
         addCopyAndPasteIfNeeded(popup, sceneLocation, parent)
@@ -217,6 +226,7 @@ abstract class BaseCanvasPopupMenuProvider(private val project: Project) : Canva
         popup.add(intermediateCatchingEvents(sceneLocation, parent))
         popup.add(intermediateThrowingEvents(sceneLocation, parent))
         popup.add(endEvents(sceneLocation, parent))
+        popup.add(layoutMenu())
         addItem(popup, "Save to PNG", SAVE_TO_PNG_ICON) { saveDiagramToPng(project) }
         return popup
     }

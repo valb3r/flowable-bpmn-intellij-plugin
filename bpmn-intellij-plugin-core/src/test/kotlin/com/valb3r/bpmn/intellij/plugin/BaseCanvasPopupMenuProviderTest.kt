@@ -45,7 +45,22 @@ internal class BaseCanvasPopupMenuProviderTest {
         }
     }
 
+    @Test
+    fun `layout popup offers Auto-Layout and invokes its action`() {
+        var invoked = false
+        val menu = BaseCanvasPopupMenuProviderTestable(mock()).createLayoutMenu { invoked = true }
+
+        menu.text.shouldBeEqualTo("Layout")
+        menu.itemCount.shouldBeEqualTo(1)
+        menu.getItem(0).text.shouldBeEqualTo("Auto-Layout")
+        menu.getItem(0).doClick()
+
+        invoked.shouldBeEqualTo(true)
+    }
+
     internal class BaseCanvasPopupMenuProviderTestable(project: Project) : BaseCanvasPopupMenuProvider(project) {
+        fun createLayoutMenu(onAutoLayout: () -> Unit) = layoutMenu(onAutoLayout)
+
         override fun startEvents(sceneLocation: Point2D.Float, focus: BpmnElementId): JMenu {
             TODO("Not yet implemented")
         }

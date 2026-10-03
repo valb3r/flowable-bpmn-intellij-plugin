@@ -2,8 +2,10 @@ package com.valb3r.bpmn.intellij.plugin.core
 
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
@@ -12,6 +14,7 @@ import com.intellij.openapi.util.Computable
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.messages.Topic
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
+import com.valb3r.bpmn.intellij.plugin.autolayout.BpmnAutoLayout
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.exceptions.IgnorableParserException
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
@@ -42,7 +45,15 @@ val CANVAS_PAINT_TOPIC = Topic("BPMN Flowable (plugin family) plugin repaint top
 class CanvasBuilder(
     private val bpmnProcessRenderer: BpmnProcessRenderer,
     private val onBadContentErrorCallback: ((String) -> Unit)? = null,
-    private val onBadContentWarningCallback: ((String) -> Unit)? = null
+    private val onBadContentWarningCallback: ((String) -> Unit)? = null,
+    private val onAutoLayoutApplied: (Project) -> Unit = { project ->
+        genericShowNotificationBalloon(
+            project,
+            "BPMN auto-layout",
+            "BPMN diagram auto-layout was applied.",
+            NotificationType.INFORMATION,
+        )
+    },
 ) {
 
     private var currentVfsConnection: MessageBusConnection? = null
@@ -60,16 +71,25 @@ class CanvasBuilder(
         arrowButtonFactory: (id: BpmnElementId) -> BasicArrowButton,
         canvas: Canvas,
         project: Project,
-        bpmnFile: VirtualFile
+        bpmnFile: VirtualFile,
+        forceAutoLayout: Boolean = false,
     ) {
         if (assertFileContentAndShowErrorOrWarning(parser, bpmnFile, onBadContentErrorCallback, onBadContentWarningCallback)) return
 
         initializeUpdateEventsRegistry(project, committerFactory.invoke(parser))
-        val data = readFile(bpmnFile)
-        val process = parser.parse(data)
+        var data = readFile(bpmnFile)
+        val parsedProcess = parser.parse(data)
+        val autoLayout = BpmnAutoLayout()
+        val layoutResult = autoLayout.layoutIfRequired(parsedProcess, forceFullLayout = forceAutoLayout)
+        val laidOutProcess = layoutResult.laidOutProcess
+        if (layoutResult.layoutApplied) {
+            data = parser.updateDiagram(data, laidOutProcess.diagram)
+            persistFile(project, bpmnFile, data)
+            onAutoLayoutApplied(project)
+        }
         if (data.contains("collaboration")) showTryPolyBpmnAdvertisementSwimpoolNotification(project)
         newPropertiesVisualizer(project, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, multiLineExpandableTextFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory)
-        val mappedProcess = process.toView(newElementsFactory(project))
+        val mappedProcess = laidOutProcess.toView(newElementsFactory(project))
         canvas.reset(data, mappedProcess, bpmnProcessRenderer)
         if (mappedProcess.suppressedExceptions.isNotEmpty()) {
             // Do not show too long errors:
@@ -149,6 +169,18 @@ class CanvasBuilder(
         } else {
             // Plain unit tests do not install an IntelliJ Application instance.
             String(bpmnFile.contentsToByteArray(), UTF_8)
+        }
+    }
+
+    private fun persistFile(project: Project, bpmnFile: VirtualFile, content: String) {
+        val document = ApplicationManager.getApplication().runReadAction(Computable {
+            FileDocumentManager.getInstance().getDocument(bpmnFile)
+        }) ?: return
+        WriteCommandAction.runWriteCommandAction(project) {
+            if (document.text != content) {
+                document.setText(content)
+                FileDocumentManager.getInstance().saveDocument(document)
+            }
         }
     }
 }

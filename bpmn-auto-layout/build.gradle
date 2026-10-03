@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+group = 'com.valb3r.bpmn.intellij.plugin.auto.layout'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+dependencies {
+    api project(":xml-parser-api")
+
+    implementation "org.eclipse.elk:org.eclipse.elk.alg.layered:$elk"
+    // ELK's Xtend-generated classes reference this runtime, which is not declared by all ELK POMs.
+    implementation "org.eclipse.xtext:org.eclipse.xtext.xbase.lib:$xtextXbaseLib"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiter"
+    testImplementation "org.amshove.kluent:kluent:$kluent"
+}

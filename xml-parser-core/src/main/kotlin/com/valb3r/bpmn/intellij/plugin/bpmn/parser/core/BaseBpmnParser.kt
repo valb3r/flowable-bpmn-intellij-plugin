@@ -10,6 +10,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnAssociation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
@@ -154,6 +155,62 @@ abstract class BaseBpmnParser: BpmnParser {
         return os.toString(StandardCharsets.UTF_8.name())
     }
 
+    /** Replaces the BPMN DI section with the supplied dialect-neutral diagram model. */
+    override fun updateDiagram(input: String, diagrams: List<DiagramElement>): String {
+        val reader = SAXReader()
+        val doc = reader.read(ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8)))
+        val root = doc.rootElement
+
+        root.elements()
+            .filter { it.name.substringAfter(':') == "BPMNDiagram" }
+            .forEach { root.remove(it) }
+
+        listOf(bpmndiNs(), omgdcNs(), omgdiNs()).forEach { namespace ->
+            if (root.getNamespaceForPrefix(namespace.namePrefix)?.uri != namespace.url) {
+                root.addNamespace(namespace.namePrefix, namespace.url)
+            }
+        }
+
+        diagrams.forEach { diagram ->
+            val diagramNode = root.addElement(bpmndiNs().named("BPMNDiagram"))
+            diagramNode.addAttribute("id", diagram.id.id)
+
+            val plane = diagramNode.addElement(bpmndiNs().named("BPMNPlane"))
+            plane.addAttribute("id", diagram.bpmnPlane.id.id)
+            plane.addAttribute("bpmnElement", diagram.bpmnPlane.bpmnElement.id)
+
+            diagram.bpmnPlane.bpmnShape.orEmpty().forEach { shape ->
+                val shapeNode = plane.addElement(bpmndiNs().named("BPMNShape"))
+                shapeNode.addAttribute("id", shape.id.id)
+                shapeNode.addAttribute("bpmnElement", shape.bpmnElement.id)
+
+                val bounds = shape.rectBounds()
+                shapeNode.addElement(omgdcNs().named("Bounds")).apply {
+                    addAttribute("x", bounds.x.toString())
+                    addAttribute("y", bounds.y.toString())
+                    addAttribute("width", bounds.width.toString())
+                    addAttribute("height", bounds.height.toString())
+                }
+            }
+
+            diagram.bpmnPlane.bpmnEdge.orEmpty().forEach { edge ->
+                val edgeNode = plane.addElement(bpmndiNs().named("BPMNEdge"))
+                edgeNode.addAttribute("id", edge.id.id)
+                edge.bpmnElement?.let { edgeNode.addAttribute("bpmnElement", it.id) }
+                edge.waypoint.orEmpty().forEach { waypoint ->
+                    edgeNode.addElement(omgdiNs().named("waypoint")).apply {
+                        addAttribute("x", waypoint.x.toString())
+                        addAttribute("y", waypoint.y.toString())
+                    }
+                }
+            }
+        }
+
+        val os = ByteArrayOutputStream()
+        writeDocument(doc, os)
+        return os.toString(StandardCharsets.UTF_8.name())
+    }
+
 
     fun trimWhitespace(node: Node, recurse: Boolean = true) {
         val children = node.selectNodes("*")
@@ -203,6 +260,10 @@ abstract class BaseBpmnParser: BpmnParser {
     private fun parseAndWrite(doc: Document, os: OutputStream, events: List<EventPropagatableToXml>) {
         doUpdate(doc, events)
 
+        writeDocument(doc, os)
+    }
+
+    private fun writeDocument(doc: Document, os: OutputStream) {
         val format = OutputFormat.createPrettyPrint()
         format.isPadText = false
         format.isNewLineAfterDeclaration = false
