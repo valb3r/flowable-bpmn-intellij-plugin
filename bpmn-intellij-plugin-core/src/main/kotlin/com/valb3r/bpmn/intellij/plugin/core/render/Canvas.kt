@@ -140,7 +140,7 @@ open class Canvas(private val project: Project, private val settings: CanvasCons
     }
 
     open protected fun buildPainter(graphics2D: Graphics2D, camera: Camera, cache: Cache<Long, BufferedImage>)
-            = CanvasPainter(graphics2D, camera, cache)
+            = CanvasPainter(graphics2D, camera, cache, width, height)
 
     fun renderToBitmap() : BufferedImage? {
         val doRender = { image: BufferedImage, ctx: ElementInteractionContext, camera: Camera ->

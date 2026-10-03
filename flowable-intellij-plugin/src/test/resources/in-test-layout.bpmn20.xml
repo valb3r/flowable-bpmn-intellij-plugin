@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.flowable.org/processdef">
+  <message id="startOperationAuthorization" name="startOperationAuthorization"/>
+  <process id="story-01-open-banking-ua-start-authorization" name="Start authorization" isExecutable="true">
+    <startEvent id="sid-33a1c8ca-35cf-4cdb-8e74-c440d807f479"/>
+    <serviceTask id="sid-c7c9921f-cff2-4b51-a99a-58b4aa43c009" name="Start authorization, resolve PSU/Corporate ID, late routing" flowable:exclusive="true" flowable:delegateExpression="${operationStartAndCreateAuthorisation}" flowable:triggerable="true" flowable:async="true">
+      <documentation>Trigger must happen in same JVM as executor</documentation>
+      <extensionElements>
+        <flowable:failedJobRetryTimeCycle>R0/PT0S</flowable:failedJobRetryTimeCycle>
+      </extensionElements>
+    </serviceTask>
+    <intermediateCatchEvent id="sid-2104866e-6fdb-40b3-8e07-0a8631220302" name="Await for operation authorization start">
+      <messageEventDefinition messageRef="startOperationAuthorization"/>
+    </intermediateCatchEvent>
+    <sequenceFlow id="sid-2600e486-cdbd-43d1-8c66-d6b807e3cd33" sourceRef="sid-2104866e-6fdb-40b3-8e07-0a8631220302" targetRef="sid-0c3642dd-c9ee-46f9-8bf0-10b0519ee2b9"/>
+    <serviceTask id="sid-c3a31cbf-1dba-41ff-9fdf-47fb144ee46c" flowable:exclusive="true" name="Initiate operation at Aspsp" flowable:delegateExpression="${operationStart}" flowable:triggerable="true" flowable:async="true">
+      <documentation>Trigger must happen in same JVM as executor</documentation>
+      <extensionElements>
+        <flowable:failedJobRetryTimeCycle>R0/PT0S</flowable:failedJobRetryTimeCycle>
+      </extensionElements>
+    </serviceTask>
+    <exclusiveGateway id="sid-109624e1-94e2-4960-8236-3a9c8c83cf9d" flowable:exclusive="true" default="sid-65016948-deae-4c1f-bbd9-2a6b36222a45"/>
+    <sequenceFlow id="sid-2cf64b38-5fc3-4174-8806-c5074bd0f105" sourceRef="sid-109624e1-94e2-4960-8236-3a9c8c83cf9d" targetRef="sid-c3a31cbf-1dba-41ff-9fdf-47fb144ee46c" name="Not yet initiated?">
+      <conditionExpression xsi:type="tFormalExpression">${authenticationCheckService.isOperationNotStartedAtAspsp(execution)}</conditionExpression>
+    </sequenceFlow>
+    <serviceTask id="sid-0c3642dd-c9ee-46f9-8bf0-10b0519ee2b9" flowable:exclusive="true" name="Prepare context (for validation, etc.)" flowable:delegateExpression="${prepareAuthContext}"/>
+    <sequenceFlow id="sid-8f69d9b8-9edb-4c96-9b2f-76c3495b3006" sourceRef="sid-0c3642dd-c9ee-46f9-8bf0-10b0519ee2b9" targetRef="sid-c7c9921f-cff2-4b51-a99a-58b4aa43c009"/>
+    <serviceTask id="sid-58d3e2e6-7974-4a22-a894-57d120564936" name="Fail on duplicate successful authorisation immediately" flowable:exclusive="true" flowable:delegateExpression="${failOnDuplicateAuthInRuntime}"/>
+    <sequenceFlow id="sid-3ce556eb-8f84-4d0f-bbac-516f5b5e3057" name="Duplicate: confirmed authorisation for current owner already exists" targetRef="sid-58d3e2e6-7974-4a22-a894-57d120564936" sourceRef="sid-242a4c83-6281-48de-ba58-32458d3d665e">
+      <conditionExpression xsi:type="tFormalExpression">${authenticationCheckService.isDuplicateAuthorisation(execution, 0)}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-170538c0-98d2-4cb2-8995-bf560283d7a2" sourceRef="sid-58d3e2e6-7974-4a22-a894-57d120564936" targetRef="sid-2210dd59-dc6d-4def-b4ce-f670323f23b5" name="Failed - duplicate"/>
+    <exclusiveGateway id="sid-242a4c83-6281-48de-ba58-32458d3d665e" default="sid-24d01735-b0e7-4f40-9faf-c9fb703586fb"/>
+    <sequenceFlow id="sid-24d01735-b0e7-4f40-9faf-c9fb703586fb" sourceRef="sid-242a4c83-6281-48de-ba58-32458d3d665e" targetRef="sid-db12b9d9-b89f-4299-b6b2-ba26216b1d30" name="Interactive authorisation (with PSU participation)">
+      <conditionExpression xsi:type="tFormalExpression"/>
+    </sequenceFlow>
+    <exclusiveGateway id="sid-3de3e77c-9563-4c4f-982a-359fd30db178" flowable:exclusive="true" name="Explicit/Implicit authorisation start" default="sid-2eb72498-f860-4b48-b181-97b2975ec26c"/>
+    <sequenceFlow id="sid-2eb72498-f860-4b48-b181-97b2975ec26c" sourceRef="sid-3de3e77c-9563-4c4f-982a-359fd30db178" targetRef="sid-755e0926-24cf-457b-a559-c58dad563b5d" name="Explicit authorisation start">
+      <conditionExpression xsi:type="tFormalExpression"/>
+    </sequenceFlow>
+    <sequenceFlow id="sid-38ffc795-c89f-4bfc-9c46-f8975862d3cf" sourceRef="sid-33a1c8ca-35cf-4cdb-8e74-c440d807f479" targetRef="sid-3de3e77c-9563-4c4f-982a-359fd30db178"/>
+    <sequenceFlow id="sid-b79da5e5-479e-4f08-96d5-8a295f605388" sourceRef="sid-3de3e77c-9563-4c4f-982a-359fd30db178" targetRef="sid-0c3642dd-c9ee-46f9-8bf0-10b0519ee2b9" name="Implicit authorisation start">
+      <conditionExpression xsi:type="tFormalExpression">${implicitOrExplicitAuthorizationService.isImplicitAuthorization(execution)}</conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="sid-db12b9d9-b89f-4299-b6b2-ba26216b1d30" default="sid-47f479a0-1f5f-4d9a-b70e-0d8bea4941c3"/>
+    <exclusiveGateway id="sid-893d7430-8be1-4fb9-bcf1-24d97ba9a25b" default="sid-0dcbd492-4616-4470-ade2-41868e75129f"/>
+    <serviceTask id="sid-d121d85e-b117-48b5-afb6-106382a26729" name="Finalize authorization" flowable:exclusive="true" flowable:delegateExpression="${authorisationFinalisation}"/>
+    <serviceTask id="sid-18e5de0d-ee15-4d94-9b3f-e61e295f9841" name="Failed Authorisation (after interactive)" flowable:exclusive="true" flowable:delegateExpression="${generalAuthorisationFailedService}"/>
+    <endEvent id="sid-e13e3ed2-9a60-4b8e-be8b-5f80e2cb2718">
+      <terminateEventDefinition/>
+    </endEvent>
+    <exclusiveGateway id="sid-3e15c279-d01a-4932-bfca-9eeb7cad4051" default="sid-8a97b17d-4770-401b-ba60-4abef484b2fa"/>
+    <callActivity id="sid-2cd1c318-d5d9-4926-84aa-cec0888ff245" name="ASPSP Managed Redirect" calledElement="epilog-03-open-banking-ua-aspsp-managed-redirect" flowable:inheritVariables="false">
+      <extensionElements>
+        <flowable:in source="jsonCtxV1" target="jsonCtxV1"/>
+        <flowable:out source="scaStatus" target="scaStatus"/>
+      </extensionElements>
+    </callActivity>
+    <boundaryEvent id="sid-3c1f0a52-7d64-4e18-9a71-5b0e2c8d4471" name="Authorization soft timeout timer" attachedToRef="sid-2cd1c318-d5d9-4926-84aa-cec0888ff245" cancelActivity="true">
+      <documentation>The bank owns the SCA outcome here, so ask it once before rejecting. Interrupting: the interactive part is torn down before the timeout decides, so no second token can finalise behind our back.</documentation>
+      <timerEventDefinition>
+        <timeDuration>${bpmnTimeoutResolver.operationAuthorizationTimeout(execution)}</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <callActivity id="sid-e3fcc77e-9ef1-4d83-a515-b8e375e01773" name="Pure Decoupled" calledElement="epilog-03-open-banking-ua-pure-decoupled" flowable:inheritVariables="false">
+      <extensionElements>
+        <flowable:in source="jsonCtxV1" target="jsonCtxV1"/>
+        <flowable:out source="scaStatus" target="scaStatus"/>
+      </extensionElements>
+    </callActivity>
+    <boundaryEvent id="sid-8e2b4d97-1c05-4f63-8a2e-6d9f3b7c1120" name="Authorization soft timeout timer" attachedToRef="sid-e3fcc77e-9ef1-4d83-a515-b8e375e01773" cancelActivity="true">
+      <documentation>The bank owns the SCA outcome here, so ask it once before rejecting. Interrupting: the interactive part is torn down before the timeout decides, so no second token can finalise behind our back.</documentation>
+      <timerEventDefinition>
+        <timeDuration>${bpmnTimeoutResolver.operationAuthorizationTimeout(execution)}</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <callActivity id="sid-42a24cb4-959f-4eb5-91be-f17fbb2e5fbd" name="Embedded-Redirect" calledElement="epilog-03-open-banking-ua-embedded-redirect" flowable:inheritVariables="false">
+      <extensionElements>
+        <flowable:in source="jsonCtxV1" target="jsonCtxV1"/>
+        <flowable:out source="scaStatus" target="scaStatus"/>
+      </extensionElements>
+    </callActivity>
+    <boundaryEvent id="sid-d4f81b06-9a37-4c52-b18d-7e35c9042fa8" name="Authorization soft timeout timer" attachedToRef="sid-42a24cb4-959f-4eb5-91be-f17fbb2e5fbd" cancelActivity="true">
+      <documentation>Usually fails straight away, without asking the bank: ApiKit itself decides this SCA (it verifies the TAN it collected), so a bank-side status could only contradict a verification that never happened. The exception is a decoupled SCA method selected inside this approach - from there the bank runs the SCA and owns its outcome, exactly as in the pure-decoupled flow. Which of the two it is cannot be told from the approach, since selecting a method does not change it; the gateway behind this timer asks the SCA method instead. Interrupting: the interactive part is torn down before the timeout decides, so no second token can finalise behind our back.</documentation>
+      <timerEventDefinition>
+        <timeDuration>${bpmnTimeoutResolver.operationAuthorizationTimeout(execution)}</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <exclusiveGateway id="sid-315013ab-e104-4608-9d2b-edf236f58bef" default="sid-c91d6947-9e56-4ce6-926f-ad8de8fdc495"/>
+    <serviceTask id="sid-9df13b2f-1050-4321-a100-6f3068f820df" name="Check SCA Completion" flowable:exclusive="true" flowable:delegateExpression="${authorizationCompletionCheckStep}" flowable:triggerable="true" flowable:async="true">
+      <documentation>Trigger must happen in same JVM as executor</documentation>
+      <extensionElements>
+        <flowable:failedJobRetryTimeCycle>R0/PT0S</flowable:failedJobRetryTimeCycle>
+      </extensionElements>
+    </serviceTask>
+    <callActivity id="sid-f38771c9-886e-4893-9c2c-74816492b12c" name="ASPSP Channel" calledElement="epilog-03-open-banking-ua-aspsp-channel" flowable:inheritVariables="false">
+      <extensionElements>
+        <flowable:in source="jsonCtxV1" target="jsonCtxV1"/>
+        <flowable:out source="scaStatus" target="scaStatus"/>
+      </extensionElements>
+    </callActivity>
+    <boundaryEvent id="sid-5a7c9e31-4b28-4d0f-9e63-2c81f4a6d503" name="Authorization soft timeout timer" attachedToRef="sid-f38771c9-886e-4893-9c2c-74816492b12c" cancelActivity="true">
+      <documentation>The bank owns the SCA outcome here, so ask it once before rejecting. Interrupting: the interactive part is torn down before the timeout decides, so no second token can finalise behind our back.</documentation>
+      <timerEventDefinition>
+        <timeDuration>${bpmnTimeoutResolver.operationAuthorizationTimeout(execution)}</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="sid-cce0889b-d0c9-4db9-ac7f-915686bd8263" sourceRef="sid-42a24cb4-959f-4eb5-91be-f17fbb2e5fbd" targetRef="sid-315013ab-e104-4608-9d2b-edf236f58bef">
+      <conditionExpression xsi:type="tFormalExpression"/>
+    </sequenceFlow>
+    <sequenceFlow id="sid-47f479a0-1f5f-4d9a-b70e-0d8bea4941c3" name="Is redirect through ApiKit or Embedded?" sourceRef="sid-db12b9d9-b89f-4299-b6b2-ba26216b1d30" targetRef="sid-42a24cb4-959f-4eb5-91be-f17fbb2e5fbd">
+      <conditionExpression xsi:type="tFormalExpression"/>
+    </sequenceFlow>
+    <sequenceFlow id="sid-6e498709-b6c4-4b10-b53d-863b19e41f9c" name="Is decoupled?" sourceRef="sid-db12b9d9-b89f-4299-b6b2-ba26216b1d30" targetRef="sid-e3fcc77e-9ef1-4d83-a515-b8e375e01773">
+      <conditionExpression xsi:type="tFormalExpression">${scaApproachResolver.isDecoupledApproach(execution)}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-0dcbd492-4616-4470-ade2-41868e75129f" name="OK" sourceRef="sid-893d7430-8be1-4fb9-bcf1-24d97ba9a25b" targetRef="sid-3e15c279-d01a-4932-bfca-9eeb7cad4051">
+      <conditionExpression xsi:type="tFormalExpression"/>
+    </sequenceFlow>
+    <sequenceFlow id="sid-1f124d40-d0aa-44bf-ac31-ce5ed7d2c100" name="Failed Authorisation" sourceRef="sid-893d7430-8be1-4fb9-bcf1-24d97ba9a25b" targetRef="sid-18e5de0d-ee15-4d94-9b3f-e61e295f9841">
+      <conditionExpression xsi:type="tFormalExpression">${verifyScaChallengeService.isLocalScaFailed(execution)}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-203f217b-70ce-4d61-b624-57a1640701a3" sourceRef="sid-c19f5e3a-7d26-4b81-9e4c-0a3f8d6b2c57" targetRef="sid-2210dd59-dc6d-4def-b4ce-f670323f23b5"/>
+    <sequenceFlow id="sid-95fc4c3c-62f5-4a57-b6e4-f186572b9b38" name="Is ASPSP managed redirect?" sourceRef="sid-db12b9d9-b89f-4299-b6b2-ba26216b1d30" targetRef="sid-2cd1c318-d5d9-4926-84aa-cec0888ff245">
+      <conditionExpression xsi:type="tFormalExpression">${scaApproachResolver.isAspspManagedRedirectApproach(execution)}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-bd003241-6c0f-4ee3-974e-2fd46f59f720" sourceRef="sid-2cd1c318-d5d9-4926-84aa-cec0888ff245" targetRef="sid-893d7430-8be1-4fb9-bcf1-24d97ba9a25b"/>
+    <sequenceFlow id="sid-8a97b17d-4770-401b-ba60-4abef484b2fa" sourceRef="sid-3e15c279-d01a-4932-bfca-9eeb7cad4051" targetRef="sid-9df13b2f-1050-4321-a100-6f3068f820df">
+      <conditionExpression xsi:type="tFormalExpression"/>
+    </sequenceFlow>
+    <sequenceFlow id="sid-cb593544-c9ca-4d36-8a1d-af8b79b0b746" name="PSU-ID NOT unique for multi level" sourceRef="sid-3e15c279-d01a-4932-bfca-9eeb7cad4051" targetRef="sid-18e5de0d-ee15-4d94-9b3f-e61e295f9841">
+      <conditionExpression xsi:type="tFormalExpression">${authenticationCheckService.isDuplicateAuthorisation(execution)}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-6ca2d039-424b-4ab8-8e5e-141d526f2ea8" sourceRef="sid-e3fcc77e-9ef1-4d83-a515-b8e375e01773" targetRef="sid-893d7430-8be1-4fb9-bcf1-24d97ba9a25b"/>
+    <sequenceFlow id="sid-413a12e8-5083-4656-9ca8-fb8fc3f5fa2d" name="Failed Authorisation. State update handled by embedded-redirect process" sourceRef="sid-315013ab-e104-4608-9d2b-edf236f58bef" targetRef="sid-2210dd59-dc6d-4def-b4ce-f670323f23b5">
+      <conditionExpression xsi:type="tFormalExpression">${verifyScaChallengeService.isLocalScaFailed(execution)}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-c91d6947-9e56-4ce6-926f-ad8de8fdc495" sourceRef="sid-315013ab-e104-4608-9d2b-edf236f58bef" targetRef="sid-3e15c279-d01a-4932-bfca-9eeb7cad4051">
+      <conditionExpression xsi:type="tFormalExpression"/>
+    </sequenceFlow>
+    <sequenceFlow id="sid-81c0a9c9-7b3f-493a-aaca-fbfeabfd0928" sourceRef="sid-9df13b2f-1050-4321-a100-6f3068f820df" targetRef="sid-d121d85e-b117-48b5-afb6-106382a26729"/>
+    <sequenceFlow id="sid-a3014bdf-ddda-4b3e-b97a-7b806fbfae79" sourceRef="sid-d121d85e-b117-48b5-afb6-106382a26729" targetRef="sid-2210dd59-dc6d-4def-b4ce-f670323f23b5"/>
+    <sequenceFlow id="sid-762f0d03-9312-4d81-8928-0f05b8adecf1" sourceRef="sid-f38771c9-886e-4893-9c2c-74816492b12c" targetRef="sid-893d7430-8be1-4fb9-bcf1-24d97ba9a25b"/>
+    <sequenceFlow id="sid-d0649353-1838-4ec6-a0bc-aa798d59f811" name="Is ASPSP-Channel?" sourceRef="sid-db12b9d9-b89f-4299-b6b2-ba26216b1d30" targetRef="sid-f38771c9-886e-4893-9c2c-74816492b12c">
+      <conditionExpression xsi:type="tFormalExpression">${scaApproachResolver.isAspspChannelApproach(execution)}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-2a66f9aa-e84a-4c18-8b35-a6ec04b839b7" sourceRef="sid-1497ef57-fe17-491e-8b59-866fcead31cc" targetRef="sid-2210dd59-dc6d-4def-b4ce-f670323f23b5" name="Soft timeout"/>
+    <serviceTask id="sid-1497ef57-fe17-491e-8b59-866fcead31cc" name="Failed Authorisation (soft timeout)" flowable:exclusive="true" flowable:delegateExpression="${operationAuthorisationTimeOutService}"/>
+    <sequenceFlow id="sid-91e6c3a4-2f7b-4d95-8c10-4a6b8d2e5c37" sourceRef="sid-3c1f0a52-7d64-4e18-9a71-5b0e2c8d4471" targetRef="sid-b7b0a422-9a3a-4d74-98c5-e0e8cd9fc719"/>
+    <sequenceFlow id="sid-6b3d8f12-5e94-4a07-b2c8-1f7e9a4d6053" sourceRef="sid-8e2b4d97-1c05-4f63-8a2e-6d9f3b7c1120" targetRef="sid-b7b0a422-9a3a-4d74-98c5-e0e8cd9fc719"/>
+    <sequenceFlow id="sid-2f95a7c8-3d16-4b8e-9f04-8c25e1b7d439" sourceRef="sid-5a7c9e31-4b28-4d0f-9e63-2c81f4a6d503" targetRef="sid-b7b0a422-9a3a-4d74-98c5-e0e8cd9fc719"/>
+    <sequenceFlow id="sid-0b5e94c2-7d38-41af-9c26-8e3a1f7b6d50" name="Soft timeout, nothing to ask the bank about" sourceRef="sid-d4f81b06-9a37-4c52-b18d-7e35c9042fa8" targetRef="sid-1497ef57-fe17-491e-8b59-866fcead31cc">
+      <conditionExpression xsi:type="tFormalExpression"/>
+    </sequenceFlow>
+    <serviceTask id="sid-b7b0a422-9a3a-4d74-98c5-e0e8cd9fc719" name="Poll SCA status before timeout one last time" flowable:exclusive="true" flowable:delegateExpression="${timeoutScaStatusPollingService}" flowable:triggerable="true" flowable:async="true">
+      <documentation>Last-chance question to the bank before the soft timeout rejects an SCA the PSU may have completed. Trigger must happen in same JVM as executor</documentation>
+      <extensionElements>
+        <flowable:failedJobRetryTimeCycle>R0/PT0S</flowable:failedJobRetryTimeCycle>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="sid-5f95636c-0ac9-4eb7-ac9a-d83efad214b6" sourceRef="sid-b7b0a422-9a3a-4d74-98c5-e0e8cd9fc719" targetRef="sid-1286a1b9-e3b9-4815-9e06-80cf411cefee"/>
+    <exclusiveGateway id="sid-1286a1b9-e3b9-4815-9e06-80cf411cefee" flowable:exclusive="true" name="SCA already completed at ASPSP?" default="sid-8bcc7c21-3e19-4032-8743-d63d56d55e02"/>
+    <sequenceFlow id="sid-81a231a3-9e6a-46dc-9ae5-71311680d561" name="SCA completed at ASPSP - finalise instead of failing" sourceRef="sid-1286a1b9-e3b9-4815-9e06-80cf411cefee" targetRef="sid-9df13b2f-1050-4321-a100-6f3068f820df">
+      <conditionExpression xsi:type="tFormalExpression">${timeoutScaStatusPollingService.isScaStatusGoodOnTimeout(execution)}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-8bcc7c21-3e19-4032-8743-d63d56d55e02" name="Not completed, unknown or unreachable" sourceRef="sid-1286a1b9-e3b9-4815-9e06-80cf411cefee" targetRef="sid-1497ef57-fe17-491e-8b59-866fcead31cc">
+      <conditionExpression xsi:type="tFormalExpression"/>
+    </sequenceFlow>
+    <serviceTask id="sid-2210dd59-dc6d-4def-b4ce-f670323f23b5" flowable:exclusive="true" name="Close authorization for BPMN updates" flowable:delegateExpression="${closeAuthorizationForBpmnUpdates}"/>
+    <sequenceFlow id="sid-6fea483d-9d41-4924-a94a-f2d5e649d620" sourceRef="sid-2210dd59-dc6d-4def-b4ce-f670323f23b5" targetRef="sid-e13e3ed2-9a60-4b8e-be8b-5f80e2cb2718"/>
+    <sequenceFlow id="sid-0a453d01-7f26-43df-a3ef-46f16245fc78" sourceRef="sid-c7c9921f-cff2-4b51-a99a-58b4aa43c009" targetRef="sid-109624e1-94e2-4960-8236-3a9c8c83cf9d"/>
+    <serviceTask id="sid-755e0926-24cf-457b-a559-c58dad563b5d" flowable:exclusive="true" name="Synchronization point - operation created, next step is authorisation" flowable:delegateExpression="${syncPointSignalOperationCreated}"/>
+    <sequenceFlow id="sid-8db8128a-af54-4195-bfee-016f505a2a03" sourceRef="sid-755e0926-24cf-457b-a559-c58dad563b5d" targetRef="sid-2104866e-6fdb-40b3-8e07-0a8631220302"/>
+    <serviceTask id="sid-09f11a8b-dcdb-4fda-bf66-5aa467a20b1b" flowable:exclusive="true" name="Mark operation started in ctx" flowable:delegateExpression="${markOperationStarted}"/>
+    <sequenceFlow id="sid-65016948-deae-4c1f-bbd9-2a6b36222a45" sourceRef="sid-109624e1-94e2-4960-8236-3a9c8c83cf9d" targetRef="sid-09f11a8b-dcdb-4fda-bf66-5aa467a20b1b">
+      <conditionExpression xsi:type="tFormalExpression"/>
+    </sequenceFlow>
+    <sequenceFlow id="sid-3784c668-ace4-4413-9dc8-ec1f18207022" sourceRef="sid-09f11a8b-dcdb-4fda-bf66-5aa467a20b1b" targetRef="sid-242a4c83-6281-48de-ba58-32458d3d665e"/>
+    <sequenceFlow id="sid-7e58b040-3fee-46cb-8f12-46511ec2c6a5" sourceRef="sid-c3a31cbf-1dba-41ff-9fdf-47fb144ee46c" targetRef="sid-09f11a8b-dcdb-4fda-bf66-5aa467a20b1b"/>
+    <serviceTask id="sid-c19f5e3a-7d26-4b81-9e4c-0a3f8d6b2c57" name="Synchronization point - authorisation failed (if needed)" flowable:exclusive="true" flowable:delegateExpression="${syncPointSignalAuthorisationFailed}"/>
+    <sequenceFlow id="sid-3ee786c8-3498-4ab2-9ad7-d0b298d22b61" sourceRef="sid-18e5de0d-ee15-4d94-9b3f-e61e295f9841" targetRef="sid-c19f5e3a-7d26-4b81-9e4c-0a3f8d6b2c57"/>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_opan-banking-ua-authorization-abstraction">
+    <bpmndi:BPMNPlane bpmnElement="story-01-open-banking-ua-start-authorization" id="BPMNPlane_opan-banking-ua-authorization-abstraction">
+      <bpmndi:BPMNEdge id="sid-6b736914-97d5-4303-9134-aec97874c364" bpmnElement="sid-170538c0-98d2-4cb2-8995-bf560283d7a2">
+        <omgdi:waypoint x="1836.1113" y="782.9042"/>
+        <omgdi:waypoint x="3125.0" y="782.9042"/>
+        <omgdi:waypoint x="3125.0" y="249.99991"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-dfb076f4-acb0-42bb-8c95-8d1147ec488e" bpmnElement="sid-242a4c83-6281-48de-ba58-32458d3d665e">
+        <omgdc:Bounds x="1245.0" y="425.00006" width="40.0" height="40.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-2dbd9c80-2e30-421e-9a4f-3c968fa80955" bpmnElement="sid-24d01735-b0e7-4f40-9faf-c9fb703586fb">
+        <omgdi:waypoint x="1285.0" y="445.00006"/>
+        <omgdi:waypoint x="1785.0" y="445.00006"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-d9179c73-8225-407d-8a0b-21de33ac7a36" bpmnElement="sid-3de3e77c-9563-4c4f-982a-359fd30db178">
+        <omgdc:Bounds x="140.0" y="423.88367" width="40.0" height="40.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-e1e02516-8a73-4b7e-801a-774ceedce175" bpmnElement="sid-2eb72498-f860-4b48-b181-97b2975ec26c">
+        <omgdi:waypoint x="180.0" y="443.88367"/>
+        <omgdi:waypoint x="280.0" y="445.00006"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge-34782706-e8ab-42b8-990f-76488020dbd4" bpmnElement="sid-38ffc795-c89f-4bfc-9c46-f8975862d3cf">
+        <omgdi:waypoint x="80.0" y="443.88367"/>
+        <omgdi:waypoint x="140.0" y="443.88367"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge-abea7d1b-2ee5-482b-8b92-c9fb83f3e789" bpmnElement="sid-b79da5e5-479e-4f08-96d5-8a295f605388">
+        <omgdi:waypoint x="160.0" y="463.88367"/>
+        <omgdi:waypoint x="160.0" y="538.88367"/>
+        <omgdi:waypoint x="595.0" y="538.88367"/>
+        <omgdi:waypoint x="595.0" y="485.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="sid-913334ff-d37e-4830-abe7-dd8d6571b281" bpmnElement="sid-db12b9d9-b89f-4299-b6b2-ba26216b1d30">
+        <omgdc:Bounds x="1785.0" y="425.00006" width="40.0" height="40.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sid-148faedf-d8ff-4082-96cf-6f22e3395383" bpmnElement="sid-893d7430-8be1-4fb9-bcf1-24d97ba9a25b">
+        <omgdc:Bounds x="2465.0" y="189.99997" width="40.0" height="40.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sid-2baeb633-e4f0-4a7e-94d6-92d4cb7610f0" bpmnElement="sid-d121d85e-b117-48b5-afb6-106382a26729">
+        <omgdc:Bounds x="2855.6445" y="169.99991" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sid-ffc63d92-559a-4499-b9cb-a72732c5f168" bpmnElement="sid-18e5de0d-ee15-4d94-9b3f-e61e295f9841">
+        <omgdc:Bounds x="2515.0" y="29.99997" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sid-5de6afd6-739e-49b0-bfd4-f271f09e1ff3" bpmnElement="sid-e13e3ed2-9a60-4b8e-be8b-5f80e2cb2718">
+        <omgdc:Bounds x="3255.0" y="194.99991" width="30.0" height="30.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sid-9fe080f1-49c3-440e-8d13-a8110585872a" bpmnElement="sid-3e15c279-d01a-4932-bfca-9eeb7cad4051">
+        <omgdc:Bounds x="2630.0" y="189.99997" width="40.0" height="40.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sid-4ceb0fc3-5037-4b89-913d-feaee75677d1" bpmnElement="sid-2cd1c318-d5d9-4926-84aa-cec0888ff245">
+        <omgdc:Bounds x="2199.472" y="61.666656" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sid-7fb2e5cf-651c-4b0e-9cbb-dd33030af064" bpmnElement="sid-e3fcc77e-9ef1-4d83-a515-b8e375e01773">
+        <omgdc:Bounds x="2199.472" y="169.99991" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sid-505abf63-adb8-4016-b7fd-74aedadb7513" bpmnElement="sid-42a24cb4-959f-4eb5-91be-f17fbb2e5fbd">
+        <omgdc:Bounds x="2199.472" y="405.00006" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sid-2fd44c22-5336-4708-a941-02bbc8a717a1" bpmnElement="sid-315013ab-e104-4608-9d2b-edf236f58bef">
+        <omgdc:Bounds x="2515.0" y="425.00006" width="40.0" height="40.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sid-c0dc9285-e281-4e21-8104-4785eb1a123d" bpmnElement="sid-9df13b2f-1050-4321-a100-6f3068f820df">
+        <omgdc:Bounds x="2700.6445" y="169.99994" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sid-53fb4e34-35c9-4d7d-be32-8df33b41bb3b" bpmnElement="sid-f38771c9-886e-4893-9c2c-74816492b12c">
+        <omgdc:Bounds x="2199.472" y="294.35788" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="sid-f3975596-5a8d-4fee-81b6-818f44008be5" bpmnElement="sid-cce0889b-d0c9-4db9-ac7f-915686bd8263">
+        <omgdi:waypoint x="2299.4717" y="445.00006"/>
+        <omgdi:waypoint x="2515.0" y="445.00006"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="sid-817f63e0-c3ff-4deb-9309-8ae55a6c17a0" bpmnElement="sid-8a97b17d-4770-401b-ba60-4abef484b2fa">
+        <omgdi:waypoint x="2670.0" y="209.99997"/>
+        <omgdi:waypoint x="2700.6445" y="210.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="sid-90d5eee1-bfd7-4a0e-98fa-0a2c9c47895f" bpmnElement="sid-cb593544-c9ca-4d36-8a1d-af8b79b0b746">
+        <omgdi:waypoint x="2650.0002" y="189.99997"/>
+        <omgdi:waypoint x="2650.0002" y="89.99994"/>
+        <omgdi:waypoint x="2615.0" y="89.99994"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="sid-c53055f1-55de-4098-8c03-5ac47e77c5e3" bpmnElement="sid-6ca2d039-424b-4ab8-8e5e-141d526f2ea8">
+        <omgdi:waypoint x="2299.472" y="209.99991"/>
+        <omgdi:waypoint x="2465.0" y="209.99997"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="sid-47f509b9-3b22-4510-af6b-2174a430ae68" bpmnElement="sid-413a12e8-5083-4656-9ca8-fb8fc3f5fa2d">
+        <omgdi:waypoint x="2535.0" y="465.00006"/>
+        <omgdi:waypoint x="2535.0" y="533.81714"/>
+        <omgdi:waypoint x="3075.0" y="533.81714"/>
+        <omgdi:waypoint x="3075.0" y="249.99991"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="sid-05f50f54-4b18-4807-9f39-bb2726888600" bpmnElement="sid-c91d6947-9e56-4ce6-926f-ad8de8fdc495">
+        <omgdi:waypoint x="2555.0" y="445.00006"/>
+        <omgdi:waypoint x="2650.0" y="445.00006"/>
+        <omgdi:waypoint x="2650.0" y="230.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="sid-8bee9d58-4197-4949-9759-c6b46aa4065f" bpmnElement="sid-81c0a9c9-7b3f-493a-aaca-fbfeabfd0928">
+        <omgdi:waypoint x="2800.6445" y="209.99994"/>
+        <omgdi:waypoint x="2855.6443" y="209.99991"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="sid-f7f9b89a-2f83-42ad-8b25-968b8ed39fc0" bpmnElement="sid-a3014bdf-ddda-4b3e-b97a-7b806fbfae79">
+        <omgdi:waypoint x="2955.6445" y="209.99991"/>
+        <omgdi:waypoint x="3050.0" y="209.99991"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge-4a02c8d5-7f31-4be9-86c4-9d15b7e0a3f6" bpmnElement="sid-91e6c3a4-2f7b-4d95-8c10-4a6b8d2e5c37">
+        <omgdi:waypoint x="2314.472" y="141.66666"/>
+        <omgdi:waypoint x="2370.0" y="141.66666"/>
+        <omgdi:waypoint x="2370.0" y="565.00006"/>
+        <omgdi:waypoint x="2370.0" y="645.00006"/>
+        <omgdi:waypoint x="2495.0" y="645.00006"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-9c5e2f84-3a17-4d06-b95f-2e7c8014d6ab" bpmnElement="sid-8e2b4d97-1c05-4f63-8a2e-6d9f3b7c1120">
+        <omgdc:Bounds x="2284.472" y="234.99991" width="30.0" height="30.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-6e19b3a7-2d58-4c04-91e6-7b3f5a2d8c01" bpmnElement="sid-6b3d8f12-5e94-4a07-b2c8-1f7e9a4d6053">
+        <omgdi:waypoint x="2314.472" y="249.99991"/>
+        <omgdi:waypoint x="2370.0" y="249.99994"/>
+        <omgdi:waypoint x="2370.0" y="565.00006"/>
+        <omgdi:waypoint x="2370.0" y="645.00006"/>
+        <omgdi:waypoint x="2495.0" y="645.00006"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-3f8a1c69-4b25-4e93-8072-6d9e1f4b7c58" bpmnElement="sid-5a7c9e31-4b28-4d0f-9e63-2c81f4a6d503">
+        <omgdc:Bounds x="2284.472" y="359.35788" width="30.0" height="30.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-8d47f0b2-6e93-4a15-b3c8-1f52d9a6e074" bpmnElement="sid-2f95a7c8-3d16-4b8e-9f04-8c25e1b7d439">
+        <omgdi:waypoint x="2314.472" y="374.35788"/>
+        <omgdi:waypoint x="2370.0" y="374.35788"/>
+        <omgdi:waypoint x="2370.0" y="565.00006"/>
+        <omgdi:waypoint x="2370.0" y="644.8444"/>
+        <omgdi:waypoint x="2495.0" y="645.00006"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-5b21e97c-8f34-4d16-a05b-3c7e2f918a64" bpmnElement="sid-d4f81b06-9a37-4c52-b18d-7e35c9042fa8">
+        <omgdc:Bounds x="2284.472" y="470.00006" width="30.0" height="30.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-7f4b02d9-58e6-4c13-b0a7-92d5e814c6b3" bpmnElement="sid-0b5e94c2-7d38-41af-9c26-8e3a1f7b6d50">
+        <omgdi:waypoint x="2299.4717" y="495.0"/>
+        <omgdi:waypoint x="2299.472" y="715.00006"/>
+        <omgdi:waypoint x="3000.0" y="715.00006"/>
+        <omgdi:waypoint x="3000.0" y="685.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-ce883e60-6600-4bd6-bfe8-c7b56aaa23ac" bpmnElement="sid-2210dd59-dc6d-4def-b4ce-f670323f23b5">
+        <omgdc:Bounds x="3050.0" y="169.99991" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-c748f9b9-f366-4c04-8389-ad2f25c7e6e8" bpmnElement="sid-6fea483d-9d41-4924-a94a-f2d5e649d620">
+        <omgdi:waypoint x="3150.0" y="209.99991"/>
+        <omgdi:waypoint x="3255.0" y="209.99991"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge-0bf5ac6d-5779-421c-b4af-b835250995cd" bpmnElement="sid-0a453d01-7f26-43df-a3ef-46f16245fc78">
+        <omgdi:waypoint x="868.9707" y="445.0"/>
+        <omgdi:waypoint x="970.0" y="445.00006"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-7ea08914-0f02-4a14-93c2-8582ee93bb18" bpmnElement="sid-755e0926-24cf-457b-a559-c58dad563b5d">
+        <omgdc:Bounds x="280.0" y="405.00006" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-b0e4c3df-b8df-4231-8c5f-7a7500df19d5" bpmnElement="sid-8db8128a-af54-4195-bfee-016f505a2a03">
+        <omgdi:waypoint x="380.0" y="445.00006"/>
+        <omgdi:waypoint x="445.0" y="445.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-9d5866ed-5a78-45e1-a59f-edd9bad7578c" bpmnElement="sid-09f11a8b-dcdb-4fda-bf66-5aa467a20b1b">
+        <omgdc:Bounds x="1075.0" y="405.00006" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-083370c9-6a82-4a8d-8d18-b78d39129dde" bpmnElement="sid-65016948-deae-4c1f-bbd9-2a6b36222a45">
+        <omgdi:waypoint x="1010.0" y="445.00006"/>
+        <omgdi:waypoint x="1075.0" y="445.00006"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge-00256b32-64b2-4d76-8ff4-b82bbf4a26c0" bpmnElement="sid-3784c668-ace4-4413-9dc8-ec1f18207022">
+        <omgdi:waypoint x="1175.0" y="445.00006"/>
+        <omgdi:waypoint x="1245.0" y="445.00006"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge-69e1925d-0bde-49ef-a481-dbe5c27ee2ff" bpmnElement="sid-7e58b040-3fee-46cb-8f12-46511ec2c6a5">
+        <omgdi:waypoint x="1040.0" y="615.00006"/>
+        <omgdi:waypoint x="1129.6565" y="615.00006"/>
+        <omgdi:waypoint x="1129.6565" y="482.20758"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-c19f5e3a-7d26-4b81-9e4c-0a3f8d6b2c57" bpmnElement="sid-c19f5e3a-7d26-4b81-9e4c-0a3f8d6b2c57">
+        <omgdc:Bounds x="2815.0" y="29.99997" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-efd07f50-12dd-4091-9196-ec8ed55165c4" bpmnElement="sid-3ee786c8-3498-4ab2-9ad7-d0b298d22b61">
+        <omgdi:waypoint x="2615.0002" y="69.999954"/>
+        <omgdi:waypoint x="2814.9998" y="69.99997"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

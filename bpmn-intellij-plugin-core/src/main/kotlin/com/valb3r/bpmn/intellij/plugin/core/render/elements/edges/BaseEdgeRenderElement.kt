@@ -51,11 +51,21 @@ abstract class BaseEdgeRenderElement(
 
         val activeWaypoints = anchors.filter { it is PhysicalWaypoint || (!multipleElementsSelected() && it.isActiveOrDragged()) }
         val updatedAnchors = activeWaypoints.map { it.transformedLocation }
+        val executedSequenceFlow = isExecutedSequenceFlow()
 
-        updatedAnchors.forEachIndexed {pos, waypoint ->
-            when {
-                pos == updatedAnchors.size - 1 && arrowAtEnd -> area.add(ctx.canvas.drawLineWithArrow(updatedAnchors[pos - 1], waypoint, color(isActiveEdge(pos, activeWaypoints), edgeColor)))
-                pos > 0 -> area.add(ctx.canvas.drawLine(updatedAnchors[pos - 1], waypoint, color(isActiveEdge(pos, activeWaypoints), edgeColor)))
+        if (executedSequenceFlow) {
+            val path = anchors.filterIsInstance<PhysicalWaypoint>().map { it.transformedLocation }
+            area.add(ctx.canvas.drawPolylineWithArrow(path, Colors.EXECUTED_PATH_COLOR.color, 6.0f))
+        } else {
+            updatedAnchors.forEachIndexed {pos, waypoint ->
+                when {
+                    pos == updatedAnchors.size - 1 && arrowAtEnd -> area.add(
+                        ctx.canvas.drawLineWithArrow(updatedAnchors[pos - 1], waypoint, color(isActiveEdge(pos, activeWaypoints), edgeColor))
+                    )
+                    pos > 0 -> area.add(
+                        ctx.canvas.drawLine(updatedAnchors[pos - 1], waypoint, color(isActiveEdge(pos, activeWaypoints), edgeColor))
+                    )
+                }
             }
         }
 
@@ -125,6 +135,19 @@ abstract class BaseEdgeRenderElement(
         val indexes = state().history.mapIndexed { pos, id -> if (id == bpmnElementId) pos else null }.filterNotNull()
         val midPoints = anchors.filterIsInstance<VirtualWaypoint>().map { it.transformedLocation }
         state().ctx.canvas.drawTextNoCameraTransform(midPoints[midPoints.size / 2], indexes.toString(), Colors.INNER_TEXT_COLOR.color, Colors.DEBUG_ELEMENT_COLOR.color)
+    }
+
+    private fun isExecutedSequenceFlow(): Boolean {
+        if (state().history.contains(bpmnElementId)) {
+            return true
+        }
+
+        val properties = state().currentState.elemPropertiesByStaticElementId[bpmnElementId] ?: return false
+        val sourceId = properties[PropertyType.SOURCE_REF]?.value as? String ?: return false
+        val targetId = properties[PropertyType.TARGET_REF]?.value as? String ?: return false
+        return state().history.zipWithNext().any { (source, target) ->
+            source.id == sourceId && target.id == targetId
+        }
     }
 
     private fun renderDefaultMarkIfNeeded(ctx: RenderContext, anchors: List<Point2D.Float>): Area {

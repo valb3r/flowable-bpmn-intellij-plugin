@@ -65,15 +65,16 @@ abstract class ShapeRenderElement(
         }
 
         val shapeCtx = ShapeCtx(shape.id, elem, currentOnScreenRect(ctx.canvas.camera), props, name)
-        if (state().history.contains(bpmnElementId)) {
-            val indexes = state().history.mapIndexed {pos, id -> if (id == bpmnElementId) pos else null}.filterNotNull()
-            state().ctx.canvas.drawTextNoCameraTransform(
-                    Point2D.Float(shapeCtx.shape.x, shapeCtx.shape.y), indexes.toString(), Colors.INNER_TEXT_COLOR.color, Colors.DEBUG_ELEMENT_COLOR.color
-            )
-        }
+        val executed = state().history.contains(bpmnElementId)
 
         detectAndRenderNewSequenceAnchorMove()
-        return doRender(ctx, shapeCtx)
+        val rendered = doRender(ctx, shapeCtx)
+        if (executed) {
+            state().ctx.canvas.drawExecutionArrow(
+                Point2D.Float(shapeCtx.shape.x + shapeCtx.shape.width - 22.0f, shapeCtx.shape.y + 20.0f)
+            )
+        }
+        return rendered
     }
 
     override fun drawActionsRight(x: Float, y: Float): Map<DiagramElementId, AreaWithZindex> {

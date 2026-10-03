@@ -11,7 +11,7 @@ plugins {
 allprojects {
     ext {
         intellijPlatformVersion = '2025.1.3'
-        intellijPlatformPlugins = ['com.intellij.java'] // DatabaseTools is an optional runtime dependency for BPMN debugging
+        intellijPlatformPlugins = ['com.intellij.java', 'com.intellij.database'] // Build classpath only; runtime dependency remains optional in plugin.xml
 
         kotlinStdlib = '2.4.10'
         kotlinApiVersion = '2.2'

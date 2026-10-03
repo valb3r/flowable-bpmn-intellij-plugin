@@ -23,4 +23,4 @@ interface BpmnDebugger {
     fun executionSequence(project: Project, processId: String): ExecutedElements?
 }
 
-data class ExecutedElements(val history: List<BpmnElementId>)
+data class ExecutedElements(val history: List<BpmnElementId>, val processInstanceId: String? = null)

@@ -6,6 +6,7 @@ import com.intellij.ui.JBColor
 import com.intellij.util.ui.UIUtil
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
+import com.valb3r.bpmn.intellij.plugin.core.Colors
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import org.apache.batik.transcoder.TranscoderInput
 import org.apache.batik.transcoder.TranscoderOutput
@@ -17,6 +18,7 @@ import java.awt.Graphics2D
 import java.awt.Polygon
 import java.awt.Shape
 import java.awt.Stroke
+import java.awt.BasicStroke
 import java.awt.font.FontRenderContext
 import java.awt.font.LineBreakMeasurer
 import java.awt.font.TextAttribute
@@ -24,6 +26,7 @@ import java.awt.geom.AffineTransform
 import java.awt.geom.AffineTransform.getTranslateInstance
 import java.awt.geom.Area
 import java.awt.geom.Ellipse2D
+import java.awt.geom.Path2D
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.geom.RoundRectangle2D
@@ -40,7 +43,13 @@ fun isUnderDarcula(): Boolean {
     return !JBColor.isBright()
 }
 
-class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCachedIcons: Cache<Long, BufferedImage>) {
+class CanvasPainter(
+    val graphics2D: Graphics2D,
+    val camera: Camera,
+    val svgCachedIcons: Cache<Long, BufferedImage>,
+    private val canvasWidth: Int = graphics2D.clipBounds?.width ?: 0,
+    private val canvasHeight: Int = graphics2D.clipBounds?.height ?: 0
+) {
 
     private val iconMargin = 5.0f
     private val textMargin = 5.0f
@@ -65,7 +74,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area()
     }
 
-    fun drawLine(start: Point2D.Float, end: Point2D.Float, color: Color): Area {
+    fun drawLine(start: Point2D.Float, end: Point2D.Float, color: Color, lineWidth: Float = regularLineWidth): Area {
         val st = camera.toCameraView(start)
         val en = camera.toCameraView(end)
 
@@ -75,16 +84,16 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         val lineLen = en.distance(st).toFloat()
         val line = Area(Rectangle2D.Float(
                 -lineLen,
-                -regularLineWidth / 2.0f,
+                -lineWidth / 2.0f,
                 lineLen,
-                regularLineWidth
+                lineWidth
         ))
         line.transform(transform)
         graphics2D.fill(line)
         return line
     }
 
-    fun drawLineWithArrow(start: Point2D.Float, end: Point2D.Float, color: Color): Area {
+    fun drawLineWithArrow(start: Point2D.Float, end: Point2D.Float, color: Color, lineWidth: Float = regularLineWidth): Area {
         val st = camera.toCameraView(start)
         val en = camera.toCameraView(end)
 
@@ -95,14 +104,46 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         val lineLen = en.distance(st).toFloat()
         val line = Area(Rectangle2D.Float(
                 -lineLen,
-                -regularLineWidth / 2.0f,
+                -lineWidth / 2.0f,
                 lineLen - arrowWidth / 2.0f,
-                regularLineWidth
+                lineWidth
         ))
         arrow.add(line)
         arrow.transform(transform)
         graphics2D.fill(arrow)
         return arrow
+    }
+
+    fun drawPolylineWithArrow(points: List<Point2D.Float>, color: Color, lineWidth: Float): Area {
+        if (points.size < 2) {
+            return Area()
+        }
+
+        val screenPoints = points.map(camera::toCameraView)
+        val path = Path2D.Float()
+        path.moveTo(screenPoints.first().x.toDouble(), screenPoints.first().y.toDouble())
+        screenPoints.drop(1).forEach { path.lineTo(it.x.toDouble(), it.y.toDouble()) }
+
+        val previousColor = graphics2D.color
+        val previousStroke = graphics2D.stroke
+        val stroke = BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
+        graphics2D.color = color
+        graphics2D.stroke = stroke
+        graphics2D.draw(path)
+
+        val result = Area(stroke.createStrokedShape(path))
+        val start = screenPoints[screenPoints.lastIndex - 1]
+        val end = screenPoints.last()
+        val arrow = arrowArea.clone() as Area
+        val transform = getTranslateInstance(end.x.toDouble(), end.y.toDouble())
+        transform.rotate(end.x.toDouble() - start.x.toDouble(), end.y.toDouble() - start.y.toDouble())
+        arrow.transform(transform)
+        graphics2D.fill(arrow)
+        result.add(arrow)
+
+        graphics2D.color = previousColor
+        graphics2D.stroke = previousStroke
+        return result
     }
 
     fun drawLineSlash(start: Point2D.Float, end: Point2D.Float, color: Color): Area {
@@ -521,6 +562,40 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         graphics2D.font = font // for ellipsis
         graphics2D.color = textColor
         graphics2D.drawString(text, textLocation.x.toInt(), textLocation.y.toInt())
+    }
+
+    fun drawTextAtScreenBottomRight(text: String, textColor: Color, margin: Int = 12) {
+        if (text.isEmpty() || canvasWidth <= 0 || canvasHeight <= 0) {
+            return
+        }
+
+        val previousFont = graphics2D.font
+        val previousColor = graphics2D.color
+        try {
+            graphics2D.font = font
+            val metrics = graphics2D.fontMetrics
+            val x = canvasWidth - metrics.stringWidth(text) - margin
+            val y = canvasHeight - metrics.descent - margin
+            graphics2D.color = textColor
+            graphics2D.drawString(text, x, y)
+        } finally {
+            graphics2D.font = previousFont
+            graphics2D.color = previousColor
+        }
+    }
+
+    fun drawExecutionArrow(location: Point2D.Float) {
+        val arrowLocation = camera.toCameraView(location)
+        val previousFont = graphics2D.font
+        val previousColor = graphics2D.color
+        try {
+            graphics2D.font = font.deriveFont(Font.BOLD, maxOf(16.0f, font.size * 1.6f))
+            graphics2D.color = Colors.EXECUTED_PATH_COLOR.color
+            graphics2D.drawString("➜", arrowLocation.x.toInt(), arrowLocation.y.toInt())
+        } finally {
+            graphics2D.font = previousFont
+            graphics2D.color = previousColor
+        }
     }
 
     fun drawWrappedSingleLine(start: Point2D.Float, end: Point2D.Float, text: String, textColor: Color) {

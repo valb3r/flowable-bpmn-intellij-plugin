@@ -17,6 +17,8 @@ enum class Colors(val color: JBColor) {
     ANCHOR_COLOR(JBColor(Color(0xFFAA00), Color(0xC09E56))),
     CLOSE_ANCHOR_COLOR(JBColor(Color(0xFFC0CB), Color(0xFFC0CB))),
     DEBUG_ELEMENT_COLOR(JBColor(Color(0xFFFF00), Color(0x535353))),
+    EXECUTED_ELEMENT_COLOR(JBColor(Color(0x008000), Color(0x00DD55))),
+    EXECUTED_PATH_COLOR(JBColor(Color(0x00, 0x80, 0x00, 0xCC), Color(0x00, 0xDD, 0x55, 0xCC))),
     WAYPOINT_COLOR(JBColor(Color(0xFF0000), Color(0xFF0000))),
     MID_WAYPOINT_COLOR(JBColor(Color(0x0088FF), Color(0x0000FF))),
     BACKGROUND_COLOR(JBColor(Color(0xFDFEFF), Color(0x2B2B2B))),

@@ -107,7 +107,8 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     private fun doRender(ctx: RenderContext, onlyDiagram: Boolean = false): RenderResult {
         val elementsByDiagramId = mutableMapOf<DiagramElementId, BaseDiagramRenderElement>()
         val currentState = ctx.stateProvider.currentState()
-        val history = currentDebugger(project)?.executionSequence(project, currentState.processId.id)?.history ?: emptyList()
+        val execution = currentDebugger(project)?.executionSequence(project, currentState.processId.id)
+        val history = execution?.history ?: emptyList()
         val state = RenderState(
             elementsByDiagramId,
             mutableMapOf(),
@@ -127,6 +128,13 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
         if (onlyDiagram) {
             return RenderResult(rendered, tree)
+        }
+
+        execution?.processInstanceId?.let { processInstanceId ->
+            ctx.canvas.drawTextAtScreenBottomRight(
+                processInstanceId,
+                Colors.EXECUTED_ELEMENT_COLOR.color
+            )
         }
 
         // Overlay system elements on top of rendered BPMN diagram
