@@ -2,10 +2,8 @@ package com.valb3r.bpmn.intellij.plugin.core
 
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
@@ -56,6 +54,9 @@ class CanvasBuilder(
             NotificationType.INFORMATION,
         )
     },
+    private val autoLayout: (BpmnProcessObject, Boolean) -> BpmnAutoLayout.LayoutResult = { process, forceFullLayout ->
+        BpmnAutoLayout().layoutIfRequired(process, forceFullLayout)
+    },
 ) {
 
     private var currentVfsConnection: MessageBusConnection? = null
@@ -74,6 +75,7 @@ class CanvasBuilder(
         canvas: Canvas,
         project: Project,
         bpmnFile: VirtualFile,
+        persistFile: (Project, VirtualFile, String) -> Unit,
         forceAutoLayout: Boolean = false,
     ) {
         if (assertFileContentAndShowErrorOrWarning(parser, bpmnFile, onBadContentErrorCallback, onBadContentWarningCallback)) return
@@ -87,6 +89,7 @@ class CanvasBuilder(
             parser,
             project,
             bpmnFile,
+            persistFile,
             forceAutoLayout,
         )
 
@@ -103,7 +106,7 @@ class CanvasBuilder(
         currentVfsConnection?.let { it.disconnect(); it.dispose() }
         currentPaintConnection?.let { it.disconnect(); it.dispose() }
         currentVfsConnection = attachFileChangeListener(project, bpmnFile) {
-            build(committerFactory, parser, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, multiLineExpandableTextFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory, canvas, project, it)
+            build(committerFactory, parser, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, multiLineExpandableTextFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory, canvas, project, it, persistFile)
         }
         currentPaintConnection = attachPaintListener(project, canvas)
     }
@@ -114,13 +117,14 @@ class CanvasBuilder(
         parser: BpmnParser,
         project: Project,
         bpmnFile: VirtualFile,
+        persistFile: (Project, VirtualFile, String) -> Unit,
         forceAutoLayout: Boolean,
     ): Pair<String, BpmnProcessObject> {
         if (!currentSettings().enableAutoLayout && !forceAutoLayout) {
             return data to parsedProcess
         }
 
-        val layoutResult = BpmnAutoLayout().layoutIfRequired(parsedProcess, forceFullLayout = forceAutoLayout)
+        val layoutResult = autoLayout(parsedProcess, forceAutoLayout)
         if (!layoutResult.layoutApplied) {
             return data to layoutResult.laidOutProcess
         }
@@ -195,18 +199,6 @@ class CanvasBuilder(
         } else {
             // Plain unit tests do not install an IntelliJ Application instance.
             String(bpmnFile.contentsToByteArray(), UTF_8)
-        }
-    }
-
-    private fun persistFile(project: Project, bpmnFile: VirtualFile, content: String) {
-        val document = ApplicationManager.getApplication().runReadAction(Computable {
-            FileDocumentManager.getInstance().getDocument(bpmnFile)
-        }) ?: return
-        WriteCommandAction.runWriteCommandAction(project) {
-            if (document.text != content) {
-                document.setText(content)
-                FileDocumentManager.getInstance().saveDocument(document)
-            }
         }
     }
 }

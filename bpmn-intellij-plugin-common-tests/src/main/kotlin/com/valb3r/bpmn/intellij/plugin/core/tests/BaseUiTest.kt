@@ -234,7 +234,13 @@ abstract class BaseUiTest {
 
     @BeforeEach
     fun setupMocks() {
-        currentSettingsStateProvider.set{ object: BaseBpmnPluginSettingsState() {} }
+        currentSettingsStateProvider.set {
+            object : BaseBpmnPluginSettingsState() {
+                init {
+                    pluginState.enableAutoLayout = false
+                }
+            }
+        }
         registerPopupMenuProvider(project, popupMenuProvider)
         whenever(popupMenuProvider.popupChangeShapeType(any())).thenReturn(mock())
         textFieldsConstructed.clear()
@@ -433,7 +439,20 @@ abstract class BaseUiTest {
     protected fun initializeCanvas() {
         canvasBuilder.build(
             { fileCommitter },
-            parser, propertiesTable, comboboxFactory, editorFactory, editorFactory, editorFactory, multiLineEditorFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory, canvas, project, virtualFile
+            parser,
+            propertiesTable,
+            comboboxFactory,
+            editorFactory,
+            editorFactory,
+            editorFactory,
+            multiLineEditorFactory,
+            checkboxFieldFactory,
+            buttonFactory,
+            arrowButtonFactory,
+            canvas,
+            project,
+            virtualFile,
+            { _, _, _ -> },
         )
         canvas.paintComponent(graphics)
     }

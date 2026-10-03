@@ -10,6 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.TextAnnotationText
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
+import com.valb3r.bpmn.intellij.plugin.autolayout.BpmnAutoLayout
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
@@ -25,6 +26,8 @@ import com.valb3r.bpmn.intellij.plugin.core.properties.RowExpansionFilter
 import com.valb3r.bpmn.intellij.plugin.core.render.*
 import com.valb3r.bpmn.intellij.plugin.core.state.CurrentState
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
+import com.valb3r.bpmn.intellij.plugin.core.settings.BaseBpmnPluginSettingsState
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.tests.BaseUiTest
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import org.amshove.kluent.*
@@ -59,6 +62,14 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
 
     @Test
     fun `opening processes with missing or absent diagram elements auto lays out and shows feedback`() {
+        currentSettingsStateProvider.set {
+            object : BaseBpmnPluginSettingsState() {
+                init {
+                    pluginState.enableAutoLayout = true
+                }
+            }
+        }
+
         val process = basicProcess.copy(
             basicProcess.process.copy(
                 body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd)),
@@ -72,7 +83,22 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         )
         whenever(parser.parse("")).thenReturn(process)
         var autoLayoutFeedbackCount = 0
-        val builder = CanvasBuilder(renderer, onAutoLayoutApplied = { autoLayoutFeedbackCount++ })
+        val builder = CanvasBuilder(
+            renderer,
+            onAutoLayoutApplied = { autoLayoutFeedbackCount++ },
+            autoLayout = { process, _ ->
+                val generatedDiagram = DiagramElement(
+                    diagramMainElementId,
+                    PlaneElement(
+                        diagramMainPlaneElementId,
+                        process.process.id,
+                        listOf(diagramServiceTaskStart, diagramServiceTaskEnd),
+                        emptyList(),
+                    ),
+                )
+                BpmnAutoLayout.LayoutResult(process.copy(diagram = listOf(generatedDiagram)), layoutApplied = true)
+            },
+        )
 
         fun openCurrentProcess(forceAutoLayout: Boolean = false) {
             builder.build(
@@ -90,6 +116,7 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
                 canvas,
                 project,
                 virtualFile,
+                { _, _, _ -> },
                 forceAutoLayout,
             )
         }
