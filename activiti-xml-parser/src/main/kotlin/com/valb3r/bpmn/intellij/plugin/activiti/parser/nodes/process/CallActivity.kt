@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.BpmnMappable
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.nodes.process.nested.formprop.ExtensionElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import org.mapstruct.Mapper
+import org.mapstruct.Mapping
 import org.mapstruct.factory.Mappers
 
 data class CallActivity(
@@ -18,14 +19,17 @@ data class CallActivity(
         @JacksonXmlProperty(isAttribute = true) val calledElementType: String?,
         @JacksonXmlProperty(isAttribute = true) val inheritVariables: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val fallbackToDefaultTenant: Boolean?,
+        val multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null,
         @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 ): BpmnMappable<BpmnCallActivity> {
 
     override fun toElement(): BpmnCallActivity {
-        return Mappers.getMapper(Mapping::class.java).convertToDto(this)
+        return Mappers.getMapper(Mapping::class.java).convertToDto(this).copy(
+            multiInstanceLoopCharacteristics = multiInstanceLoopCharacteristics?.toElement()
+        )
     }
 
-    @Mapper(uses = [BpmnElementIdMapper::class])
+    @Mapper(uses = [BpmnElementIdMapper::class, MultiInstanceLoopCharacteristics.Mapping::class])
     interface Mapping {
         fun convertToDto(input: CallActivity) : BpmnCallActivity
     }

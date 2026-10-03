@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnParser
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnLaxHunk
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.NS
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.PropertyTypeDetails
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.XmlType
@@ -66,8 +67,32 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     MESSAGE_REF(PropertyTypeDetails(PropertyType.MESSAGE_REF, "messageEventDefinition.messageRef", XmlType.ATTRIBUTE)),
     ESCALATION_REF(PropertyTypeDetails(PropertyType.ESCALATION_REF, "escalationEventDefinition.escalationRef", XmlType.ATTRIBUTE)),
     ERROR_REF(PropertyTypeDetails(PropertyType.ERROR_REF, "errorEventDefinition.errorRef", XmlType.ATTRIBUTE)),
+    ERROR_VARIABLE_NAME(PropertyTypeDetails(PropertyType.ERROR_VARIABLE_NAME, "errorEventDefinition.flowable:errorVariableName", XmlType.ATTRIBUTE)),
+    ERROR_VARIABLE_LOCAL_SCOPE(PropertyTypeDetails(PropertyType.ERROR_VARIABLE_LOCAL_SCOPE, "errorEventDefinition.flowable:errorVariableLocalScope", XmlType.ATTRIBUTE)),
+    ERROR_VARIABLE_TRANSIENT(PropertyTypeDetails(PropertyType.ERROR_VARIABLE_TRANSIENT, "errorEventDefinition.flowable:errorVariableTransient", XmlType.ATTRIBUTE)),
     SIGNAL_REF(PropertyTypeDetails(PropertyType.SIGNAL_REF, "signalEventDefinition.signalRef", XmlType.ATTRIBUTE)),
     COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA)),
+    MULTI_INSTANCE_IS_SEQUENTIAL(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_IS_SEQUENTIAL, "multiInstanceLoopCharacteristics.isSequential", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_COLLECTION(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_COLLECTION, "multiInstanceLoopCharacteristics.flowable:collection", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_ELEMENT_VARIABLE(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_ELEMENT_VARIABLE, "multiInstanceLoopCharacteristics.flowable:elementVariable", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_LOOP_CARDINALITY(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_CARDINALITY, "multiInstanceLoopCharacteristics.loopCardinality", XmlType.CDATA)),
+    MULTI_INSTANCE_COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_COMPLETION_CONDITION, "multiInstanceLoopCharacteristics.completionCondition", XmlType.CDATA)),
+    MULTI_INSTANCE_ELEMENT_INDEX_VARIABLE(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_ELEMENT_INDEX_VARIABLE, "multiInstanceLoopCharacteristics.flowable:elementIndexVariable", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_NO_WAIT_STATES_ASYNC_LEAVE(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_NO_WAIT_STATES_ASYNC_LEAVE, "multiInstanceLoopCharacteristics.flowable:noWaitStatesAsyncLeave", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_LOOP_DATA_INPUT_REF(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_DATA_INPUT_REF, "multiInstanceLoopCharacteristics.loopDataInputRef", XmlType.CDATA)),
+    MULTI_INSTANCE_INPUT_DATA_ITEM(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_INPUT_DATA_ITEM, "multiInstanceLoopCharacteristics.inputDataItem.name", XmlType.ATTRIBUTE)),
+    TEXT_ANNOTATION_TEXT(PropertyTypeDetails(PropertyType.TEXT_ANNOTATION_TEXT, "text.text", XmlType.CDATA)),
+    TEXT_ANNOTATION_TEXT_FORMAT(PropertyTypeDetails(PropertyType.TEXT_ANNOTATION_TEXT_FORMAT, "textFormat", XmlType.ATTRIBUTE)),
+    VARIABLE_AGGREGATION_TARGET(PropertyTypeDetails(PropertyType.VARIABLE_AGGREGATION_TARGET, "multiInstanceLoopCharacteristics.extensionElements.flowable:variableAggregation?target=@.target", XmlType.ATTRIBUTE)),
+    VARIABLE_AGGREGATION_TARGET_EXPRESSION(PropertyTypeDetails(PropertyType.VARIABLE_AGGREGATION_TARGET_EXPRESSION, "multiInstanceLoopCharacteristics.extensionElements.flowable:variableAggregation?target=@.targetExpression", XmlType.ATTRIBUTE)),
+    VARIABLE_AGGREGATION_DELEGATE_EXPRESSION(PropertyTypeDetails(PropertyType.VARIABLE_AGGREGATION_DELEGATE_EXPRESSION, "multiInstanceLoopCharacteristics.extensionElements.flowable:variableAggregation?target=@.delegateExpression", XmlType.ATTRIBUTE)),
+    VARIABLE_AGGREGATION_CLASS(PropertyTypeDetails(PropertyType.VARIABLE_AGGREGATION_CLASS, "multiInstanceLoopCharacteristics.extensionElements.flowable:variableAggregation?target=@.class", XmlType.ATTRIBUTE)),
+    VARIABLE_AGGREGATION_CREATE_OVERVIEW(PropertyTypeDetails(PropertyType.VARIABLE_AGGREGATION_CREATE_OVERVIEW, "multiInstanceLoopCharacteristics.extensionElements.flowable:variableAggregation?target=@.createOverviewVariable", XmlType.ATTRIBUTE)),
+    VARIABLE_AGGREGATION_STORE_AS_TRANSIENT(PropertyTypeDetails(PropertyType.VARIABLE_AGGREGATION_STORE_AS_TRANSIENT, "multiInstanceLoopCharacteristics.extensionElements.flowable:variableAggregation?target=@.storeAsTransientVariable", XmlType.ATTRIBUTE)),
+    VARIABLE_AGGREGATION_VARIABLE_SOURCE(PropertyTypeDetails(PropertyType.VARIABLE_AGGREGATION_VARIABLE_SOURCE, "multiInstanceLoopCharacteristics.extensionElements.flowable:variableAggregation?target=@.variable?source=@.source", XmlType.ATTRIBUTE)),
+    VARIABLE_AGGREGATION_VARIABLE_SOURCE_EXPRESSION(PropertyTypeDetails(PropertyType.VARIABLE_AGGREGATION_VARIABLE_SOURCE_EXPRESSION, "multiInstanceLoopCharacteristics.extensionElements.flowable:variableAggregation?target=@.variable?source=@.sourceExpression", XmlType.ATTRIBUTE)),
+    VARIABLE_AGGREGATION_VARIABLE_TARGET(PropertyTypeDetails(PropertyType.VARIABLE_AGGREGATION_VARIABLE_TARGET, "multiInstanceLoopCharacteristics.extensionElements.flowable:variableAggregation?target=@.variable?source=@.target", XmlType.ATTRIBUTE)),
+    VARIABLE_AGGREGATION_VARIABLE_TARGET_EXPRESSION(PropertyTypeDetails(PropertyType.VARIABLE_AGGREGATION_VARIABLE_TARGET_EXPRESSION, "multiInstanceLoopCharacteristics.extensionElements.flowable:variableAggregation?target=@.variable?source=@.targetExpression", XmlType.ATTRIBUTE)),
     DEFAULT_FLOW(PropertyTypeDetails(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE)),
     IS_TRANSACTIONAL_SUBPROCESS(PropertyTypeDetails(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT)),
     IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE(PropertyTypeDetails(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, "flowable:useLocalScopeForResultVariable", XmlType.ATTRIBUTE)),
@@ -154,22 +179,23 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     EXECUTION_LISTENER_FIELD_STRING(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_FIELD_STRING, "extensionElements.flowable:executionListener?class=@.flowable:field?name=@.flowable:string.text", XmlType.CDATA)),
 }
 
-class FlowableParser : BaseBpmnParser() {
+class FlowableParser(laxParsingEnabled: () -> Boolean = { true }) : BaseBpmnParser(laxParsingEnabled) {
 
     private val mapper: XmlMapper = mapper()
 
     override fun parse(input: String): BpmnProcessObject {
-        val dto = mapper.readValue<BpmnFile>(input)
-        return toProcessObject(dto)
+        val prepared = prepareLaxXmlForJackson(input)
+        val dto = mapper.readValue<BpmnFile>(prepared.xml)
+        return toProcessObject(dto, prepared.hunks)
     }
 
-    private fun toProcessObject(dto: BpmnFile): BpmnProcessObject {
+    private fun toProcessObject(dto: BpmnFile, laxHunks: List<BpmnLaxHunk>): BpmnProcessObject {
         // TODO - Multi process support?
         markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
         val process = dto.processes[0].toElement()
         val diagrams = dto.diagrams!!.map { it.toElement() }
 
-        return BpmnProcessObject(process, diagrams)
+        return BpmnProcessObject(process, diagrams, laxHunks)
     }
 
     override fun modelNs(): NS {

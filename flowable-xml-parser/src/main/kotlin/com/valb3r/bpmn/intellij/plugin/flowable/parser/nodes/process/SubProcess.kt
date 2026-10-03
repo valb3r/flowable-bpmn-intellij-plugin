@@ -21,15 +21,22 @@ class SubProcess: BpmnMappable<BpmnSubProcess>, ProcessBody() {
     @JacksonXmlProperty(isAttribute = true) var async: Boolean? = null
     @JacksonXmlProperty(isAttribute = true) var exclusive: Boolean? = null
     @JacksonXmlProperty(isAttribute = true) var triggeredByEvent: Boolean? = null
+    var multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null
     @JsonIgnore var hasExternalDiagram: Boolean = false
     @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) var extensionElements: List<ExtensionElement>? = null
 
     override fun toElement(): BpmnSubProcess {
-        return Mappers.getMapper(SubProcessMapping::class.java).convertToDto(this)
+        return Mappers.getMapper(SubProcessMapping::class.java).convertToDto(this).copy(
+            multiInstanceLoopCharacteristics = multiInstanceLoopCharacteristics?.toElement()
+        )
     }
 
     @Mapper(uses = [BpmnElementIdMapper::class])
     abstract class SubProcessMapping { // Default methods of Kotlin interfaces are not understood by MapStruct
+
+        @Mapping(target = "multiInstanceLoopCharacteristics", ignore = true)
+        @Mapping(target = "transactionalSubprocess", constant = "false")
+        abstract fun convertToDtoWithoutMultiInstance(input: SubProcess) : BpmnSubProcess
 
         fun mapNonCollapsed(input: List<SubProcess>?) : List<BpmnSubProcess>? {
             return input?.filter { !it.hasExternalDiagram }?.map { convertToDto(it) }
@@ -39,8 +46,7 @@ class SubProcess: BpmnMappable<BpmnSubProcess>, ProcessBody() {
             return input?.filter { it.hasExternalDiagram }?.map { convertToCollapsedDto(it) }
         }
 
-        @Mapping(target = "transactionalSubprocess", constant = "false")
-        abstract fun convertToDto(input: SubProcess) : BpmnSubProcess
+        fun convertToDto(input: SubProcess) : BpmnSubProcess = convertToDtoWithoutMultiInstance(input)
 
         @Mapping(target = "transactionalSubprocess", constant = "false")
         abstract fun convertToCollapsedDto(input: SubProcess) : BpmnCollapsedSubprocess

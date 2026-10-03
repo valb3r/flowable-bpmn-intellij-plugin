@@ -82,7 +82,7 @@ class CurrentStateProvider(private val project: Project) {
                 0L
         )
         currentState = fileState
-        updateEventsRegistry(project).reset(fileContent)
+        updateEventsRegistry(project).reset(fileContent, processObject.laxHunks)
     }
 
     fun currentState(): CurrentState {
@@ -158,6 +158,8 @@ class CurrentStateProvider(private val project: Project) {
                 is UiOnlyValueRemovedEvent -> removeUiOnlyProperty(event, updatedElemPropertiesByStaticElementId)
                 else -> throw IllegalStateException("Can't handle event ${event.javaClass}")
             }
+
+            handleExternalPropertiesChange(updatedElementByStaticId, updatedElemPropertiesByStaticElementId)
         }
 
         updatedElemPropertiesByStaticElementId.forEach {(elemId, props) ->
@@ -178,6 +180,25 @@ class CurrentStateProvider(private val project: Project) {
                 undoRedoStatus,
                 version.toLong()
         )
+    }
+
+    private fun handleExternalPropertiesChange(updatedElementByStaticId: MutableMap<BpmnElementId, WithParentId>, updatedElemPropertiesByStaticElementId: MutableMap<BpmnElementId, PropertyTable>) {
+        // TODO: Performance?
+        val externalProps = PropertyType.values().filter { null != it.externalProperty }.toSet()
+        updatedElementByStaticId.forEach { (elemId, elem) ->
+            for (prop in externalProps) {
+                if (!prop.isUsedOnlyBy.contains(elem.element::class)) {
+                    continue
+                }
+                val externalProp = prop.externalProperty!!
+                val elemProps = updatedElemPropertiesByStaticElementId[elemId]!!
+                if (externalProp.isPresent(updatedElementByStaticId, updatedElemPropertiesByStaticElementId, elemProps)) {
+                    val ref = externalProp.externalValueReference(elemProps) ?: return@forEach
+                    val externalValue = updatedElemPropertiesByStaticElementId[ref.first]?.get(ref.second)
+                    elemProps[prop] = Property(externalProp.castFromExternalValue(elemProps, externalValue?.value))
+                }
+            }
+        }
     }
 
     private fun applyPropertyUpdate(
@@ -318,7 +339,7 @@ class CurrentStateProvider(private val project: Project) {
     ){
         val updateWithParentId = updatedElementByStaticId[elementId]!!.copy(element = updateElement)
         updatedElementByStaticId[elementId] = updateWithParentId
-        updatedElemPropertiesByStaticElementId[elementId] = propertyTable
+        updatedElemPropertiesByStaticElementId[elementId] = propertyTable.copy()
     }
 
     private fun updateId(

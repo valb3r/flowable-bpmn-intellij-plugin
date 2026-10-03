@@ -13,7 +13,7 @@
    version="1.1"
    viewBox="0 0 32 32"
    preserveAspectRatio="xMidYMid meet"
-   style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);"
+   style="-ms-transform: rotate(360); -webkit-transform: rotate(360); transform: rotate(360);"
    height="16"
    width="16"
    focusable="false"

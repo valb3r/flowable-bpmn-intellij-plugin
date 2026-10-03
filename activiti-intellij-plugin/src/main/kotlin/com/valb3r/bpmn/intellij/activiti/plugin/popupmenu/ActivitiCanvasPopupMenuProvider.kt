@@ -39,6 +39,7 @@ class ActivitiCanvasPopupMenuProvider(project: Project) : BaseCanvasPopupMenuPro
         menu.addNewElementItem(sceneLocation, focus, SUB_PROCESS)
         menu.addNewElementItem(sceneLocation, focus, EVENT_SUB_PROCESS)
         menu.addNewElementItem(sceneLocation, focus, CALL_ACTIVITY)
+        menu.addNewElementItem(sceneLocation, focus, TEXT_ANNOTATION)
         return menu
     }
 

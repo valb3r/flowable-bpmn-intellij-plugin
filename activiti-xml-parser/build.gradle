@@ -7,10 +7,9 @@ plugins {
 group = 'com.valb3r.bpmn.intellij.plugin.activiti.parser'
 
 
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 dependencies {
@@ -36,27 +35,18 @@ dependencies {
     testImplementation "org.amshove.kluent:kluent:$kluent"
 }
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        apiVersion = kotlinApiVersion
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        apiVersion = kotlinApiVersion
-    }
-}
-
 test {
+    jvmArgs "--add-opens=java.base/java.nio.charset=ALL-UNNAMED"
+
     jacoco {
         destinationFile = file("${buildDir}/jacoco/test.exec")
+        includeNoLocationClasses = true
+        excludes = ["jdk.internal.*"]
     }
 
     testLogging {
         events "failed"
-        exceptionFormat "full"
+        exceptionFormat = "full"
     }
 }
 
@@ -65,7 +55,7 @@ test {
 jacocoTestReport {
     // Adjust the output of the test report
     reports {
-        xml.enabled true
-        csv.enabled false
+        xml.required = true
+        csv.required = true
     }
 }

@@ -14,6 +14,8 @@ data class BpmnStartEvent(
     val documentation: String? = null,
     val asyncBefore: Boolean? = null,
     val asyncAfter: Boolean? = null,
+    val formKey: String? = null,
+    val formFieldValidation: Boolean? = null,
     val timerEventDefinition: BpmnTimerEventDefinition? = null,
     val signalEventDefinition: BpmnSignalEventDefinition? = null,
     val messageEventDefinition: BpmnMessageEventDefinition? = null,

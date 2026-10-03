@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin.camunda.popupmenu
 
-import com.nhaarman.mockitokotlin2.*
+import org.mockito.kotlin.*
 import com.valb3r.bpmn.intellij.plugin.camunda.parser.CamundaObjectFactory
 import com.valb3r.bpmn.intellij.plugin.camunda.ui.components.popupmenu.CamundaCanvasPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.CopyPasteActionHandler

@@ -1,14 +1,13 @@
 package com.valb3r.bpmn.intellij.plugin.core.actions
 
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task.Backgroundable
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiFile
@@ -17,6 +16,10 @@ import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 abstract class BaseViewBpmnDiagramAction : AnAction() {
 
     abstract val toolWindowName: String
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
+    }
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project ?: return
@@ -37,11 +40,8 @@ abstract class BaseViewBpmnDiagramAction : AnAction() {
                 }
             }
 
-            val indicator = BackgroundableProcessIndicator(task)
-            indicator.isIndeterminate = true
-
             invokeLater { toolWindow.title = "[Loading...] ${file.name}" }
-            ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, indicator)
+            task.queue()
         }
     }
 

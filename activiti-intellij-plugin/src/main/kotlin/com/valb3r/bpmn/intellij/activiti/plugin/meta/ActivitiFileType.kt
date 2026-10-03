@@ -3,7 +3,7 @@ package com.valb3r.bpmn.intellij.activiti.plugin.meta
 import com.intellij.ide.highlighter.XmlLikeFileType
 import com.intellij.lang.Language
 import com.intellij.lang.xml.XMLLanguage
-import com.intellij.openapi.util.IconLoader
+import com.intellij.ui.IconManager
 import javax.swing.Icon
 
 class ActivitiFileType private constructor() : XmlLikeFileType(XMLLanguage.INSTANCE) {
@@ -21,7 +21,7 @@ class ActivitiFileType private constructor() : XmlLikeFileType(XMLLanguage.INSTA
     }
 
     override fun getIcon(): Icon {
-        return IconLoader.getIcon("META-INF/pluginIcon.svg", ActivitiFileType::class.java)
+        return IconManager.getInstance().getIcon("META-INF/pluginIcon.svg", ActivitiFileType::class.java.classLoader)
     }
 
     companion object Instance {

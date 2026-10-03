@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:activiti="http://activiti.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             targetNamespace="http://activiti.org/test">
+  <process id="textAnnotationTest" isExecutable="true">
+    <serviceTask id="sourceTask" />
+    <textAnnotation id="textAnnotationId" textFormat="text/plain">
+      <text><![CDATA[Text annotation]]></text>
+    </textAnnotation>
+    <association id="annotationAssociation" sourceRef="sourceTask" targetRef="textAnnotationId" associationDirection="None" />
+  </process>
+  <bpmndi:BPMNDiagram id="Diagram_1">
+    <bpmndi:BPMNPlane id="Plane_1" bpmnElement="textAnnotationTest">
+      <bpmndi:BPMNShape id="sourceTask_di" bpmnElement="sourceTask"><omgdc:Bounds x="100" y="100" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="textAnnotation_di" bpmnElement="textAnnotationId"><omgdc:Bounds x="300" y="100" width="100" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="annotationAssociation_di" bpmnElement="annotationAssociation"><omgdi:waypoint x="200" y="140" /><omgdi:waypoint x="300" y="125" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

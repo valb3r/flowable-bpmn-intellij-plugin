@@ -1,6 +1,6 @@
 package com.valb3r.bpmn.intellij.plugin
 
-import com.nhaarman.mockitokotlin2.*
+import org.mockito.kotlin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -62,7 +62,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             val draggedTo = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
             val xmlParentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
             val parentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
@@ -102,7 +102,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
     }
 
     private fun KArgumentCaptor<List<EventPropagatableToXml>>.verifyBoundaryEventAttachedToServiceTask() {
-        verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+        verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
         val draggedTo = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
         val xmlParentChanged =
             firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
@@ -136,7 +136,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             val draggedTo = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
             val xmlParentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
             val parentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
@@ -170,7 +170,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(subprocessBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             val draggedTo = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
             val xmlParentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
             val parentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
@@ -205,7 +205,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             val draggedTo = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
             val xmlParentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
             val parentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
@@ -238,7 +238,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parentIdForXml.shouldBeEqualTo(parentProcessBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             val draggedTo = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSingleItem()
             val xmlParentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSingleItem()
             val parentChanged = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { !it.propagateToXml }.shouldHaveSingleItem()
@@ -274,7 +274,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         lastRenderedState(project)!!.state.currentState.elementByBpmnId[optionalBoundaryErrorEventBpmnId]!!.parent.shouldBeEqualTo(serviceTaskStartBpmnId)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             val draggedToServiceTask = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSize(2)[0]
             val draggedBoundaryEvent = firstValue.filterIsInstance<DraggedToEvent>().shouldHaveSize(2)[1]
             val xmlParentChangedServiceTask = firstValue.filterIsInstance<BpmnParentChangedEvent>().filter { it.propagateToXml }.shouldHaveSize(2)[0]
@@ -309,7 +309,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         canvas.paintComponent(graphics)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             lastValue.shouldHaveSize(3)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()
@@ -339,7 +339,7 @@ internal class BoundaryEventAttachTest: BaseUiTest() {
         canvas.paintComponent(graphics)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             lastValue.shouldHaveSize(3)
             val edgeBpmn = lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
             val propUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).toTypedArray()

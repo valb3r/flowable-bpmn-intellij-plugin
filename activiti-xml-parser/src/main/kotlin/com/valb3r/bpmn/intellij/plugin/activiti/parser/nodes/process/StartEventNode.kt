@@ -18,6 +18,8 @@ data class StartEventNode(
     @JacksonXmlProperty(isAttribute = true) val id: String,
     @JacksonXmlProperty(isAttribute = true) val name: String?,
     val documentation: String?,
+    @JacksonXmlProperty(isAttribute = true) val formKey: String?,
+    @JacksonXmlProperty(isAttribute = true) val formFieldValidation: Boolean?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val timerEventDefinition: TimerEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val signalEventDefinition: SignalEventDefinition?,
     @JsonSetter(nulls = Nulls.AS_EMPTY) val messageEventDefinition: MessageEventDefinition?,

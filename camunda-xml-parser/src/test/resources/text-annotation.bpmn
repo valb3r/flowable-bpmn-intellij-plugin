@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  targetNamespace="http://camunda.org/test">
+  <bpmn:process id="textAnnotationTest" isExecutable="true">
+    <bpmn:serviceTask id="sourceTask" />
+    <bpmn:textAnnotation id="textAnnotationId" textFormat="text/plain">
+      <bpmn:text><![CDATA[Text annotation]]></bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="annotationAssociation" sourceRef="sourceTask" targetRef="textAnnotationId" associationDirection="None" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_1">
+    <bpmndi:BPMNPlane id="Plane_1" bpmnElement="textAnnotationTest">
+      <bpmndi:BPMNShape id="sourceTask_di" bpmnElement="sourceTask"><dc:Bounds x="100" y="100" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="textAnnotation_di" bpmnElement="textAnnotationId"><dc:Bounds x="300" y="100" width="100" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="annotationAssociation_di" bpmnElement="annotationAssociation"><di:waypoint x="200" y="140" /><di:waypoint x="300" y="125" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

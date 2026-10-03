@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
+  <process id="sequence-flow-listeners" name="sequence-flow-listeners" isExecutable="true">
+    <serviceTask id="sid-f9bd982f-6328-4bc3-ac38-d54f51c5e439" activiti:exclusive="true"/>
+    <serviceTask id="sid-bdc36743-0e2c-4702-96bd-9d4d71e0c71c" activiti:exclusive="true"/>
+    <sequenceFlow id="sequenceFlow" sourceRef="sid-f9bd982f-6328-4bc3-ac38-d54f51c5e439" targetRef="sid-bdc36743-0e2c-4702-96bd-9d4d71e0c71c">
+      <extensionElements xmlns="">
+        <activiti:executionListener class="de.test"/>
+      </extensionElements>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_sequence-flow-listeners">
+    <bpmndi:BPMNPlane bpmnElement="sequence-flow-listeners" id="BPMNPlane_sequence-flow-listeners">
+      <bpmndi:BPMNShape id="shape-fdde8897-ec4c-4ec7-8dff-077a1b622d56" bpmnElement="sid-f9bd982f-6328-4bc3-ac38-d54f51c5e439">
+        <omgdc:Bounds x="55.0" y="80.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape-207fbe32-9af3-41ca-b199-6038eda18b52" bpmnElement="sid-bdc36743-0e2c-4702-96bd-9d4d71e0c71c">
+        <omgdc:Bounds x="315.0" y="80.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-39228d1b-3375-46a6-a68c-28d658c7ad2d" bpmnElement="sequenceFlow">
+        <omgdi:waypoint x="155.0" y="120.0"/>
+        <omgdi:waypoint x="315.0" y="120.0"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

@@ -3,7 +3,7 @@ package com.valb3r.bpmn.intellij.plugin
 import ShapeCreator
 import ShapeTypeChange
 import com.intellij.openapi.project.Project
-import com.nhaarman.mockitokotlin2.mock
+import org.mockito.kotlin.mock
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.core.popupmenu.BaseCanvasPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.core.popupmenu.MenuItemDef
@@ -40,8 +40,8 @@ internal class BaseCanvasPopupMenuProviderTest {
             val mutatedShapeClass = shapeMutator.get(mutatedElement) as KClass<*>
 
             newShapeClass.simpleName!!.shouldBeEqualTo(mutatedShapeClass.simpleName!!)
-            newShapeClass.simpleName!!.toLowerCase().replace("bpmn", "")
-                .shouldBeEqualTo(prop.name.replace("_", "").toLowerCase())
+            newShapeClass.simpleName!!.lowercase().replace("bpmn", "")
+                .shouldBeEqualTo(prop.name.replace("_", "").lowercase())
         }
     }
 

@@ -80,9 +80,9 @@ private fun handleIndexChanges(
     if (event.property.indexCascades == CascadeGroup.PARENTS_CASCADE || event.property.indexCascades == CascadeGroup.FLAT) {
         state[event.bpmnElementId]?.view()?.filter { it.key.group?.contains(event.property.group?.last()) == true }
             ?.forEach { (cascadeType, cascadeProperty) ->
-                cascadeProperty.filter {
+                cascadeProperty.filter { cascaded ->
                     event.propertyIndex?.forEachIndexed { index, s ->
-                        if (it.index!![index] != s) {
+                        if (null != cascaded.index && cascaded.index!![index] != s) {
                             return@filter false
                         }
                     }

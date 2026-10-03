@@ -1,9 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.ui.components.popupmenu
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType.*
@@ -38,11 +38,15 @@ class ElementTypeChangeTest: FlowableBaseUiTest() {
             FORM_FIELD_VALIDATION, PRIORITY, FORM_PROPERTY_ID,
             FORM_PROPERTY_NAME, FORM_PROPERTY_TYPE, FORM_PROPERTY_VARIABLE,
             FORM_PROPERTY_DEFAULT, FORM_PROPERTY_EXPRESSION, FORM_PROPERTY_DATE_PATTERN,
-            EXECUTION_LISTENER_CLASS, EXECUTION_LISTENER_EVENT
+            EXECUTION_LISTENER_CLASS, EXECUTION_LISTENER_EVENT,
+            MULTI_INSTANCE_IS_SEQUENTIAL, MULTI_INSTANCE_COLLECTION, MULTI_INSTANCE_ELEMENT_VARIABLE,
+            MULTI_INSTANCE_LOOP_CARDINALITY, MULTI_INSTANCE_COMPLETION_CONDITION,
+            MULTI_INSTANCE_ELEMENT_INDEX_VARIABLE, MULTI_INSTANCE_NO_WAIT_STATES_ASYNC_LEAVE,
+            MULTI_INSTANCE_LOOP_DATA_INPUT_REF, MULTI_INSTANCE_INPUT_DATA_ITEM
         )
         props.keys.shouldContainSame(userTaskProps)
         argumentCaptor<List<EventPropagatableToXml>>().let {
-            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any(), any())
             it.firstValue.shouldHaveSize(1)
             val changedType = it.firstValue.filterIsInstance<BpmnElementTypeChangeEvent>().shouldHaveSingleItem()
             changedType.props.keys.shouldContainSame(userTaskProps)

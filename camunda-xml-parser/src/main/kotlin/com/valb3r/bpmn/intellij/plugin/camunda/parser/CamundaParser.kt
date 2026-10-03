@@ -14,6 +14,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.BpmnShapeObjectAdded
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnParser
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnLaxHunk
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.NS
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.PropertyTypeDetails
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.XmlType
@@ -27,6 +28,8 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     ID(PropertyTypeDetails(PropertyType.ID, "id", XmlType.ATTRIBUTE)),
     NAME(PropertyTypeDetails(PropertyType.NAME,"name", XmlType.ATTRIBUTE)),
     DOCUMENTATION(PropertyTypeDetails(PropertyType.DOCUMENTATION, "documentation.text", XmlType.CDATA, forceFirst = true)),
+    TEXT_ANNOTATION_TEXT(PropertyTypeDetails(PropertyType.TEXT_ANNOTATION_TEXT, "text.text", XmlType.CDATA)),
+    TEXT_ANNOTATION_TEXT_FORMAT(PropertyTypeDetails(PropertyType.TEXT_ANNOTATION_TEXT_FORMAT, "textFormat", XmlType.ATTRIBUTE)),
     IS_FOR_COMPENSATION(PropertyTypeDetails(PropertyType.IS_FOR_COMPENSATION, "isForCompensation", XmlType.ATTRIBUTE)),
     ASYNC_BEFORE(PropertyTypeDetails(PropertyType.ASYNC_BEFORE, "camunda:asyncBefore", XmlType.ATTRIBUTE)),
     ASYNC_AFTER(PropertyTypeDetails(PropertyType.ASYNC_AFTER, "camunda:asyncAfter", XmlType.ATTRIBUTE)),
@@ -80,6 +83,11 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     SIGNAL_REF(PropertyTypeDetails(PropertyType.SIGNAL_REF, "bpmn:signalEventDefinition.signalRef", XmlType.ATTRIBUTE)),
     LINK_REF(PropertyTypeDetails(PropertyType.LINK_REF, "bpmn:linkEventDefinition.name", XmlType.ATTRIBUTE)),
     COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.COMPLETION_CONDITION, "completionCondition.text", XmlType.CDATA)),
+    MULTI_INSTANCE_IS_SEQUENTIAL(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_IS_SEQUENTIAL, "bpmn:multiInstanceLoopCharacteristics.isSequential", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_COLLECTION(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_COLLECTION, "bpmn:multiInstanceLoopCharacteristics.camunda:collection", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_ELEMENT_VARIABLE(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_ELEMENT_VARIABLE, "bpmn:multiInstanceLoopCharacteristics.camunda:elementVariable", XmlType.ATTRIBUTE)),
+    MULTI_INSTANCE_LOOP_CARDINALITY(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_LOOP_CARDINALITY, "bpmn:multiInstanceLoopCharacteristics.loopCardinality", XmlType.CDATA)),
+    MULTI_INSTANCE_COMPLETION_CONDITION(PropertyTypeDetails(PropertyType.MULTI_INSTANCE_COMPLETION_CONDITION, "bpmn:multiInstanceLoopCharacteristics.completionCondition", XmlType.CDATA)),
     DEFAULT_FLOW(PropertyTypeDetails(PropertyType.DEFAULT_FLOW, "default", XmlType.ATTRIBUTE)),
     // Unsupported? IS_TRANSACTIONAL_SUBPROCESS(PropertyTypeDetails(PropertyType.IS_TRANSACTIONAL_SUBPROCESS, "transactionalSubprocess", XmlType.ELEMENT)),
     // Unsupported? IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE(PropertyTypeDetails(PropertyType.IS_USE_LOCAL_SCOPE_FOR_RESULT_VARIABLE, "camunda:useLocalScopeForResultVariable", XmlType.ATTRIBUTE)),
@@ -146,22 +154,23 @@ enum class CamundaPropertyTypeDetails(val details: PropertyTypeDetails) {
     EXECUTION_LISTENER_FIELD_STRING(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_FIELD_STRING, "extensionElements.camunda:executionListener?class=@.camunda:field?name=@.camunda:string.text", XmlType.CDATA)),
 }
 
-class CamundaParser : BaseBpmnParser() {
+class CamundaParser(laxParsingEnabled: () -> Boolean = { true }) : BaseBpmnParser(laxParsingEnabled) {
 
     private val mapper: XmlMapper = mapper()
 
     override fun parse(input: String): BpmnProcessObject {
-        val dto = mapper.readValue<BpmnFile>(input)
-        return toProcessObject(dto)
+        val prepared = prepareLaxXmlForJackson(input)
+        val dto = mapper.readValue<BpmnFile>(prepared.xml)
+        return toProcessObject(dto, prepared.hunks)
     }
 
-    private fun toProcessObject(dto: BpmnFile): BpmnProcessObject {
+    private fun toProcessObject(dto: BpmnFile, laxHunks: List<BpmnLaxHunk>): BpmnProcessObject {
         // TODO - Multi process support?
         markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
         val process = dto.processes[0].toElement()
         val diagrams = dto.diagrams!!.map { it.toElement() }
 
-        return BpmnProcessObject(process, diagrams)
+        return BpmnProcessObject(process, diagrams, laxHunks)
     }
 
     override fun modelNs(): NS {

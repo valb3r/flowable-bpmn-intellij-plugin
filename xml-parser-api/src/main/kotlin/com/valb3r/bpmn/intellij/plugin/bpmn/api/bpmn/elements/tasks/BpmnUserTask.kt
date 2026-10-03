@@ -4,6 +4,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExeсutionListener
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.ExtensionFormProperty
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.MultiInstanceLoopCharacteristics
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.types.BpmnTaskAlike
 
@@ -24,6 +25,7 @@ data class BpmnUserTask(
     val formFieldValidation: Boolean? = null,
     val priority: String? = null,
     val skipExpression: String? = null,
+    val multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null,
     val incoming: List<String>? = null,
     val outgoing: List<String>? = null,
     /* BPMN engine specific extensions (intermediate storage) */

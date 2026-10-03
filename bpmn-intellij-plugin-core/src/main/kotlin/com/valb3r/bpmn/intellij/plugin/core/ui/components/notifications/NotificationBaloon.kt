@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.core.ui.components.notifications
 
 import com.intellij.ide.BrowserUtil
 import com.intellij.notification.*
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import java.util.concurrent.ConcurrentHashMap
@@ -26,6 +27,10 @@ fun genericShowNotificationBalloon(project: Project, groupId: String, text: Stri
             override fun actionPerformed(e: AnActionEvent, notification: Notification) {
                 actionCallBack.invoke()
                 notification.expire()
+            }
+
+            override fun getActionUpdateThread(): ActionUpdateThread {
+                return ActionUpdateThread.EDT
             }
         }
         notification.addAction(action)

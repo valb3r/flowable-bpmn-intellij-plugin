@@ -5,44 +5,37 @@ plugins {
 
 group = 'com.valb3r.bpmn.intellij.plugin.bpmn.parser.core'
 
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 dependencies {
     api project(":xml-parser-api")
 
     api "org.dom4j:dom4j:$dom4j" // Implementation comes from IntelliJ
+    api "jaxen:jaxen:$jaxen"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiter"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:$junitPlatformRunner"
 
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jackson"
 }
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        apiVersion = kotlinApiVersion
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        apiVersion = kotlinApiVersion
-    }
-}
-
 test {
     jacoco {
         destinationFile = file("${buildDir}/jacoco/test.exec")
+        includeNoLocationClasses = true
+        excludes = ["jdk.internal.*"]
     }
 
     testLogging {
         events "failed"
-        exceptionFormat "full"
+        exceptionFormat = "full"
     }
 }
 
@@ -51,7 +44,7 @@ test {
 jacocoTestReport {
     // Adjust the output of the test report
     reports {
-        xml.enabled true
-        csv.enabled false
+        xml.required = true
+        csv.required = true
     }
 }

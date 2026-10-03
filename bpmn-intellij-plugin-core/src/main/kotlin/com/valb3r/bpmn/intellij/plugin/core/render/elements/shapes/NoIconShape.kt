@@ -10,7 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.core.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.RenderState
 import java.awt.Stroke
 
-class NoIconShape(
+open class NoIconShape(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
         shape: ShapeElement,
@@ -22,7 +22,7 @@ class NoIconShape(
         override val areaType: AreaType = AreaType.SHAPE
 ) : ResizeableShapeRenderElement(elementId, bpmnElementId, shape, state) {
 
-    override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
+    open override fun doRender(ctx: RenderContext, shapeCtx: ShapeCtx): Map<DiagramElementId, AreaWithZindex> {
 
         val area = ctx.canvas.drawRoundedRect(
                 shapeCtx.shape,

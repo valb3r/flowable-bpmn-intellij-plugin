@@ -3,6 +3,8 @@ package com.valb3r.bpmn.intellij.plugin.core.render
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnAssociation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.*
@@ -31,7 +33,6 @@ import com.valb3r.bpmn.intellij.plugin.core.render.elements.elemIdToRemove
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.planes.PlaneRenderElement
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.shapes.*
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.*
-import groovy.lang.Tuple2
 import java.awt.BasicStroke
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
@@ -175,9 +176,12 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     }
 
     private fun createShapes(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
-        state().currentState.shapes.forEach {
+        state().currentState.shapes.forEach shapeLoop@ {
             val elem = state().currentState.elementByBpmnId[it.bpmnElement]
             elem?.let { bpmn ->
+                if (bpmn.element is BpmnAssociation) {
+                    return@shapeLoop
+                }
                 mapFromShape(state, it.id, it, bpmn.element).let { shape ->
                     elements += shape
                     elementsById[bpmn.id] = shape
@@ -188,7 +192,13 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
     private fun createEdges(state: () -> RenderState, elements: MutableList<BaseBpmnRenderElement>, elementsById: MutableMap<BpmnElementId, BaseDiagramRenderElement>) {
         state().currentState.edges.forEach {
-            val edge = EdgeRenderElement(it.id, it.bpmnElement!!, it, state)
+            val edge = EdgeRenderElement(
+                it.id,
+                it.bpmnElement!!,
+                it,
+                state,
+                state().currentState.elementByBpmnId[it.bpmnElement]?.element !is BpmnAssociation,
+            )
             elements += edge
             elementsById[it.bpmnElement!!] = edge
         }
@@ -248,13 +258,14 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             is BpmnTransactionalSubProcess -> NoIconDoubleBorderShape(id, bpmn.id, shape, state, areaType = AreaType.SHAPE_THAT_NESTS)
             is BpmnCollapsedSubprocess -> ExpandableShapeNoIcon(id, bpmn.id, isCollapsed(bpmn.id, state), icons.plus, icons.minus, shape, state, areaType = AreaType.SHAPE_THAT_NESTS)
             is BpmnTransactionCollapsedSubprocess -> ExpandableShapeNoIcon(id, bpmn.id, isCollapsed(bpmn.id, state), icons.plus, icons.minus, shape, state, areaType = AreaType.SHAPE_THAT_NESTS)
-            is BpmnCallActivity -> NoIconShape(id, bpmn.id, shape, state)
+            is BpmnCallActivity -> NoIconWithMultiInstanceMarkerShape(id, bpmn.id, shape, state)
             is BpmnAdHocSubProcess -> BottomMiddleIconShape(id, bpmn.id, icons.tilde, shape, state, areaType = AreaType.SHAPE_THAT_NESTS)
             is BpmnExclusiveGateway -> IconShape(id, bpmn.id, icons.exclusiveGateway, shape, state)
             is BpmnParallelGateway -> IconShape(id, bpmn.id, icons.parallelGateway, shape, state)
             is BpmnInclusiveGateway -> IconShape(id, bpmn.id, icons.inclusiveGateway, shape, state)
             is BpmnEventGateway -> IconShape(id, bpmn.id, icons.eventGateway, shape, state)
             is BpmnComplexGateway -> IconShape(id, bpmn.id, icons.complexGateway, shape, state)
+            is BpmnTextAnnotation -> TextAnnotationShape(id, bpmn.id, shape, state)
             is BpmnEndEvent -> EllipticIconOnLayerShape(id, bpmn.id, icons.endEvent, shape, state, Colors.END_EVENT)
             is BpmnEndCancelEvent -> EllipticIconOnLayerShape(id, bpmn.id, icons.cancelEndEvent, shape, state, Colors.END_EVENT)
             is BpmnEndErrorEvent -> EllipticIconOnLayerShape(id, bpmn.id, icons.errorEndEvent, shape, state, Colors.END_EVENT)
@@ -291,10 +302,10 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
 
         val areas = state.ctx.selectedIds.mapNotNull { renderedArea[it] }
 
-        val minX = areas.map { it.area.bounds2D.minX }.min()?.toFloat()
-        val minY = areas.map { it.area.bounds2D.minY }.min()?.toFloat()
-        val maxX = areas.map { it.area.bounds2D.maxX }.max()?.toFloat()
-        val maxY = areas.map { it.area.bounds2D.maxY }.max()?.toFloat()
+        val minX = areas.map { it.area.bounds2D.minX }.minOrNull()?.toFloat()
+        val minY = areas.map { it.area.bounds2D.minY }.minOrNull()?.toFloat()
+        val maxX = areas.map { it.area.bounds2D.maxX }.maxOrNull()?.toFloat()
+        val maxY = areas.map { it.area.bounds2D.maxY }.maxOrNull()?.toFloat()
 
         // TODO: This currently does not support event cascading, so only plain elements can be removed
         if (null != minX && null != minY && null != maxX && null != maxY) {
@@ -326,7 +337,7 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
         var locationY = undoRedoStartMargin
 
         if (state.currentState.undoRedo.isNotEmpty()) {
-            var sizes = Tuple2(0.0f, 0.0f)
+            var sizes = Pair(0.0f, 0.0f)
             if (state.currentState.undoRedo.contains(ProcessModelUpdateEvents.UndoRedo.UNDO)) {
                 sizes = drawIconWithAction(state, undoId, locationX, locationY, renderedArea, { dest -> dest.undo() }, icons.undo)
                 locationX += sizes.first + iconMargin
@@ -365,13 +376,13 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
             renderedArea: MutableMap<DiagramElementId, AreaWithZindex>,
             onClick: (ProcessModelUpdateEvents) -> Unit,
             icon: Icon
-    ): Tuple2<Float, Float> {
+    ): Pair<Float, Float> {
         val color = if (isActive(actionElementId, state)) Colors.SELECTED_COLOR else null
         val areaRedo = color?.let { state.ctx.canvas.drawFilledIconAtScreen(Point2D.Float(locationX, locationY), icon, Colors.BACKGROUND_COLOR.color, it.color) }
                 ?: state.ctx.canvas.drawFilledIconAtScreen(Point2D.Float(locationX, locationY), icon, Colors.BACKGROUND_COLOR.color)
         renderedArea[actionElementId] = AreaWithZindex(areaRedo, AreaType.SHAPE, index = ICON_Z_INDEX)
         state.ctx.interactionContext.clickCallbacks[actionElementId] = onClick
-        return Tuple2(icon.iconWidth.toFloat(), icon.iconHeight.toFloat())
+        return Pair(icon.iconWidth.toFloat(), icon.iconHeight.toFloat())
     }
 
     private fun drawAnchorsHit(canvas: CanvasPainter, anchors: AnchorHit) {
@@ -392,10 +403,10 @@ class DefaultBpmnProcessRenderer(private val project: Project, val icons: IconPr
     private fun computeModelRect(allRendered: Collection<AreaWithZindex>): Rectangle2D.Float {
         val filter = { it: AreaWithZindex -> it.areaType != AreaType.PARENT_PROCESS_SHAPE }
         val areaBounds = allRendered.filter(filter).map { it.area.bounds2D }
-        val minX = areaBounds.map { it.bounds2D.x }.min() ?: 0.0
-        val minY = areaBounds.map { it.bounds2D.y }.min() ?: 0.0
-        val maxX = areaBounds.map { it.bounds2D.x + it.bounds2D.width }.max() ?: 0.0
-        val maxY = areaBounds.map { it.bounds2D.y + it.bounds2D.height }.max() ?: 0.0
+        val minX = areaBounds.map { it.bounds2D.x }.minOrNull() ?: 0.0
+        val minY = areaBounds.map { it.bounds2D.y }.minOrNull() ?: 0.0
+        val maxX = areaBounds.map { it.bounds2D.x + it.bounds2D.width }.maxOrNull() ?: 0.0
+        val maxY = areaBounds.map { it.bounds2D.y + it.bounds2D.height }.maxOrNull() ?: 0.0
 
         val cx = (maxX + minX).toFloat() / 2.0f
         val cy = (maxY + minY).toFloat() / 2.0f

@@ -10,6 +10,8 @@ import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
 import com.intellij.psi.xml.XmlText
+import com.valb3r.bpmn.intellij.plugin.commons.langinjection.InjectionUtil.injectSpel
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 
 abstract class DefaultXmlInjector: MultiHostInjector {
 
@@ -29,15 +31,25 @@ abstract class DefaultXmlInjector: MultiHostInjector {
                 listOf(
                         { tryToInjectCalledElement(context, context, registrar) },
                         { tryToInjectSkipExpression(context, context, registrar) },
-                        { tryToInjectInServiceTask(context, context, registrar) }
+                        { tryToInjectInTaskOfType("serviceTask", context, context, registrar) },
+                        { tryToInjectInTaskOfType("sendTask", context, context, registrar) }
                 ).map { it() }.firstOrNull { it }
             }
-            is XmlText -> { tryToInjectConditionExpression(context, context, registrar) }
+            is XmlText -> listOf(
+                { tryToInjectConditionExpression(context, context, registrar)},
+                { tryToInjectFieldExpression(context, context, registrar) }
+            ).map { it() }.firstOrNull { it }
         }
     }
 
     protected open fun invalidXmlFileExtension(context: PsiLanguageInjectionHost): Boolean {
-        return !context.containingFile.name.endsWith("bpmn20.xml") && context.containingFile?.context?.containingFile?.name?.endsWith("bpmn20.xml") != true
+        return !isValidFileName(context.containingFile.name)
+    }
+
+    private fun isValidFileName(fileName: String?): Boolean {
+        val name = fileName ?: return false
+        val allowedExt = currentSettings().openExtensions
+        return allowedExt.any { name.endsWith(it) }
     }
 
     private fun tryToInjectSkipExpression(context: XmlAttributeValue, asHost: PsiLanguageInjectionHost, registrar: MultiHostRegistrar): Boolean {
@@ -51,11 +63,26 @@ abstract class DefaultXmlInjector: MultiHostInjector {
         }
 
         if (parent.localName == "conditionExpression") {
-            if (!asHost.text.contains("[$#]\\{".toRegex()) || !asHost.text.contains("}")) {
-                return false
-            }
+            injectSpel(asHost, registrar)
+            return true
+        }
 
-            injectSpel(asHost, registrar, asHost.text.indexOf("{") + 1, asHost.text.length - asHost.text.indexOf("}") - 1)
+        return false
+    }
+
+    private fun tryToInjectFieldExpression(context: XmlText, asHost: PsiLanguageInjectionHost, registrar: MultiHostRegistrar): Boolean {
+        val parent = context.parent
+        if (parent !is XmlTag) {
+            return false
+        }
+
+        val enclosingParent = parent.parent
+        if (enclosingParent !is XmlTag) {
+            return false
+        }
+
+        if (enclosingParent.localName == "field" && parent.localName == "expression") {
+            injectSpel(asHost, registrar)
             return true
         }
 
@@ -84,21 +111,17 @@ abstract class DefaultXmlInjector: MultiHostInjector {
         return false
     }
 
-    private fun tryToInjectInServiceTask(context: XmlAttributeValue, asHost: PsiLanguageInjectionHost, registrar: MultiHostRegistrar): Boolean {
+    private fun tryToInjectInTaskOfType(taskType: String, context: XmlAttributeValue, asHost: PsiLanguageInjectionHost, registrar: MultiHostRegistrar): Boolean {
         val parent = context.parent
         if (parent !is XmlAttribute) {
             return false
         }
 
-        if (parent.parent.localName != "serviceTask") {
+        if (parent.parent.localName != taskType) {
             return false
         }
 
         if (parent.localName == "delegateExpression" || parent.localName == "expression") {
-            if (!asHost.text.contains("[$#]\\{".toRegex()) || !asHost.text.contains("}")) {
-                return false
-            }
-
             injectSpel(asHost, registrar)
             return true
         }
@@ -109,14 +132,6 @@ abstract class DefaultXmlInjector: MultiHostInjector {
         }
 
         return false
-    }
-
-    private fun injectSpel(context: PsiLanguageInjectionHost, registrar: MultiHostRegistrar, rangeBegin: Int = 3, rangeEndOffset: Int = 1) {
-        val text = context.text
-        val spelLang = Language.getRegisteredLanguages().firstOrNull { it.id == "SpEL" } ?: return
-        registrar.startInjecting(spelLang)
-        registrar.addPlace("", "", context, TextRange(rangeBegin, text.length - rangeEndOffset - 1))
-        registrar.doneInjecting()
     }
 
     private fun injectClassName(context: PsiLanguageInjectionHost, registrar: MultiHostRegistrar) {

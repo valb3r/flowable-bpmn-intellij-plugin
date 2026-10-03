@@ -401,8 +401,15 @@
                 <flowable:out source="SOURCE_VAL" target="TARGET_VAL"></flowable:out>
                 <flowable:executionListener event="start" class="com.some.Listener"></flowable:executionListener>
             </extensionElements>
-            <multiInstanceLoopCharacteristics isSequential="true" flowable:collection="COLLECTION" flowable:elementVariable="ELEM_VAR">
+            <multiInstanceLoopCharacteristics isSequential="true" flowable:collection="COLLECTION" flowable:elementVariable="ELEM_VAR" flowable:elementIndexVariable="ELEM_INDEX" flowable:noWaitStatesAsyncLeave="true">
+                <extensionElements>
+                    <flowable:variableAggregation target="aggregated" delegateExpression="${variableAggregator}" createOverviewVariable="true" storeAsTransientVariable="true">
+                        <variable source="sourceVar" target="targetVar"></variable>
+                    </flowable:variableAggregation>
+                </extensionElements>
                 <loopCardinality>12</loopCardinality>
+                <loopDataInputRef>INPUT_COLLECTION</loopDataInputRef>
+                <inputDataItem name="INPUT_ITEM"></inputDataItem>
                 <completionCondition>completionCond</completionCondition>
             </multiInstanceLoopCharacteristics>
         </callActivity>

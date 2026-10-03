@@ -1,22 +1,25 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm'
-    id 'org.jetbrains.intellij'
+    id 'org.jetbrains.intellij.platform'
 }
 
 group = 'com.valb3r.bpmn.intellij.plugin.activiti'
 
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 dependencies {
+    intellijPlatform {
+        intellijIdeaUltimate(intellijPlatformVersion)
+        pluginComposedModule(implementation(project(":bpmn-intellij-plugin-core")))
+        pluginComposedModule(implementation(project(":bpmn-intellij-plugin-commons")))
+    }
+
     implementation project(":xml-parser-core")
     implementation project(":activiti-xml-parser")
-    implementation project(":bpmn-intellij-plugin-core")
-    implementation project(":bpmn-intellij-plugin-commons")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson"
@@ -27,43 +30,32 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiter"
     testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformRunner"
     testImplementation "org.amshove.kluent:kluent:$kluent"
-    testImplementation "org.mockito:mockito-inline:$mockitoInline"
-    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlin"
+    testImplementation "org.mockito:mockito-core:$mockitoCore"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlin"
 }
 
 sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
-intellij {
-    version = intellijPlatform
-    pluginName = 'activiti-bpmn-plugin'
-    updateSinceUntilBuild = false
-    plugins = intellijPlatformPlugins
-}
-
-runPluginVerifier {
-    ideVersions = ["IU-2021.3"]
-}
-
-verifyPlugin {
-    ignoreWarnings = true
-}
-
-publishPlugin {
-    token = System.getenv("INTELLIJ_PLUGIN_PUBLISH_TOKEN")
-}
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        apiVersion = kotlinApiVersion
+intellijPlatform {
+    pluginConfiguration {
+        name = 'Activiti BPMN visualizer'
     }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        apiVersion = kotlinApiVersion
+
+    publishing {
+        token = System.getenv("INTELLIJ_PLUGIN_PUBLISH_TOKEN")
+    }
+
+    patchPluginXml {
+        sinceBuild = "251"
+    }
+
+    pluginVerification {
+        freeArgs = ["-mute", "TemplateWordInPluginName"]
+        ides {
+            current()
+        }
     }
 }
 
@@ -74,11 +66,13 @@ clean {
 test {
     jacoco {
         destinationFile = file("${buildDir}/jacoco/test.exec")
+        includeNoLocationClasses = true
+        excludes = ["jdk.internal.*"]
     }
 
     testLogging {
         events "failed"
-        exceptionFormat "full"
+        exceptionFormat = "full"
     }
 }
 
@@ -87,7 +81,7 @@ test {
 jacocoTestReport {
     // Adjust the output of the test report
     reports {
-        xml.enabled true
-        csv.enabled false
+        xml.required = true
+        csv.required = true
     }
 }

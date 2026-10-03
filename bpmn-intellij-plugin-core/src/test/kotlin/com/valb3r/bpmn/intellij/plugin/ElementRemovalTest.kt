@@ -1,8 +1,8 @@
 package com.valb3r.bpmn.intellij.plugin
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
-import com.nhaarman.mockitokotlin2.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.verify
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.core.events.BpmnElementRemovedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.DiagramElementRemovedEvent
@@ -29,7 +29,7 @@ internal class ElementRemovalTest: BaseUiTest() {
         clickOnId(boundaryEventRemove!!)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(optionalBoundaryErrorEventDiagramId),
                     BpmnElementRemovedEvent(optionalBoundaryErrorEventBpmnId))
@@ -44,7 +44,7 @@ internal class ElementRemovalTest: BaseUiTest() {
         clickOnId(serviceTaskRemove!!)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(optionalBoundaryErrorEventDiagramId),
                     DiagramElementRemovedEvent(serviceTaskStartDiagramId),
@@ -61,7 +61,7 @@ internal class ElementRemovalTest: BaseUiTest() {
         clickOnId(sequenceRemove!!)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(sequenceFlowDiagramId),
                     BpmnElementRemovedEvent(sequenceFlowBpmnId)
@@ -76,7 +76,7 @@ internal class ElementRemovalTest: BaseUiTest() {
         clickOnId(nestedSubprocessRemove!!)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(sequenceFlowDiagramId),
                     BpmnElementRemovedEvent(sequenceFlowBpmnId),
@@ -95,7 +95,7 @@ internal class ElementRemovalTest: BaseUiTest() {
         clickOnId(subprocessRemove!!)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(sequenceFlowDiagramId),
                     BpmnElementRemovedEvent(sequenceFlowBpmnId),
@@ -128,7 +128,7 @@ internal class ElementRemovalTest: BaseUiTest() {
         clickOnId(multipleElemsRemove!!)
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             firstValue.shouldContainSame(listOf(
                     DiagramElementRemovedEvent(subprocessInSubProcessDiagramId),
                     DiagramElementRemovedEvent(serviceTaskStartDiagramId),

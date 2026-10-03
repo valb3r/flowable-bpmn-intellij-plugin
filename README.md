@@ -27,10 +27,10 @@ Don't hesitate - ask or tell your opinion in gitter:
 # Key features
 
 1. BPMN process editing (BPMN modeler) - adding/removing elements, changing their properties, undo/redo, bulk drag-n-drop, bulk removal of elements
-1. Code navigation - jump from `Delegate Expression` or `Class` property directly to bean/function/class in code
-1. IntelliJ refactorings propagation to backing XML file of the process (i.e. rename bean)
-1. Jump from an element to the underlying XML
-1. BPMN process 'debugging' by allowing to see steps (and their order) done for latest process execution directly in plugin
+1. Code navigation - jump from `Delegate Expression` **(IntelliJ Ultimate)** or `Class` **(IntelliJ Community)** property directly to bean/function/class in code
+1. IntelliJ refactorings propagation to backing XML file of the process (i.e. rename bean) **(IntelliJ Ultimate)**
+1. Jump from an element to the underlying XML **(IntelliJ Ultimate)**
+1. BPMN process 'debugging' by allowing to see steps (and their order) done for latest process execution directly in plugin **(IntelliJ Ultimate)**
 
 
 # Installation
@@ -117,7 +117,7 @@ If you want just to run the plugin in the `sandbox` you can execute
 [![Work with plugin](https://img.youtube.com/vi/cyLbEeaMDvI/0.jpg)](https://youtu.be/cyLbEeaMDvI)
 
 
-### BPMN-Java-XML 'gluing' usage
+### BPMN-Java-XML 'gluing' usage (IntelliJ Ultimate, only classes for IntelliJ Community)
 
 [![Work with plugin](https://img.youtube.com/vi/BQf0eglY2vo/0.jpg)](https://youtu.be/BQf0eglY2vo)
 

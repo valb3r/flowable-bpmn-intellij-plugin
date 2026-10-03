@@ -1,0 +1,72 @@
+<idea-plugin>
+    <actions>
+        <group id="BpmnFlowableAttachToDataSource"
+               text="Attach To Schema"
+               description="Attach to database schema to investigate process"
+               icon="/icons/icon.png"
+               popup="false">
+            <!-- The <action> element defines an action to register.
+                 - "id" (required) specifies an unique identifier for the action.
+                 - "class" (required) specifies the full-qualified name of the class implementing the action.
+                 - "text" (required) specifies the text (tooltip for toolbar button or text for menu item).
+                 - "use-shortcut-of" (optional) specifies the ID of the action whose keyboard shortcut this action uses.
+                 - "description" (optional) specifies the text displayed in the status bar when the action is focused.
+                 - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
+            <action id="BpmnDiagram.AttachFlowableToDataSource"
+                    class="com.valb3r.bpmn.intellij.plugin.flowable.actions.AttachFlowableBpmnDebuggerToDbAction"
+                    text="Attach To Schema (Flowable)"
+                    description="Attach to database schema (Flowable) for BPMN process debugging"
+                    icon="/icons/icon.png">
+            </action>
+            <!-- The <add-to-group> node specifies that the action should be added to an existing group.
+                 An action can be added to several groups.
+                 - "group-id" (required) specifies the ID of the group to which the action is added. The group must be
+                   implemented by an instance of the DefaultActionGroup class.
+                 - "anchor" (required) specifies the position of the action in the group relative to other actions.
+                   It can have the values "first", "last", "before" and "after".
+                 - "relative-to-action" (required if the anchor is set to "before" and "after") specifies the action
+                   before or after which the current action is inserted. -->
+            <add-to-group group-id="DatabaseViewPopupMenu" anchor="last"/>
+            <!-- The <separator> element defines a separator between actions. -->
+            <!-- <separator/> -->
+            <!-- <group id="AnotherNestedGroup"/> -->
+            <!-- The <reference> element allows to add an existing action to the group.
+                 - "ref" (required) specifies the ID of the action to add. -->
+            <!-- <reference ref="EditorCopy"/> -->
+        </group>
+        <group id="BpmnFlowableDetachFromDataSource"
+               text="Detach Debugger"
+               description="Detach BPMN debugger from DataSource"
+               icon="/icons/icon.png"
+               popup="false">
+            <!-- The <action> element defines an action to register.
+                 - "id" (required) specifies an unique identifier for the action.
+                 - "class" (required) specifies the full-qualified name of the class implementing the action.
+                 - "text" (required) specifies the text (tooltip for toolbar button or text for menu item).
+                 - "use-shortcut-of" (optional) specifies the ID of the action whose keyboard shortcut this action uses.
+                 - "description" (optional) specifies the text displayed in the status bar when the action is focused.
+                 - "icon" (optional) specifies the icon displayed on the toolbar button or next to the menu item. -->
+            <action id="BpmnDiagram.BpmnDetachFlowableFromDataSource"
+                    class="com.valb3r.bpmn.intellij.plugin.flowable.actions.DetachFlowableBpmnDebuggerFromDbAction"
+                    text="Detach Debugger (Flowable)"
+                    description="Detach BPMN debugger from DataSource (Flowable)"
+                    icon="/icons/icon.png">
+            </action>
+            <!-- The <add-to-group> node specifies that the action should be added to an existing group.
+                 An action can be added to several groups.
+                 - "group-id" (required) specifies the ID of the group to which the action is added. The group must be
+                   implemented by an instance of the DefaultActionGroup class.
+                 - "anchor" (required) specifies the position of the action in the group relative to other actions.
+                   It can have the values "first", "last", "before" and "after".
+                 - "relative-to-action" (required if the anchor is set to "before" and "after") specifies the action
+                   before or after which the current action is inserted. -->
+            <add-to-group group-id="DatabaseViewPopupMenu" anchor="last"/>
+            <!-- The <separator> element defines a separator between actions. -->
+            <!-- <separator/> -->
+            <!-- <group id="AnotherNestedGroup"/> -->
+            <!-- The <reference> element allows to add an existing action to the group.
+                 - "ref" (required) specifies the ID of the action to add. -->
+            <!-- <reference ref="EditorCopy"/> -->
+        </group>
+    </actions>
+</idea-plugin>

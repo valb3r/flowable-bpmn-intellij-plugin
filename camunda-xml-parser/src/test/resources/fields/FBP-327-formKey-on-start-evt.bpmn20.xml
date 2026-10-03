@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_02m23tv" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.10.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+    <bpmn:process id="test-start-evt-form-camunda" name="test-start-evt-form-camunda" isExecutable="true">
+        <bpmn:startEvent id="startEvent1" camunda:formKey="formKey"/>
+    </bpmn:process>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_test-start-evt-form-camunda">
+        <bpmndi:BPMNPlane id="BPMNPlane_test-start-evt-form-camunda" bpmnElement="test-start-evt-form-camunda">
+            <bpmndi:BPMNShape id="shape-6b91de7b-d3c0-4496-a8b4-0ff41847cbf2" bpmnElement="startEvent1">
+                <dc:Bounds x="-40.0" y="-35.0" width="30.0" height="30.0"/>
+            </bpmndi:BPMNShape>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</bpmn:definitions>

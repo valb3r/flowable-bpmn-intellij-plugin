@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.activiti.parser
 
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.testevents.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
@@ -25,6 +26,10 @@ fun readAndUpdateProcess(parser: ActivitiParser, processName: String, events: Li
 
 fun updateEvt(elemId: String, prop: PropertyType, newValue: String): StringValueUpdatedEvent {
     return StringValueUpdatedEvent(BpmnElementId(elemId), prop, newValue)
+}
+
+fun BpmnProcessObject.propsOf(elemId: String): PropertyTable {
+    return this.toView(ActivitiObjectFactory()).elemPropertiesByElementId[BpmnElementId(elemId)]!!
 }
 
 fun updateBpmnFile(parser: ActivitiParser, processName: String, events: List<EventPropagatableToXml>): String {

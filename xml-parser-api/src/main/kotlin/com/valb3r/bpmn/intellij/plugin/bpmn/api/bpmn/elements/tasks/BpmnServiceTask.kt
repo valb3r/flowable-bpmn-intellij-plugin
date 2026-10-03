@@ -20,6 +20,7 @@ data class BpmnServiceTask(
         val triggerable: Boolean? = null,
         val isForCompensation: Boolean? = null,
         val useLocalScopeForResultVariable: Boolean? = null,
+        val multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null,
         val incoming: List<String>? = null,
         val outgoing: List<String>? = null,
         // Customizations (Flowable) - http task, camel task,...:

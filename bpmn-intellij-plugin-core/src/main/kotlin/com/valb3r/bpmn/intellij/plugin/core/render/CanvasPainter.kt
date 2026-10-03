@@ -2,6 +2,7 @@ package com.valb3r.bpmn.intellij.plugin.core.render
 
 import com.google.common.cache.Cache
 import com.google.common.hash.Hashing
+import com.intellij.ui.JBColor
 import com.intellij.util.ui.UIUtil
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.WaypointElement
@@ -10,21 +11,34 @@ import org.apache.batik.transcoder.TranscoderInput
 import org.apache.batik.transcoder.TranscoderOutput
 import org.apache.batik.transcoder.image.ImageTranscoder
 import org.apache.batik.transcoder.image.PNGTranscoder
-import java.awt.*
+import java.awt.Color
+import java.awt.Font
+import java.awt.Graphics2D
+import java.awt.Polygon
+import java.awt.Shape
+import java.awt.Stroke
 import java.awt.font.FontRenderContext
 import java.awt.font.LineBreakMeasurer
 import java.awt.font.TextAttribute
-import java.awt.geom.*
+import java.awt.geom.AffineTransform
 import java.awt.geom.AffineTransform.getTranslateInstance
+import java.awt.geom.Area
+import java.awt.geom.Ellipse2D
+import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
+import java.awt.geom.RoundRectangle2D
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
-import java.nio.charset.StandardCharsets
 import java.nio.charset.StandardCharsets.UTF_8
 import java.text.AttributedCharacterIterator
 import java.text.AttributedString
 import java.text.BreakIterator
 import javax.swing.Icon
 
+
+fun isUnderDarcula(): Boolean {
+    return !JBColor.isBright()
+}
 
 class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCachedIcons: Cache<Long, BufferedImage>) {
 
@@ -191,6 +205,26 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         return Area(drawShape)
     }
 
+    fun drawRect(shape: Rectangle2D.Float, name: String?, border: Color, textColor: Color, borderStroke: Stroke? = null): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(shape.x, shape.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(shape.x + shape.width, shape.y + shape.height))
+        val drawShape = Rectangle2D.Float(
+            leftTop.x,
+            leftTop.y,
+            rightBottom.x - leftTop.x,
+            rightBottom.y - leftTop.y
+        )
+
+        val oldStroke = graphics2D.stroke
+        borderStroke?.apply { graphics2D.stroke = this }
+        graphics2D.color = border
+        graphics2D.draw(drawShape)
+        graphics2D.stroke = oldStroke
+        graphics2D.color = textColor
+        name?.apply { drawWrappedText(shape, this) }
+        return Area(drawShape)
+    }
+
     fun drawRoundedRect(shape: Rectangle2D.Float, name: String?, background: Color, border: Color, textColor: Color, borderStroke: Stroke? = null): Area {
         val leftTop = camera.toCameraView(Point2D.Float(shape.x, shape.y))
         val rightBottom = camera.toCameraView(Point2D.Float(shape.x + shape.width, shape.y + shape.height))
@@ -252,6 +286,34 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
         }
 
         icon.paintIcon(null, graphics2D, (rightBottom.x - icon.iconWidth - iconMargin).toInt(), (leftTop.y + iconMargin).toInt())
+        return Area(Rectangle2D.Float(
+            iconTop.x,
+            iconTop.y,
+            iconBottom.x - iconTop.x,
+            iconBottom.y - iconTop.y
+        ))
+    }
+
+    fun drawMultiInstance(shape: Rectangle2D.Float, icon: SvgIcon): Area {
+        val leftTop = camera.toCameraView(Point2D.Float(shape.x, shape.y))
+        val rightBottom = camera.toCameraView(Point2D.Float(shape.x + shape.width, shape.y + shape.height))
+        val iconSize = 14
+
+        if (rightBottom.x - leftTop.x < (iconMargin + iconSize) * 2) {
+            return Area(shape)
+        }
+
+        if (rightBottom.y - leftTop.y < (iconMargin + iconSize) * 1.5) {
+            return Area(shape)
+        }
+
+        val iconX = (rightBottom.x - iconSize - iconMargin).toInt()
+        val iconY = (leftTop.y + iconMargin).toInt()
+        val image = rasterizeSvg(icon, iconSize.toFloat(), iconSize.toFloat(), isUnderDarcula())
+        graphics2D.drawImage(image, iconX, iconY, iconSize, iconSize, null)
+
+        val iconTop = camera.fromCameraView(Point2D.Float(leftTop.x, leftTop.y + iconMargin + iconSize))
+        val iconBottom = camera.fromCameraView(Point2D.Float(rightBottom.x, rightBottom.y))
         return Area(Rectangle2D.Float(
             iconTop.x,
             iconTop.y,
@@ -335,7 +397,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
                 height.toFloat()
         )
 
-        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), isUnderDarcula())
         graphics2D.drawImage(resizedImg, bounds.x.toInt(), bounds.y.toInt(), width, height, null)
 
         return Area(highlightedShape)
@@ -358,7 +420,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
                 height.toFloat()
         )
 
-        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), isUnderDarcula())
         graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
 
         return Area(highlightedShape)
@@ -375,7 +437,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
             return Area()
         }
 
-        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), isUnderDarcula())
         val iconRect = Rectangle2D.Float(
                 leftTop.x.toInt().toFloat(),
                 leftTop.y.toInt().toFloat(),
@@ -419,7 +481,7 @@ class CanvasPainter(val graphics2D: Graphics2D, val camera: Camera, val svgCache
             graphics2D.fill(highlightedShape)
         }
 
-        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), UIUtil.isUnderDarcula())
+        val resizedImg = rasterizeSvg(svgIcon, width.toFloat(), height.toFloat(), isUnderDarcula())
         graphics2D.drawImage(resizedImg, leftTop.x.toInt(), leftTop.y.toInt(), width, height, null)
 
         return Area(highlightedShape)

@@ -7,7 +7,7 @@ import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.messages.MessageBus
 import com.intellij.util.messages.MessageBusConnection
-import com.nhaarman.mockitokotlin2.*
+import org.mockito.kotlin.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
@@ -354,11 +354,22 @@ abstract class BaseUiTest {
         canvas.paintComponent(graphics)
     }
 
+    protected fun addSequenceElementOnFirstTaskAndValidateCommittedExactOnce(target: DiagramElementId): BpmnEdgeObjectAddedEvent {
+        addSequenceElementOnFirstTaskTo(target)
+
+        argumentCaptor<List<EventPropagatableToXml>>().let {
+            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any(), any())
+            it.firstValue.shouldHaveSize(3)
+            it.firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).map { value -> value.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
+            return it.firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+        }
+    }
+
     protected fun addSequenceElementOnFirstTaskAndValidateCommittedExactOnce(): BpmnEdgeObjectAddedEvent {
         addSequenceElementOnFirstTaskToSecondTask()
 
         argumentCaptor<List<EventPropagatableToXml>>().let {
-            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any())
+            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any(), any())
             it.firstValue.shouldHaveSize(3)
             it.firstValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2).map { value -> value.property }.toSet().shouldContainSame(arrayOf(PropertyType.BPMN_INCOMING, PropertyType.BPMN_OUTGOING))
             return it.firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
@@ -376,9 +387,19 @@ abstract class BaseUiTest {
         canvas.paintComponent(graphics)
 
         argumentCaptor<List<EventPropagatableToXml>>().let {
-            verify(fileCommitter, atLeastOnce()).executeCommitAndGetHash(any(), it.capture(), any(), any())
+            verify(fileCommitter, atLeastOnce()).executeCommitAndGetHash(any(), it.capture(), any(), any(), any())
             return it.lastValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().last().shouldNotBeNull()
         }
+    }
+
+    protected fun addSequenceElementOnFirstTaskTo(endTarget: DiagramElementId) {
+        clickOnId(serviceTaskStartDiagramId)
+        val newLink = findExactlyOneNewLinkElem().shouldNotBeNull()
+        val newLinkLocation = clickOnId(newLink)
+        dragToButDontStop(newLinkLocation, elementCenter(endTarget))
+        canvas.paintComponent(graphics)
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
     }
 
     protected fun addSequenceElementOnFirstTaskToSecondTask() {
@@ -813,7 +834,24 @@ abstract class BaseUiTest {
             ),
             listOf(DiagramElement(
                 diagramMainElementId,
-                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramTimerStartEvent, diagramServiceTaskEnd), listOf(diagramSequenceFlow)))
+                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramExclusiveGateway, diagramServiceTaskEnd), listOf(diagramSequenceFlow)))
+            )
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        initializeCanvas()
+    }
+
+    protected fun prepareExclusiveGatewayAndServiceTaskDetached() {
+        val process = basicProcess.copy(
+            basicProcess.process.copy(
+                body = basicProcessBody.copy(
+                    exclusiveGateway = listOf(bpmnExclusiveGateway),
+                    serviceTask = listOf(bpmnServiceTaskStart)
+                )
+            ),
+            listOf(DiagramElement(
+                diagramMainElementId,
+                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramExclusiveGateway, diagramServiceTaskStart), listOf()))
             )
         )
         whenever(parser.parse("")).thenReturn(process)

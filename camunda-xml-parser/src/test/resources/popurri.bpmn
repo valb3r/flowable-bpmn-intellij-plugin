@@ -350,6 +350,10 @@ aaa?</bpmn:documentation>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1lq9n9m</bpmn:incoming>
       <bpmn:outgoing>Flow_1uy5hnx</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics isSequential="false" camunda:collection="COLLECTION" camunda:elementVariable="ELEMENT">
+        <bpmn:loopCardinality>12</bpmn:loopCardinality>
+        <bpmn:completionCondition>${completion}</bpmn:completionCondition>
+      </bpmn:multiInstanceLoopCharacteristics>
     </bpmn:callActivity>
     <bpmn:subProcess id="subProcess">
       <bpmn:documentation>Subprocess?</bpmn:documentation>

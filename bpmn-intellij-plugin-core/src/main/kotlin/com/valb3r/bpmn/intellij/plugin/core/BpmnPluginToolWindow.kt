@@ -1,5 +1,7 @@
 package com.valb3r.bpmn.intellij.plugin.core
 
+import com.intellij.notification.NotificationType
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
@@ -12,6 +14,7 @@ import com.intellij.openapi.editor.event.EditorMouseListener
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileTypes.StdFileTypes
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Computable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.wm.IdeFocusManager
@@ -22,6 +25,7 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.*
 import com.intellij.util.ui.ButtonlessScrollBarUI
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
@@ -39,11 +43,19 @@ import com.valb3r.bpmn.intellij.plugin.core.render.currentCanvas
 import com.valb3r.bpmn.intellij.plugin.core.render.currentIconProvider
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.ViewRectangleChangeEvent
 import com.valb3r.bpmn.intellij.plugin.core.render.uieventbus.currentUiEventBus
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsState
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.MultiEditJTable
+import com.valb3r.bpmn.intellij.plugin.core.ui.components.notifications.genericShowNotificationBalloon
+import com.valb3r.bpmn.intellij.plugin.core.util.IJFeatures
+import java.awt.Adjustable
+import java.awt.BorderLayout
+import java.awt.CardLayout
+import java.awt.Color
 import java.awt.event.*
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.*
+import javax.swing.border.EtchedBorder
 import javax.swing.plaf.basic.BasicArrowButton
 import javax.swing.table.DefaultTableModel
 import kotlin.math.abs
@@ -71,7 +83,43 @@ open class BpmnPluginToolWindow(
     private val canvas: Canvas = currentCanvas(project)
     private lateinit var scrollHandler: ScrollBarInteractionHandler
 
-    init {
+    fun createMainToolWindowPanel(): JComponent {
+        this.canvasNoDiagramText = JTextArea("No file opened.").apply {
+            isEditable = false
+            isEnabled = false
+            lineWrap = true
+        }
+        this.canvasVScroll = JScrollBar(Adjustable.VERTICAL)
+        this.canvasHScroll = JScrollBar(Adjustable.HORIZONTAL)
+
+        this.canvasPanel = JPanel(BorderLayout()).apply {
+            border = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED)
+            add(canvasNoDiagramText, BorderLayout.CENTER)
+            add(canvasVScroll, BorderLayout.EAST)
+            add(canvasHScroll, BorderLayout.SOUTH)
+        }
+
+
+        val propertiesTextArea = JTextArea("No file opened.").apply {
+            isEditable = false
+            isEnabled = false
+            lineWrap = true
+        }
+
+        this.propertiesPanel = JPanel(CardLayout()).apply {
+            border = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED)
+            add(propertiesTextArea, "Card1")
+        }
+
+        this.canvasAndProperties = JSplitPane(JSplitPane.VERTICAL_SPLIT, this.canvasPanel, this.propertiesPanel)
+        canvasAndProperties.dividerSize = 2
+        canvasAndProperties.isOneTouchExpandable = false
+        canvasAndProperties.setDividerLocation(0.5)
+        onAfterCreate()
+        return canvasAndProperties
+    }
+
+    private fun onAfterCreate() {
         log.info("BPMN plugin started")
         initializeUpdateEventsRegistry(project, NoOpFileCommitter())
         // attach event listeners to canvas
@@ -89,7 +137,7 @@ open class BpmnPluginToolWindow(
 
     fun hackFixForMacOsScrollbars() {
         // Preventing scrollbar thumb disappearing on MacOS, it is default behavior there, but is undesired for diagram
-        if (!SystemInfo.isMac) {
+        if (!SystemInfo.isMac || !::canvasVScroll.isInitialized || !::canvasHScroll.isInitialized) {
             return
         }
         
@@ -102,6 +150,7 @@ open class BpmnPluginToolWindow(
     fun getContent() = this.mainToolWindowForm
 
     fun openFileAndRender(bpmnFile: PsiFile, context: BpmnActionContext) {
+        checkIfJavaAndSpelIsPresentAndNotifyOnceIfNot()
         onBeforeFileOpen(bpmnFile)
         val bpmnParser = currentParser(project)
         if (this.canvasBuilder.assertFileContentAndShowErrorOrWarning(bpmnParser, bpmnFile.virtualFile, onBadContentErrorCallback, onBadContentWarningCallback)) return
@@ -141,6 +190,35 @@ open class BpmnPluginToolWindow(
 
         invokeAndWaitIfNeeded { setupUiAfterRun() }
         showTryPolyBpmnAdvertisementNotification(project)
+    }
+
+    private fun checkIfJavaAndSpelIsPresentAndNotifyOnceIfNot() {
+        if (true == currentSettingsState().pluginState.noJavaOrSpelSupportShown) {
+            return
+        }
+
+        if (!IJFeatures.hasJava(project)) {
+            genericShowNotificationBalloon(
+                project,
+                "BPMN plugin issues",
+                "BPMN: No Java language support found, language injection and code navigation support is OFF." +
+                        "<br/>For full feature support, use IntelliJ Ultimate",
+                NotificationType.WARNING
+            )
+            currentSettingsState().pluginState.noJavaOrSpelSupportShown = true
+            return
+        }
+
+        if (!IJFeatures.hasSpel()) {
+            genericShowNotificationBalloon(
+                project,
+                "BPMN plugin issues",
+                "BPMN: No SpEL language support found, language injection and code navigation support is LIMITED." +
+                        "<br/>For full feature support, use IntelliJ Ultimate",
+                NotificationType.WARNING
+            )
+            currentSettingsState().pluginState.noJavaOrSpelSupportShown = true
+        }
     }
 
     private fun createMultiLineTextField(value: String): TextValueAccessor {
@@ -185,10 +263,18 @@ open class BpmnPluginToolWindow(
     }
 
     private fun createEditor(project: Project, bpmnFile: PsiFile, text: String): TextValueAccessor {
-        val factory = JavaCodeFragmentFactory.getInstance(project)
-        val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, psiTypeChar(), true)
-        fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
-        val document = PsiDocumentManager.getInstance(project).getDocument(fragment)!!
+        val factory = try {
+            JavaCodeFragmentFactory.getInstance(project)
+        } catch (ex: NoClassDefFoundError) {
+            // Non-Java IJ IDE
+            return nonJavaEditorTextField(text)
+        }
+
+        val document = ApplicationManager.getApplication().runReadAction(Computable<Document> {
+            val fragment: JavaCodeFragment = factory.createExpressionCodeFragment(text, bpmnFile, psiTypeChar(), true)
+            fragment.visibilityChecker = JavaCodeFragment.VisibilityChecker.EVERYTHING_VISIBLE
+            PsiDocumentManager.getInstance(project).getDocument(fragment)!!
+        })
         document.createGuardedBlock(0, 1).isGreedyToLeft = true
         document.createGuardedBlock(text.length - 1, text.length).isGreedyToRight = true
         EditorActionManager.getInstance().setReadonlyFragmentModificationHandler(document) {
@@ -228,7 +314,15 @@ open class BpmnPluginToolWindow(
 
     // JavaCodeFragmentFactory - important
     private fun createEditorForClass(project: Project, bpmnFile: PsiFile, text: String?): TextValueAccessor {
-        val document = JavaReferenceEditorUtil.createDocument(text, project, true)!!
+        val document = try {
+            ApplicationManager.getApplication().runReadAction(Computable<Document> {
+                JavaReferenceEditorUtil.createDocument(text, project, true)!!
+            })
+        } catch (ex: NoClassDefFoundError) {
+            // Non-Java IJ IDE
+            return nonJavaEditorTextField(text)
+        }
+
         val textField: EditorTextField = JavaClassEditorTextField(document, project)
         textField.setOneLineMode(true)
 
@@ -238,6 +332,10 @@ open class BpmnPluginToolWindow(
             override val component: JComponent
                 get() = textField
         }
+    }
+
+    private fun nonJavaEditorTextField(text: String?): TextValueAccessor {
+        return createTextField(text?.trim('"') ?: "")
     }
 
     private fun setupUiBeforeRun() {

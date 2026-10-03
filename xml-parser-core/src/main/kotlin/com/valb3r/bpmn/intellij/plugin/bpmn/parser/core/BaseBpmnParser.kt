@@ -8,9 +8,12 @@ import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnLaxHunk
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnAssociation
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.*
@@ -36,6 +39,8 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.lax.LaxXmlPreprocessor
+import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.lax.PreparedLaxXml
 import org.dom4j.*
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.SAXReader
@@ -47,6 +52,54 @@ import java.nio.charset.StandardCharsets
 
 const val CDATA_FIELD = "CDATA"
 
+private val ARTIFACT_ELEMENT_NAMES = setOf(
+    "association",
+    "group",
+    "textAnnotation",
+)
+
+private val ELEMENTS_AFTER_FLOW_ELEMENTS = ARTIFACT_ELEMENT_NAMES + setOf(
+    "completionCondition",
+    "resourceRole",
+    "correlationSubscription",
+    "supports",
+)
+
+private val ELEMENTS_AFTER_ARTIFACTS = setOf(
+    "completionCondition",
+    "resourceRole",
+    "correlationSubscription",
+    "supports",
+)
+
+private val ELEMENTS_AFTER_GLOBAL_MESSAGE_DEFINITIONS = setOf(
+    "process",
+    "collaboration",
+    "choreography",
+    "BPMNDiagram",
+    "relationship",
+)
+
+private val BASE_ELEMENT_CHILD_ORDER = mapOf(
+    "documentation" to 0,
+    "extensionElements" to 1,
+    "auditing" to 2,
+    "monitoring" to 3,
+    "categoryValueRef" to 4,
+    "incoming" to 5,
+    "outgoing" to 6,
+)
+
+private val MULTI_INSTANCE_CHILD_ORDER = mapOf(
+    "loopCardinality" to 0,
+    "loopDataInputRef" to 1,
+    "loopDataOutputRef" to 2,
+    "inputDataItem" to 3,
+    "outputDataItem" to 4,
+    "complexBehaviorDefinition" to 5,
+    "completionCondition" to 6,
+)
+
 data class PropertyTypeDetails(
     val propertyType: PropertyType,
     val xmlPath: String,
@@ -54,7 +107,9 @@ data class PropertyTypeDetails(
     val forceFirst: Boolean = false
 )
 
-abstract class BaseBpmnParser: BpmnParser {
+abstract class BaseBpmnParser(private val laxParsingEnabled: () -> Boolean = { true }): BpmnParser {
+
+    private val laxXmlPreprocessor = LaxXmlPreprocessor()
 
     abstract override fun parse(input: String): BpmnProcessObject
 
@@ -94,14 +149,26 @@ abstract class BaseBpmnParser: BpmnParser {
      * Impossible to use FasterXML - Multiple objects of same type issue:
      * https://github.com/FasterXML/jackson-dataformat-xml/issues/205
      */
-    override fun update(input: String, events: List<EventPropagatableToXml>): String {
+    override fun update(input: String, events: List<EventPropagatableToXml>, laxHunks: List<BpmnLaxHunk>): String {
+        val effectiveHunks = when {
+            laxHunks.isNotEmpty() -> laxHunks
+            laxParsingEnabled() -> laxXmlPreprocessor.prepare(input).hunks
+            else -> emptyList()
+        }
+        val prepared = laxXmlPreprocessor.prepareForUpdate(input, effectiveHunks)
         val reader = SAXReader()
-        val doc = reader.read(ByteArrayInputStream(input.toByteArray(StandardCharsets.UTF_8)))
+        val doc = reader.read(ByteArrayInputStream(prepared.xml.toByteArray(StandardCharsets.UTF_8)))
 
         val os = ByteArrayOutputStream()
         parseAndWrite(doc, os, events)
 
-        return os.toString(StandardCharsets.UTF_8.name())
+        return laxXmlPreprocessor.restore(os.toString(StandardCharsets.UTF_8.name()), prepared.markers)
+    }
+
+    protected fun prepareLaxXmlForJackson(input: String) = if (laxParsingEnabled()) {
+        laxXmlPreprocessor.prepare(input)
+    } else {
+        PreparedLaxXml(input, emptyList())
     }
 
 
@@ -142,7 +209,7 @@ abstract class BaseBpmnParser: BpmnParser {
             // FIXME https://github.com/FasterXML/jackson-module-kotlin/issues/138
             JacksonXmlModule().apply { setXMLTextElementName(CDATA_FIELD) }
         )
-        mapper.registerModule(KotlinModule())
+        mapper.registerModule(KotlinModule.Builder().build())
         mapper.enable(SerializationFeature.INDENT_OUTPUT)
         mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -176,6 +243,14 @@ abstract class BaseBpmnParser: BpmnParser {
                 is BpmnParentChanged -> applyParentChange(doc, event)
             }
         }
+
+        placeGlobalMessageDefinitions(doc)
+    }
+
+    private fun placeGlobalMessageDefinitions(doc: Document) {
+        doc.rootElement.elements()
+            .filter { it.name.substringAfter(':') == "message" }
+            .forEach { moveBeforeFirst(it, ELEMENTS_AFTER_GLOBAL_MESSAGE_DEFINITIONS) }
     }
 
     private fun applyLocationUpdate(doc: Document, update: LocationUpdateWithId) {
@@ -272,6 +347,7 @@ abstract class BaseBpmnParser: BpmnParser {
         trimWhitespace(parent, false)
 
         val newNode = createBpmnObject(update.newBpmnElement, parent) ?: throw IllegalArgumentException("Can't store: " + update.parentIdForXml)
+        placeFlowElementOrArtifact(newNode, update.newBpmnElement is BpmnTextAnnotation)
         update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.index?.toMutableList()) }
         trimWhitespace(parent, false)
     }
@@ -293,6 +369,7 @@ abstract class BaseBpmnParser: BpmnParser {
                 )!!
 
         val newNode = createBpmnObject(update.bpmnObject.element, diagramParent) ?: throw IllegalArgumentException("Can't store: " + update.bpmnObject)
+        placeFlowElementOrArtifact(newNode, update.bpmnObject.element is BpmnTextAnnotation)
 
         update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.index?.toMutableList()) }
         trimWhitespace(diagramParent, false)
@@ -381,6 +458,7 @@ abstract class BaseBpmnParser: BpmnParser {
         is BpmnMuleTask -> createServiceTaskWithType(diagramParent, "mule")
         is BpmnDecisionTask -> createServiceTaskWithType(diagramParent, "dmn")
         is BpmnShellTask -> createServiceTaskWithType(diagramParent, "shell")
+        is BpmnTextAnnotation -> diagramParent.addElement(modelNs().named("textAnnotation"))
 
         // Sub processes
         is BpmnCallActivity -> diagramParent.addElement(modelNs().named("callActivity"))
@@ -452,8 +530,10 @@ abstract class BaseBpmnParser: BpmnParser {
 
         val newNode = when (update.bpmnObject.element) {
             is BpmnSequenceFlow -> diagramParent.addElement(modelNs().named("sequenceFlow"))
+            is BpmnAssociation -> diagramParent.addElement(modelNs().named("association"))
             else -> throw IllegalArgumentException("Can't store: " + update.bpmnObject)
         }
+        placeFlowElementOrArtifact(newNode, update.bpmnObject.element is BpmnAssociation)
 
         update.props.forEach { k, v ->  setToNode(newNode, k, v.value) }
         trimWhitespace(diagramParent, false)
@@ -502,6 +582,33 @@ abstract class BaseBpmnParser: BpmnParser {
 
         node.parent.remove(node)
         newParent.add(node)
+        placeFlowElementOrArtifact(node, node.name in ARTIFACT_ELEMENT_NAMES)
+    }
+
+    private fun placeFlowElementOrArtifact(element: Element, isArtifact: Boolean) {
+        moveBeforeFirst(element, if (isArtifact) ELEMENTS_AFTER_ARTIFACTS else ELEMENTS_AFTER_FLOW_ELEMENTS)
+    }
+
+    private fun moveBeforeFirst(element: Element, followingElementNames: Set<String>) {
+        val parent = element.parent as Element
+        val firstTailElement = parent.elements().firstOrNull {
+            it !== element && it.name in followingElementNames
+        } ?: return
+
+        moveBefore(element, firstTailElement)
+    }
+
+    private fun moveBefore(element: Element, followingElement: Element) {
+        val parent = element.parent as Element
+        val content = parent.content()
+        val elementIndex = content.indexOf(element)
+        val tailElementIndex = content.indexOf(followingElement)
+        if (elementIndex < tailElementIndex) {
+            return
+        }
+
+        element.detach()
+        content.add(tailElementIndex, element)
     }
 
     private fun setToNode(node: Element, type: PropertyType, value: Any?, valueIndexInArray: MutableList<String>? = null) {
@@ -549,14 +656,8 @@ abstract class BaseBpmnParser: BpmnParser {
                 }
 
                 // Sorting data in CustomizedXmlWriter is expensive performance-wise
-                val newElem = if (details.forceFirst) {
-                    val newElem = currentNode.addElement(name)
-                    currentNode.remove(newElem)
-                    currentNode.content().add(0, newElem)
-                    newElem
-                } else {
-                    currentNode.addElement(name)
-                }
+                val newElem = currentNode.addElement(name)
+                placeNestedElement(currentNode, newElem, details.forceFirst)
 
                 currentNode = newElem
                 // TODO Handle this with setAttributeOrValueOrCdataOrRemoveIfNull ?
@@ -576,6 +677,39 @@ abstract class BaseBpmnParser: BpmnParser {
             details,
             asString(type.valueType, value)
         )
+    }
+
+    private fun placeNestedElement(parent: Element, element: Element, forceFirst: Boolean) {
+        if (forceFirst) {
+            element.detach()
+            parent.content().add(0, element)
+            return
+        }
+
+        val elementName = element.name.substringAfter(':')
+        val firstFollowingElement = when {
+            elementName in BASE_ELEMENT_CHILD_ORDER -> {
+                val elementOrder = BASE_ELEMENT_CHILD_ORDER.getValue(elementName)
+                parent.elements().firstOrNull {
+                    it !== element && (BASE_ELEMENT_CHILD_ORDER[it.name.substringAfter(':')] ?: Int.MAX_VALUE) > elementOrder
+                }
+            }
+            parent.name.substringAfter(':') == "multiInstanceLoopCharacteristics" -> {
+                val elementOrder = MULTI_INSTANCE_CHILD_ORDER[elementName] ?: return
+                parent.elements().firstOrNull {
+                    it !== element && (MULTI_INSTANCE_CHILD_ORDER[it.name.substringAfter(':')] ?: -1) > elementOrder
+                }
+            }
+            elementName.endsWith("EventDefinition") -> parent.elements().firstOrNull {
+                it !== element && it.name.substringAfter(':') == "eventDefinitionRef"
+            }
+            elementName == "multiInstanceLoopCharacteristics" -> parent.elements().firstOrNull {
+                it !== element && it.name.substringAfter(':') == "rendering"
+            }
+            else -> null
+        }
+
+        firstFollowingElement?.let { moveBefore(element, it) }
     }
 
     private fun nodeChildByName(target: Element, name: String, attrName: String?, attrValue: String?): Element? {

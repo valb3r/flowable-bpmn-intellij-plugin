@@ -24,6 +24,7 @@ class BpmnPluginSettingsConfigurable : Configurable {
 
     override fun createComponent(): JComponent {
         pluginBpmnPluginSettingsComponent = BpmnPluginSettingsComponent()
+        pluginBpmnPluginSettingsComponent!!.createSettingsPanel()
         return pluginBpmnPluginSettingsComponent!!.settingsPanel
     }
 

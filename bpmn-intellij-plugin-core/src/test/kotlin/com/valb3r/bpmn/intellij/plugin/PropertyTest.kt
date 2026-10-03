@@ -1,9 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
-import com.nhaarman.mockitokotlin2.times
-import com.nhaarman.mockitokotlin2.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnUserTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
@@ -39,7 +39,7 @@ internal class PropertyTest : BaseUiTest() {
         this.buttonsConstructed[Pair(userTaskBpmnId, FunctionalGroupType.ADD_FORM_PROPERTY)]!!.doClick()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             lastValue.shouldHaveSize(1)
             val valueUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
             valueUpdated.bpmnElementId.shouldBeEqualTo(userTaskBpmnId)
@@ -60,7 +60,7 @@ internal class PropertyTest : BaseUiTest() {
         propertiesVisualizer(project).clear()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             lastValue.shouldHaveSize(1)
             val valueUpdated = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
             valueUpdated.bpmnElementId.shouldBeEqualTo(userTaskBpmnId)
@@ -81,7 +81,7 @@ internal class PropertyTest : BaseUiTest() {
         propertiesVisualizer(project).clear()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             lastValue.shouldHaveSize(1) // For value and its type
             val txtUpdate = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSingleItem()
             txtUpdate.property.shouldBeEqualTo(type)
@@ -101,7 +101,7 @@ internal class PropertyTest : BaseUiTest() {
         propertiesVisualizer(project).clear()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
-            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any())
+            verify(fileCommitter, times(1)).executeCommitAndGetHash(any(), capture(), any(), any(), any())
             lastValue.shouldHaveSize(2) // For value and its type
             val updates = lastValue.filterIsInstance<StringValueUpdatedEvent>().shouldHaveSize(2)
             val typeUpdate = updates[0]

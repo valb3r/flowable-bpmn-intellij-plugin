@@ -47,10 +47,14 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
 
         var dataFontSize = 12
         var dataFontName = "Consolas"
-        var openExtensions = mutableSetOf("bpmn20.xml")
+        var openExtensions = mutableSetOf("bpmn", "bpmn20.xml")
 
         var enableFps = false
         var disableXsdSchema = false
+        var enableLaxParsing = true
+
+        // Internal state
+        var noJavaOrSpelSupportShown: Boolean? = false
 
         fun stateEquals(other: PluginStateData): Boolean {
             if (zoomMin != other.zoomMin) return false
@@ -66,6 +70,8 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             if (openExtensions != other.openExtensions) return false
             if (enableFps != other.enableFps) return false
             if (disableXsdSchema != other.disableXsdSchema) return false
+            if (enableLaxParsing != other.enableLaxParsing) return false
+            if (noJavaOrSpelSupportShown != other.noJavaOrSpelSupportShown) return false
 
             return true
         }
@@ -85,6 +91,8 @@ abstract class BaseBpmnPluginSettingsState: PersistentStateComponent<BaseBpmnPlu
             data.openExtensions = openExtensions
             data.enableFps = enableFps
             data.disableXsdSchema = disableXsdSchema
+            data.enableLaxParsing = enableLaxParsing
+            data.noJavaOrSpelSupportShown = noJavaOrSpelSupportShown
             return data
         }
     }

@@ -27,7 +27,8 @@ abstract class BaseEdgeRenderElement(
         bpmnElementId: BpmnElementId,
         protected val edge: EdgeWithIdentifiableWaypoints,
         private val edgeColor: Colors,
-        state: () -> RenderState
+        state: () -> RenderState,
+        private val arrowAtEnd: Boolean = true,
 ): BaseBpmnRenderElement(elementId, bpmnElementId, state) {
 
     private val anchors = computeAnchors()
@@ -53,7 +54,7 @@ abstract class BaseEdgeRenderElement(
 
         updatedAnchors.forEachIndexed {pos, waypoint ->
             when {
-                pos == updatedAnchors.size - 1 -> area.add(ctx.canvas.drawLineWithArrow(updatedAnchors[pos - 1], waypoint, color(isActiveEdge(pos, activeWaypoints), edgeColor)))
+                pos == updatedAnchors.size - 1 && arrowAtEnd -> area.add(ctx.canvas.drawLineWithArrow(updatedAnchors[pos - 1], waypoint, color(isActiveEdge(pos, activeWaypoints), edgeColor)))
                 pos > 0 -> area.add(ctx.canvas.drawLine(updatedAnchors[pos - 1], waypoint, color(isActiveEdge(pos, activeWaypoints), edgeColor)))
             }
         }
@@ -90,10 +91,10 @@ abstract class BaseEdgeRenderElement(
     }
 
     override fun currentOnScreenRect(camera: Camera): Rectangle2D.Float {
-        val minX = edge.waypoint.minBy { it.x }?.x ?: 0.0f
-        val minY = edge.waypoint.minBy { it.y }?.y ?: 0.0f
-        val maxX = edge.waypoint.maxBy { it.x }?.x ?: 0.0f
-        val maxY = edge.waypoint.maxBy { it.y }?.y ?: 0.0f
+        val minX = edge.waypoint.minByOrNull { it.x }?.x ?: 0.0f
+        val minY = edge.waypoint.minByOrNull { it.y }?.y ?: 0.0f
+        val maxX = edge.waypoint.maxByOrNull { it.x }?.x ?: 0.0f
+        val maxY = edge.waypoint.maxByOrNull { it.y }?.y ?: 0.0f
 
         // Edge itself can't be translated, so no viewTransform
         return Rectangle2D.Float(
@@ -112,7 +113,7 @@ abstract class BaseEdgeRenderElement(
         val name = state().currentState.elemPropertiesByStaticElementId[bpmnElementId]?.get(PropertyType.NAME)?.value as String? ?: return
         val longestSegment = waypoints
                 .mapIndexedNotNull {pos, it -> if (0 == pos) null else Pair(waypoints[pos - 1], it)}
-            .maxBy { it.first.distance(it.second) } ?: return
+            .maxByOrNull { it.first.distance(it.second) } ?: return
         state().ctx.canvas.drawWrappedSingleLine(longestSegment.first, longestSegment.second, name, color)
     }
 

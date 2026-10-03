@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.flowable.parser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.activities.BpmnCallActivity
@@ -33,6 +34,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BpmnShapeObjectAddedEvent
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeLessThan
 import org.amshove.kluent.shouldHaveSingleItem
 import org.amshove.kluent.shouldNotBeNull
 import org.junit.jupiter.api.Test
@@ -351,6 +353,69 @@ internal class XmlUpdateEventBpmnObjectAddedTest {
     }
 
     @Test
+    fun `Added flow element is stored before associations`() {
+        val updated = parser.update(
+            "popurri.bpmn20.xml".asResource()!!,
+            listOf(generateUpdateEvent(BpmnExclusiveGateway::class, BpmnElementId("popurri"))),
+        )
+
+        updated.indexOf("id=\"${id.id}\"").shouldBeLessThan(updated.indexOf("<association"))
+    }
+
+    @Test
+    fun `Added message event is stored before associations`() {
+        val updated = parser.update(
+            "popurri.bpmn20.xml".asResource()!!,
+            listOf(generateUpdateEvent(BpmnStartMessageEvent::class, BpmnElementId("popurri"))),
+        )
+
+        updated.indexOf("id=\"${id.id}\"").shouldBeLessThan(updated.indexOf("<association"))
+    }
+
+    @Test
+    fun `Global message definition is stored before process`() {
+        val messageDefinition = "    <message id=\"MessageId\" name=\"Some name\"></message>\n"
+        val source = "popurri.bpmn20.xml".asResource()!!
+            .replace(messageDefinition, "")
+            .replace("</definitions>", "$messageDefinition</definitions>")
+
+        val updated = parser.update(
+            source,
+            listOf(generateUpdateEvent(BpmnExclusiveGateway::class, BpmnElementId("popurri"))),
+        )
+
+        updated.indexOf("<message ").shouldBeLessThan(updated.indexOf("<process "))
+    }
+
+    @Test
+    fun `Added flow element is stored before ad hoc completion condition`() {
+        val updated = parser.update(
+            "popurri.bpmn20.xml".asResource()!!,
+            listOf(generateUpdateEvent(BpmnExclusiveGateway::class, BpmnElementId("adhocSubProcessId"))),
+        )
+        val adHocSubProcessStart = updated.indexOf("<adHocSubProcess id=\"adhocSubProcessId\"")
+        val adHocSubProcessEnd = updated.indexOf("</adHocSubProcess>", adHocSubProcessStart)
+        val adHocSubProcess = updated.substring(adHocSubProcessStart, adHocSubProcessEnd)
+
+        adHocSubProcess.indexOf("id=\"${id.id}\"")
+            .shouldBeLessThan(adHocSubProcess.indexOf("<completionCondition"))
+    }
+
+    @Test
+    fun `Added artifact is stored before ad hoc completion condition`() {
+        val updated = parser.update(
+            "popurri.bpmn20.xml".asResource()!!,
+            listOf(generateUpdateEvent(BpmnTextAnnotation::class, BpmnElementId("adhocSubProcessId"))),
+        )
+        val adHocSubProcessStart = updated.indexOf("<adHocSubProcess id=\"adhocSubProcessId\"")
+        val adHocSubProcessEnd = updated.indexOf("</adHocSubProcess>", adHocSubProcessStart)
+        val adHocSubProcess = updated.substring(adHocSubProcessStart, adHocSubProcessEnd)
+
+        adHocSubProcess.indexOf("id=\"${id.id}\"")
+            .shouldBeLessThan(adHocSubProcess.indexOf("<completionCondition"))
+    }
+
+    @Test
     fun `Added parallel gateway works`() {
         val updatedProcess = readAndUpdateProcess(generateUpdateEvent(BpmnParallelGateway::class))
 
@@ -371,9 +436,12 @@ internal class XmlUpdateEventBpmnObjectAddedTest {
         updatedProcess.process.body!!.eventBasedGateway!!.filter { it.id == id }.shouldHaveSingleItem().name.shouldBeEqualTo(nameOnProp)
     }
 
-    private fun <T: WithBpmnId> generateUpdateEvent(clazz: KClass<T>): EventPropagatableToXml {
+    private fun <T: WithBpmnId> generateUpdateEvent(
+        clazz: KClass<T>,
+        parentId: BpmnElementId = processId,
+    ): EventPropagatableToXml {
         return BpmnShapeObjectAddedEvent(
-                WithParentId(processId, createClass(clazz)),
+                WithParentId(parentId, createClass(clazz)),
                 ShapeElement(diagramId, id, BoundsElement(0.0f, 0.0f, 10.0f, 10.0f)),
                 PropertyTable(mutableMapOf(Pair(PropertyType.ID, mutableListOf(Property(id.id))), Pair(PropertyType.NAME, mutableListOf(Property(nameOnProp)))))
         )

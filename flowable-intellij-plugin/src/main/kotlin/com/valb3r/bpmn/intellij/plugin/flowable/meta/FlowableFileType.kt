@@ -3,7 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.flowable.meta
 import com.intellij.ide.highlighter.XmlLikeFileType
 import com.intellij.lang.Language
 import com.intellij.lang.xml.XMLLanguage
-import com.intellij.openapi.util.IconLoader
+import com.intellij.ui.IconManager
 import javax.swing.Icon
 
 class FlowableFileType private constructor() : XmlLikeFileType(XMLLanguage.INSTANCE) {
@@ -21,7 +21,7 @@ class FlowableFileType private constructor() : XmlLikeFileType(XMLLanguage.INSTA
   }
 
   override fun getIcon(): Icon {
-    return IconLoader.getIcon("META-INF/pluginIcon.svg", FlowableFileType::class.java)
+    return IconManager.getInstance().getIcon("META-INF/pluginIcon.svg", FlowableFileType::class.java.classLoader)
   }
 
   companion object Instance {

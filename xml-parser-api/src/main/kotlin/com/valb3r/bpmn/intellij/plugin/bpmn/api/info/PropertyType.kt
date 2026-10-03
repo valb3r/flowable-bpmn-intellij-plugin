@@ -3,9 +3,13 @@ package com.valb3r.bpmn.intellij.plugin.bpmn.api.info
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartErrorEvent
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.BpmnBoundaryErrorEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclusiveGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnMailTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnSendEventTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyValueType.*
 import kotlin.reflect.KClass
@@ -91,9 +95,33 @@ enum class PropertyType(
     MESSAGE_REF("messageEventDefinition.messageRef", "Message reference", STRING),
     ESCALATION_REF("escalationEventDefinition.escalationRef", "Escalation reference", STRING),
     ERROR_REF("errorEventDefinition.errorRef", "Error reference", STRING),
+    ERROR_VARIABLE_NAME("errorEventDefinition.errorVariableName", "Error variable name", STRING, isUsedOnlyBy = setOf(BpmnStartErrorEvent::class, BpmnBoundaryErrorEvent::class)),
+    ERROR_VARIABLE_LOCAL_SCOPE("errorEventDefinition.errorVariableLocalScope", "Error variable local scope", BOOLEAN, isUsedOnlyBy = setOf(BpmnStartErrorEvent::class, BpmnBoundaryErrorEvent::class)),
+    ERROR_VARIABLE_TRANSIENT("errorEventDefinition.errorVariableTransient", "Error variable transient", BOOLEAN, isUsedOnlyBy = setOf(BpmnStartErrorEvent::class, BpmnBoundaryErrorEvent::class)),
     SIGNAL_REF("signalEventDefinition.signalRef", "Signal reference", STRING),
     LINK_REF("linkEventDefinition.name", "Link reference", STRING),
     COMPLETION_CONDITION("completionCondition.condition", "Completion condition", T_EXPRESSION, "completionCondition.condition"),
+    MULTI_INSTANCE_IS_SEQUENTIAL("multiInstanceLoopCharacteristics.isSequential", "Sequential multi-instance", BOOLEAN, "multiInstanceLoopCharacteristics.sequential"),
+    MULTI_INSTANCE_COLLECTION("multiInstanceLoopCharacteristics.collection", "Multi-instance collection", T_EXPRESSION),
+    MULTI_INSTANCE_ELEMENT_VARIABLE("multiInstanceLoopCharacteristics.elementVariable", "Multi-instance element variable", STRING),
+    MULTI_INSTANCE_LOOP_CARDINALITY("multiInstanceLoopCharacteristics.loopCardinality", "Loop cardinality", T_EXPRESSION),
+    MULTI_INSTANCE_COMPLETION_CONDITION("multiInstanceLoopCharacteristics.completionCondition", "Multi-instance completion condition", T_EXPRESSION),
+    MULTI_INSTANCE_ELEMENT_INDEX_VARIABLE("multiInstanceLoopCharacteristics.elementIndexVariable", "Multi-instance element index variable", STRING),
+    MULTI_INSTANCE_NO_WAIT_STATES_ASYNC_LEAVE("multiInstanceLoopCharacteristics.noWaitStatesAsyncLeave", "Optimize for only automatic steps", BOOLEAN),
+    MULTI_INSTANCE_LOOP_DATA_INPUT_REF("multiInstanceLoopCharacteristics.loopDataInputRef", "Loop data input reference", STRING),
+    MULTI_INSTANCE_INPUT_DATA_ITEM("multiInstanceLoopCharacteristics.inputDataItem", "Input data item", STRING),
+    TEXT_ANNOTATION_TEXT("text.text", "Text", STRING, multiline = true, isUsedOnlyBy = setOf(BpmnTextAnnotation::class)),
+    TEXT_ANNOTATION_TEXT_FORMAT("textFormat", "Text format", STRING, isUsedOnlyBy = setOf(BpmnTextAnnotation::class)),
+    VARIABLE_AGGREGATION_TARGET("multiInstanceLoopCharacteristics.variableAggregations.@target", "Target variable", STRING, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target", listenerOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),
+    VARIABLE_AGGREGATION_TARGET_EXPRESSION("multiInstanceLoopCharacteristics.variableAggregations.@targetExpression", "Target expression", T_EXPRESSION, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target"),
+    VARIABLE_AGGREGATION_DELEGATE_EXPRESSION("multiInstanceLoopCharacteristics.variableAggregations.@delegateExpression", "Delegate expression", T_EXPRESSION, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target"),
+    VARIABLE_AGGREGATION_CLASS("multiInstanceLoopCharacteristics.variableAggregations.@clazz", "Class", PropertyValueType.CLASS, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target"),
+    VARIABLE_AGGREGATION_CREATE_OVERVIEW("multiInstanceLoopCharacteristics.variableAggregations.@createOverviewVariable", "Create overview variable", BOOLEAN, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target"),
+    VARIABLE_AGGREGATION_STORE_AS_TRANSIENT("multiInstanceLoopCharacteristics.variableAggregations.@storeAsTransientVariable", "Store as transient variable", BOOLEAN, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION), indexInGroupArrayName = "target"),
+    VARIABLE_AGGREGATION_VARIABLE_SOURCE("multiInstanceLoopCharacteristics.variableAggregations.@definitions.@source", "Source variable", STRING, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION, FunctionalGroupType.VARIABLE_AGGREGATION_VARIABLE), indexInGroupArrayName = "target.source", listenerOrder = 100, indexCascades = CascadeGroup.PARENTS_CASCADE, removeEnclosingNodeIfNullOrEmpty = true, hideIfNullOrEmpty = true),
+    VARIABLE_AGGREGATION_VARIABLE_SOURCE_EXPRESSION("multiInstanceLoopCharacteristics.variableAggregations.@definitions.@sourceExpression", "Source expression", T_EXPRESSION, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION, FunctionalGroupType.VARIABLE_AGGREGATION_VARIABLE), indexInGroupArrayName = "target.source"),
+    VARIABLE_AGGREGATION_VARIABLE_TARGET("multiInstanceLoopCharacteristics.variableAggregations.@definitions.@target", "Target variable", STRING, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION, FunctionalGroupType.VARIABLE_AGGREGATION_VARIABLE), indexInGroupArrayName = "target.source"),
+    VARIABLE_AGGREGATION_VARIABLE_TARGET_EXPRESSION("multiInstanceLoopCharacteristics.variableAggregations.@definitions.@targetExpression", "Target expression", T_EXPRESSION, group = listOf(FunctionalGroupType.VARIABLE_AGGREGATION, FunctionalGroupType.VARIABLE_AGGREGATION_VARIABLE), indexInGroupArrayName = "target.source"),
     DEFAULT_FLOW("defaultElement", "Default flow element", ATTACHED_SEQUENCE_SELECT, "defaultElement", false, ID),
     DEFAULT_FLOW_ON_SEQUENCE("defaultElement_onSequence", "Default flow element", BOOLEAN, externalProperty = DefaultFlowExternalProp(), isUsedOnlyBy = setOf(BpmnSequenceFlow::class)),
     IS_TRANSACTIONAL_SUBPROCESS("transactionalSubprocess", "Is transactional subprocess", BOOLEAN, "transactionalSubprocess", elementUpdateChangesClass = true),
@@ -124,7 +152,7 @@ enum class PropertyType(
     SUBJECT("subject", "Subject", STRING),
     CC("cc", "CC", STRING),
     BCC("bcc", "BCC", STRING),
-    TEXT("text", "Text", STRING, multiline = true),
+    TEXT("text", "Text", STRING, multiline = true, isUsedOnlyBy = setOf(BpmnMailTask::class)),
     HTML("html", "Html", STRING, multiline = true),
     CHARSET("charset", "Charset", STRING),
     ENDPOINT_URL("endpointUrl", "Endpoint url", STRING),
@@ -249,6 +277,26 @@ enum class FunctionalGroupType(val groupCaption: String, val actionResult: NewEl
     EXECUTION_LISTENER_FILED("Fields", actionCaption = "Add fields injection", actionResult = NewElem("EXECUTION_LISTENER_FIELD_NAME", "Name %d"),
         actionUiOnlyResult = listOf(
             NewElem("EXECUTION_LISTENER_FIELD_STRING", ""),
+        )
+    ),
+    VARIABLE_AGGREGATION("Variable aggregations", actionCaption = "Add aggregation", actionResult = NewElem("VARIABLE_AGGREGATION_TARGET", "Aggregation %d"),
+        actionUiOnlyResult = listOf(
+            NewElem("VARIABLE_AGGREGATION_TARGET_EXPRESSION", ""),
+            NewElem("VARIABLE_AGGREGATION_DELEGATE_EXPRESSION", ""),
+            NewElem("VARIABLE_AGGREGATION_CLASS", ""),
+            NewElem("VARIABLE_AGGREGATION_CREATE_OVERVIEW", ""),
+            NewElem("VARIABLE_AGGREGATION_STORE_AS_TRANSIENT", ""),
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_SOURCE", "", uiOnlyaddedIndex = listOf("")),
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_SOURCE_EXPRESSION", "", uiOnlyaddedIndex = listOf("")),
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_TARGET", "", uiOnlyaddedIndex = listOf("")),
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_TARGET_EXPRESSION", "", uiOnlyaddedIndex = listOf(""))
+        )
+    ),
+    VARIABLE_AGGREGATION_VARIABLE("Variable definitions", actionCaption = "Add variable", actionResult = NewElem("VARIABLE_AGGREGATION_VARIABLE_SOURCE", "Variable %d"),
+        actionUiOnlyResult = listOf(
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_SOURCE_EXPRESSION", ""),
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_TARGET", ""),
+            NewElem("VARIABLE_AGGREGATION_VARIABLE_TARGET_EXPRESSION", "")
         )
     )
 }

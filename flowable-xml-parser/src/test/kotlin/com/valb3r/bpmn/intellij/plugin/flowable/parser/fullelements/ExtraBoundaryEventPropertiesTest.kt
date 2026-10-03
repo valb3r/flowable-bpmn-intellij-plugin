@@ -94,8 +94,4 @@ internal class ExtraBoundaryEventPropertiesTest {
     private fun readAndUpdate(elemId: String, property: PropertyType, newValue: String): BpmnProcessObject {
         return readAndUpdateProcess(parser, FILE, updateEvt(elemId, property, newValue))
     }
-
-    private fun BpmnProcessObject.propsOf(elemId: String): PropertyTable {
-        return this.toView(FlowableObjectFactory()).elemPropertiesByElementId[BpmnElementId(elemId)]!!
-    }
 }

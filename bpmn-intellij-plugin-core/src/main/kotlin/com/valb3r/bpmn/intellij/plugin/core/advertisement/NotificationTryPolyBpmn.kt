@@ -3,14 +3,15 @@ package com.valb3r.bpmn.intellij.plugin.core.advertisement
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.notifications.genericShowNotificationBalloon
+import com.valb3r.bpmn.intellij.plugin.core.util.IJFeatures
 import java.time.LocalDate
 
 fun showTryPolyBpmnAdvertisementNotification(project: Project) {
-    val checkDate = AdvertisementState.getInstance().lastDisplayDateGlobal
+    val checkDate = currentAdvertisementState().lastDisplayDateGlobal
     val now = LocalDate.now()
     val showOnceInDays = 30L
-    if (shouldShow(checkDate, showOnceInDays, now)) {
-        AdvertisementState.getInstance().lastDisplayDateGlobal = now
+    if (shouldShow(project, checkDate, showOnceInDays, now)) {
+        currentAdvertisementState().lastDisplayDateGlobal = now
         genericShowNotificationBalloon(project, "Advertisement", "Try <a href='https://plugins.jetbrains.com/plugin/21361-polybpmn-visualizer'>PolyBPMN plugin</a>. <br> PolyBPMN's has upgraded split editor for each file, diagram history and a wider selection of elements and properties.", NotificationType.INFORMATION, "Do not show again") {
             doNotShowAgain(showOnceInDays) // set maximum date
         }
@@ -18,18 +19,22 @@ fun showTryPolyBpmnAdvertisementNotification(project: Project) {
 }
 
 fun showTryPolyBpmnAdvertisementSwimpoolNotification(project: Project) {
-    val checkDate = AdvertisementState.getInstance().lastDisplayDateSwimpoolAd
+    val checkDate =currentAdvertisementState().lastDisplayDateSwimpoolAd
     val now = LocalDate.now()
     val showOnceInDays = 30L
-    if (shouldShow(checkDate, showOnceInDays, now)) {
-        AdvertisementState.getInstance().lastDisplayDateSwimpoolAd = now
+    if (shouldShow(project, checkDate, showOnceInDays, now)) {
+        currentAdvertisementState().lastDisplayDateSwimpoolAd = now
         genericShowNotificationBalloon(project, "Advertisement Swimming pool", "Unlock the full potential of diagram reading and editing with the <a href='https://plugins.jetbrains.com/plugin/21361-polybpmn-visualizer'>PolyBPMN plugin</a>. Seamlessly visualize and interpret swimming pools and swimming lanes with ease. Download from <a href='https://plugins.jetbrains.com/plugin/21361-polybpmn-visualizer'>here</a>", NotificationType.INFORMATION, "Do not show again") {
             doNotShowAgain(showOnceInDays) // set maximum date
         }
     }
 }
 
-private fun shouldShow(checkDate: LocalDate, showOnceInDays: Long, now: LocalDate?): Boolean {
+private fun shouldShow(project: Project, checkDate: LocalDate, showOnceInDays: Long, now: LocalDate?): Boolean {
+    if (!IJFeatures.hasJava(project) || !IJFeatures.hasSpel()) { // No sense to show to non IDEA IDEs
+        return false
+    }
+
     val neverShown = checkDate == LocalDate.MIN
     val shownLongTimeAgo = checkDate.plusDays(showOnceInDays).isBefore(now)
     return neverShown || shownLongTimeAgo
@@ -37,5 +42,5 @@ private fun shouldShow(checkDate: LocalDate, showOnceInDays: Long, now: LocalDat
 
 
 private fun doNotShowAgain(showOnceInDays: Long) {
-    AdvertisementState.getInstance().lastDisplayDateGlobal = LocalDate.MAX.minusDays(showOnceInDays).minusDays(1)
+    currentAdvertisementState().lastDisplayDateGlobal = LocalDate.MAX.minusDays(showOnceInDays).minusDays(1)
 }

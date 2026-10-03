@@ -19,6 +19,7 @@ data class ManualTask(
         @JacksonXmlProperty(isAttribute = true) val documentation: String?,
         @JacksonXmlProperty(isAttribute = true) val async: Boolean?,
         @JacksonXmlProperty(isAttribute = true) val isForCompensation: Boolean?,
+        val multiInstanceLoopCharacteristics: MultiInstanceLoopCharacteristics? = null,
         @JsonMerge @JacksonXmlElementWrapper(useWrapping = true) val extensionElements: List<ExtensionElement>? = null
 ): BpmnMappable<BpmnManualTask> {
 
@@ -30,11 +31,13 @@ data class ManualTask(
     abstract class ManualTaskMapping {
 
         @Mapping(source = "forCompensation", target = "isForCompensation")
+        @Mapping(target = "multiInstanceLoopCharacteristics", ignore = true)
         protected abstract fun doConvertToDto(input: ManualTask) : BpmnManualTask
 
         fun convertToDto(input: ManualTask) : BpmnManualTask {
             val task = doConvertToDto(input)
             return task.copy(
+                multiInstanceLoopCharacteristics = input.multiInstanceLoopCharacteristics?.toElement(),
                 executionListener = input.extensionElements?.filterIsInstance<ExecutionListener>()?.map { ExeсutionListener(it.clazz, it.event, it.fields?.map { ListenerField(it.name, it.string) }) },
             )
         }
