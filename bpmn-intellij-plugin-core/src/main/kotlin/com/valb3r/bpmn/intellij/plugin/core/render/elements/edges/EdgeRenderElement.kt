@@ -17,9 +17,8 @@ class EdgeRenderElement(
         elementId: DiagramElementId,
         bpmnElementId: BpmnElementId,
         edge: EdgeWithIdentifiableWaypoints,
-        state: () -> RenderState,
-        arrowAtEnd: Boolean = true,
-): BaseEdgeRenderElement(elementId, bpmnElementId, edge, Colors.ARROW_COLOR, state, arrowAtEnd) {
+        state: () -> RenderState
+): BaseEdgeRenderElement(elementId, bpmnElementId, edge, Colors.ARROW_COLOR, state) {
 
     override val areaType: AreaType
         get() =  AreaType.EDGE

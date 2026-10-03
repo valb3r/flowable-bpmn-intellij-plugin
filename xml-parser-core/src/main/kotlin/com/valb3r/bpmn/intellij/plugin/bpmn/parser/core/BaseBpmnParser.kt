@@ -666,10 +666,10 @@ abstract class BaseBpmnParser(private val laxParsingEnabled: () -> Boolean = { t
 
             var (attrName, attrValue) = attributeSelector?.split("=") ?: listOf(null, null)
             if (true == attrValue?.contains('@')) {
-                if (null == value && null == valueIndexInArray) { // Skip null unindexable props
+                if (null == value || null == valueIndexInArray) { // Skip null unindexable props
                     return
                 }
-                attrValue = attrValue.replace("@", valueIndexInArray!!.removeAt(0))
+                attrValue = attrValue.replace("@", valueIndexInArray.removeAt(0))
             }
 
             val child = childOf(currentNode, name, attrName, attrValue)
