@@ -19,5 +19,6 @@ dependencies {
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiter"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitJupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
     testImplementation "org.amshove.kluent:kluent:$kluent"
 }
