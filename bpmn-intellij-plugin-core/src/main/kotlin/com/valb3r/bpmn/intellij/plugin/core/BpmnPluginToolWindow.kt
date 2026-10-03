@@ -3,6 +3,7 @@ package com.valb3r.bpmn.intellij.plugin.core
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -12,11 +13,13 @@ import com.intellij.openapi.editor.actionSystem.EditorActionManager
 import com.intellij.openapi.editor.event.EditorMouseEvent
 import com.intellij.openapi.editor.event.EditorMouseListener
 import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileTypes.StdFileTypes
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.*
 import com.intellij.ui.EditorTextField
@@ -149,11 +152,14 @@ open class BpmnPluginToolWindow(
 
     fun getContent() = this.mainToolWindowForm
 
-    fun openFileAndRender(bpmnFile: PsiFile, context: BpmnActionContext) {
+    fun openFileAndRender(bpmnFile: PsiFile, context: BpmnActionContext, forceAutoLayout: Boolean = false) {
         checkIfJavaAndSpelIsPresentAndNotifyOnceIfNot()
         onBeforeFileOpen(bpmnFile)
         val bpmnParser = currentParser(project)
         if (this.canvasBuilder.assertFileContentAndShowErrorOrWarning(bpmnParser, bpmnFile.virtualFile, onBadContentErrorCallback, onBadContentWarningCallback)) return
+        canvas.autoLayoutAction = {
+            openFileAndRender(bpmnFile, BpmnActionContext(project), forceAutoLayout = true)
+        }
 
         val multiEditJTable = invokeAndWaitIfNeeded {
             val table = MultiEditJTable(DefaultTableModel())
@@ -185,11 +191,25 @@ open class BpmnPluginToolWindow(
                 { createArrowButton() },
                 canvas,
                 bpmnFile.project,
-                virtualFile
+                virtualFile,
+                ::persistFile,
+                forceAutoLayout,
         )
 
         invokeAndWaitIfNeeded { setupUiAfterRun() }
         showTryPolyBpmnAdvertisementNotification(project)
+    }
+
+    private fun persistFile(project: Project, bpmnFile: VirtualFile, content: String) {
+        val document = ApplicationManager.getApplication().runReadAction(Computable {
+            FileDocumentManager.getInstance().getDocument(bpmnFile)
+        }) ?: return
+        WriteCommandAction.runWriteCommandAction(project) {
+            if (document.text != content) {
+                document.setText(content)
+                FileDocumentManager.getInstance().saveDocument(document)
+            }
+        }
     }
 
     private fun checkIfJavaAndSpelIsPresentAndNotifyOnceIfNot() {

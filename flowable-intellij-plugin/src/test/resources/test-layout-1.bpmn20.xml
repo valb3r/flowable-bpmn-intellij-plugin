@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             targetNamespace="http://flowable.org/test">
+    <process id="layoutProcess" name="Layout process" isExecutable="true">
+        <startEvent id="start" />
+        <userTask id="task" name="Review" flowable:assignee="demo" />
+        <endEvent id="end" />
+        <sequenceFlow id="startToTask" sourceRef="start" targetRef="task" />
+        <sequenceFlow id="taskToEnd" sourceRef="task" targetRef="end" />
+    </process>
+</definitions>

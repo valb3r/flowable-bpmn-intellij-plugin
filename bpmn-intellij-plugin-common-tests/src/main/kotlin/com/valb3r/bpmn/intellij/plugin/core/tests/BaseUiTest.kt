@@ -152,7 +152,7 @@ abstract class BaseUiTest {
 
     protected val icons = mock<IconProvider>()
     protected val renderer = spy(DefaultBpmnProcessRenderer(project, icons))
-    protected val canvasBuilder = CanvasBuilder(renderer)
+    protected val canvasBuilder = CanvasBuilder(renderer, onAutoLayoutApplied = {})
     protected var canvas = setCanvas(project, Canvas(project, DefaultCanvasConstants().copy(baseCursorSize = 3.0f))) // Using small cursor size for clarity
     protected val uiEventBus = setUiEventBus(project, UiEventBus())
     protected var renderResult: RenderResult? = null
@@ -234,7 +234,13 @@ abstract class BaseUiTest {
 
     @BeforeEach
     fun setupMocks() {
-        currentSettingsStateProvider.set{ object: BaseBpmnPluginSettingsState() {} }
+        currentSettingsStateProvider.set {
+            object : BaseBpmnPluginSettingsState() {
+                init {
+                    pluginState.enableAutoLayout = false
+                }
+            }
+        }
         registerPopupMenuProvider(project, popupMenuProvider)
         whenever(popupMenuProvider.popupChangeShapeType(any())).thenReturn(mock())
         textFieldsConstructed.clear()
@@ -244,6 +250,7 @@ abstract class BaseUiTest {
         whenever(columnModel.getColumn(ArgumentMatchers.anyInt())).thenReturn(tableColumn)
         prepareGraphics(graphics)
         whenever(virtualFile.contentsToByteArray()).thenReturn(ByteArray(0))
+        whenever(parser.updateDiagram(any(), any())).thenAnswer { it.getArgument(0) }
         whenever(project.messageBus).thenReturn(messageBus)
         whenever(messageBus.connect()).thenReturn(messageBusConnection)
 
@@ -432,7 +439,20 @@ abstract class BaseUiTest {
     protected fun initializeCanvas() {
         canvasBuilder.build(
             { fileCommitter },
-            parser, propertiesTable, comboboxFactory, editorFactory, editorFactory, editorFactory, multiLineEditorFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory, canvas, project, virtualFile
+            parser,
+            propertiesTable,
+            comboboxFactory,
+            editorFactory,
+            editorFactory,
+            editorFactory,
+            multiLineEditorFactory,
+            checkboxFieldFactory,
+            buttonFactory,
+            arrowButtonFactory,
+            canvas,
+            project,
+            virtualFile,
+            { _, _, _ -> },
         )
         canvas.paintComponent(graphics)
     }

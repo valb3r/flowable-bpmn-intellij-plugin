@@ -12,6 +12,8 @@ import com.intellij.openapi.util.Computable
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.messages.Topic
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
+import com.valb3r.bpmn.intellij.plugin.autolayout.BpmnAutoLayout
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.exceptions.IgnorableParserException
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
@@ -26,6 +28,7 @@ import com.valb3r.bpmn.intellij.plugin.core.properties.TextValueAccessor
 import com.valb3r.bpmn.intellij.plugin.core.properties.newPropertiesVisualizer
 import com.valb3r.bpmn.intellij.plugin.core.render.BpmnProcessRenderer
 import com.valb3r.bpmn.intellij.plugin.core.render.Canvas
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.notifications.genericShowNotificationBalloon
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
@@ -42,7 +45,18 @@ val CANVAS_PAINT_TOPIC = Topic("BPMN Flowable (plugin family) plugin repaint top
 class CanvasBuilder(
     private val bpmnProcessRenderer: BpmnProcessRenderer,
     private val onBadContentErrorCallback: ((String) -> Unit)? = null,
-    private val onBadContentWarningCallback: ((String) -> Unit)? = null
+    private val onBadContentWarningCallback: ((String) -> Unit)? = null,
+    private val onAutoLayoutApplied: (Project) -> Unit = { project ->
+        genericShowNotificationBalloon(
+            project,
+            "BPMN auto-layout",
+            "BPMN diagram auto-layout was applied.",
+            NotificationType.INFORMATION,
+        )
+    },
+    private val autoLayout: (BpmnProcessObject, Boolean) -> BpmnAutoLayout.LayoutResult = { process, forceFullLayout ->
+        BpmnAutoLayout().layoutIfRequired(process, forceFullLayout)
+    },
 ) {
 
     private var currentVfsConnection: MessageBusConnection? = null
@@ -60,17 +74,29 @@ class CanvasBuilder(
         arrowButtonFactory: (id: BpmnElementId) -> BasicArrowButton,
         canvas: Canvas,
         project: Project,
-        bpmnFile: VirtualFile
+        bpmnFile: VirtualFile,
+        persistFile: (Project, VirtualFile, String) -> Unit,
+        forceAutoLayout: Boolean = false,
     ) {
         if (assertFileContentAndShowErrorOrWarning(parser, bpmnFile, onBadContentErrorCallback, onBadContentWarningCallback)) return
 
         initializeUpdateEventsRegistry(project, committerFactory.invoke(parser))
         val data = readFile(bpmnFile)
-        val process = parser.parse(data)
-        if (data.contains("collaboration")) showTryPolyBpmnAdvertisementSwimpoolNotification(project)
+        val parsedProcess = parser.parse(data)
+        val (renderData, laidOutProcess) = applyLayoutIfNeeded(
+            data,
+            parsedProcess,
+            parser,
+            project,
+            bpmnFile,
+            persistFile,
+            forceAutoLayout,
+        )
+
+        if (renderData.contains("collaboration")) showTryPolyBpmnAdvertisementSwimpoolNotification(project)
         newPropertiesVisualizer(project, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, multiLineExpandableTextFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory)
-        val mappedProcess = process.toView(newElementsFactory(project))
-        canvas.reset(data, mappedProcess, bpmnProcessRenderer)
+        val mappedProcess = laidOutProcess.toView(newElementsFactory(project))
+        canvas.reset(renderData, mappedProcess, bpmnProcessRenderer)
         if (mappedProcess.suppressedExceptions.isNotEmpty()) {
             // Do not show too long errors:
             val aggregatedErrors = mappedProcess.suppressedExceptions.take(3).map { "- ${it.message}\n" }.toSet().joinToString()
@@ -80,9 +106,33 @@ class CanvasBuilder(
         currentVfsConnection?.let { it.disconnect(); it.dispose() }
         currentPaintConnection?.let { it.disconnect(); it.dispose() }
         currentVfsConnection = attachFileChangeListener(project, bpmnFile) {
-            build(committerFactory, parser, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, multiLineExpandableTextFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory, canvas, project, it)
+            build(committerFactory, parser, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, multiLineExpandableTextFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory, canvas, project, it, persistFile)
         }
         currentPaintConnection = attachPaintListener(project, canvas)
+    }
+
+    private fun applyLayoutIfNeeded(
+        data: String,
+        parsedProcess: BpmnProcessObject,
+        parser: BpmnParser,
+        project: Project,
+        bpmnFile: VirtualFile,
+        persistFile: (Project, VirtualFile, String) -> Unit,
+        forceAutoLayout: Boolean,
+    ): Pair<String, BpmnProcessObject> {
+        if (!currentSettings().enableAutoLayout && !forceAutoLayout) {
+            return data to parsedProcess
+        }
+
+        val layoutResult = autoLayout(parsedProcess, forceAutoLayout)
+        if (!layoutResult.layoutApplied) {
+            return data to layoutResult.laidOutProcess
+        }
+
+        val updatedData = parser.updateDiagram(data, layoutResult.laidOutProcess.diagram)
+        persistFile(project, bpmnFile, updatedData)
+        onAutoLayoutApplied(project)
+        return updatedData to layoutResult.laidOutProcess
     }
 
     fun assertFileContentAndShowErrorOrWarning(

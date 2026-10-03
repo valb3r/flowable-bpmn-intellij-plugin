@@ -10,6 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnSequenceFlow
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnTextAnnotation
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.TextAnnotationText
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
+import com.valb3r.bpmn.intellij.plugin.autolayout.BpmnAutoLayout
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
@@ -18,12 +19,15 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.FunctionalGroupType
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.core.CanvasBuilder
 import com.valb3r.bpmn.intellij.plugin.core.events.*
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.properties.RowExpansionFilter
 import com.valb3r.bpmn.intellij.plugin.core.render.*
 import com.valb3r.bpmn.intellij.plugin.core.state.CurrentState
 import com.valb3r.bpmn.intellij.plugin.core.state.currentStateProvider
+import com.valb3r.bpmn.intellij.plugin.core.settings.BaseBpmnPluginSettingsState
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.tests.BaseUiTest
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import org.amshove.kluent.*
@@ -54,6 +58,104 @@ internal class UiEditorLightE2ETest: BaseUiTest() {
         prepareTwoServiceTaskView()
 
         verifyServiceTasksAreDrawn()
+    }
+
+    @Test
+    fun `opening processes with missing or absent diagram elements auto lays out and shows feedback`() {
+        currentSettingsStateProvider.set {
+            object : BaseBpmnPluginSettingsState() {
+                init {
+                    pluginState.enableAutoLayout = true
+                }
+            }
+        }
+
+        val process = basicProcess.copy(
+            basicProcess.process.copy(
+                body = basicProcessBody.copy(serviceTask = listOf(bpmnServiceTaskStart, bpmnServiceTaskEnd)),
+            ),
+            listOf(
+                DiagramElement(
+                    diagramMainElementId,
+                    PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramServiceTaskStart), emptyList()),
+                ),
+            ),
+        )
+        whenever(parser.parse("")).thenReturn(process)
+        var autoLayoutFeedbackCount = 0
+        val builder = CanvasBuilder(
+            renderer,
+            onAutoLayoutApplied = { autoLayoutFeedbackCount++ },
+            autoLayout = { process, _ ->
+                val generatedDiagram = DiagramElement(
+                    diagramMainElementId,
+                    PlaneElement(
+                        diagramMainPlaneElementId,
+                        process.process.id,
+                        listOf(diagramServiceTaskStart, diagramServiceTaskEnd),
+                        emptyList(),
+                    ),
+                )
+                BpmnAutoLayout.LayoutResult(process.copy(diagram = listOf(generatedDiagram)), layoutApplied = true)
+            },
+        )
+
+        fun openCurrentProcess(forceAutoLayout: Boolean = false) {
+            builder.build(
+                { fileCommitter },
+                parser,
+                propertiesTable,
+                comboboxFactory,
+                editorFactory,
+                editorFactory,
+                editorFactory,
+                multiLineEditorFactory,
+                checkboxFieldFactory,
+                buttonFactory,
+                arrowButtonFactory,
+                canvas,
+                project,
+                virtualFile,
+                { _, _, _ -> },
+                forceAutoLayout,
+            )
+        }
+
+        openCurrentProcess()
+
+        argumentCaptor<List<DiagramElement>>().apply {
+            verify(parser).updateDiagram(any(), capture())
+            firstValue.single().bpmnPlane.bpmnShape.orEmpty().map { it.bpmnElement }
+                .shouldContainSame(listOf(bpmnServiceTaskStart.id, bpmnServiceTaskEnd.id))
+        }
+        autoLayoutFeedbackCount.shouldBeEqualTo(1)
+
+        whenever(parser.parse("")).thenReturn(process.copy(diagram = emptyList()))
+        openCurrentProcess()
+
+        verify(parser, times(2)).updateDiagram(any(), any())
+        autoLayoutFeedbackCount.shouldBeEqualTo(2)
+
+        val movedStart = diagramServiceTaskStart.copyAndTranslate(500.0f, 500.0f)
+        whenever(parser.parse("")).thenReturn(
+            process.copy(
+                diagram = listOf(
+                    DiagramElement(
+                        diagramMainElementId,
+                        PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(movedStart), emptyList()),
+                    ),
+                ),
+            ),
+        )
+        openCurrentProcess(forceAutoLayout = true)
+
+        argumentCaptor<List<DiagramElement>>().apply {
+            verify(parser, times(3)).updateDiagram(any(), capture())
+            val autoLayoutStart = lastValue.single().bpmnPlane.bpmnShape.orEmpty()
+                .single { it.bpmnElement == bpmnServiceTaskStart.id }
+            autoLayoutStart.rectBounds().x.shouldNotBeEqualTo(movedStart.rectBounds().x)
+        }
+        autoLayoutFeedbackCount.shouldBeEqualTo(3)
     }
 
     @Test

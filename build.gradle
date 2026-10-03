@@ -21,6 +21,8 @@ allprojects {
         jacksonAnnotations = '2.22'
         dom4j = '2.2.0'
         jaxen = '2.0.6'
+        elk = '0.11.0'
+        xtextXbaseLib = '2.36.0'
 
         junitJupiter = '6.1.3'
         jsonPath = '3.0.0'

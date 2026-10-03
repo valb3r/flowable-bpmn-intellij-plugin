@@ -53,6 +53,8 @@ fun setCanvas(project: Project, canvas: Canvas): Canvas {
 }
 
 open class Canvas(private val project: Project, private val settings: CanvasConstants) : JPanel() {
+    var autoLayoutAction: (() -> Unit)? = null
+
     private val fpsCircularBuffer = EvictingQueue.create<Int>(30)
     private var cachedTreeState: TreeState? = null
 

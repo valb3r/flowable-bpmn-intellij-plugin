@@ -18,6 +18,7 @@ dependencies {
     }
 
     implementation project(":xml-parser-api")
+    implementation project(":bpmn-auto-layout")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation("org.apache.xmlgraphics:batik-transcoder:1.19") { // JB has removed batik from IC 2023.2

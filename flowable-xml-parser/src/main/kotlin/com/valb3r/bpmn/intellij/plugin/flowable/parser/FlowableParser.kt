@@ -196,11 +196,15 @@ class FlowableParser(laxParsingEnabled: () -> Boolean = { true }) : BaseBpmnPars
         return toProcessObject(dto, prepared.hunks)
     }
 
+    override fun validateForErrors(input: String): String? =
+        if (input.contains("BPMNDiagram")) super.validateForErrors(input) else null
+
     private fun toProcessObject(dto: BpmnFile, laxHunks: List<BpmnLaxHunk>): BpmnProcessObject {
         // TODO - Multi process support?
-        markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams.orEmpty())
+        val diagramNodes = dto.diagrams.orEmpty()
+        markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], diagramNodes)
         val process = dto.processes[0].toElement()
-        val diagrams = dto.diagrams.orEmpty().map { it.toElement() }
+        val diagrams = diagramNodes.map { it.toElement() }
 
         return BpmnProcessObject(process, diagrams, laxHunks)
     }
