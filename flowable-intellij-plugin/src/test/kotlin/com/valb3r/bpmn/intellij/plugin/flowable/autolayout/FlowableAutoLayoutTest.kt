@@ -80,7 +80,7 @@ class FlowableAutoLayoutTest {
         }
     }
 
-   // @Disabled("Enable manually to generate an XML file for layout debugging")
+    @Disabled("Enable manually to generate an XML file for layout debugging")
     @Test
     fun `writes laid out Flowable XML fixture for debugging`() {
         val inputXml = resource("in-test-layout.bpmn20.xml")
