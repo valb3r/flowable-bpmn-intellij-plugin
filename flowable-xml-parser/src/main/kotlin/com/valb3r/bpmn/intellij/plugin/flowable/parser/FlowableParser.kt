@@ -7,6 +7,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnExternalTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.BaseBpmnParser
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnLaxHunk
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.NS
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.PropertyTypeDetails
 import com.valb3r.bpmn.intellij.plugin.bpmn.parser.core.XmlType
@@ -178,22 +179,23 @@ enum class FlowablePropertyTypeDetails(val details: PropertyTypeDetails) {
     EXECUTION_LISTENER_FIELD_STRING(PropertyTypeDetails(PropertyType.EXECUTION_LISTENER_FIELD_STRING, "extensionElements.flowable:executionListener?class=@.flowable:field?name=@.flowable:string.text", XmlType.CDATA)),
 }
 
-class FlowableParser : BaseBpmnParser() {
+class FlowableParser(laxParsingEnabled: () -> Boolean = { true }) : BaseBpmnParser(laxParsingEnabled) {
 
     private val mapper: XmlMapper = mapper()
 
     override fun parse(input: String): BpmnProcessObject {
-        val dto = mapper.readValue<BpmnFile>(input)
-        return toProcessObject(dto)
+        val prepared = prepareLaxXmlForJackson(input)
+        val dto = mapper.readValue<BpmnFile>(prepared.xml)
+        return toProcessObject(dto, prepared.hunks)
     }
 
-    private fun toProcessObject(dto: BpmnFile): BpmnProcessObject {
+    private fun toProcessObject(dto: BpmnFile, laxHunks: List<BpmnLaxHunk>): BpmnProcessObject {
         // TODO - Multi process support?
         markSubprocessesAndTransactionsThatHaveExternalDiagramAsCollapsed(dto.processes[0], dto.diagrams!!)
         val process = dto.processes[0].toElement()
         val diagrams = dto.diagrams!!.map { it.toElement() }
 
-        return BpmnProcessObject(process, diagrams)
+        return BpmnProcessObject(process, diagrams, laxHunks)
     }
 
     override fun modelNs(): NS {

@@ -25,6 +25,7 @@ import com.valb3r.bpmn.intellij.plugin.core.getContentFactory
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
 import com.valb3r.bpmn.intellij.plugin.core.parser.registerParser
 import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettingsStateProvider
+import com.valb3r.bpmn.intellij.plugin.core.settings.currentSettings
 import com.valb3r.bpmn.intellij.plugin.core.ui.components.popupmenu.registerPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.core.xmlnav.registerXmlNavigator
 import java.nio.charset.StandardCharsets
@@ -45,10 +46,10 @@ class ActivitiBpmnPluginToolWindowFactory: ToolWindowFactory {
             {
                 registerPopupMenuProvider(project, ActivitiCanvasPopupMenuProvider(project))
                 if (isActiviti7(it.virtualFile)) {
-                    registerParser(project, Activiti7Parser())
+                    registerParser(project, Activiti7Parser { currentSettings().enableLaxParsing })
                     registerNewElementsFactory(project, Activiti7ObjectFactory())
                 } else {
-                    registerParser(project, ActivitiParser())
+                    registerParser(project, ActivitiParser { currentSettings().enableLaxParsing })
                     registerNewElementsFactory(project, ActivitiObjectFactory())
                 }
             }

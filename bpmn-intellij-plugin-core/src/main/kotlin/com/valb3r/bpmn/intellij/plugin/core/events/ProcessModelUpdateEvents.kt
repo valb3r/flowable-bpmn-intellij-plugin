@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.VirtualFile
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnLaxHunk
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.*
@@ -27,7 +28,13 @@ fun updateEventsRegistry(project: Project): ProcessModelUpdateEvents {
 }
 
 interface FileCommitter {
-    fun executeCommitAndGetHash(content: String?, events: List<EventPropagatableToXml>, hasher: (String) -> String, updateHash: (String) -> Unit)
+    fun executeCommitAndGetHash(
+        content: String?,
+        events: List<EventPropagatableToXml>,
+        hasher: (String) -> String,
+        updateHash: (String) -> Unit,
+        laxHunks: List<BpmnLaxHunk> = emptyList()
+    )
 }
 
 class NoOpFileCommitter: FileCommitter {
@@ -36,7 +43,8 @@ class NoOpFileCommitter: FileCommitter {
         content: String?,
         events: List<EventPropagatableToXml>,
         hasher: (String) -> String,
-        updateHash: (String) -> Unit
+        updateHash: (String) -> Unit,
+        laxHunks: List<BpmnLaxHunk>
     ) {
         // NOP
     }
@@ -44,13 +52,18 @@ class NoOpFileCommitter: FileCommitter {
 
 class IntelliJFileCommitter(private val parser: BpmnParser, private val project: Project, private val file: VirtualFile): FileCommitter {
 
-    override fun executeCommitAndGetHash(content: String?, events: List<EventPropagatableToXml>, hasher: (String) -> String, updateHash: (String) -> Unit) {
+    override fun executeCommitAndGetHash(content: String?, events: List<EventPropagatableToXml>, hasher: (String) -> String, updateHash: (String) -> Unit, laxHunks: List<BpmnLaxHunk>) {
         var hash: String?
         val doc = ApplicationManager.getApplication().runReadAction(Computable<com.intellij.openapi.editor.Document?> {
             FileDocumentManager.getInstance().getDocument(file)
         }) ?: return
         WriteCommandAction.runWriteCommandAction(project) {
-            val newText = parser.update(content ?: doc.text, events)
+            val input = content ?: doc.text
+            val newText = if (laxHunks.isEmpty()) {
+                parser.update(input, events)
+            } else {
+                parser.update(input, events, laxHunks)
+            }
             hash = hasher(newText)
             doc.replaceString(0, doc.textLength, newText)
             updateHash(hash!!)
@@ -69,6 +82,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
         private set
 
     private var baseFileContent: String? = null
+    private var baseLaxHunks: List<BpmnLaxHunk> = emptyList()
     private var expectedFileHash: String = ""
 
     private val fileCommitListeners: MutableList<Any> = ArrayList()
@@ -84,7 +98,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
     }
 
     @Synchronized
-    fun reset(fileContent: String) {
+    fun reset(fileContent: String, laxHunks: List<BpmnLaxHunk> = emptyList()) {
         allBeforeThis = 0
         updates.clear()
         fileCommitListeners.clear()
@@ -95,6 +109,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
         deletionsByStaticBpmnId.clear()
         expectedFileHash = hashData(fileContent)
         baseFileContent = fileContent
+        baseLaxHunks = laxHunks
     }
 
     @Synchronized
@@ -132,11 +147,15 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
 
     @Synchronized
     fun commitToFile() {
+        val events = updates.filterIndexed { index, _ -> index < allBeforeThis }
+            .map { it.event }
+            .filterIsInstance<EventPropagatableToXml>()
         committer.executeCommitAndGetHash(
-                baseFileContent,
-                updates.filterIndexed { index, _ -> index < allBeforeThis }.map { it.event }.filterIsInstance<EventPropagatableToXml>(),
-                { hashData(it) },
-                { expectedFileHash = it}
+            baseFileContent,
+            events,
+            { hashData(it) },
+            { expectedFileHash = it},
+            baseLaxHunks
         )
     }
 
