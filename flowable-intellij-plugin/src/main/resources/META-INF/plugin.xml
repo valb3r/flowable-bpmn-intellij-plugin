@@ -4,7 +4,7 @@
     <name>Flowable BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.5.5</version>
+    <version>0.5.6</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -40,6 +40,21 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+      <p>0.5.6:</p>
+        <ul>
+          <li>
+            Added automatic BPMN diagram layout, with an option to disable it
+          </li>
+          <li>
+            Added support for opening empty BPMN files and editing incomplete BPMN XML
+          </li>
+          <li>
+            Improved BPMN XML element ordering when applying edits
+          </li>
+          <li>
+            Fixed text annotation property handling
+          </li>
+        </ul>
       <p>0.5.5:</p>
         <ul>
           <li>
