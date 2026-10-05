@@ -1,9 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin.core.settings
 
+import com.intellij.ui.ComboboxSpeedSearch
 import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridLayoutManager
 import com.intellij.util.ui.JBUI
-import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator
 import java.awt.Font
 import java.awt.GraphicsEnvironment
 import java.awt.Insets
@@ -282,7 +282,7 @@ class BpmnPluginSettingsComponent() {
 
         // 16) JComboBox "uiFontName" (row=8, column=1)
         this.uiFontName = JComboBox<String>().apply {
-            isEditable = true
+            isEditable = false
         }
         settingsPanel.add(
             uiFontName,
@@ -330,7 +330,7 @@ class BpmnPluginSettingsComponent() {
 
         // 19) JComboBox "dataFontName" (row=9, column=1)
         this.dataFontName = JComboBox<String>().apply {
-            isEditable = true
+            isEditable = false
         }
         settingsPanel.add(
             dataFontName,
@@ -457,8 +457,8 @@ class BpmnPluginSettingsComponent() {
     }
 
     private fun onAfterCreate() {
-        AutoCompleteDecorator.decorate(uiFontName)
-        AutoCompleteDecorator.decorate(dataFontName)
+        ComboboxSpeedSearch.installOn(uiFontName)
+        ComboboxSpeedSearch.installOn(dataFontName)
 
         preferredFocusedComponent = zoomMin
         uiFontSize.model = SpinnerNumberModel(10, 6, 32, 1)
