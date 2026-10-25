@@ -1,18 +1,29 @@
 package com.valb3r.bpmn.intellij.plugin.flowable.parser.customservicetasks
 
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnScriptTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableObjectFactory
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.asResource
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.readAndUpdateProcess
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BooleanValueUpdatedEvent
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.BpmnShapeObjectAddedEvent
+import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.DraggedToEvent
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.testevents.StringValueUpdatedEvent
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeNullOrEmpty
 import org.amshove.kluent.shouldBeTrue
+import org.amshove.kluent.shouldContain
 import org.amshove.kluent.shouldHaveSingleItem
 import org.junit.jupiter.api.Test
 
@@ -67,6 +78,41 @@ internal class FlowableScriptTaskTest {
         readAndSetNullString(PropertyType.DOCUMENTATION).documentation.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.SCRIPT_FORMAT).scriptFormat.shouldBeNullOrEmpty()
         readAndSetNullString(PropertyType.SCRIPT).scriptBody.shouldBeNullOrEmpty()
+    }
+
+    @Test
+    fun `Moving a script task preserves script whitespace`() {
+        assertScriptFormattingPreserved(
+            DraggedToEvent(DiagramElementId("BPMNShape_scriptServiceTask"), 25.0f, 30.0f, null, null)
+        )
+    }
+
+    @Test
+    fun `Adding a component preserves existing script whitespace`() {
+        val newId = BpmnElementId("newServiceTask")
+        assertScriptFormattingPreserved(
+            BpmnShapeObjectAddedEvent(
+                WithParentId(BpmnElementId("custom-service-task"), BpmnServiceTask(newId)),
+                ShapeElement(DiagramElementId("BPMNShape_newServiceTask"), newId, BoundsElement(0.0f, 0.0f, 100.0f, 80.0f)),
+                PropertyTable(mutableMapOf(Pair(PropertyType.ID, mutableListOf(Property(newId.id)))))
+            )
+        )
+    }
+
+    private fun assertScriptFormattingPreserved(event: EventPropagatableToXml) {
+        val script = "\n  def message = 'Hello  world'\n\n  if (message) {\n\tprintln message\n  }\n"
+        listOf(script, "<![CDATA[$script]]>").forEach { content ->
+            val scriptElement = "<script>$content</script>"
+            val input = FILE.asResource()!!.replace(
+                "<script><![CDATA[echo \"Foo Bar!\" > /tmp/foo.txt]]></script>",
+                scriptElement
+            )
+
+            val updated = parser.update(input, listOf(event))
+
+            updated.shouldContain(scriptElement)
+            readScriptTask(parser.parse(updated)).scriptBody.shouldBeEqualTo(script)
+        }
     }
     
     private fun readAndSetNullString(property: PropertyType): BpmnScriptTask {

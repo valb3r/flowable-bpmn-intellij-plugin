@@ -29,7 +29,9 @@ public class CustomizedXmlWriter extends XMLWriter {
 
         if (trim) { // verify we have to before more expensive test
             // Customized to fix https://github.com/valb3r/flowable-bpmn-intellij-plugin/issues/233:
-            preserve = isElementSpacePreserved(element) || element.getName().equals("documentation");
+            preserve = isElementSpacePreserved(element)
+                    || element.getName().equals("documentation")
+                    || element.getName().equals("script");
             trim = !preserve;
         }
 
