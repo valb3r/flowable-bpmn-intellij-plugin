@@ -81,9 +81,9 @@ class BpmnAutoLayout(
         if (processObject.diagram.isEmpty()) return true
 
         val scopes = processScopes(processObject)
+        val diagramIndices = existingDiagramIndicesByScope(processObject.diagram, scopes)
         return scopes.any { (scopeId, body) ->
-            val diagram = processObject.diagram.firstOrNull { it.bpmnPlane.bpmnElement == scopeId }
-                ?: return@any true
+            val diagram = diagramIndices[scopeId]?.let { processObject.diagram[it] } ?: return@any true
             val shapeIds = diagram.bpmnPlane.bpmnShape.orEmpty().mapTo(HashSet()) { it.bpmnElement.id }
             val flowNodes = body.flowNodes()
             if (flowNodes.any { it.id.id !in shapeIds }) return@any true
@@ -123,29 +123,52 @@ class BpmnAutoLayout(
         processObject.process.children?.forEach { (id, body) -> add(id to body) }
     }
 
+    /** Expanded subprocesses can share an ancestor's plane; a dedicated child plane takes precedence. */
+    private fun existingDiagramIndicesByScope(
+        diagrams: List<DiagramElement>,
+        scopes: List<Pair<BpmnElementId, BpmnProcessBody>>,
+    ): Map<BpmnElementId, Int> {
+        val scopeIds = scopes.mapTo(HashSet()) { it.first }
+        val parentByScope = scopes.flatMap { (scopeId, body) ->
+            body.flowNodes().filter { it.id in scopeIds }.map { it.id to scopeId }
+        }.toMap()
+        val diagramIndexByScope = diagrams.mapIndexed { index, diagram -> diagram.bpmnPlane.bpmnElement to index }
+            .distinctBy { it.first }
+            .toMap()
+
+        return buildMap {
+            scopes.forEach { (scopeId, _) ->
+                var currentScope = scopeId
+                val visited = HashSet<BpmnElementId>()
+                while (visited.add(currentScope)) {
+                    val index = diagramIndexByScope[currentScope]
+                    if (index != null) {
+                        put(scopeId, index)
+                        break
+                    }
+                    currentScope = parentByScope[currentScope] ?: break
+                }
+            }
+        }
+    }
+
     private fun mergeGeneratedLayouts(
         existingDiagrams: List<DiagramElement>,
         scopes: List<Pair<BpmnElementId, BpmnProcessBody>>,
         generatedLayouts: List<DiagramElement>,
     ): List<DiagramElement> {
-        val generatedByScope = generatedLayouts.associateBy { it.bpmnPlane.bpmnElement.id }
-        val bodyByScope = scopes.associate { (scopeId, body) -> scopeId.id to body }
-        val firstExistingIndexByScope = existingDiagrams
-            .mapIndexed { index, diagram -> diagram.bpmnPlane.bpmnElement.id to index }
-            .distinctBy { it.first }
-            .toMap()
-
-        val mergedExistingDiagrams = existingDiagrams.mapIndexed { index, existing ->
-            val scopeId = existing.bpmnPlane.bpmnElement.id
-            val generated = generatedByScope[scopeId]
-            if (firstExistingIndexByScope[scopeId] == index && generated != null) {
-                mergeMissingLayout(existing, generated, bodyByScope.getValue(scopeId))
+        val diagramIndices = existingDiagramIndicesByScope(existingDiagrams, scopes)
+        val mergedDiagrams = existingDiagrams.toMutableList()
+        scopes.zip(generatedLayouts).forEach { (scope, generated) ->
+            val (scopeId, body) = scope
+            val index = diagramIndices[scopeId]
+            if (index != null) {
+                mergedDiagrams[index] = mergeMissingLayout(mergedDiagrams[index], generated, body)
             } else {
-                existing
+                mergedDiagrams.add(generated)
             }
         }
-        val layoutsForNewScopes = generatedLayouts.filter { it.bpmnPlane.bpmnElement.id !in firstExistingIndexByScope }
-        return mergedExistingDiagrams + layoutsForNewScopes
+        return mergedDiagrams
     }
 
     private fun mergeMissingLayout(
