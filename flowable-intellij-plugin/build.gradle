@@ -37,6 +37,7 @@ dependencies {
 
 sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
+    test.resources.srcDir project(':flowable-xml-parser').file('src/test/resources')
 }
 
 intellijPlatform {

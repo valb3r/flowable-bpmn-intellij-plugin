@@ -32,8 +32,10 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnExclu
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnInclusiveGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnAdHocSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnCollapsedSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnEventSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionCollapsedSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionalSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.*
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElement
@@ -472,6 +474,15 @@ abstract class BaseBpmnParser(private val laxParsingEnabled: () -> Boolean = { t
         newBounds.addAttribute("width", bounds.width.toString())
         newBounds.addAttribute("height", bounds.height.toString())
         trimWhitespace(shapeParent, false)
+
+        if (update.bpmnObject.element is BpmnCollapsedSubprocess || update.bpmnObject.element is BpmnTransactionCollapsedSubprocess) {
+            newShape.addAttribute("isExpanded", "false")
+            val diagram = doc.rootElement.addElement(bpmndiNs().named("BPMNDiagram"))
+            diagram.addAttribute("id", "BPMNDiagram_${update.shape.id.id}")
+            val plane = diagram.addElement(bpmndiNs().named("BPMNPlane"))
+            plane.addAttribute("id", "BPMNPlane_${update.shape.id.id}")
+            plane.addAttribute("bpmnElement", update.bpmnObject.id.id)
+        }
     }
 
     protected open fun createBpmnObject(element: WithBpmnId, diagramParent: Element) = when (element) {
@@ -548,9 +559,11 @@ abstract class BaseBpmnParser(private val laxParsingEnabled: () -> Boolean = { t
         // Sub processes
         is BpmnCallActivity -> diagramParent.addElement(modelNs().named("callActivity"))
         is BpmnSubProcess -> diagramParent.addElement(modelNs().named("subProcess"))
+        is BpmnCollapsedSubprocess -> diagramParent.addElement(modelNs().named("subProcess"))
         is BpmnEventSubprocess -> createEventSubprocess(diagramParent)
         is BpmnAdHocSubProcess -> diagramParent.addElement(modelNs().named("adHocSubProcess"))
         is BpmnTransactionalSubProcess -> diagramParent.addElement(modelNs().named("transaction"))
+        is BpmnTransactionCollapsedSubprocess -> diagramParent.addElement(modelNs().named("transaction"))
 
         // Gateways
         is BpmnExclusiveGateway -> diagramParent.addElement(modelNs().named("exclusiveGateway"))
@@ -620,7 +633,7 @@ abstract class BaseBpmnParser(private val laxParsingEnabled: () -> Boolean = { t
         }
         placeFlowElementOrArtifact(newNode, update.bpmnObject.element is BpmnAssociation)
 
-        update.props.forEach { k, v ->  setToNode(newNode, k, v.value) }
+        update.props.forEach { k, v -> setToNode(newNode, k, v.value, v.index?.toMutableList()) }
         trimWhitespace(diagramParent, false)
 
         val shapeParent = doc.selectSingleNode(

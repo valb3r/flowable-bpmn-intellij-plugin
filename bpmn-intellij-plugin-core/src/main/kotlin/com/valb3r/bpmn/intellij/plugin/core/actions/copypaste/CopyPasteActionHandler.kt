@@ -114,6 +114,10 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
             val updatedIds = mutableMapOf(BpmnElementId(ROOT_NAME) to parent)
             val updatedDiagramIds = mutableMapOf<DiagramElementId, DiagramElementId>()
 
+            // References may point forward to an edge or a shape that has not been updated yet.
+            context.shapes.forEach { copied(it.bpmnObject.id, updatedIds) }
+            context.edges.forEach { copied(it.bpmnObject.id, updatedIds) }
+
             val minX = context.shapes.map { it.shape.rectBounds().x }.minOrNull()
                 ?: context.edges.map { min(it.edge.waypoint[0].x, it.edge.waypoint[it.edge.waypoint.size - 1].x) }
                     .minOrNull() ?: 0.0f
@@ -218,7 +222,11 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
             when {
                 v.value == null -> result.add(k, v)
                 PropertyType.ID == k -> result[k] = Property(copied(BpmnElementId(v.value as String), updatedIds).id)
-                PropertyType.ID == k.updatedBy -> result[k] = Property(copiedExistsOrEmpty(BpmnElementId(v.value as String), updatedIds))
+                PropertyType.ID == k.updatedBy -> {
+                    val value = copiedExistsOrEmpty(BpmnElementId(v.value as String), updatedIds)
+                    val index = if (k.indexInGroupArrayName == "@") v.index?.map { value } else v.index
+                    result.add(k, v.copy(value = value, index = index))
+                }
                 else -> result.add(k, v)
             }
         }
@@ -338,7 +346,7 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
                 .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
                 .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
                 .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withCreatorVisibility(JsonAutoDetect.Visibility.NONE))
+                .withCreatorVisibility(JsonAutoDetect.Visibility.PUBLIC_ONLY))
         return builtMapper
     }
 
