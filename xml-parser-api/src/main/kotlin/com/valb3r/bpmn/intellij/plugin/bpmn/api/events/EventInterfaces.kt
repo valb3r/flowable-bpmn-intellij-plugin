@@ -60,6 +60,12 @@ interface BpmnShapeObjectAdded: EventPropagatableToXml {
     val props: PropertyTable
 }
 
+interface BpmnDiagramAdded: EventPropagatableToXml {
+    val diagramId: DiagramElementId
+    val planeId: DiagramElementId
+    val bpmnElementId: BpmnElementId
+}
+
 interface BpmnShapeResizedAndMoved: EventPropagatableToXml {
     val diagramElementId: DiagramElementId
     val cx: Float

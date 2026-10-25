@@ -9,11 +9,14 @@ import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnCollapsedSubprocess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionCollapsedSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.events.*
@@ -49,7 +52,20 @@ data class ClipboardContext(
         val shapes: MutableList<BpmnShapeObjectAddedEvent>,
         val edges: MutableList<BpmnEdgeObjectAddedEvent>,
         val selectElements: List<DiagramElementId>
-)
+) {
+    fun events(): List<EventPropagatableToXml> {
+        val diagrams = shapes.filter {
+            it.bpmnObject.element is BpmnCollapsedSubprocess || it.bpmnObject.element is BpmnTransactionCollapsedSubprocess
+        }.map {
+            BpmnDiagramAddedEvent(
+                DiagramElementId("BPMNDiagram_${it.shape.id.id}"),
+                DiagramElementId("BPMNPlane_${it.shape.id.id}"),
+                it.bpmnObject.id,
+            )
+        }
+        return shapes + edges + diagrams
+    }
+}
 
 interface SystemClipboard {
 

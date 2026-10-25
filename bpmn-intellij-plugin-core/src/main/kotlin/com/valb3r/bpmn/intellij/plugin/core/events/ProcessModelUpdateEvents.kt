@@ -184,7 +184,7 @@ class ProcessModelUpdateEvents(private val committer: FileCommitter, private val
             updates.add(toStore)
             when (event) {
                 is PropertyUpdateWithId -> propertyUpdatesByStaticId.computeIfAbsent(event.bpmnElementId) { CopyOnWriteArrayList() } += toStore
-                is LocationUpdateWithId, is BpmnShapeResizedAndMoved, is NewWaypoints, is BpmnParentChanged, is EventUiOnly -> { /*NOP*/ }
+                is LocationUpdateWithId, is BpmnShapeResizedAndMoved, is NewWaypoints, is BpmnParentChanged, is BpmnDiagramAdded, is EventUiOnly -> { /*NOP*/ }
                 is BpmnShapeObjectAddedEvent -> addObjectShapeEvent(toStore as Order<BpmnShapeObjectAddedEvent>)
                 is BpmnEdgeObjectAddedEvent -> addObjectEdgeEvent(toStore as Order<BpmnEdgeObjectAddedEvent>)
                 is BpmnElementRemovedEvent -> removeBpmnElement(event.bpmnElementId , toStore as Order<BpmnElementRemovedEvent> )

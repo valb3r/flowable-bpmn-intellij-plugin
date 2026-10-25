@@ -5,11 +5,20 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnParser
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.BpmnProcessObject
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.BpmnAssociation
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithParentId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnCollapsedSubprocess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionCollapsedSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.actions.copypaste.*
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.BpmnDiagramAddedEvent
+import com.valb3r.bpmn.intellij.plugin.core.events.BpmnShapeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.initializeUpdateEventsRegistry
+import com.valb3r.bpmn.intellij.plugin.core.events.updateEventsRegistry
 import com.valb3r.bpmn.intellij.plugin.core.render.ElementInteractionContext
 import com.valb3r.bpmn.intellij.plugin.core.render.RenderContext
 import com.valb3r.bpmn.intellij.plugin.core.render.elements.BaseDiagramRenderElement
@@ -96,7 +105,7 @@ abstract class BaseCopyPastePopurriTest : BaseUiTest() {
             }
         }
 
-        val updated = bpmnParser.parse(bpmnParser.update(xml, pasted.shapes + pasted.edges)).toView(bpmnFactory)
+        val updated = bpmnParser.parse(bpmnParser.update(xml, pasted.events())).toView(bpmnFactory)
         val updatedShapes = updated.diagram.flatMap { it.bpmnPlane.bpmnShape.orEmpty() }
         updatedShapes.shouldHaveSize(originalShapes.size + shapes.size)
         updatedShapes.shouldContainAll(originalShapes)
@@ -139,6 +148,60 @@ abstract class BaseCopyPastePopurriTest : BaseUiTest() {
     }
 
     @Test
+    fun `Collapsed subprocess paste emits dedicated diagram events in the same undo block`() {
+        val xml = fixtureXml()
+        val original = bpmnParser.parse(xml)
+        val elements = listOf<WithBpmnId>(
+            BpmnCollapsedSubprocess(BpmnElementId("copyPasteCollapsed"), transactionalSubprocess = false),
+            BpmnTransactionCollapsedSubprocess(BpmnElementId("copyPasteCollapsedTransaction"), transactionalSubprocess = true),
+        )
+        val shapes = elements.map { element ->
+            BpmnShapeObjectAddedEvent(
+                WithParentId(original.process.id, element),
+                ShapeElement(DiagramElementId("shape_${element.id.id}"), element.id, BoundsElement(100f, 100f, 100f, 80f)),
+                bpmnFactory.propertiesOf(element),
+            )
+        }.toMutableList()
+        val seed = ClipboardContext(shapes, mutableListOf(), shapes.map { it.shape.id })
+
+        // Shape messages must not implicitly create a diagram.
+        bpmnParser.parse(bpmnParser.update(xml, shapes)).diagram.map { it.id to it.bpmnPlane.bpmnElement }
+            .shouldBeEqualTo(original.diagram.map { it.id to it.bpmnPlane.bpmnElement })
+
+        val sourceXml = bpmnParser.update(xml, seed.events())
+        val source = bpmnParser.parse(sourceXml)
+        val pasted = copyAndPaste(source, shapes.map { it.shape.id }.toSet())
+        val events = pasted.events()
+        val diagrams = events.filterIsInstance<BpmnDiagramAddedEvent>()
+        diagrams.shouldHaveSize(2)
+        diagrams.map { it.bpmnElementId }.toSet().shouldBeEqualTo(pasted.shapes.map { it.bpmnObject.id }.toSet())
+        diagrams.map { it.diagramId }.toSet().intersect(source.diagram.map { it.id }.toSet()).shouldBeEmpty()
+        diagrams.map { it.planeId }.toSet().intersect(source.diagram.map { it.bpmnPlane.id }.toSet()).shouldBeEmpty()
+
+        val updated = bpmnParser.parse(bpmnParser.update(sourceXml, events))
+        updated.diagram.shouldHaveSize(source.diagram.size + 2)
+        val view = updated.toView(bpmnFactory)
+        pasted.shapes.forEach { shape ->
+            view.elementByStaticId.getValue(shape.bpmnObject.id).element::class.shouldBeEqualTo(shape.bpmnObject.element::class)
+            val diagram = updated.diagram.single { it.bpmnPlane.bpmnElement == shape.bpmnObject.id }
+            diagram.id.shouldBeEqualTo(diagrams.single { it.bpmnElementId == shape.bpmnObject.id }.diagramId)
+        }
+
+        val registry = updateEventsRegistry(project)
+        registry.addEvents(events)
+        currentStateProvider(project).currentState().elementByBpmnId.keys
+            .shouldContainAll(pasted.shapes.map { it.bpmnObject.id })
+        registry.undo()
+        registry.getUpdateEventList().shouldBeEmpty()
+        currentStateProvider(project).currentState().elementByBpmnId.keys
+            .intersect(pasted.shapes.map { it.bpmnObject.id }.toSet()).shouldBeEmpty()
+        registry.redo()
+        registry.getUpdateEventList().map { it.event }.shouldBeEqualTo(events)
+        currentStateProvider(project).currentState().elementByBpmnId.keys
+            .shouldContainAll(pasted.shapes.map { it.bpmnObject.id })
+    }
+
+    @Test
     fun `Message events can be copied individually with empty and populated references`() {
         val xml = popurriXml()
         messageEventIds.forEach { id ->
@@ -151,7 +214,7 @@ abstract class BaseCopyPastePopurriTest : BaseUiTest() {
                 val shape = pasted.shapes.shouldHaveSingleItem()
                 pasted.edges.shouldBeEmpty()
                 shape.bpmnObject.id.shouldNotBeEqualTo(BpmnElementId(id))
-                val updated = bpmnParser.parse(bpmnParser.update(sourceXml, pasted.shapes)).toView(bpmnFactory)
+                val updated = bpmnParser.parse(bpmnParser.update(sourceXml, pasted.events())).toView(bpmnFactory)
                 updated.elementByStaticId.getValue(shape.bpmnObject.id).element::class
                     .shouldBeEqualTo(sourceView.elementByStaticId.getValue(BpmnElementId(id)).element::class)
                 updated.elemPropertiesByElementId.getValue(shape.bpmnObject.id)[PropertyType.MESSAGE_REF]

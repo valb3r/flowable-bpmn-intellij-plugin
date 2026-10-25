@@ -325,6 +325,7 @@ abstract class BaseBpmnParser(private val laxParsingEnabled: () -> Boolean = { t
                 is BpmnElementRemoved -> applyBpmnElementRemoved(doc, event.bpmnElementId)
                 is BpmnElementChange -> applyChangeElement(doc, event)
                 is BpmnShapeObjectAdded -> applyBpmnShapeObjectAdded(doc, event)
+                is BpmnDiagramAdded -> applyBpmnDiagramAdded(doc, event)
                 is BpmnEdgeObjectAdded -> applyBpmnEdgeObjectAdded(doc, event)
                 is PropertyUpdateWithId -> applyPropertyUpdateWithId(doc, event)
                 is BpmnParentChanged -> applyParentChange(doc, event)
@@ -474,15 +475,15 @@ abstract class BaseBpmnParser(private val laxParsingEnabled: () -> Boolean = { t
         newBounds.addAttribute("width", bounds.width.toString())
         newBounds.addAttribute("height", bounds.height.toString())
         trimWhitespace(shapeParent, false)
+    }
 
-        if (update.bpmnObject.element is BpmnCollapsedSubprocess || update.bpmnObject.element is BpmnTransactionCollapsedSubprocess) {
-            newShape.addAttribute("isExpanded", "false")
-            val diagram = doc.rootElement.addElement(bpmndiNs().named("BPMNDiagram"))
-            diagram.addAttribute("id", "BPMNDiagram_${update.shape.id.id}")
-            val plane = diagram.addElement(bpmndiNs().named("BPMNPlane"))
-            plane.addAttribute("id", "BPMNPlane_${update.shape.id.id}")
-            plane.addAttribute("bpmnElement", update.bpmnObject.id.id)
-        }
+    private fun applyBpmnDiagramAdded(doc: Document, update: BpmnDiagramAdded) {
+        val diagram = doc.rootElement.addElement(bpmndiNs().named("BPMNDiagram"))
+        diagram.addAttribute("id", update.diagramId.id)
+        val plane = diagram.addElement(bpmndiNs().named("BPMNPlane"))
+        plane.addAttribute("id", update.planeId.id)
+        plane.addAttribute("bpmnElement", update.bpmnElementId.id)
+        trimWhitespace(doc.rootElement, false)
     }
 
     protected open fun createBpmnObject(element: WithBpmnId, diagramParent: Element) = when (element) {
