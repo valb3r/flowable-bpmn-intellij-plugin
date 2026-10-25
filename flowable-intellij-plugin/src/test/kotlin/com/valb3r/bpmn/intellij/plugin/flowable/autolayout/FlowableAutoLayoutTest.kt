@@ -5,6 +5,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.flowable.parser.FlowableParser
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
@@ -78,6 +79,20 @@ class FlowableAutoLayoutTest {
                 assertEquals(expectedPoint.y, actualPoint.y, 0.01f)
             }
         }
+    }
+
+    @Test
+    fun `nested interlaced layout in the root plane does not require auto layout`() {
+        val parsed = FlowableParser().parse(resource("nested-interlaced.bpmn20.xml"))
+        val process = parsed.copy(diagram = listOf(parsed.diagram.first { it.bpmnPlane.bpmnElement == parsed.process.id }))
+        val autoLayout = BpmnAutoLayout()
+
+        assertFalse(autoLayout.isRequired(process))
+        val result = autoLayout.layoutIfRequired(process)
+
+        assertFalse(result.layoutApplied)
+        assertEquals(process, result.laidOutProcess)
+        assertEquals(process.diagram, autoLayout.layout(process).diagram)
     }
 
     @Disabled("Enable manually to generate an XML file for layout debugging")

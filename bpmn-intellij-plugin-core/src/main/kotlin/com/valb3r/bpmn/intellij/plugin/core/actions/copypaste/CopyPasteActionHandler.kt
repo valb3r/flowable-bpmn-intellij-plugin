@@ -9,11 +9,14 @@ import com.intellij.openapi.project.Project
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.PropertyTable
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.BpmnElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.WithBpmnId
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnCollapsedSubprocess
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnTransactionCollapsedSubprocess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.BoundsElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.EdgeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.elements.ShapeElement
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EdgeWithIdentifiableWaypoints
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.Property
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
 import com.valb3r.bpmn.intellij.plugin.core.events.*
@@ -49,7 +52,20 @@ data class ClipboardContext(
         val shapes: MutableList<BpmnShapeObjectAddedEvent>,
         val edges: MutableList<BpmnEdgeObjectAddedEvent>,
         val selectElements: List<DiagramElementId>
-)
+) {
+    fun events(): List<EventPropagatableToXml> {
+        val diagrams = shapes.filter {
+            it.bpmnObject.element is BpmnCollapsedSubprocess || it.bpmnObject.element is BpmnTransactionCollapsedSubprocess
+        }.map {
+            BpmnDiagramAddedEvent(
+                DiagramElementId("BPMNDiagram_${it.shape.id.id}"),
+                DiagramElementId("BPMNPlane_${it.shape.id.id}"),
+                it.bpmnObject.id,
+            )
+        }
+        return shapes + edges + diagrams
+    }
+}
 
 interface SystemClipboard {
 
@@ -113,6 +129,10 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
             val context = mapper.readValue(data, ClipboardContext::class.java)
             val updatedIds = mutableMapOf(BpmnElementId(ROOT_NAME) to parent)
             val updatedDiagramIds = mutableMapOf<DiagramElementId, DiagramElementId>()
+
+            // References may point forward to an edge or a shape that has not been updated yet.
+            context.shapes.forEach { copied(it.bpmnObject.id, updatedIds) }
+            context.edges.forEach { copied(it.bpmnObject.id, updatedIds) }
 
             val minX = context.shapes.map { it.shape.rectBounds().x }.minOrNull()
                 ?: context.edges.map { min(it.edge.waypoint[0].x, it.edge.waypoint[it.edge.waypoint.size - 1].x) }
@@ -218,7 +238,11 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
             when {
                 v.value == null -> result.add(k, v)
                 PropertyType.ID == k -> result[k] = Property(copied(BpmnElementId(v.value as String), updatedIds).id)
-                PropertyType.ID == k.updatedBy -> result[k] = Property(copiedExistsOrEmpty(BpmnElementId(v.value as String), updatedIds))
+                PropertyType.ID == k.updatedBy -> {
+                    val value = copiedExistsOrEmpty(BpmnElementId(v.value as String), updatedIds)
+                    val index = if (k.indexInGroupArrayName == "@") v.index?.map { value } else v.index
+                    result.add(k, v.copy(value = value, index = index))
+                }
                 else -> result.add(k, v)
             }
         }
@@ -338,7 +362,7 @@ class CopyPasteActionHandler(private val clipboard: SystemClipboard) {
                 .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
                 .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
                 .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withCreatorVisibility(JsonAutoDetect.Visibility.NONE))
+                .withCreatorVisibility(JsonAutoDetect.Visibility.PUBLIC_ONLY))
         return builtMapper
     }
 

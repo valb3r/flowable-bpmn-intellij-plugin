@@ -36,6 +36,8 @@ data class BpmnElementRemovedEvent(override val bpmnElementId: BpmnElementId): B
 
 data class BpmnShapeObjectAddedEvent(override val bpmnObject: WithParentId, override val shape: ShapeElement, override val props: PropertyTable): BpmnShapeObjectAdded
 
+data class BpmnDiagramAddedEvent(override val diagramId: DiagramElementId, override val planeId: DiagramElementId, override val bpmnElementId: BpmnElementId): BpmnDiagramAdded
+
 data class BpmnEdgeObjectAddedEvent(override val bpmnObject: WithParentId, override val edge: EdgeWithIdentifiableWaypoints, override val props: PropertyTable): BpmnEdgeObjectAdded
 
 data class UiOnlyValueAddedEvent(val bpmnElementId: BpmnElementId, val property: PropertyType, val newValue: Any?, val propertyIndex: List<String>? = null): EventUiOnly

@@ -130,6 +130,7 @@ class CurrentStateProvider(private val project: Project) {
                     updatedElementByStaticId[event.bpmnObject.id] = event.bpmnObject
                     updatedElemPropertiesByStaticElementId[event.bpmnObject.id] = event.props.copy()
                 }
+                is BpmnDiagramAdded -> { /* Empty diagram planes have no shapes or edges to add to the canvas. */ }
                 is BpmnEdgeObjectAdded -> {
                     updatedEdges.add(event.edge)
                     updatedElementByDiagramId[event.edge.id] = event.bpmnObject.id

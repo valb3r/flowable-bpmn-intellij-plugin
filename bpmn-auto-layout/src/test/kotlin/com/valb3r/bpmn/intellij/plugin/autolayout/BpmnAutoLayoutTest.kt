@@ -10,6 +10,7 @@ import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.boundary.Bp
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.begin.BpmnStartEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.events.end.BpmnEndEvent
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.gateways.BpmnParallelGateway
+import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.subprocess.BpmnSubProcess
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnServiceTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.bpmn.elements.tasks.BpmnTask
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.diagram.DiagramElementId
@@ -115,6 +116,101 @@ class BpmnAutoLayoutTest {
         val movedBounds = movedStart.rectBounds()
         val forcedBounds = forcedStart.rectBounds()
         (forcedBounds.x != movedBounds.x || forcedBounds.y != movedBounds.y).shouldBeTrue()
+    }
+
+    @Test
+    fun `does not layout nested subprocesses already covered by the root plane`() {
+        val process = nestedProcessWithSharedPlane()
+        val autoLayout = BpmnAutoLayout()
+
+        autoLayout.isRequired(process).shouldBeFalse()
+        val result = autoLayout.layoutIfRequired(process)
+        result.layoutApplied.shouldBeFalse()
+        result.laidOutProcess.shouldBeEqualTo(process)
+        autoLayout.layout(process).diagram.shouldBeEqualTo(process.diagram)
+    }
+
+    @Test
+    fun `adds missing nested edge to the existing ancestor plane`() {
+        val complete = nestedProcessWithSharedPlane()
+        val diagram = complete.diagram.single()
+        val plane = diagram.bpmnPlane
+        val existingEdges = plane.bpmnEdge.orEmpty().filterNot { it.bpmnElement == BpmnElementId("inner-flow") }
+        val partial = complete.copy(diagram = listOf(diagram.copy(bpmnPlane = plane.copy(bpmnEdge = existingEdges))))
+        val autoLayout = BpmnAutoLayout()
+
+        autoLayout.isRequired(partial).shouldBeTrue()
+        val result = autoLayout.layoutIfRequired(partial)
+
+        result.layoutApplied.shouldBeTrue()
+        val updated = result.laidOutProcess.diagram.single()
+        updated.id.shouldBeEqualTo(diagram.id)
+        updated.bpmnPlane.id.shouldBeEqualTo(plane.id)
+        updated.bpmnPlane.bpmnShape.shouldBeEqualTo(plane.bpmnShape)
+        updated.bpmnPlane.bpmnEdge.orEmpty().filter { it in existingEdges }.shouldBeEqualTo(existingEdges)
+        updated.bpmnPlane.bpmnEdge.orEmpty().map { it.bpmnElement }.toSet()
+            .shouldBeEqualTo(plane.bpmnEdge.orEmpty().map { it.bpmnElement }.toSet())
+        autoLayout.isRequired(result.laidOutProcess).shouldBeFalse()
+    }
+
+    @Test
+    fun `adds missing nested shape without creating duplicate subprocess diagrams`() {
+        val complete = nestedProcessWithSharedPlane()
+        val diagram = complete.diagram.single()
+        val plane = diagram.bpmnPlane
+        val existingShapes = plane.bpmnShape.orEmpty().filterNot { it.bpmnElement == BpmnElementId("inner-task") }
+        val partial = complete.copy(diagram = listOf(diagram.copy(bpmnPlane = plane.copy(bpmnShape = existingShapes))))
+        val autoLayout = BpmnAutoLayout()
+
+        autoLayout.isRequired(partial).shouldBeTrue()
+        val result = autoLayout.layoutIfRequired(partial)
+
+        result.layoutApplied.shouldBeTrue()
+        val updatedPlane = result.laidOutProcess.diagram.single().bpmnPlane
+        updatedPlane.bpmnShape.orEmpty().filter { it in existingShapes }.shouldBeEqualTo(existingShapes)
+        updatedPlane.bpmnShape.orEmpty().map { it.bpmnElement }.toSet()
+            .shouldBeEqualTo(plane.bpmnShape.orEmpty().map { it.bpmnElement }.toSet())
+        updatedPlane.bpmnEdge.orEmpty().filterNot { it.bpmnElement == BpmnElementId("inner-flow") }
+            .shouldBeEqualTo(plane.bpmnEdge.orEmpty().filterNot { it.bpmnElement == BpmnElementId("inner-flow") })
+        autoLayout.isRequired(result.laidOutProcess).shouldBeFalse()
+        autoLayout.layoutIfRequired(result.laidOutProcess).layoutApplied.shouldBeFalse()
+    }
+
+    @Test
+    fun `uses the nearest dedicated ancestor plane for nested subprocess layout`() {
+        val complete = nestedProcessWithSharedPlane()
+        val rootDiagram = complete.diagram.single()
+        val rootPlane = rootDiagram.bpmnPlane
+        val rootShapeIds = setOf("root-start", "root-task", "outer")
+        val childDiagram = rootDiagram.copy(
+            id = DiagramElementId("outer-diagram"),
+            bpmnPlane = rootPlane.copy(
+                id = DiagramElementId("outer-plane"),
+                bpmnElement = BpmnElementId("outer"),
+                bpmnShape = rootPlane.bpmnShape.orEmpty().filterNot { it.bpmnElement.id in rootShapeIds },
+                bpmnEdge = rootPlane.bpmnEdge.orEmpty().filterNot { it.bpmnElement == BpmnElementId("root-flow") },
+            ),
+        )
+        val rootOnly = rootDiagram.copy(bpmnPlane = rootPlane.copy(
+            bpmnShape = rootPlane.bpmnShape.orEmpty().filter { it.bpmnElement.id in rootShapeIds },
+            bpmnEdge = rootPlane.bpmnEdge.orEmpty().filter { it.bpmnElement == BpmnElementId("root-flow") },
+        ))
+        val process = complete.copy(diagram = listOf(rootOnly, childDiagram))
+        val autoLayout = BpmnAutoLayout()
+
+        autoLayout.isRequired(process).shouldBeFalse()
+        autoLayout.layout(process).diagram.shouldBeEqualTo(process.diagram)
+
+        val partial = process.copy(diagram = listOf(rootOnly, childDiagram.copy(
+            bpmnPlane = childDiagram.bpmnPlane.copy(bpmnEdge = emptyList()),
+        )))
+        val result = autoLayout.layoutIfRequired(partial)
+
+        result.layoutApplied.shouldBeTrue()
+        result.laidOutProcess.diagram.first().shouldBeEqualTo(rootOnly)
+        result.laidOutProcess.diagram[1].bpmnPlane.bpmnEdge.orEmpty().map { it.bpmnElement }.toSet()
+            .shouldBeEqualTo(childDiagram.bpmnPlane.bpmnEdge.orEmpty().map { it.bpmnElement }.toSet())
+        autoLayout.isRequired(result.laidOutProcess).shouldBeFalse()
     }
 
     @Test
@@ -444,6 +540,37 @@ class BpmnAutoLayoutTest {
         (updatedTaskBounds.y > movedStartBounds.y).shouldBeTrue()
         actualLayerGap.shouldBeWithin(generatedLayerGap, 0.01)
         (actualLayerGap >= 239.0f).shouldBeTrue()
+    }
+
+    private fun nestedProcessWithSharedPlane(): BpmnProcessObject {
+        fun body(scope: String) = bodyWith(
+            BpmnStartEvent(BpmnElementId("$scope-start")),
+            BpmnTask(BpmnElementId("$scope-task")),
+            BpmnSequenceFlow(BpmnElementId("$scope-flow"), sourceRef = "$scope-start", targetRef = "$scope-task"),
+        )
+        val process = BpmnProcessObject(
+            process = BpmnProcess(
+                id = BpmnElementId("root"),
+                name = null,
+                documentation = null,
+                isExecutable = null,
+                body = body("root").copy(subProcess = listOf(BpmnSubProcess(BpmnElementId("outer"), transactionalSubprocess = false))),
+                // Deliberately list the deepest scope first: plane resolution must follow BPMN containment.
+                children = linkedMapOf(
+                    BpmnElementId("inner") to body("inner"),
+                    BpmnElementId("outer") to body("outer").copy(
+                        subProcess = listOf(BpmnSubProcess(BpmnElementId("inner"), transactionalSubprocess = false)),
+                    ),
+                ),
+            ),
+            diagram = emptyList(),
+        )
+        val generated = BpmnAutoLayout().layout(process).diagram
+        val root = generated.first()
+        return process.copy(diagram = listOf(root.copy(bpmnPlane = root.bpmnPlane.copy(
+            bpmnShape = generated.flatMap { it.bpmnPlane.bpmnShape.orEmpty() },
+            bpmnEdge = generated.flatMap { it.bpmnPlane.bpmnEdge.orEmpty() },
+        ))))
     }
 
     private fun bodyWith(
