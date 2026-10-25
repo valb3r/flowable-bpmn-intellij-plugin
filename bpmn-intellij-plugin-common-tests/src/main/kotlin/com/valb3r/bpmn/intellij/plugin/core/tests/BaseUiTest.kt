@@ -866,12 +866,12 @@ abstract class BaseUiTest {
             basicProcess.process.copy(
                 body = basicProcessBody.copy(
                     exclusiveGateway = listOf(bpmnExclusiveGateway),
-                    serviceTask = listOf(bpmnServiceTaskStart)
+                    serviceTask = listOf(bpmnServiceTaskEnd)
                 )
             ),
             listOf(DiagramElement(
                 diagramMainElementId,
-                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramExclusiveGateway, diagramServiceTaskStart), listOf()))
+                PlaneElement(diagramMainPlaneElementId, basicProcess.process.id, listOf(diagramExclusiveGateway, diagramServiceTaskEnd), listOf()))
             )
         )
         whenever(parser.parse("")).thenReturn(process)

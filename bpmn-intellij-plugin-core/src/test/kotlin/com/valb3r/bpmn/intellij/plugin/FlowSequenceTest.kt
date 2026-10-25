@@ -7,6 +7,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.events.EventPropagatableToXml
 import com.valb3r.bpmn.intellij.plugin.bpmn.api.info.PropertyType
+import com.valb3r.bpmn.intellij.plugin.core.events.BpmnEdgeObjectAddedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.BooleanValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.events.StringValueUpdatedEvent
 import com.valb3r.bpmn.intellij.plugin.core.newelements.registerNewElementsFactory
@@ -60,13 +61,26 @@ internal class FlowSequenceTest: BaseUiTest() {
     @Test
     fun `Default flow selection present on flow sequence element with gateway when sequence was created in UI and is updateable`() {
         prepareExclusiveGatewayAndServiceTaskDetached()
-        val addedEdge = addSequenceElementOnFirstTaskAndValidateCommittedExactOnce(exclusiveGatewayDiagramId)
+        clickOnId(exclusiveGatewayDiagramId)
+        val newLinkLocation = clickOnId(findExactlyOneNewLinkElem().shouldNotBeNull())
+        dragToButDontStop(newLinkLocation, elementCenter(serviceTaskEndDiagramId))
+        canvas.stopDragOrSelect()
+        canvas.paintComponent(graphics)
+
+        val addedEdge = argumentCaptor<List<EventPropagatableToXml>>().let {
+            verify(fileCommitter).executeCommitAndGetHash(any(), it.capture(), any(), any(), any())
+            it.firstValue.shouldHaveSize(3)
+            it.firstValue.filterIsInstance<BpmnEdgeObjectAddedEvent>().shouldHaveSingleItem()
+        }
+        addedEdge.props[PropertyType.SOURCE_REF]!!.value.shouldBeEqualTo(exclusiveGatewayBpmnId.id)
+        addedEdge.props[PropertyType.TARGET_REF]!!.value.shouldBeEqualTo(serviceTaskEndBpmnId.id)
         clickOnId(addedEdge.edge.id)
 
         val propertiesVisible = currentVisibleProperties()
         propertiesVisible.shouldContain(PropertyType.DEFAULT_FLOW_ON_SEQUENCE.caption)
 
-        whenever(boolFieldsConstructed[Pair(addedEdge.edge.bpmnElement, PropertyType.DEFAULT_FLOW_ON_SEQUENCE)]!!.isSelected).thenReturn(true)
+        val defaultFlowField = boolFieldsConstructed[Pair(addedEdge.edge.bpmnElement, PropertyType.DEFAULT_FLOW_ON_SEQUENCE)].shouldNotBeNull()
+        whenever(defaultFlowField.isSelected).thenReturn(true)
         propertiesVisualizer(project).clear()
 
         argumentCaptor<List<EventPropagatableToXml>>().apply {
