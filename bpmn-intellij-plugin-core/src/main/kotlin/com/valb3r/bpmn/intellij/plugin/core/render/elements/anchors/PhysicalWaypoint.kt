@@ -70,6 +70,10 @@ class PhysicalWaypoint(
     override fun doOnDragEndWithoutChildren(dx: Float, dy: Float, droppedOn: BpmnElementId?, allDroppedOnAreas: Map<BpmnElementId, AreaWithZindex>): MutableList<Event> {
         val events = mutableListOf<Event>()
 
+        if (wouldCreateDuplicateSelfReference(droppedOn)) {
+            return events
+        }
+
         // TODO: Transform
         events += DraggedToEvent(elementId, dx, dy, parentElementId, physicalPos) as Event
 
@@ -91,6 +95,22 @@ class PhysicalWaypoint(
         }
 
         return events
+    }
+
+    private fun wouldCreateDuplicateSelfReference(droppedOn: BpmnElementId?): Boolean {
+        if (null == parentElementBpmnId || null == droppedOn || multipleElementsSelected() || multipleElementsDragged()) {
+            return false
+        }
+
+        val currentState = state().currentState
+        val properties = currentState.elemPropertiesByStaticElementId[parentElementBpmnId]
+        val oppositeRef = when {
+            isEdgeEnd() -> properties?.get(PropertyType.SOURCE_REF)?.value
+            isEdgeBegin() -> properties?.get(PropertyType.TARGET_REF)?.value
+            else -> return false
+        }
+
+        return oppositeRef == droppedOn.id && hasSelfReference(currentState.elemPropertiesByStaticElementId, droppedOn, parentElementBpmnId)
     }
 
     override fun doComputeLocationChangesBasedOnTransformationWithCascade(): MutableList<Event> {

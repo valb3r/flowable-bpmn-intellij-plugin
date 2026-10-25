@@ -33,6 +33,7 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
 const val WAYPOINT_OCCUPY_EPSILON = 1.0f
+private const val SELF_REFERENCE_LOOP_OFFSET = 20.0f
 
 abstract class ShapeRenderElement(
         elementId: DiagramElementId,
@@ -332,6 +333,10 @@ abstract class ShapeRenderElement(
             return mutableListOf()
         }
 
+        if (wouldCreateDuplicateSelfReference(droppedOn)) {
+            return mutableListOf()
+        }
+
         val sourceElem = state().currentState.elementByBpmnId[bpmnElementId] ?: return mutableListOf()
 
         val newConnection = if (sourceElem.element is BpmnTextAnnotation) {
@@ -339,16 +344,13 @@ abstract class ShapeRenderElement(
         } else {
             newElementsFactory(state().ctx.project).newOutgoingSequence(sourceElem.element)
         }
-        val anchors = findSequenceAnchors(targetArea) ?: return mutableListOf()
-        val notYetExistingDiagramId = DiagramElementId("")
-        val sourceBounds = shape.rectBounds()
-        val firstAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.first, Point2D.Float(sourceBounds.centerX.toFloat(), sourceBounds.centerY.toFloat()))
-        val secondAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.second, anchors.second)
+        val waypoints = if (droppedOn == bpmnElementId) {
+            createSelfReferenceWaypoints()
+        } else {
+            createSequenceWaypoints(targetArea) ?: return mutableListOf()
+        }
         val newSequenceDiagram = newElementsFactory(state().ctx.project).newDiagramObject(EdgeElement::class, newConnection)
-                .copy(waypoint = listOf(
-                        WaypointElement(firstAnchorCompensated.x, firstAnchorCompensated.y),
-                        WaypointElement(secondAnchorCompensated.x, secondAnchorCompensated.y)
-                ))
+                .copy(waypoint = waypoints)
 
         val props = newElementsFactory(state().ctx.project).propertiesOf(newConnection)
         props[PropertyType.TARGET_REF] = Property(droppedOn.id)
@@ -365,6 +367,37 @@ abstract class ShapeRenderElement(
             events += StringValueUpdatedEvent(droppedOn, PropertyType.BPMN_INCOMING, newConnection.id.id, propertyIndex = listOf(newConnection.id.id))
         }
         return events
+    }
+
+    private fun wouldCreateDuplicateSelfReference(targetId: BpmnElementId): Boolean {
+        return targetId == bpmnElementId && hasSelfReference(state().currentState.elemPropertiesByStaticElementId, bpmnElementId)
+    }
+
+    private fun createSelfReferenceWaypoints(): List<WaypointElement> {
+        val bounds = shape.rectBounds()
+        val right = bounds.maxX.toFloat()
+        val top = bounds.minY.toFloat()
+        val centerX = bounds.centerX.toFloat()
+        val centerY = bounds.centerY.toFloat()
+        return listOf(
+            WaypointElement(right, centerY),
+            WaypointElement(right + SELF_REFERENCE_LOOP_OFFSET, centerY),
+            WaypointElement(right + SELF_REFERENCE_LOOP_OFFSET, top - SELF_REFERENCE_LOOP_OFFSET),
+            WaypointElement(centerX, top - SELF_REFERENCE_LOOP_OFFSET),
+            WaypointElement(centerX, top)
+        )
+    }
+
+    private fun createSequenceWaypoints(targetArea: AreaWithZindex): List<WaypointElement>? {
+        val anchors = findSequenceAnchors(targetArea) ?: return null
+        val notYetExistingDiagramId = DiagramElementId("")
+        val sourceBounds = shape.rectBounds()
+        val firstAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.first, Point2D.Float(sourceBounds.centerX.toFloat(), sourceBounds.centerY.toFloat()))
+        val secondAnchorCompensated = compensateExpansionViewOnLocation(notYetExistingDiagramId, anchors.second, anchors.second)
+        return listOf(
+            WaypointElement(firstAnchorCompensated.x, firstAnchorCompensated.y),
+            WaypointElement(secondAnchorCompensated.x, secondAnchorCompensated.y)
+        )
     }
 
     private fun findSequenceAnchors(droppedOnTarget: AreaWithZindex): Pair<Point2D.Float, Point2D.Float>? {
