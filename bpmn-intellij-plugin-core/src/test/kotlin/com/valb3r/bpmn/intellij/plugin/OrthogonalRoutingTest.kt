@@ -116,7 +116,8 @@ internal class OrthogonalRoutingTest {
             ((start.x == end.x) xor (start.y == end.y)).shouldBeEqualTo(true)
         }
         route.windowed(3).forEach { (start, bend, end) ->
-            ((bend.x - start.x) * (end.x - bend.x) + (bend.y - start.y) * (end.y - bend.y)).shouldBeEqualTo(0f)
+            val dotProduct = (bend.x - start.x) * (end.x - bend.x) + (bend.y - start.y) * (end.y - bend.y)
+            (dotProduct == 0f).shouldBeEqualTo(true)
             ((start.x == bend.x) != (bend.x == end.x)).shouldBeEqualTo(true)
         }
     }
