@@ -62,6 +62,13 @@ class CanvasBuilder(
     private var currentVfsConnection: MessageBusConnection? = null
     private var currentPaintConnection: MessageBusConnection? = null
 
+    fun close() {
+        currentVfsConnection?.disconnect()
+        currentVfsConnection = null
+        currentPaintConnection?.disconnect()
+        currentPaintConnection = null
+    }
+
     fun build(
         committerFactory: (BpmnParser) -> FileCommitter, parser: BpmnParser, properties: JTable,
         dropDownFactory: (id: BpmnElementId, type: PropertyType, value: String, availableValues: Set<String>) -> TextValueAccessor,
@@ -103,8 +110,7 @@ class CanvasBuilder(
             genericShowNotificationBalloon(project, "XML parsing error", aggregatedErrors, NotificationType.WARNING)
         }
 
-        currentVfsConnection?.let { it.disconnect(); it.dispose() }
-        currentPaintConnection?.let { it.disconnect(); it.dispose() }
+        close()
         currentVfsConnection = attachFileChangeListener(project, bpmnFile) {
             build(committerFactory, parser, properties, dropDownFactory, classEditorFactory, editorFactory, textFieldFactory, multiLineExpandableTextFieldFactory, checkboxFieldFactory, buttonFactory, arrowButtonFactory, canvas, project, it, persistFile)
         }
@@ -169,7 +175,10 @@ class CanvasBuilder(
 
                 if (!registry.fileStateMatches(readFile(event.file))) {
                     ApplicationManager.getApplication().invokeLater {
-                        onUpdate(event.file)
+                        // A refresh may already be queued when the diagram is closed or replaced.
+                        if (!project.isDisposed && currentVfsConnection === connection && event.file.isValid) {
+                            onUpdate(event.file)
+                        }
                     }
                 }
             }

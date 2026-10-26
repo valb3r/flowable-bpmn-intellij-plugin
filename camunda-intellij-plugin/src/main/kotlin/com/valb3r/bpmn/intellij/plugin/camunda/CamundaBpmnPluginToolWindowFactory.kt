@@ -14,6 +14,7 @@ import com.valb3r.bpmn.intellij.plugin.camunda.settings.CamundaBpmnPluginSetting
 import com.valb3r.bpmn.intellij.plugin.camunda.ui.components.popupmenu.CamundaCanvasPopupMenuProvider
 import com.valb3r.bpmn.intellij.plugin.camunda.xmlnav.CamundaXmlNavigator
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
+import com.valb3r.bpmn.intellij.plugin.commons.langinjection.unregisterCurrentFile
 import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
 import com.valb3r.bpmn.intellij.plugin.core.advertisement.currentAdvertisementStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.getContentFactory
@@ -58,6 +59,7 @@ class CamundaBpmnPluginToolWindowFactory: ToolWindowFactory {
                 false
         )
         toolWindow.contentManager.addContent(content)
+        bpmnWindow.installCloseAction(toolWindow) { unregisterCurrentFile(project) }
         log.info("Tool window content created")
     }
 }

@@ -19,18 +19,19 @@ abstract class DefaultXmlNavigator(private val project: Project): XmlNavigator {
     override fun jumpTo(id: BpmnElementId) {
         ApplicationManager.getApplication().executeOnPooledThread {
             val (virtualFile, offset) = ApplicationManager.getApplication().runReadAction(Computable {
-                val file = getCurrentFile(project).virtualFile
+                val file = getCurrentFile(project)?.virtualFile ?: return@Computable null
                 file to findOffset(id, file)
-            })
+            }) ?: return@executeOnPooledThread
             ApplicationManager.getApplication().invokeLater {
-            val descriptor = OpenFileDescriptor(project, virtualFile)
-            val fileEditor = FileEditorManager.getInstance(project).openEditor(descriptor, true).firstOrNull()
-            fileEditor?.apply {
-                val ctx = DataManager.getInstance().getDataContext(this.component)
-                val editor = ctx.getData(PlatformDataKeys.EDITOR)
-                editor?.caretModel?.moveToOffset(offset)
-                editor?.scrollingModel?.scrollToCaret(ScrollType.MAKE_VISIBLE)
-            }
+                if (project.isDisposed || getCurrentFile(project)?.virtualFile != virtualFile) return@invokeLater
+                val descriptor = OpenFileDescriptor(project, virtualFile)
+                val fileEditor = FileEditorManager.getInstance(project).openEditor(descriptor, true).firstOrNull()
+                fileEditor?.apply {
+                    val ctx = DataManager.getInstance().getDataContext(this.component)
+                    val editor = ctx.getData(PlatformDataKeys.EDITOR)
+                    editor?.caretModel?.moveToOffset(offset)
+                    editor?.scrollingModel?.scrollToCaret(ScrollType.MAKE_VISIBLE)
+                }
             }
         }
     }

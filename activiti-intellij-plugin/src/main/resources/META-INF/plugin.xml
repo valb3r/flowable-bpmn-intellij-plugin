@@ -4,7 +4,7 @@
     <name>Activiti BPMN visualizer</name>
 
     <!-- Plugin version -->
-    <version>0.5.6</version>
+    <version>0.5.7</version>
 
     <!-- Unique identifier of the plugin. Cannot be changed between the plugin versions.
          If not specified, assumed to be equal to <name>. -->
@@ -40,6 +40,27 @@
     <!-- Description of changes in the latest version of the plugin. Displayed in the "Plugins" settings dialog and
          in the plugin repository Web interface. -->
     <change-notes><![CDATA[
+      <p>0.5.7:</p>
+        <ul>
+          <li>
+            Added an action to close the current BPMN diagram and stop file updates and error notifications
+          </li>
+          <li>
+            Added an action to route sequence flows with right-angle bends
+          </li>
+          <li>
+            Fixed copy/paste of BPMN elements, including collapsed subprocesses
+          </li>
+          <li>
+            Improved handling of sequence flows that loop back to the same element
+          </li>
+          <li>
+            Fixed unnecessary auto-layout for expanded subprocesses with existing diagram layouts
+          </li>
+          <li>
+            Preserved script formatting when applying BPMN XML edits
+          </li>
+        </ul>
       <p>0.5.6:</p>
         <ul>
           <li>

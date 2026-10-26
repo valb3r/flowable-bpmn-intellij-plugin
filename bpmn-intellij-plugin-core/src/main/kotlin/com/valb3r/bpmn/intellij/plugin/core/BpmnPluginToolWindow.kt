@@ -1,6 +1,9 @@
 package com.valb3r.bpmn.intellij.plugin.core
 
+import com.intellij.icons.AllIcons
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.command.WriteCommandAction
@@ -16,11 +19,13 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileTypes.StdFileTypes
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.openapi.wm.ToolWindow
 import com.intellij.psi.*
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.JavaReferenceEditorUtil
@@ -81,6 +86,10 @@ open class BpmnPluginToolWindow(
     private lateinit var canvasVScroll: JScrollBar
     private lateinit var canvasHScroll: JScrollBar
     private lateinit var canvasNoDiagramText: JTextArea
+    private lateinit var propertiesNoDiagramText: JTextArea
+
+    @Volatile
+    private var openingFile = false
 
     private val canvasBuilder = CanvasBuilder(DefaultBpmnProcessRenderer(project, currentIconProvider()), onBadContentErrorCallback, onBadContentWarningCallback)
     private val canvas: Canvas = currentCanvas(project)
@@ -103,7 +112,7 @@ open class BpmnPluginToolWindow(
         }
 
 
-        val propertiesTextArea = JTextArea("No file opened.").apply {
+        this.propertiesNoDiagramText = JTextArea("No file opened.").apply {
             isEditable = false
             isEnabled = false
             lineWrap = true
@@ -111,7 +120,7 @@ open class BpmnPluginToolWindow(
 
         this.propertiesPanel = JPanel(CardLayout()).apply {
             border = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED)
-            add(propertiesTextArea, "Card1")
+            add(propertiesNoDiagramText, "Card1")
         }
 
         this.canvasAndProperties = JSplitPane(JSplitPane.VERTICAL_SPLIT, this.canvasPanel, this.propertiesPanel)
@@ -152,7 +161,53 @@ open class BpmnPluginToolWindow(
 
     fun getContent() = this.mainToolWindowForm
 
+    fun installCloseAction(toolWindow: ToolWindow, onFileClose: () -> Unit) {
+        toolWindow.setTitleActions(listOf(object : DumbAwareAction(
+            "Close BPMN Diagram",
+            "Close the current diagram and stop watching its file for changes",
+            AllIcons.Actions.Close
+        ) {
+            override fun getActionUpdateThread() = ActionUpdateThread.EDT
+
+            override fun update(e: AnActionEvent) {
+                e.presentation.isEnabled = !openingFile && canvas.autoLayoutAction != null
+            }
+
+            override fun actionPerformed(e: AnActionEvent) {
+                if (openingFile) return
+                canvasBuilder.close()
+                canvas.clear()
+                initializeUpdateEventsRegistry(project, NoOpFileCommitter())
+                canvas.isVisible = false
+                canvasPanel.remove(canvas)
+                canvasPanel.add(canvasNoDiagramText, BorderLayout.CENTER)
+                propertiesPanel.removeAll()
+                propertiesPanel.add(propertiesNoDiagramText, "Card1")
+                if (::scrollHandler.isInitialized) {
+                    currentUiEventBus(project).clearSubscriptionsOf(ViewRectangleChangeEvent::class, scrollHandler)
+                }
+                canvasHScroll.adjustmentListeners.forEach { canvasHScroll.removeAdjustmentListener(it) }
+                canvasVScroll.adjustmentListeners.forEach { canvasVScroll.removeAdjustmentListener(it) }
+                canvasHScroll.setValues(0, 0, 0, 0)
+                canvasVScroll.setValues(0, 0, 0, 0)
+                onFileClose()
+                toolWindow.title = ""
+                canvasAndProperties.revalidate()
+                canvasAndProperties.repaint()
+            }
+        }))
+    }
+
     fun openFileAndRender(bpmnFile: PsiFile, context: BpmnActionContext, forceAutoLayout: Boolean = false) {
+        openingFile = true
+        try {
+            renderFile(bpmnFile, context, forceAutoLayout)
+        } finally {
+            openingFile = false
+        }
+    }
+
+    private fun renderFile(bpmnFile: PsiFile, context: BpmnActionContext, forceAutoLayout: Boolean) {
         checkIfJavaAndSpelIsPresentAndNotifyOnceIfNot()
         onBeforeFileOpen(bpmnFile)
         val bpmnParser = currentParser(project)

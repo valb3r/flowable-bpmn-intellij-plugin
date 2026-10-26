@@ -19,6 +19,7 @@ import com.valb3r.bpmn.intellij.plugin.activiti.parser.Activiti7Parser
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiObjectFactory
 import com.valb3r.bpmn.intellij.plugin.activiti.parser.ActivitiParser
 import com.valb3r.bpmn.intellij.plugin.commons.langinjection.registerCurrentFile
+import com.valb3r.bpmn.intellij.plugin.commons.langinjection.unregisterCurrentFile
 import com.valb3r.bpmn.intellij.plugin.core.BpmnPluginToolWindow
 import com.valb3r.bpmn.intellij.plugin.core.advertisement.currentAdvertisementStateProvider
 import com.valb3r.bpmn.intellij.plugin.core.getContentFactory
@@ -69,6 +70,7 @@ class ActivitiBpmnPluginToolWindowFactory: ToolWindowFactory {
                 false
         )
         toolWindow.contentManager.addContent(content)
+        bpmnWindow.installCloseAction(toolWindow) { unregisterCurrentFile(project) }
         log.info("Tool window content created")
     }
 

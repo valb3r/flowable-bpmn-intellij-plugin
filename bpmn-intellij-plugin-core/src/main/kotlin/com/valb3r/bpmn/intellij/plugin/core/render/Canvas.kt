@@ -187,6 +187,19 @@ open class Canvas(private val project: Project, private val settings: CanvasCons
         return renderedImage
     }
 
+    fun clear() {
+        autoLayoutAction = null
+        renderer = null
+        cachedTreeState = null
+        areaByElement = null
+        latestOnScreenModelDimensions = null
+        selectedElements.clear()
+        interactionCtx = ElementInteractionContext(emptySet(), emptySet(), mutableMapOf(), null, mutableMapOf(), mutableMapOf(), null, Point2D.Float(), Point2D.Float())
+        propsVisualizer?.clear()
+        propsVisualizer = null
+        repaint()
+    }
+
     fun reset(fileContent: String, processObject: BpmnProcessObjectView, renderer: BpmnProcessRenderer) {
         this.cachedTreeState = null
         this.renderer = renderer

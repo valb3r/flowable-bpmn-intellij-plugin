@@ -16,8 +16,12 @@ fun registerCurrentFile(project: Project, file: PsiFile) {
     currentFile[project] = file
 }
 
-fun getCurrentFile(project: Project): PsiFile {
-    return currentFile[project]!!
+fun unregisterCurrentFile(project: Project) {
+    currentFile.remove(project)
+}
+
+fun getCurrentFile(project: Project): PsiFile? {
+    return currentFile[project]
 }
 
 abstract class DefaultDelegateExpressionUiInjector: MultiHostInjector {
